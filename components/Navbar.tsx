@@ -18,28 +18,37 @@ const Navbar: React.FC<{ toggleSidebar: () => void }> = ({ toggleSidebar }) => {
 
     return (
         <nav className="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 shadow-md">
-            <div className="container mx-auto flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <button onClick={toggleSidebar} className="text-white text-xl lg:hidden focus:outline-none">
+            <div className="flex items-center justify-between w-full px-1">
+                {/* Bagian Kiri: Tombol Sidebar dan Menu Items */}
+                <div className="flex items-center">
+                    <button
+                        onClick={toggleSidebar}
+                        className="text-white text-2xl lg:hidden focus:outline-none"
+                        aria-label="Toggle Sidebar"
+                    >
                         <FaBars />
                     </button>
-                    <ul className="hidden lg:flex space-x-3 text-sm font-semibold text-white">
+                    <ul className="hidden lg:flex space-x-4 text-sm font-semibold text-white ml-2">
                         {menuItems.map((item) => (
-                            <li key={item} className="cursor-pointer hover:bg-blue-700 px-3 py-1 rounded transition duration-200">
+                            <li
+                                key={item}
+                                className="cursor-pointer hover:bg-blue-700 px-2 py-1 rounded transition duration-200"
+                            >
                                 {item}
                             </li>
                         ))}
                     </ul>
                 </div>
-                <div className="hidden lg:flex space-x-3">
-                    {/* Placeholder untuk item tambahan seperti profil pengguna atau pencarian */}
+                {/* Bagian Kanan: Logo atau Nama Aplikasi */}
+                <div className="text-white text-xl font-bold pr-4">
+                    StatSphere
                 </div>
             </div>
         </nav>
     );
 };
 
-const Toolbar: React.FC = () => {
+const Toolbar: React.FC<{ selectedValue: string }> = ({ selectedValue }) => {
     const tools = [
         { name: 'File', icon: <FaFolder /> },
         { name: 'Save', icon: <FaSave /> },
@@ -54,22 +63,38 @@ const Toolbar: React.FC = () => {
     ];
 
     return (
-        <div className="bg-white p-2 shadow flex space-x-2 overflow-x-auto">
-            {tools.map((tool) => (
-                <button
-                    key={tool.name}
-                    className="flex items-center justify-center text-gray-700 hover:bg-gray-200 p-2 rounded-md transition duration-150"
-                    title={tool.name}
-                >
-                    {tool.icon}
-                </button>
-            ))}
+        <div className="bg-white p-2 shadow flex justify-between items-center">
+            {/* Toolbox */}
+            <div className="flex space-x-2 overflow-x-auto px-3">
+                {tools.map((tool) => (
+                    <button
+                        key={tool.name}
+                        className="flex items-center justify-center text-gray-700 hover:bg-gray-200 p-2 rounded-md transition duration-150"
+                        title={tool.name}
+                        aria-label={tool.name}
+                    >
+                        {tool.icon}
+                    </button>
+                ))}
+            </div>
+            {/* Input untuk menampilkan nilai sel */}
+            <div className="flex items-center space-x-2 pr-5">
+                <span className="text-gray-700 font-medium">Selected Cell:</span>
+                <input
+                    type="text"
+                    value={selectedValue}
+                    readOnly
+                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="A1"
+                />
+            </div>
         </div>
     );
 };
 
 const NavbarToolbar: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [selectedValue, setSelectedValue] = useState<string>('A1'); // Contoh nilai awal
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
@@ -78,7 +103,7 @@ const NavbarToolbar: React.FC = () => {
     return (
         <div>
             <Navbar toggleSidebar={toggleSidebar} />
-            <Toolbar />
+            <Toolbar selectedValue={selectedValue} />
         </div>
     );
 };

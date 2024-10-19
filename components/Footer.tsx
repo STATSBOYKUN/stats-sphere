@@ -1,13 +1,15 @@
 // components/Footer.tsx
-import React, { useState } from 'react';
+import React from 'react';
 import { FaDatabase, FaChartBar } from 'react-icons/fa';
 
-const Footer: React.FC = () => {
-    const [activeView, setActiveView] = useState<'data' | 'variable'>('data');
+interface FooterProps {
+    activeView: 'data' | 'variable';
+    setActiveView: (view: 'data' | 'variable') => void;
+}
 
+export default function Footer({ activeView, setActiveView }: FooterProps) {
     const handleViewChange = (view: 'data' | 'variable') => {
         setActiveView(view);
-        // Tambahkan logika tambahan jika diperlukan untuk mengubah tampilan
         console.log(`Switched to ${view} view`);
     };
 
@@ -39,6 +41,4 @@ const Footer: React.FC = () => {
             </div>
         </footer>
     );
-};
-
-export default Footer;
+}
