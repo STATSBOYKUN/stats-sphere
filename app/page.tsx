@@ -2,7 +2,7 @@
 "use client";
 
 import 'handsontable/dist/handsontable.full.min.css';
-import NavbarToolbar from "@/components/Navbar";
+import Header from "@/components/Header";
 import DataTable from "@/components/DataTable";
 import VariableView from "@/components/VariableTable"; // Pastikan nama impor sesuai
 import Footer from "@/components/Footer";
@@ -20,7 +20,7 @@ export default function Home() {
     return (
         <div className="flex flex-col min-h-screen">
             <header className="sticky top-0 z-50">
-                <NavbarToolbar />
+                <Header />
             </header>
 
             <main className="flex-grow flex">

@@ -42,7 +42,7 @@ const DataTable: React.FC = () => {
     };
 
     return (
-        <div className="flex-grow">
+        <div className="flex-grow z-0">
             <HotTable
                 ref={hotTableComponent}
                 settings={settings}

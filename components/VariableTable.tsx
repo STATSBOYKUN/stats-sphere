@@ -89,7 +89,7 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
     };
 
     return (
-        <div className="flex-grow">
+        <div className="flex-grow z-0">
             <HotTable
                 ref={hotTableComponent}
                 data={settings.data}
