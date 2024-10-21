@@ -1,18 +1,22 @@
-// components/DataTable.tsx
 import React, { useRef } from 'react';
 import { HotTable, HotTableClass } from '@handsontable/react';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
 
+import { registerAllModules } from 'handsontable/registry';
+registerAllModules();
+
 const DataTable: React.FC = () => {
     const hotTableComponent = useRef<HotTableClass>(null);
 
-    const emptyData = Array.from({ length: 50 }, () =>
-        Array.from({ length: 40 }, () => '')
+    const emptyData = Array.from({ length: 100 }, () =>
+        Array.from({ length: 20 }, () => '')
     );
 
+    const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+
     const settings: Handsontable.GridSettings = {
-        data: Handsontable.helper.createSpreadsheetData(50, 40),
+        data: emptyData,
         colHeaders: true,
         rowHeaders: true,
         filters: true,
@@ -22,9 +26,9 @@ const DataTable: React.FC = () => {
         manualRowMove: true,
         manualColumnMove: true,
         copyPaste: {
-            pasteMode: 'overwrite', // Atur mode paste sesuai kebutuhan
+            pasteMode: 'overwrite',
         },
-        contextMenu: true, // Aktifkan menu konteks
+        contextMenu: true,
         licenseKey: 'non-commercial-and-evaluation',
         stretchH: 'all',
         autoColumnSize: {
@@ -32,9 +36,9 @@ const DataTable: React.FC = () => {
         },
         selectionMode: 'multiple',
         undo: true,
-        height: '100%', // Atur tinggi menjadi 100%
-        width: '100%', // Atur lebar menjadi 100%
-        // Anda bisa menambahkan pengaturan lain sesuai kebutuhan
+        height: '100%',
+        width: '100%',
+        language: isRtl ? 'he' : 'en-US',
     };
 
     return (
