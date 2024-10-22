@@ -110,7 +110,21 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                 className="h-full w-full"
             >
                 <HotColumn data="name" type="text" />
-                <HotColumn data="type" type="text" />
+                <HotColumn
+                    data="type"
+                    type="dropdown"
+                    source={[
+                        'Numeric',
+                        'Comma',
+                        'Dot',
+                        'Scientific notation',
+                        'Date',
+                        'Dollar',
+                        'Custom currency',
+                        'String',
+                    ]}
+                    width={50}
+                />
                 <HotColumn data="width" type="numeric" allowEmpty={true} />
                 <HotColumn data="decimals" type="numeric" allowEmpty={true} />
                 <HotColumn data="label" type="text" />
