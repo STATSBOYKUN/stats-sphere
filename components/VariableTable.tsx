@@ -24,10 +24,10 @@ interface VariableData {
 }
 
 interface VariableViewProps {
-    onCellChange: (value: string | number | null) => void;  // Mengizinkan null
+    variables: VariableData[];
 }
 
-export default function VariableView({ onCellChange }: VariableViewProps) {
+export default function VariableView({ variables }: VariableViewProps) {
     const hotTableComponent = useRef<HotTableClass>(null);
 
     const columnHeaders = [
@@ -44,24 +44,10 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
         'Role'
     ];
 
-    const emptyData: VariableData[] = Array.from({ length: 50 }, () => ({
-        name: '',
-        type: '',
-        width: null,        // Atur ke null
-        decimals: null,     // Atur ke null
-        label: '',
-        values: '',
-        missing: '',
-        columns: '',
-        align: '',
-        measure: '',
-        role: '',
-    }));
-
     const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
 
     const settings: Handsontable.GridSettings = {
-        data: emptyData,
+        data: variables,
         colHeaders: columnHeaders,
         rowHeaders: true,
         manualRowMove: true,
@@ -79,13 +65,6 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
         height: '100%',
         width: '100%',
         language: isRtl ? 'he' : 'en-US',
-        afterChange: (changes, source) => {
-            if (changes && source !== 'loadData') {
-                changes.forEach(([row, prop, oldValue, newValue]) => {
-                    onCellChange(newValue);
-                });
-            }
-        },
     };
 
     return (
@@ -106,7 +85,6 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                 undo={settings.undo}
                 width={settings.width}
                 language={settings.language}
-                afterChange={settings.afterChange}
                 className="h-full w-full"
             >
                 <HotColumn data="name" type="text" />
@@ -124,7 +102,7 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                         'String',
                         'Restricted Numeric (integer with leading zeros)',
                     ]}
-                    width={50} // Atur lebar kolom sesuai kebutuhan
+                    width={150}
                 />
                 <HotColumn data="width" type="numeric" allowEmpty={true} />
                 <HotColumn data="decimals" type="numeric" allowEmpty={true} />
@@ -136,13 +114,13 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                     data="align"
                     type="dropdown"
                     source={['left', 'right', 'center']}
-                    width={25} // Atur lebar kolom sesuai kebutuhan
+                    width={100}
                 />
                 <HotColumn
                     data="measure"
                     type="dropdown"
                     source={['nominal', 'ordinal', 'scale']}
-                    width={25} // Atur lebar kolom sesuai kebutuhan
+                    width={100}
                 />
                 <HotColumn
                     data="role"
@@ -155,7 +133,7 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                         'Partition',
                         'Split',
                     ]}
-                    width={25} // Atur lebar kolom sesuai kebutuhan
+                    width={120}
                 />
             </HotTable>
         </div>

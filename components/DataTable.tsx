@@ -1,3 +1,4 @@
+// components/DataTable.tsx
 import React, { useRef } from 'react';
 import { HotTable, HotTableClass } from '@handsontable/react';
 import Handsontable from 'handsontable';
@@ -6,17 +7,21 @@ import 'handsontable/dist/handsontable.full.min.css';
 import { registerAllModules } from 'handsontable/registry';
 registerAllModules();
 
-const DataTable: React.FC = () => {
-    const hotTableComponent = useRef<HotTableClass>(null);
+interface DataTableProps {
+    data: any[][];
+    onCellChange: (
+        changes: Handsontable.CellChange[] | null,
+        source: Handsontable.ChangeSource
+    ) => void;
+}
 
-    const emptyData = Array.from({ length: 100 }, () =>
-        Array.from({ length: 20 }, () => '')
-    );
+const DataTable: React.FC<DataTableProps> = ({ data, onCellChange }) => {
+    const hotTableComponent = useRef<HotTableClass>(null);
 
     const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
 
     const settings: Handsontable.GridSettings = {
-        data: emptyData,
+        data: data,
         colHeaders: true,
         rowHeaders: true,
         filters: true,
@@ -39,6 +44,7 @@ const DataTable: React.FC = () => {
         height: '100%',
         width: '100%',
         language: isRtl ? 'he' : 'en-US',
+        afterChange: onCellChange,
     };
 
     return (
