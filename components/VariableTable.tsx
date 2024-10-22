@@ -122,8 +122,9 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                         'Dollar',
                         'Custom currency',
                         'String',
+                        'Restricted Numeric (integer with leading zeros)',
                     ]}
-                    width={50}
+                    width={50} // Atur lebar kolom sesuai kebutuhan
                 />
                 <HotColumn data="width" type="numeric" allowEmpty={true} />
                 <HotColumn data="decimals" type="numeric" allowEmpty={true} />
@@ -131,9 +132,31 @@ export default function VariableView({ onCellChange }: VariableViewProps) {
                 <HotColumn data="values" type="text" />
                 <HotColumn data="missing" type="text" />
                 <HotColumn data="columns" type="text" />
-                <HotColumn data="align" type="text" />
-                <HotColumn data="measure" type="text" />
-                <HotColumn data="role" type="text" />
+                <HotColumn
+                    data="align"
+                    type="dropdown"
+                    source={['left', 'right', 'center']}
+                    width={25} // Atur lebar kolom sesuai kebutuhan
+                />
+                <HotColumn
+                    data="measure"
+                    type="dropdown"
+                    source={['nominal', 'ordinal', 'scale']}
+                    width={25} // Atur lebar kolom sesuai kebutuhan
+                />
+                <HotColumn
+                    data="role"
+                    type="dropdown"
+                    source={[
+                        'Input',
+                        'Target',
+                        'Both',
+                        'None',
+                        'Partition',
+                        'Split',
+                    ]}
+                    width={25} // Atur lebar kolom sesuai kebutuhan
+                />
             </HotTable>
         </div>
     );
