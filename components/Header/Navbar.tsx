@@ -6,16 +6,13 @@ interface NavbarProps {
     toggleSidebar: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
+export default function Navbar({ toggleSidebar }: NavbarProps) {
     const menuItems = ['File', 'Edit', 'View', 'Data', 'Transform', 'Analyze', 'Graphs', 'Utilities', 'Extensions', 'Window', 'Help'];
 
-    // State to manage dropdown visibility for "File"
     const [isFileDropdownOpen, setIsFileDropdownOpen] = useState(false);
 
-    // Reference to the File menu to handle clicks outside
     const fileMenuRef = useRef<HTMLLIElement>(null);
 
-    // List of sub-items for "File" without ellipses
     const fileSubItems = [
         'New',
         'Open',
@@ -41,7 +38,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
         'Recently Used Files'
     ];
 
-    // Handle clicks outside the dropdown to close it
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (
@@ -61,7 +57,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     return (
         <nav className="bg-gradient-to-r from-blue-500 to-indigo-600 p-2 shadow-md">
             <div className="flex items-center justify-between w-full px-1">
-                {/* Left Section: Sidebar Toggle Button and Menu Items */}
                 <div className="flex items-center">
                     <button
                         onClick={toggleSidebar}
@@ -82,7 +77,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                     >
                                         <div className="flex items-center">
                                             {item}
-                                            {/* Dropdown Icon */}
                                             <svg
                                                 className="inline ml-1 w-3 h-3"
                                                 fill="none"
@@ -100,7 +94,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                                                         key={subItem}
                                                         className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm transition-colors duration-150"
                                                         onClick={() => {
-                                                            // Handle sub-item click if needed
                                                             setIsFileDropdownOpen(false);
                                                         }}
                                                     >
@@ -124,13 +117,10 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                         })}
                     </ul>
                 </div>
-                {/* Right Section: Logo or Application Name */}
                 <div className="text-white text-xl font-bold pr-4">
                     StatSphere
                 </div>
             </div>
         </nav>
     );
-};
-
-export default Navbar;
+}

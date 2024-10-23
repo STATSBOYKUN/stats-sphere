@@ -1,19 +1,18 @@
-// components/VariableView.tsx
-import React, { useRef } from 'react';
+// components/VariableTable.tsx
+import React, { useRef, useEffect, useState } from 'react';
 import "@handsontable/pikaday/css/pikaday.css";
 import { HotTable, HotColumn, HotTableClass } from "@handsontable/react";
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
 
-// Impor dan daftarkan semua modul Handsontable
 import { registerAllModules } from 'handsontable/registry';
 registerAllModules();
 
 interface VariableData {
     name: string;
     type: string;
-    width: number | null;      // Mengizinkan nilai null
-    decimals: number | null;   // Mengizinkan nilai null
+    width: number | null;
+    decimals: number | null;
     label: string;
     values: string;
     missing: string;
@@ -23,12 +22,19 @@ interface VariableData {
     role: string;
 }
 
-interface VariableViewProps {
+interface VariableTableProps {
     variables: VariableData[];
 }
 
-export default function VariableView({ variables }: VariableViewProps) {
+export default function VariableTable({ variables }: VariableTableProps) {
     const hotTableComponent = useRef<HotTableClass>(null);
+    const [isRtl, setIsRtl] = useState(false);
+
+    useEffect(() => {
+        // Safely access document in useEffect to avoid SSR issues
+        const dir = document.documentElement.getAttribute('dir');
+        setIsRtl(dir === 'rtl');
+    }, []);
 
     const columnHeaders = [
         'Name',
@@ -43,8 +49,6 @@ export default function VariableView({ variables }: VariableViewProps) {
         'Measure',
         'Role'
     ];
-
-    const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
 
     const settings: Handsontable.GridSettings = {
         data: variables,

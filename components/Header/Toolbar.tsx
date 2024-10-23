@@ -23,7 +23,7 @@ interface ToolbarProps {
     selectedValue: string;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ selectedValue }) => {
+export default function Toolbar({ selectedValue }: ToolbarProps) {
     const tools = [
         { name: 'Open data', icon: <FaFolderOpen /> },
         { name: 'Save Document', icon: <FaSave /> },
@@ -45,7 +45,6 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedValue }) => {
 
     return (
         <div className="bg-white p-2 shadow flex justify-between items-center">
-            {/* Toolbox */}
             <div className="flex space-x-2 overflow-x-auto px-3">
                 {tools.map((tool) => (
                     <button
@@ -71,6 +70,4 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedValue }) => {
             </div>
         </div>
     );
-};
-
-export default Toolbar;
+}

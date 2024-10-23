@@ -4,7 +4,7 @@
 import 'handsontable/dist/handsontable.full.min.css';
 import Header from "@/components/Header";
 import DataTable from "@/components/DataTable";
-import VariableView from "@/components/VariableTable";
+import VariableTable from "@/components/VariableTable";
 import Footer from "@/components/Footer";
 import React, { useState } from 'react';
 
@@ -112,7 +112,7 @@ export default function Home() {
                     {activeView === 'data' ? (
                         <DataTable data={data} onCellChange={handleDataCellChange} />
                     ) : (
-                        <VariableView variables={variables} />
+                        <VariableTable variables={variables} />
                     )}
                 </div>
             </main>

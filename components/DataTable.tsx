@@ -1,26 +1,32 @@
 // components/DataTable.tsx
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { HotTable, HotTableClass } from '@handsontable/react';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
 
-import { registerAllModules } from 'handsontable/registry';
-registerAllModules();
+interface DataRow {
+    // Definisikan struktur data baris jika diketahui
+    [key: string]: any;
+}
 
 interface DataTableProps {
-    data: any[][];
+    data: DataRow[];
     onCellChange: (
         changes: Handsontable.CellChange[] | null,
         source: Handsontable.ChangeSource
     ) => void;
 }
 
-const DataTable: React.FC<DataTableProps> = ({ data, onCellChange }) => {
+export default function DataTable({ data, onCellChange }: DataTableProps) {
     const hotTableComponent = useRef<HotTableClass>(null);
+    const [isRtl, setIsRtl] = useState<boolean>(false);
 
-    const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+    useEffect(() => {
+        const dir = document.documentElement.getAttribute('dir');
+        setIsRtl(dir === 'rtl');
+    }, []);
 
-    const settings: Handsontable.GridSettings = {
+    const settings: Handsontable.GridSettings = useMemo(() => ({
         data: data,
         colHeaders: true,
         rowHeaders: true,
@@ -41,22 +47,19 @@ const DataTable: React.FC<DataTableProps> = ({ data, onCellChange }) => {
         },
         selectionMode: 'multiple',
         undo: true,
-        height: '100%',
-        width: '100%',
         language: isRtl ? 'he' : 'en-US',
         afterChange: onCellChange,
-    };
+        height: '100%',
+        width: '100%',
+    }), [data, isRtl, onCellChange]);
 
     return (
-        <div className="flex-grow z-0">
+        <div className="flex-grow z-0 h-full w-full">
             <HotTable
                 ref={hotTableComponent}
                 settings={settings}
-                licenseKey="non-commercial-and-evaluation"
                 className="h-full w-full"
             />
         </div>
     );
-};
-
-export default DataTable;
+}

@@ -1,13 +1,14 @@
+// components/Header.tsx
 import React, { useState } from 'react';
 import Navbar from './Header/Navbar';
-import Toolbar from './/Header/Toolbar';
+import Toolbar from './Header/Toolbar';
 
-const Header: React.FC = () => {
+export default function Header() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [selectedValue, setSelectedValue] = useState<string>('A1'); // Contoh nilai awal
+    const [selectedValue, setSelectedValue] = useState<string>('A1');
 
     const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
+        setIsSidebarOpen((prevState) => !prevState);
     };
 
     return (
@@ -16,6 +17,4 @@ const Header: React.FC = () => {
             <Toolbar selectedValue={selectedValue} />
         </div>
     );
-};
-
-export default Header;
+}
