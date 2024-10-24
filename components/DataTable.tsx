@@ -4,20 +4,17 @@
 
 import React, { useMemo, useRef } from 'react';
 import { HotTable } from '@handsontable/react';
-import 'handsontable/dist/handsontable.min.css';
+import Handsontable from 'handsontable';
+import 'handsontable/dist/handsontable.full.min.css';
+import { useDataContext } from '@/contexts/DataContext';
 
 export default function DataTable() {
-    const hotTableComponent = useRef(null);
+    const hotTableRef = useRef<Handsontable | null>(null);
+    const { data, setData } = useDataContext();
 
-    // Initialize empty data: 100 rows x 45 columns
-    const data = useMemo(() => {
-        return Array.from({ length: 100 }, () => Array(45).fill(''));
-    }, []);
-
-    // Generate column headers: A, B, C, ..., AD
     const colHeaders = useMemo(() => {
         const headers = [];
-        for (let i = 0; i < 45; i++) { // Adjusted to 45 to match columns
+        for (let i = 0; i < 45; i++) {
             let column = '';
             let temp = i;
             do {
@@ -29,28 +26,67 @@ export default function DataTable() {
         return headers;
     }, []);
 
-    // Define settings object
-    const settings = useMemo(() => ({
-        licenseKey: 'non-commercial-and-evaluation',
-        data: data,
-        colHeaders: colHeaders,
-        rowHeaders: true,
-        width: '100%',
-        height: '100%',
-        autoWrapRow: true,
-        autoWrapCol: true,
-        dropdownMenu: true,
-        multiColumnSorting: true,
-        filters: true,
-        manualRowMove: true,
-        customBorders: true,
-    }), [data, colHeaders]);
+    const settings = useMemo<Handsontable.GridSettings>(
+        () => ({
+            licenseKey: 'non-commercial-and-evaluation',
+            colHeaders: colHeaders,
+            rowHeaders: true,
+            width: '100%',
+            height: '100%',
+            autoWrapRow: true,
+            autoWrapCol: true,
+            dropdownMenu: true,
+            multiColumnSorting: true,
+            filters: true,
+            manualRowMove: true,
+            customBorders: true,
+            contextMenu: true,
+        }),
+        [colHeaders]
+    );
+
+    const handleAfterChange = (
+        changes: Handsontable.CellChange[] | null,
+        source: Handsontable.ChangeSource
+    ) => {
+        if (source === 'loadData' || !changes) {
+            return;
+        }
+
+        const newData = data.map((row) => [...row]);
+
+        changes.forEach(([row, col, oldValue, newValue]) => {
+            let colIndex: number | null = null;
+
+            if (typeof col === 'number') {
+                colIndex = col;
+            } else if (typeof col === 'string') {
+                colIndex = colHeaders.indexOf(col);
+            } else {
+                console.warn(`Unexpected column type in afterChange: ${typeof col}`);
+            }
+
+            if (colIndex !== null && colIndex >= 0) {
+                newData[row][colIndex] = newValue;
+            } else {
+                console.warn(`Column not found for col: ${col}`);
+            }
+        });
+
+        setData(newData);
+    };
 
     return (
         <div className="flex-grow z-0 h-full w-full">
             <HotTable
-                ref={hotTableComponent}
+                ref={(component) => {
+                    if (component !== null) {
+                        hotTableRef.current = component.hotInstance;
+                    }
+                }}
+                data={data}
                 settings={settings}
+                afterChange={handleAfterChange}
                 className="h-full w-full"
             />
         </div>
