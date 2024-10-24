@@ -5,6 +5,12 @@
 /.pnp
 .pnp.js
 
+# idea
+.idea
+
+# vscode
+.vscode
+
 # testing
 /coverage
 
@@ -33,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# wasm-test
+/wasm-test/node_modules
+/wasm-test/.next
+/wasm-test
