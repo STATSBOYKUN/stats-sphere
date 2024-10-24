@@ -2,20 +2,22 @@
 
 "use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { HotTable } from '@handsontable/react';
 import 'handsontable/dist/handsontable.min.css';
 
 export default function DataTable() {
-    // Inisialisasi data kosong: 100 baris x 45 kolom
+    const hotTableComponent = useRef(null);
+
+    // Initialize empty data: 100 rows x 45 columns
     const data = useMemo(() => {
         return Array.from({ length: 100 }, () => Array(45).fill(''));
     }, []);
 
-    // Menghasilkan header kolom: A, B, C, ..., AD
+    // Generate column headers: A, B, C, ..., AD
     const colHeaders = useMemo(() => {
         const headers = [];
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 45; i++) { // Adjusted to 45 to match columns
             let column = '';
             let temp = i;
             do {
@@ -27,7 +29,7 @@ export default function DataTable() {
         return headers;
     }, []);
 
-    // Definisikan objek settings
+    // Define settings object
     const settings = useMemo(() => ({
         licenseKey: 'non-commercial-and-evaluation',
         data: data,
@@ -45,9 +47,11 @@ export default function DataTable() {
     }), [data, colHeaders]);
 
     return (
-        <div className="flex-grow w-full h-full z-0">
+        <div className="flex-grow z-0 h-full w-full">
             <HotTable
+                ref={hotTableComponent}
                 settings={settings}
+                className="h-full w-full"
             />
         </div>
     );

@@ -6,7 +6,7 @@ import DataTable from '../../components/DataTable';
 
 export default function DataPage() {
     return (
-        <div className="w-full h-screen">
+        <div className="flex-grow w-full flex flex-col">
             <DataTable />
         </div>
     );
