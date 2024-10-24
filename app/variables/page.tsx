@@ -1,12 +1,15 @@
-import React from 'react';
+// app/variables/page.tsx
 
-const MyComponent = () => {
+"use client";
+
+import React, { useState } from 'react';
+import VariableTable from '../../components/VariableTable';
+
+export default function VariablesPage() {
+
     return (
-        <div>
-            <h1>Halo, ini komponen sederhana di Next.js!</h1>
-            <p>Ini adalah contoh halaman komponen.</p>
+        <div className="flex-grow w-full flex flex-col">
+            <VariableTable/>
         </div>
     );
-};
-
-export default MyComponent;
+}
