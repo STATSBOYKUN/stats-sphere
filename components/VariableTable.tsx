@@ -7,7 +7,6 @@ import { HotTable } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
 
-// Register all Handsontable modules
 registerAllModules();
 
 export default function VariableTable() {
@@ -49,7 +48,7 @@ export default function VariableTable() {
         {
             data: 0,
             type: 'text',
-            width: 300, // Lebar kolom Name
+            width: 300,
         },
         {
             data: 1,
@@ -98,7 +97,7 @@ export default function VariableTable() {
         {
             data: 6,
             type: 'text',
-            width: 150, // Lebar kolom Missing
+            width: 150,
         },
         {
             data: 7,
@@ -106,7 +105,7 @@ export default function VariableTable() {
             numericFormat: {
                 pattern: '0',
             },
-            width: 150, // Lebar kolom Columns
+            width: 150,
         },
         {
             data: 8,
@@ -132,7 +131,6 @@ export default function VariableTable() {
         },
     ], []);
 
-    // Define table settings
     const settings = useMemo(() => ({
         licenseKey: 'non-commercial-and-evaluation',
         data: data,
@@ -143,10 +141,6 @@ export default function VariableTable() {
         height: '100%',
         autoWrapRow: true,
         autoWrapCol: true,
-        dropdownMenu: true,
-        filters: true,
-        manualRowMove: true,
-        manualColumnMove: true,
         contextMenu: true,
     }), [data, colHeaders, columns]);
 
