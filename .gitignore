@@ -1,2 +1,11 @@
 # .idea config
 .idea
+
+# node_modules
+node_modules
+
+# wasm-test
+wasm-test
+
+# .next
+.next
