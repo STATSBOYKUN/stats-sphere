@@ -1,15 +1,13 @@
-// components/DataTable.tsx
-
 "use client";
 
 import React, { useMemo, useRef } from 'react';
-import { HotTable } from '@handsontable/react';
-import Handsontable from 'handsontable';
+import {HotTable, HotTableClass} from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.min.css';
 import { useDataContext } from '@/contexts/DataContext';
+import Handsontable from 'handsontable';
 
 export default function DataTable() {
-    const hotTableRef = useRef<Handsontable | null>(null);
+    const hotTableRef = useRef<HotTable | null>(null) as React.MutableRefObject<HotTableClass | null>;
     const { data, setData } = useDataContext();
 
     const colHeaders = useMemo(() => {
@@ -25,25 +23,6 @@ export default function DataTable() {
         }
         return headers;
     }, []);
-
-    const settings = useMemo<Handsontable.GridSettings>(
-        () => ({
-            licenseKey: 'non-commercial-and-evaluation',
-            colHeaders: colHeaders,
-            rowHeaders: true,
-            width: '100%',
-            height: '100%',
-            autoWrapRow: true,
-            autoWrapCol: true,
-            dropdownMenu: true,
-            multiColumnSorting: true,
-            filters: true,
-            manualRowMove: true,
-            customBorders: true,
-            contextMenu: true,
-        }),
-        [colHeaders]
-    );
 
     const handleAfterChange = (
         changes: Handsontable.CellChange[] | null,
@@ -79,13 +58,21 @@ export default function DataTable() {
     return (
         <div className="flex-grow z-0 h-full w-full">
             <HotTable
-                ref={(component) => {
-                    if (component !== null) {
-                        hotTableRef.current = component.hotInstance;
-                    }
-                }}
+                ref={hotTableRef}
                 data={data}
-                settings={settings}
+                colHeaders={colHeaders}
+                rowHeaders={true}
+                width="100%"
+                height="100%"
+                autoWrapRow={true}
+                autoWrapCol={true}
+                dropdownMenu={true}
+                multiColumnSorting={true}
+                filters={true}
+                manualRowMove={true}
+                customBorders={true}
+                contextMenu={true}
+                licenseKey="non-commercial-and-evaluation"
                 afterChange={handleAfterChange}
                 className="h-full w-full"
             />

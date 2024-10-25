@@ -1,5 +1,3 @@
-// contexts/DataContext.tsx
-
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 // Define the shape of your data
@@ -13,27 +11,35 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    // Initialize empty data: 100 rows x 45 columns
-    const [data, setData] = useState<DataRow[]>(() =>
-        Array.from({ length: 100 }, () => Array(45).fill(''))
-    );
+    const [data, setData] = useState<DataRow[] | null>(null);
 
-    // Optional: Data persistence with Local Storage
     useEffect(() => {
-        const storedData = localStorage.getItem('spssData');
-        if (storedData) {
-            try {
-                const parsedData: DataRow[] = JSON.parse(storedData);
-                setData(parsedData);
-            } catch (error) {
-                console.error('Failed to parse stored data:', error);
+        if (typeof window !== 'undefined') {
+            const storedData = localStorage.getItem('spssData');
+            if (storedData) {
+                try {
+                    const parsedData: DataRow[] = JSON.parse(storedData);
+                    setData(parsedData);
+                } catch (error) {
+                    console.error('Failed to parse stored data:', error);
+                    setData(Array.from({ length: 100 }, () => Array(45).fill('')));
+                }
+            } else {
+                setData(Array.from({ length: 100 }, () => Array(45).fill('')));
             }
         }
     }, []);
 
     useEffect(() => {
-        localStorage.setItem('spssData', JSON.stringify(data));
+        if (data !== null && typeof window !== 'undefined') {
+            localStorage.setItem('spssData', JSON.stringify(data));
+        }
     }, [data]);
+
+    if (data === null) {
+        // Anda dapat menampilkan indikator loading di sini jika diperlukan
+        return null;
+    }
 
     return (
         <DataContext.Provider value={{ data, setData }}>

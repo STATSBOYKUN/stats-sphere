@@ -1,9 +1,8 @@
 // hooks/useData.ts
 
 import { useCallback } from 'react';
-import { useDataContext } from '../contexts/DataContext';
+import { useDataContext } from '@/contexts/DataContext';
 
-// Define CellChange and ChangeSource types manually
 type CellChange = [number, number, any, any];
 type ChangeSource = string;
 
