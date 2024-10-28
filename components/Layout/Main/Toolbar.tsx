@@ -1,24 +1,21 @@
+// components/Layout/Main/Toolbar.tsx
 "use client";
 
 import React from 'react';
 import {
-    FaFolderOpen,
-    FaSave,
-    FaPrint,
-    FaHistory,
-    FaUndo,
-    FaRedo,
-    FaUserTie,
-    FaProjectDiagram,
-    FaSlidersH,
-    FaChartBar,
-    FaSearch,
-    FaColumns,
-    FaCheckSquare,
-    FaTags,
-    FaLayerGroup,
-    FaTools,
-} from 'react-icons/fa';
+    FolderOpen,
+    Save,
+    Printer,
+    History,
+    Undo,
+    Redo,
+    Locate,
+    Variable,
+    Search,
+    TableRowsSplit,
+} from 'lucide-react';
+
+import { Input } from "@/components/ui/input";
 
 interface ToolbarProps {
     selectedValue: string;
@@ -26,31 +23,26 @@ interface ToolbarProps {
 
 export default function Toolbar({ selectedValue }: ToolbarProps) {
     const tools = [
-        { name: 'Open data', icon: <FaFolderOpen /> },
-        { name: 'Save Document', icon: <FaSave /> },
-        { name: 'Print', icon: <FaPrint /> },
-        { name: 'Recall', icon: <FaHistory /> },
-        { name: 'Undo', icon: <FaUndo /> },
-        { name: 'Redo', icon: <FaRedo /> },
-        { name: 'Go to Case', icon: <FaUserTie /> },
-        { name: 'Go to Variable', icon: <FaProjectDiagram /> },
-        { name: 'Variable', icon: <FaSlidersH /> },
-        { name: 'Run Descriptive Statistic', icon: <FaChartBar /> },
-        { name: 'Find', icon: <FaSearch /> },
-        { name: 'Split File', icon: <FaColumns /> },
-        { name: 'Select Cases', icon: <FaCheckSquare /> },
-        { name: 'Value Labels', icon: <FaTags /> },
-        { name: 'Use Variable sets', icon: <FaLayerGroup /> },
-        { name: 'Customized toolbar', icon: <FaTools /> },
+        { name: 'Open Data', icon: <FolderOpen size={20} /> },
+        { name: 'Save Document', icon: <Save size={20} /> },
+        { name: 'Print', icon: <Printer size={20} /> },
+        { name: 'History', icon: <History size={20} /> },
+        { name: 'Undo', icon: <Undo size={20} /> },
+        { name: 'Redo', icon: <Redo size={20} /> },
+        { name: 'Locate', icon: <Locate size={20} /> },
+        { name: 'Variable', icon: <Variable size={20} /> },
+        { name: 'Search', icon: <Search size={20} /> },
+        { name: 'Split File', icon: <TableRowsSplit size={20} /> },
     ];
 
     return (
-        <div className="bg-white p-2 shadow flex justify-between items-center">
-            <div className="flex space-x-2 overflow-x-auto px-3">
+        <div className="bg-white px-4 pb-2 shadow flex justify-between items-center">
+            {/* Toolbar Buttons */}
+            <div className="flex space-x-2 overflow-x-auto ">
                 {tools.map((tool) => (
                     <button
                         key={tool.name}
-                        className="flex items-center justify-center text-gray-700 hover:bg-gray-200 p-2 rounded-md transition duration-150"
+                        className="flex items-center justify-center text-gray-700 hover:bg-gray-200 px-2 rounded-md transition duration-150"
                         title={tool.name}
                         aria-label={tool.name}
                     >
@@ -59,14 +51,14 @@ export default function Toolbar({ selectedValue }: ToolbarProps) {
                 ))}
             </div>
 
-            <div className="flex items-center space-x-2 pr-5">
-                <span className="text-gray-700 font-medium">Selected Cell:</span>
-                <input
+            {/* Input Field */}
+            <div className="flex items-center space-x-2">
+                <Input
                     type="text"
                     value={selectedValue}
                     readOnly
-                    className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="A1"
+                    className="w-96"
                 />
             </div>
         </div>

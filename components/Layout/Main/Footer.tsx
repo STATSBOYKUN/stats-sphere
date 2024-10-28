@@ -1,37 +1,47 @@
 // components/Layout/Main/Footer.tsx
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FaDatabase, FaChartBar } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs";
 
 export default function Footer() {
     const pathname = usePathname();
+    const router = useRouter();
 
-    const activeView = pathname.startsWith('/data') ? 'data' :
-        pathname.startsWith('/variables') ? 'variable' : '';
+    // Tentukan tab aktif berdasarkan pathname saat ini
+    const [activeTab, setActiveTab] = useState<string>('data');
+
+    useEffect(() => {
+        if (pathname.startsWith('/data')) {
+            setActiveTab('data');
+        } else if (pathname.startsWith('/variable')) {
+            setActiveTab('variable');
+        } else if (pathname.startsWith('/result')) {
+            setActiveTab('result');
+        } else {
+            setActiveTab('data'); // Default tab
+        }
+    }, [pathname]);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        router.push(`/${value}`);
+    };
 
     return (
-        <footer className="bg-gray-800 p-3 shadow-inner">
-            <div className="container mx-auto flex justify-center items-center space-x-4">
-                <Link href="/data" className={`flex items-center space-x-2 px-4 py-2 rounded-full transition duration-200 ${
-                    activeView === 'data'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}>
-                    <FaDatabase />
-                    <span className="text-sm">Data View</span>
-                </Link>
-                <Link href="/variables" className={`flex items-center space-x-2 px-4 py-2 rounded-full transition duration-200 ${
-                    activeView === 'variable'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}>
-                    <FaChartBar />
-                    <span className="text-sm">Variable View</span>
-                </Link>
-            </div>
+        <footer>
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="py-2">
+                <TabsList className="space-x-2">
+                    <TabsTrigger value="data">Data View</TabsTrigger>
+                    <TabsTrigger value="variable">Variable View</TabsTrigger>
+                    <TabsTrigger value="result">Result View</TabsTrigger>
+                </TabsList>
+            </Tabs>
         </footer>
     );
 }

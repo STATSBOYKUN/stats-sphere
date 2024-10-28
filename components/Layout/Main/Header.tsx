@@ -15,7 +15,7 @@ export default function Header() {
 
     return (
         <div>
-            <Navbar toggleSidebar={toggleSidebar} />
+            <Navbar />
             <Toolbar selectedValue={selectedValue} />
         </div>
     );
