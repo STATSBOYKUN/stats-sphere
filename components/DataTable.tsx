@@ -26,6 +26,7 @@ export default function DataTable() {
 
     useEffect(() => {
         loadData().then(r => r);
+        // @ts-ignore
         loadVariables().then(r => r);
     }, [loadData, loadVariables]);
 

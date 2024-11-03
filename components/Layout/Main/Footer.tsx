@@ -13,7 +13,6 @@ export default function Footer() {
     const pathname = usePathname();
     const router = useRouter();
 
-    // Tentukan tab aktif berdasarkan pathname saat ini
     const [activeTab, setActiveTab] = useState<string>('data');
 
     useEffect(() => {

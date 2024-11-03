@@ -6,7 +6,6 @@ interface OpenFileModalProps {
 
 const SaveFileModal: React.FC<OpenFileModalProps> = ({ onClose }) => {
     const handleOpen = () => {
-        // Logika untuk membuka file
         onClose();
     };
 

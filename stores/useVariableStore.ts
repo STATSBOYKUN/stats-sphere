@@ -77,7 +77,7 @@ export const useVariableStore = create<VariableStoreState>()(
                         label: '',
                         values: '',
                         missing: '',
-                        columns: 0,
+                        columns: '',
                         align: '',
                         measure: '',
                     });

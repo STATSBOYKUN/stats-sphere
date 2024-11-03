@@ -50,6 +50,7 @@ export default function VariableTable() {
 
         changes.forEach(([row, prop, oldValue, newValue]) => {
             if (newValue !== oldValue) {
+                // @ts-ignore
                 const fieldIndex = typeof prop === 'number' ? prop : parseInt(prop);
                 const fieldName = [
                     'name',

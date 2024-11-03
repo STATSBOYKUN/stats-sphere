@@ -6,7 +6,6 @@ interface OpenFileModalProps {
 
 const ExportDataModal: React.FC<OpenFileModalProps> = ({ onClose }) => {
     const handleOpen = () => {
-        // Logika untuk membuka file
         onClose();
     };
 

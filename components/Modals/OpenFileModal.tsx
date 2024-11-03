@@ -29,7 +29,6 @@ const OpenFileModal: React.FC<OpenFileModalProps> = ({ onClose }) => {
 
     const handleOpen = () => {
         if (selectedFile) {
-            // Logic to process the selected file
             console.log('Opening file:', selectedFile.name);
         }
         onClose();
