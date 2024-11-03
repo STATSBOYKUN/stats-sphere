@@ -13,7 +13,7 @@ export interface VariableRow {
     label: string;
     values: string;
     missing: string;
-    columns: string;
+    columns: number;
     align: string;
     measure: string;
 }
@@ -22,67 +22,50 @@ interface VariableStoreState {
     variables: VariableRow[];
     setVariables: (variables: VariableRow[]) => void;
     updateVariable: (rowIndex: number, field: keyof VariableRow, value: any) => void;
+    addVariable: (variable: VariableRow) => Promise<void>;
+    getVariableByColumnIndex: (columnIndex: number) => VariableRow | undefined;
     loadVariables: () => Promise<void>;
 }
 
-const totalVariables = 45; // Jumlah kolom dalam tabel data
+const totalVariables = 45;
 
 export const useVariableStore = create<VariableStoreState>()(
     devtools((set, get) => ({
-        variables: Array.from({ length: totalVariables }, (_, index) => ({
-            columnIndex: index,
-            name: '',
-            type: '',
-            width: 0,
-            decimals: 0,
-            label: '',
-            values: '',
-            missing: '',
-            columns: '',
-            align: '',
-            measure: '',
-        })),
+        variables: [],
         setVariables: (variables) => set({ variables }),
         updateVariable: async (rowIndex, field, value) => {
             const variables = get().variables.map((variable) => ({ ...variable }));
+            // @ts-ignore
             variables[rowIndex][field] = value;
             set({ variables });
 
-            // Update variable in Dexie.js
             try {
                 const variableToUpdate = variables[rowIndex];
+                // @ts-ignore
                 await db.variables.put(variableToUpdate);
             } catch (error) {
                 console.error('Failed to update variable in Dexie:', error);
             }
         },
+        addVariable: async (variable) => {
+            const variables = [...get().variables, variable];
+            set({ variables });
+
+            try {
+                // @ts-ignore
+                await db.variables.add(variable);
+            } catch (error) {
+                console.error('Failed to add variable to Dexie:', error);
+            }
+        },
+        getVariableByColumnIndex: (columnIndex) => {
+            return get().variables.find((variable) => variable.columnIndex === columnIndex);
+        },
         loadVariables: async () => {
             try {
                 const variablesFromDb = await db.variables.orderBy('columnIndex').toArray();
-                let variables = variablesFromDb;
-
-                // Jika data dari database kurang dari totalVariables, tambahkan baris kosong
-                if (variables.length < totalVariables) {
-                    const emptyVariables = Array.from(
-                        { length: totalVariables - variables.length },
-                        (_, index) => ({
-                            columnIndex: variables.length + index,
-                            name: '',
-                            type: '',
-                            width: 0,
-                            decimals: 0,
-                            label: '',
-                            values: '',
-                            missing: '',
-                            columns: '',
-                            align: '',
-                            measure: '',
-                        })
-                    );
-                    variables = variables.concat(emptyVariables);
-                }
-
-                set({ variables });
+                // @ts-ignore
+                set({ variables: variablesFromDb });
             } catch (error) {
                 console.error('Failed to fetch variables from Dexie:', error);
             }

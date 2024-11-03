@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import db from '@/lib/db';
 
-type DataRow = string[]; // Each row is an array of strings
+type DataRow = string[];
 
 interface DataStoreState {
     data: DataRow[];
@@ -25,7 +25,6 @@ export const useDataStore = create<DataStoreState>()(
             newData[row][col] = value;
             set({ data: newData });
 
-            // Update the cell in Dexie.js
             try {
                 await db.cells.put({ x: col, y: row, value });
             } catch (error) {

@@ -37,11 +37,11 @@ class MyDatabase extends Dexie {
     variables!: Table<Variable, number>;
 
     constructor() {
-        super('MyDatabase');
+        super('Statify');
 
         this.version(2).stores({
             coordinates: '++id, [x+y], x, y, isiData',
-            cells: '[x+y], x, y, value', // Menggunakan [x+y] sebagai primary key
+            cells: '[x+y], x, y, value',
             variables: '++id, columnIndex, name, type, width, decimals, label, values, missing, columns, align, measure'
         });
 
