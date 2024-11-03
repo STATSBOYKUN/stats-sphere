@@ -16,8 +16,9 @@ export interface Cell {
     value: string;
 }
 
-export interface VariableTable {
+export interface Variable {
     id?: number;
+    columnIndex: number; // Index kolom yang diwakili oleh variabel ini
     name: string;
     type: string;
     width: number;
@@ -32,16 +33,16 @@ export interface VariableTable {
 
 class MyDatabase extends Dexie {
     coordinates!: Table<Coordinate, number>;
-    cells!: Table<Cell, [number, number]>; // Menggunakan [x, y] sebagai primary key
-    variables!: Table<VariableTable, number>;
+    cells!: Table<Cell, [number, number]>; // Menggunakan [x+y] sebagai primary key
+    variables!: Table<Variable, number>;
 
     constructor() {
         super('MyDatabase');
 
-        this.version(1).stores({
+        this.version(2).stores({
             coordinates: '++id, [x+y], x, y, isiData',
             cells: '[x+y], x, y, value', // Menggunakan [x+y] sebagai primary key
-            variables: '++id, name, type, width, decimals, label, values, missing, columns, align, measure'
+            variables: '++id, columnIndex, name, type, width, decimals, label, values, missing, columns, align, measure'
         });
 
         this.coordinates = this.table('coordinates');

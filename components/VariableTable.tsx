@@ -2,32 +2,42 @@
 
 "use client";
 
-import React, { useMemo, useRef } from 'react';
-import { HotTable } from '@handsontable/react';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { HotTable, HotTableClass } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
+import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
+import Handsontable from 'handsontable';
 
 registerAllModules();
 
 export default function VariableTable() {
-    const hotTableComponent = useRef(null);
+    const hotTableRef = useRef<HotTableClass | null>(null);
 
-    // Initialize data: 45 rows with default empty values
+    const variables = useVariableStore((state) => state.variables);
+    const updateVariable = useVariableStore((state) => state.updateVariable);
+    const loadVariables = useVariableStore((state) => state.loadVariables);
+
+    useEffect(() => {
+        // Memuat data variabel dari Dexie.js saat komponen mount
+        loadVariables();
+    }, [loadVariables]);
+
+    // Transform variables into data format for Handsontable
     const data = useMemo(() => {
-        const defaultRow = [
-            '', // Name
-            '', // Type
-            '', // Width
-            '', // Decimals
-            '', // Label
-            '', // Values
-            '', // Missing
-            '', // Columns
-            '', // Align
-            ''  // Measure
-        ];
-        return Array.from({ length: 45 }, () => [...defaultRow]);
-    }, []);
+        return variables.map((variable) => [
+            variable.name,
+            variable.type,
+            variable.width,
+            variable.decimals,
+            variable.label,
+            variable.values,
+            variable.missing,
+            variable.columns,
+            variable.align,
+            variable.measure,
+        ]);
+    }, [variables]);
 
     // Define column headers
     const colHeaders = useMemo(() => [
@@ -40,7 +50,7 @@ export default function VariableTable() {
         'Missing',
         'Columns',
         'Align',
-        'Measure'
+        'Measure',
     ], []);
 
     // Define columns configuration with width
@@ -62,7 +72,7 @@ export default function VariableTable() {
                 'Dollar',
                 'Custom currency',
                 'String',
-                'Restricted Numeric (integer with leading zeros)'
+                'Restricted Numeric (integer with leading zeros)',
             ],
             strict: true,
             allowInvalid: false,
@@ -101,10 +111,7 @@ export default function VariableTable() {
         },
         {
             data: 7,
-            type: 'numeric',
-            numericFormat: {
-                pattern: '0',
-            },
+            type: 'text',
             width: 150,
         },
         {
@@ -113,7 +120,7 @@ export default function VariableTable() {
             source: [
                 'Left',
                 'Right',
-                'Center'
+                'Center',
             ],
             width: 150,
         },
@@ -123,13 +130,42 @@ export default function VariableTable() {
             source: [
                 'Scale',
                 'Ordinal',
-                'Nominal'
+                'Nominal',
             ],
             strict: true,
             allowInvalid: false,
             width: 150,
         },
     ], []);
+
+    const handleAfterChange = (
+        changes: Handsontable.CellChange[] | null,
+        source: Handsontable.ChangeSource
+    ) => {
+        if (source === 'loadData' || !changes) {
+            return;
+        }
+
+        changes.forEach(([row, prop, oldValue, newValue]) => {
+            if (newValue !== oldValue) {
+                const fieldIndex = typeof prop === 'number' ? prop : parseInt(prop);
+                const fieldName = [
+                    'name',
+                    'type',
+                    'width',
+                    'decimals',
+                    'label',
+                    'values',
+                    'missing',
+                    'columns',
+                    'align',
+                    'measure',
+                ][fieldIndex] as keyof VariableRow;
+
+                updateVariable(row, fieldName, newValue);
+            }
+        });
+    };
 
     const settings = useMemo(() => ({
         licenseKey: 'non-commercial-and-evaluation',
@@ -142,12 +178,13 @@ export default function VariableTable() {
         autoWrapRow: true,
         autoWrapCol: true,
         contextMenu: true,
+        afterChange: handleAfterChange,
     }), [data, colHeaders, columns]);
 
     return (
         <div className="flex-grow z-0 h-full w-full">
             <HotTable
-                ref={hotTableComponent}
+                ref={hotTableRef}
                 settings={settings}
                 className="h-full w-full"
             />

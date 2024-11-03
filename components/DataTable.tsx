@@ -2,15 +2,23 @@
 
 "use client";
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { HotTable, HotTableClass } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.min.css';
-import { useData } from '@/hooks/useData';
+import { useDataStore } from '@/stores/useDataStore';
 import Handsontable from 'handsontable';
 
 export default function DataTable() {
     const hotTableRef = useRef<HotTableClass | null>(null);
-    const { data, updateData } = useData();
+
+    const data = useDataStore((state) => state.data);
+    const updateCell = useDataStore((state) => state.updateCell);
+    const loadData = useDataStore((state) => state.loadData);
+
+    useEffect(() => {
+        // Memuat data dari Dexie.js saat komponen mount
+        loadData();
+    }, [loadData]);
 
     const colHeaders = useMemo(() => {
         const headers = [];
@@ -34,7 +42,11 @@ export default function DataTable() {
             return;
         }
 
-        updateData(changes, source);
+        changes.forEach(([row, col, oldValue, newValue]) => {
+            if (newValue !== oldValue) {
+                updateCell(row, col, newValue as string);
+            }
+        });
     };
 
     return (
