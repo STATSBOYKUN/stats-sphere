@@ -1,3 +1,5 @@
+// contexts/ModalContext.tsx
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, FC } from 'react';
@@ -9,30 +11,43 @@ export enum ModalType {
     ExportData = 'exportData',
 }
 
+interface ModalInstance {
+    type: ModalType;
+    props?: any;
+}
+
 interface ModalContextProps {
-    modalType: ModalType | null;
-    openModal: (type: ModalType) => void;
+    modals: ModalInstance[];
+    openModal: (type: ModalType, props?: any) => void;
     closeModal: () => void;
+    closeAllModals: () => void;
 }
 
 export const ModalContext = createContext<ModalContextProps | undefined>(undefined);
 
-// ModalProvider yang membungkus aplikasi
 export const ModalProvider: FC<{ children: ReactNode }> = ({ children }) => {
-    const [modalType, setModalType] = useState<ModalType | null>(null);
+    const [modals, setModals] = useState<ModalInstance[]>([]);
 
-    const openModal = (type: ModalType) => setModalType(type);
-    const closeModal = () => setModalType(null);
+    const openModal = (type: ModalType, props?: any) => {
+        setModals((prev) => [...prev, { type, props }]);
+    };
+
+    const closeModal = () => {
+        setModals((prev) => prev.slice(0, -1));
+    };
+
+    const closeAllModals = () => {
+        setModals([]);
+    };
 
     return (
-        <ModalContext.Provider value={{ modalType, openModal, closeModal }}>
+        <ModalContext.Provider value={{ modals, openModal, closeModal, closeAllModals }}>
             {children}
-            <ModalContainer /> {/* Tambahkan ModalContainer di sini */}
+            <ModalContainer />
         </ModalContext.Provider>
     );
 };
 
-// Custom hook untuk menggunakan context
 export const useModal = (): ModalContextProps => {
     const context = useContext(ModalContext);
     if (!context) {

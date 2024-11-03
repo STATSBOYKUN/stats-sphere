@@ -1,40 +1,45 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+// contexts/DataContext.tsx
 
-// Define the shape of your data
-type DataRow = string[]; // Each row is an array of strings
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import db from '@/lib/db';
+
+type DataRowType = string[]; // Each row is an array of strings
 
 interface DataContextType {
-    data: DataRow[];
-    setData: React.Dispatch<React.SetStateAction<DataRow[]>>;
+    data: DataRowType[];
+    setData: React.Dispatch<React.SetStateAction<DataRowType[]>>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [data, setData] = useState<DataRow[] | null>(null);
+    const [data, setData] = useState<DataRowType[] | null>(null);
+    const totalRows = 100; // Jumlah baris yang diinginkan
+    const totalCols = 45;  // Jumlah kolom yang diinginkan
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storedData = localStorage.getItem('spssData');
-            if (storedData) {
-                try {
-                    const parsedData: DataRow[] = JSON.parse(storedData);
-                    setData(parsedData);
-                } catch (error) {
-                    console.error('Failed to parse stored data:', error);
-                    setData(Array.from({ length: 100 }, () => Array(45).fill('')));
-                }
-            } else {
-                setData(Array.from({ length: 100 }, () => Array(45).fill('')));
+        const fetchData = async () => {
+            try {
+                const cells = await db.cells.toArray();
+                // Buat matriks data dengan ukuran yang konsisten
+                const dataMatrix = Array.from({ length: totalRows }, () => Array(totalCols).fill(''));
+
+                cells.forEach(cell => {
+                    if (cell.y < totalRows && cell.x < totalCols) {
+                        dataMatrix[cell.y][cell.x] = cell.value;
+                    }
+                });
+
+                setData(dataMatrix);
+            } catch (error) {
+                console.error('Failed to fetch data from Dexie:', error);
+                const initialData = Array.from({ length: totalRows }, () => Array(totalCols).fill(''));
+                setData(initialData);
             }
-        }
-    }, []);
+        };
 
-    useEffect(() => {
-        if (data !== null && typeof window !== 'undefined') {
-            localStorage.setItem('spssData', JSON.stringify(data));
-        }
-    }, [data]);
+        fetchData();
+    }, []);
 
     if (data === null) {
         // Anda dapat menampilkan indikator loading di sini jika diperlukan

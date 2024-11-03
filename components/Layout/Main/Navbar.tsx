@@ -35,7 +35,6 @@ const Navbar: React.FC = () => {
                                     <MenubarItem onClick={() => openModal(ModalType.OpenFile)}>Data</MenubarItem>
                                     <MenubarItem>Syntax</MenubarItem>
                                     <MenubarItem>Output</MenubarItem>
-                                    <MenubarItem>Script</MenubarItem>
                                     <MenubarSub>
                                         <MenubarSubTrigger>Script</MenubarSubTrigger>
                                         <MenubarSubContent>
@@ -49,11 +48,10 @@ const Navbar: React.FC = () => {
                             <MenubarSub>
                                 <MenubarSubTrigger>Import Data</MenubarSubTrigger>
                                 <MenubarSubContent>
-                                    <MenubarItem>Data...</MenubarItem>
-                                    <MenubarItem>Internet Data</MenubarItem>
-                                    <MenubarItem>Syntax...</MenubarItem>
-                                    <MenubarItem>Output...</MenubarItem>
-                                    <MenubarItem>Script...</MenubarItem>
+                                    <MenubarItem>Excel...</MenubarItem>
+                                    <MenubarItem>CSV Data...</MenubarItem>
+                                    <MenubarItem>Text Data...</MenubarItem>
+                                    <MenubarItem>Sass...</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
                             <MenubarSeparator />

@@ -1,30 +1,33 @@
+// components/modals/ModalContainer.tsx
+
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { useModal, ModalType } from '@/contexts/ModalContext';
 import OpenFileModal from './OpenFileModal';
 import SaveFileModal from './SaveFileModal';
 import ExportDataModal from './ExportDataModal';
-// Import modal lainnya di sini
 
 const ModalContainer: React.FC = () => {
-    const { modalType, closeModal } = useModal();
+    const { modals, closeModal } = useModal();
 
-    if (!modalType) return null;
+    if (modals.length === 0) return null;
+
+    const currentModal = modals[modals.length - 1];
 
     const renderModal = () => {
-        switch (modalType) {
+        switch (currentModal.type) {
             case ModalType.OpenFile:
-                return <OpenFileModal onClose={closeModal} />;
+                return <OpenFileModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.SaveFile:
-                return <SaveFileModal onClose={closeModal} />;
+                return <SaveFileModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ExportData:
-                return <ExportDataModal onClose={closeModal} />;
-            // Tambahkan case untuk modal lainnya di sini
+                return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }
     };
 
-    return (
+    return ReactDOM.createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="bg-white rounded-lg shadow-lg p-6 relative">
                 <button
@@ -36,7 +39,8 @@ const ModalContainer: React.FC = () => {
                 </button>
                 {renderModal()}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

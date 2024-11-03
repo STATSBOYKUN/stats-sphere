@@ -1,14 +1,16 @@
+// components/DataTable.tsx
+
 "use client";
 
 import React, { useMemo, useRef } from 'react';
-import {HotTable, HotTableClass} from '@handsontable/react';
+import { HotTable, HotTableClass } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.min.css';
-import { useDataContext } from '@/contexts/DataContext';
+import { useData } from '@/hooks/useData';
 import Handsontable from 'handsontable';
 
 export default function DataTable() {
-    const hotTableRef = useRef<HotTable | null>(null) as React.MutableRefObject<HotTableClass | null>;
-    const { data, setData } = useDataContext();
+    const hotTableRef = useRef<HotTableClass | null>(null);
+    const { data, updateData } = useData();
 
     const colHeaders = useMemo(() => {
         const headers = [];
@@ -32,27 +34,7 @@ export default function DataTable() {
             return;
         }
 
-        const newData = data.map((row) => [...row]);
-
-        changes.forEach(([row, col, oldValue, newValue]) => {
-            let colIndex: number | null = null;
-
-            if (typeof col === 'number') {
-                colIndex = col;
-            } else if (typeof col === 'string') {
-                colIndex = colHeaders.indexOf(col);
-            } else {
-                console.warn(`Unexpected column type in afterChange: ${typeof col}`);
-            }
-
-            if (colIndex !== null && colIndex >= 0) {
-                newData[row][colIndex] = newValue;
-            } else {
-                console.warn(`Column not found for col: ${col}`);
-            }
-        });
-
-        setData(newData);
+        updateData(changes, source);
     };
 
     return (
