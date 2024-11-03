@@ -14,7 +14,7 @@ import {
     MenubarSubContent,
 } from "@/components/ui/menubar";
 
-import {ModalType, useModal} from "@/contexts/ModalContext";
+import { ModalType, useModal } from "@/hooks/useModal";
 
 const Navbar: React.FC = () => {
     const { openModal } = useModal();
@@ -22,9 +22,7 @@ const Navbar: React.FC = () => {
     return (
         <nav>
             <div className="flex items-center justify-between w-full px-2 py-2">
-                {/* Menubar shadcn */}
                 <Menubar className="ml-0 hidden lg:flex">
-                    {/* Menu File */}
                     <MenubarMenu>
                         <MenubarTrigger>File</MenubarTrigger>
                         <MenubarContent>

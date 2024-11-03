@@ -24,7 +24,7 @@ interface VariableStoreState {
     updateVariable: (rowIndex: number, field: keyof VariableRow, value: any) => void;
     addVariable: (variable: VariableRow) => Promise<void>;
     getVariableByColumnIndex: (columnIndex: number) => VariableRow | undefined;
-    loadVariables: () => Promise<void>;
+    loadVariables: (totalVariables: number) => Promise<void>; // Accept totalVariables
 }
 
 const totalVariables = 45;
@@ -61,11 +61,30 @@ export const useVariableStore = create<VariableStoreState>()(
         getVariableByColumnIndex: (columnIndex) => {
             return get().variables.find((variable) => variable.columnIndex === columnIndex);
         },
-        loadVariables: async () => {
+        loadVariables: async (totalVariables) => {
             try {
                 const variablesFromDb = await db.variables.orderBy('columnIndex').toArray();
+                const variables = variablesFromDb.slice();
+
+                for (let i = variables.length; i < totalVariables; i++) {
+                    // @ts-ignore
+                    variables.push({
+                        columnIndex: i,
+                        name: '',
+                        type: '',
+                        width: 0,
+                        decimals: 0,
+                        label: '',
+                        values: '',
+                        missing: '',
+                        columns: 0,
+                        align: '',
+                        measure: '',
+                    });
+                }
+
                 // @ts-ignore
-                set({ variables: variablesFromDb });
+                set({ variables });
             } catch (error) {
                 console.error('Failed to fetch variables from Dexie:', error);
             }
