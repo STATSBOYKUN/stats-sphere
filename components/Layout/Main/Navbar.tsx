@@ -232,7 +232,7 @@ const Navbar: React.FC = () => {
 
                 {/* Logo atau Nama Aplikasi */}
                 <div className="text-xl font-bold">
-                    UmaruStatistik
+                    Statify
                 </div>
             </div>
         </nav>
