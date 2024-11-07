@@ -181,7 +181,7 @@ const Navbar: React.FC = () => {
                     <MenubarMenu>
                         <MenubarTrigger>Transform</MenubarTrigger>
                         <MenubarContent>
-                            <MenubarItem>Compute Variable...</MenubarItem>
+                            <MenubarItem onClick={() => openModal(ModalType.ComputeVariable)}>Compute Variable...</MenubarItem>
                             <MenubarItem>Programmability Transformation...</MenubarItem>
                             <MenubarItem>Count Values within Cases...</MenubarItem>
                             <MenubarItem>Shift Values...</MenubarItem>
@@ -232,7 +232,7 @@ const Navbar: React.FC = () => {
 
                 {/* Logo atau Nama Aplikasi */}
                 <div className="text-xl font-bold">
-                    StatSphere
+                    UmaruStatistik
                 </div>
             </div>
         </nav>

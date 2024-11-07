@@ -6,6 +6,7 @@ export enum ModalType {
     OpenFile = 'openFile',
     SaveFile = 'saveFile',
     ExportData = 'exportData',
+    ComputeVariable = 'computeVariable',
 }
 
 interface ModalInstance {

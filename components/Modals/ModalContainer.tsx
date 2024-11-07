@@ -6,6 +6,7 @@ import React from 'react';
 import { useModal, ModalType } from '@/hooks/useModal';
 import OpenFileModal from './OpenFileModal';
 import SaveFileModal from './SaveFileModal';
+import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
 import ExportDataModal from './ExportDataModal';
 import { Dialog } from '@/components/ui/dialog';
 
@@ -24,6 +25,8 @@ const ModalContainer: React.FC = () => {
                 return <SaveFileModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ExportData:
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ComputeVariable:
+                return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }
