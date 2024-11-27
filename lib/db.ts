@@ -49,9 +49,12 @@ class MyDatabase extends Dexie {
         this.cells = this.table('cells');
         this.variables = this.table('variables');
 
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-        });
+        if (typeof window !== "undefined") {
+            window.addEventListener('unhandledrejection', (event) => {
+                console.error('Unhandled promise rejection:', event.reason);
+            });
+        }
+
     }
 }
 
