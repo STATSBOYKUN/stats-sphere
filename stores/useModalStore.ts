@@ -7,6 +7,7 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
+    ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling'
 }
 
 interface ModalInstance {

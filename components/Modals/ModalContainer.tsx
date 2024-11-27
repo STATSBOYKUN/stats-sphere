@@ -9,6 +9,7 @@ import SaveFileModal from './SaveFileModal';
 import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
 import ExportDataModal from './ExportDataModal';
 import { Dialog } from '@/components/ui/dialog';
+import ModalAutomaticLinearModeling from '@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling'
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -27,6 +28,8 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalAutomaticLinearModeling:
+                return <ModalAutomaticLinearModeling onClose={closeModal} {...currentModal.props}/>;
             default:
                 return null;
         }

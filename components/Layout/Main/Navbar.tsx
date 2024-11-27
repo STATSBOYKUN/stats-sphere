@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
                                 <MenubarSubTrigger>Open</MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={() => openModal(ModalType.OpenFile)}>Data</MenubarItem>
-                                    <MenubarItem>Syntax</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalAutomaticLinearModeling)}>Syntax</MenubarItem>
                                     <MenubarItem>Output</MenubarItem>
                                     <MenubarSub>
                                         <MenubarSubTrigger>Script</MenubarSubTrigger>
