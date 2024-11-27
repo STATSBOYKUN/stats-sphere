@@ -7,6 +7,12 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
+
+    // Time Series
+    Smoothing = 'smoothing', //Time Series Smoothing
+    Decomposition = 'decomposition', //Time Series Decomposition
+    StationaryTest = 'stationaryTest', //Time Series Stationary Test
+    CreateModel = 'createModel', //Time Series Create Model
 }
 
 interface ModalInstance {
