@@ -4,10 +4,12 @@
 
 import React from 'react';
 import { useModal, ModalType } from '@/hooks/useModal';
-import OpenFileModal from './OpenFileModal';
-import SaveFileModal from './SaveFileModal';
-import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
-import ExportDataModal from './ExportDataModal';
+import OpenFileModal from './File/OpenFileModal';
+import SaveFileModal from './File/SaveFileModal';
+import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
+import ExportDataModal from './File/ExportDataModal';
+import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/FrequenciesModal";
+import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from '@/components/ui/dialog';
 
 const ModalContainer: React.FC = () => {
@@ -27,6 +29,10 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.FrequenciesStatistic:
+                return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.DescriptiveStatistic:
+                return <DescriptivesModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }
