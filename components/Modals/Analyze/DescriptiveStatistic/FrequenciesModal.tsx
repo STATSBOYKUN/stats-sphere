@@ -1,20 +1,31 @@
+// components/Modals/FrequenciesModal.tsx
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CornerDownLeft, CornerDownRight } from "lucide-react"; // Import icons from lucide-react
+import { CornerDownLeft, CornerDownRight } from "lucide-react";
+import { useStatistics } from "@/hooks/useStatistics"; // Import hook statistik
+import { useVariableStore } from "@/stores/useVariableStore"; // Import store variabel
 
 interface FrequenciesModalProps {
     onClose: () => void;
 }
 
 const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
-    const [leftVariables, setLeftVariables] = useState<string[]>(["Variable 1", "Variable 2", "Variable 3", "Variable 4", "Variable 5"]);
+    const [leftVariables, setLeftVariables] = useState<string[]>([]);
     const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
 
-    // Handle selecting/deselecting variables
+    const { calculateFrequencies, getVariableByColumnIndex } = useStatistics();
+    const variables = useVariableStore((state) => state.variables);
+
+    // Mengisi variabel yang tersedia (nama variabel)
+    React.useEffect(() => {
+        setLeftVariables(variables.map((v) => v.name));
+    }, [variables]);
+
+    // Fungsi untuk memilih variabel kiri
     const handleSelectLeft = (variable: string) => {
         if (highlightedVariable === variable) {
             setSelectedVariables((prev) => [...prev, variable]);
@@ -25,6 +36,7 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
+    // Fungsi untuk membatalkan pemilihan variabel di kanan
     const handleDeselectRight = (variable: string) => {
         if (highlightedVariable === variable) {
             setLeftVariables((prev) => [...prev, variable]);
@@ -35,9 +47,9 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
+    // Fungsi untuk memindahkan variabel antara kiri dan kanan
     const handleMoveVariable = () => {
         if (highlightedVariable) {
-            // Move the variable based on which list it's highlighted from
             if (leftVariables.includes(highlightedVariable)) {
                 setSelectedVariables((prev) => [...prev, highlightedVariable]);
                 setLeftVariables((prev) => prev.filter((item) => item !== highlightedVariable));
@@ -47,6 +59,17 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
             }
             setHighlightedVariable(null);
         }
+    };
+
+    // Fungsi untuk menghitung frekuensi dan menampilkan hasil di console
+    const handleAnalyze = () => {
+        selectedVariables.forEach((variableName) => {
+            const variable = variables.find((v) => v.name === variableName);
+            if (variable) {
+                const frequencies = calculateFrequencies(variable.columnIndex);
+                console.log(`Frequencies for ${variableName}:`, frequencies);
+            }
+        });
     };
 
     const handleClose = () => {
@@ -85,11 +108,11 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                         disabled={!highlightedVariable}
                     >
                         {highlightedVariable && leftVariables.includes(highlightedVariable) ? (
-                            <CornerDownRight size={24} /> // Move to selected variables (right)
+                            <CornerDownRight size={24} />
                         ) : highlightedVariable && selectedVariables.includes(highlightedVariable) ? (
-                            <CornerDownLeft size={24} /> // Move to available variables (left)
+                            <CornerDownLeft size={24} />
                         ) : (
-                            <CornerDownLeft size={24} /> // Default, but can be disabled
+                            <CornerDownLeft size={24} />
                         )}
                     </Button>
                 </div>
@@ -112,24 +135,11 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
 
                 {/* Right Sidebar for Buttons (1/8 width) */}
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
-                    <Button variant="outline">Statistics</Button>
+                    <Button variant="outline" onClick={handleAnalyze}>Analyze</Button>
                     <Button variant="outline">Charts</Button>
                     <Button variant="outline">Format</Button>
                     <Button variant="outline">Style</Button>
                     <Button variant="outline">Bootstrap</Button>
-                </div>
-            </div>
-
-            {/* Display Frequency Table Option */}
-            <div className="items-top flex space-x-2">
-                <Checkbox id="terms1" />
-                <div className="grid gap-1.5 leading-none">
-                    <label
-                        htmlFor="terms1"
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                        Display frequency tables
-                    </label>
                 </div>
             </div>
 
