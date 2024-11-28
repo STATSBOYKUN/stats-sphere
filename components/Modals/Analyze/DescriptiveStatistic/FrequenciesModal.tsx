@@ -1,12 +1,12 @@
 // components/Modals/FrequenciesModal.tsx
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 import { useStatistics } from "@/hooks/useStatistics"; // Import hook statistik
 import { useVariableStore } from "@/stores/useVariableStore"; // Import store variabel
+import useStatifyStore from "@/stores/useStatStore"; // Import store statistik
 
 interface FrequenciesModalProps {
     onClose: () => void;
@@ -19,13 +19,13 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
 
     const { calculateFrequencies, getVariableByColumnIndex } = useStatistics();
     const variables = useVariableStore((state) => state.variables);
+    const { addLog, addAnalytic, addStatistic } = useStatifyStore();
 
     // Mengisi variabel yang tersedia (nama variabel)
     React.useEffect(() => {
         setLeftVariables(variables.map((v) => v.name));
     }, [variables]);
 
-    // Fungsi untuk memilih variabel kiri
     const handleSelectLeft = (variable: string) => {
         if (highlightedVariable === variable) {
             setSelectedVariables((prev) => [...prev, variable]);
@@ -61,15 +61,66 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
-    // Fungsi untuk menghitung frekuensi dan menampilkan hasil di console
-    const handleAnalyze = () => {
-        selectedVariables.forEach((variableName) => {
+    // Fungsi untuk menghitung frekuensi dan memasukkan data ke IndexedDB
+    const handleAnalyze = async () => {
+        // 1. Menambahkan log frekuensi
+        const logMessage = `FREQUENCIES VARIABLES=${selectedVariables.join(", ")} /ORDER=ANALYSIS.`;
+        const log = { log: logMessage };
+        const logId = await addLog(log);
+
+        // 2. Menambahkan Analitik terkait dengan log
+        const analytic = {
+            title: "Frequencies",
+            dataset: "testes123", // Gunakan nama dataset yang sesuai
+            log_id: logId,
+            note: "",
+            parent_id: null
+        };
+        const analyticId = await addAnalytic(analytic);
+
+        // 3. Menambahkan statistik untuk analitik
+        const statistics = selectedVariables.map((variableName) => {
             const variable = variables.find((v) => v.name === variableName);
             if (variable) {
                 const frequencies = calculateFrequencies(variable.columnIndex);
-                console.log(`Frequencies for ${variableName}:`, frequencies);
+                const valid = frequencies.valid;  // Jumlah data valid
+                const missing = frequencies.missing; // Jumlah data yang hilang
+                return {
+                    analytic_id: analyticId,
+                    title: "Statistics",
+                    output_data: {
+                        variable: variableName,
+                        valid,
+                        missing,
+                    },
+                    output_type: "table",
+                    component: "FrequencyStatisticsTable",
+                };
             }
-        });
+            return null;
+        }).filter(stat => stat !== null);
+
+        for (const stat of statistics) {
+            if (stat) await addStatistic(stat);
+        }
+
+        // 4. Menambahkan statistik untuk tabel frekuensi tiap variabel
+        for (const variableName of selectedVariables) {
+            const variable = variables.find((v) => v.name === variableName);
+            if (variable) {
+                const frequencies = calculateFrequencies(variable.columnIndex);
+                const stat = {
+                    analytic_id: analyticId,
+                    title: variableName,
+                    output_data: frequencies,  // Data frekuensi untuk variabel ini
+                    output_type: "table",
+                    component: "FrequencyTable",
+                };
+                await addStatistic(stat);
+            }
+        }
+
+        onClose();
     };
 
     const handleClose = () => {
@@ -100,7 +151,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Move Button (1/8 width) */}
                 <div className="col-span-1 flex flex-col items-center justify-center space-y-10">
                     <Button
                         variant="link"
@@ -117,7 +167,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                     </Button>
                 </div>
 
-                {/* Right Selected Variables List (3/8 width) */}
                 <div className="col-span-3 flex flex-col border p-4 rounded-md max-h-[300px] overflow-y-auto">
                     <label className="font-semibold">Selected Variables</label>
                     <div className="space-y-2">
@@ -133,7 +182,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                     </div>
                 </div>
 
-                {/* Right Sidebar for Buttons (1/8 width) */}
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
                     <Button variant="outline" onClick={handleAnalyze}>Analyze</Button>
                     <Button variant="outline">Charts</Button>
@@ -143,7 +191,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                 </div>
             </div>
 
-            {/* Footer Buttons */}
             <DialogFooter className="flex justify-center space-x-4">
                 <Button onClick={handleClose}>OK</Button>
                 <Button variant="outline">Paste</Button>

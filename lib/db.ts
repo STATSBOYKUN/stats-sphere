@@ -36,7 +36,6 @@ export interface Analytic {
     parent_id?: number;
     title: string;
     note?: string;
-    active_dataset?: string;
 }
 
 export interface Statistic {
@@ -65,7 +64,7 @@ class MyDatabase extends Dexie {
             variables: '++id, columnIndex, name, type, width, decimals, label, values, missing, columns, align, measure',
 
             logs: '++log_id, timestamp, values',
-            analytics: '++analytic_id, log_id, parent_id, title, note, active_dataset',
+            analytics: '++analytic_id, log_id, parent_id, title, note',
             statistics: '++stat_id, analytic_id, title, output_type, output_data, components',
         });
 
