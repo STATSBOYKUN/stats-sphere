@@ -36,6 +36,7 @@ export const useDataTableEvents = (
                 const colIndex = col;
                 const variable = getVariableByColumnIndex(colIndex);
 
+
                 if (!variable) {
                     const isNumeric = !isNaN(Number(newValue));
                     const defaultVariable = {

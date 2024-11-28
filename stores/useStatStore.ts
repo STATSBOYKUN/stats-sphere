@@ -2,38 +2,36 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import db, { Log, Result, Statistic } from '@/lib/db';
+import db, { Log, Analytic, Statistic } from '@/lib/db';
 import { devtools } from 'zustand/middleware';
 
-// Define the shape of your store
 interface StatifyState {
     logs: Log[];
-    results: Result[];
+    analytics: Analytic[];
     statistics: Statistic[];
-    // Actions for Logs
+
     fetchLogs: () => Promise<void>;
     addLog: (log: Omit<Log, 'log_id' | 'timestamp'>) => Promise<void>;
     deleteLog: (log_id: number) => Promise<void>;
-    // Actions for Results
-    fetchResults: () => Promise<void>;
-    addResult: (result: Omit<Result, 'result_id'>) => Promise<void>;
-    deleteResult: (result_id: number) => Promise<void>;
-    // Actions for Statistics
+
+    fetchAnalytics: () => Promise<void>;
+    addAnalytic: (analytic: Omit<Analytic, 'analytic_id'>) => Promise<void>;
+    deleteAnalytic: (analytic_id: number) => Promise<void>;
+
     fetchStatistics: () => Promise<void>;
     addStatistic: (stat: Omit<Statistic, 'stat_id'>) => Promise<void>;
     deleteStatistic: (stat_id: number) => Promise<void>;
-    // Utility
+
     clearAll: () => Promise<void>;
 }
 
 const useStatifyStore = create<StatifyState>()(
     devtools(
-        immer((set, get) => ({
-            logs: [],
-            results: [],
-            statistics: [],
+        immer((set) => ({
+            logs: [] as Log[],
+            analytics: [] as Analytic[],
+            statistics: [] as Statistic[],
 
-            // Fetch Logs
             fetchLogs: async () => {
                 try {
                     const logs = await db.logs.toArray();
@@ -45,7 +43,6 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
-            // Add Log
             addLog: async (log) => {
                 try {
                     const logWithTimestamp = { ...log, timestamp: new Date() };
@@ -58,88 +55,72 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
-            // Delete Log with Cascading Delete
             deleteLog: async (log_id: number) => {
                 try {
-                    // Find all results associated with this log
-                    const resultsToDelete = await db.results.where('log_id').equals(log_id).toArray();
-                    const resultIds = resultsToDelete.map(result => result.result_id);
+                    const analyticsToDelete = await db.analytics.where('log_id').equals(log_id).toArray();
+                    const analyticIds = analyticsToDelete.map(analytic => analytic.analytic_id);
 
-                    if (resultIds.length > 0) {
-                        // Delete related statistics
-                        await db.statistics.where('result_id').anyOf(resultIds).delete();
-                        // Delete related results
-                        await db.results.where('log_id').equals(log_id).delete();
+                    if (analyticIds.length > 0) {
+                        await db.statistics.where('analytic_id').anyOf(analyticIds).delete();
+                        await db.analytics.where('log_id').equals(log_id).delete();
                     }
 
-                    // Delete the log
                     await db.logs.delete(log_id);
 
-                    // Update the store
                     set((state) => {
                         state.logs = state.logs.filter(log => log.log_id !== log_id);
-                        state.results = state.results.filter(result => result.log_id !== log_id);
-                        state.statistics = state.statistics.filter(stat => !resultIds.includes(stat.result_id));
+                        state.analytics = state.analytics.filter(analytic => analytic.log_id !== log_id);
+                        state.statistics = state.statistics.filter(stat => !analyticIds.includes(stat.analytic_id));
                     });
                 } catch (error) {
                     console.error('Failed to delete log:', error);
                 }
             },
 
-            // Fetch Results
-            fetchResults: async () => {
+            fetchAnalytics: async () => {
                 try {
-                    const results = await db.results.toArray();
+                    const analytics = await db.analytics.toArray();
                     set((state) => {
-                        state.results = results;
+                        state.analytics = analytics;
                     });
                 } catch (error) {
-                    console.error('Failed to fetch results:', error);
+                    console.error('Failed to fetch analytics:', error);
                 }
             },
 
-            // Add Result
-            addResult: async (result) => {
+            addAnalytic: async (analytic) => {
                 try {
-                    const id = await db.results.add(result);
+                    const id = await db.analytics.add(analytic);
                     set((state) => {
-                        state.results.push({ ...result, result_id: id });
+                        state.analytics.push({ ...analytic, analytic_id: id });
                     });
                 } catch (error) {
-                    console.error('Failed to add result:', error);
+                    console.error('Failed to add analytic:', error);
                 }
             },
 
-            // Delete Result with Cascading Delete
-            deleteResult: async (result_id: number) => {
+            deleteAnalytic: async (analytic_id: number) => {
                 try {
-                    // Find all sub-results
-                    const subResults = await db.results.where('parent_id').equals(result_id).toArray();
-                    const subResultIds = subResults.map(result => result.result_id);
+                    const subAnalytics = await db.analytics.where('parent_id').equals(analytic_id).toArray();
+                    const subAnalyticIds = subAnalytics.map(analytic => analytic.analytic_id);
 
-                    if (subResultIds.length > 0) {
-                        // Delete statistics of sub-results
-                        await db.statistics.where('result_id').anyOf(subResultIds).delete();
-                        // Delete sub-results
-                        await db.results.where('parent_id').equals(result_id).delete();
+                    if (subAnalyticIds.length > 0) {
+                        await db.statistics.where('analytic_id').anyOf(subAnalyticIds).delete();
+                        await db.analytics.where('parent_id').equals(analytic_id).delete();
                     }
 
-                    // Delete statistics of the result
-                    await db.statistics.where('result_id').equals(result_id).delete();
-                    // Delete the result
-                    await db.results.delete(result_id);
+                    await db.statistics.where('analytic_id').equals(analytic_id).delete();
+                    await db.analytics.delete(analytic_id);
 
-                    // Update the store
                     set((state) => {
-                        state.results = state.results.filter(result => result.result_id !== result_id && !subResultIds.includes(result.result_id));
-                        state.statistics = state.statistics.filter(stat => stat.result_id !== result_id && !subResultIds.includes(stat.result_id));
+                        state.analytics = state.analytics.filter(analytic => analytic.analytic_id !== analytic_id && !subAnalyticIds.includes(analytic.analytic_id));
+                        state.statistics = state.statistics.filter(stat => stat.analytic_id !== analytic_id && !subAnalyticIds.includes(stat.analytic_id));
                     });
                 } catch (error) {
-                    console.error('Failed to delete result:', error);
+                    console.error('Failed to delete analytic:', error);
                 }
             },
 
-            // Fetch Statistics
             fetchStatistics: async () => {
                 try {
                     const statistics = await db.statistics.toArray();
@@ -151,7 +132,6 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
-            // Add Statistic
             addStatistic: async (stat) => {
                 try {
                     const id = await db.statistics.add(stat);
@@ -163,7 +143,6 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
-            // Delete Statistic
             deleteStatistic: async (stat_id: number) => {
                 try {
                     await db.statistics.delete(stat_id);
@@ -175,15 +154,14 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
-            // Clear All Data (Optional Utility)
             clearAll: async () => {
                 try {
                     await db.logs.clear();
-                    await db.results.clear();
+                    await db.analytics.clear();
                     await db.statistics.clear();
                     set((state) => {
                         state.logs = [];
-                        state.results = [];
+                        state.analytics = [];
                         state.statistics = [];
                     });
                 } catch (error) {
