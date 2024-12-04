@@ -1,58 +1,116 @@
 // app/output/page.tsx
+'use client';
 
-"use client";
+import React, { useEffect } from 'react';
+import useResultStore from '@/stores/useResultStore';
+import FrequenciesTable from '@/components/Output/Table/FrequenciesTable';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
 
-import React from "react";
-import DataTable from "@/components/Output/Table";
-import BarChart from "@/components/Output/BarChart";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
+const OutputPage: React.FC = () => {
+    const { logs, analytics, statistics, fetchLogs, fetchAnalytics, fetchStatistics, deleteLog, deleteAnalytic, deleteStatistic } = useResultStore();
 
-const dummyTableData = [
-    { Variable: "Age", "Mean": 35.4, "Std Dev": 10.2 },
-    { Variable: "Income", "Mean": 55000, "Std Dev": 15000 },
-    { Variable: "Score", "Mean": 75.8, "Std Dev": 12.5 },
-];
+    useEffect(() => {
+        fetchLogs();
+        fetchAnalytics();
+        fetchStatistics();
+    }, [fetchLogs, fetchAnalytics, fetchStatistics]);
 
-const dummyGraphData = [
-    { category: "Jan", value: 30 },
-    { category: "Feb", value: 20 },
-    { category: "Mar", value: 25 },
-    { category: "Apr", value: 35 },
-    { category: "May", value: 40 },
-    { category: "Jun", value: 45 },
-];
-
-const OutputPage = () => {
     return (
-        <div className="flex-grow w-full flex flex-col">
-            {/* Main Content */}
-            <main className="p-4 flex-1 overflow-y-auto">
-                {/* Teks Deskripsi */}
-                <section className="mb-8">
-                    <h2 className="text-2xl font-semibold mb-4">Descriptive Statistics</h2>
-                    <p className="text-gray-700">
-                        Berikut adalah ringkasan statistik deskriptif untuk variabel-variabel dalam dataset:
-                    </p>
-                </section>
+        <div className="flex flex-col h-full">
+            <div className="flex-1 overflow-y-auto p-4 space-y-8">
+                {/* Logs Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Logs</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Log</TableHead>
+                                    <TableHead>Timestamp</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {logs.map((log) => (
+                                    <TableRow key={log.log_id}>
+                                        <TableCell>{log.log_id}</TableCell>
+                                        <TableCell>{log.log}</TableCell>
+                                        <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            <Button variant="destructive" size="sm" onClick={() => deleteLog(log.log_id)}>
+                                                Delete
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
 
-                {/* Tabel Data */}
-                <section className="mb-8">
-                    <h3 className="text-xl font-semibold mb-2">Statistik Deskriptif</h3>
-                    <DataTable
-                        data={dummyTableData}
-                        columns={["Variable", "Mean", "Std Dev"]}
-                    />
-                </section>
+                {/* Analytics Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Analytics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>ID</TableHead>
+                                    <TableHead>Title</TableHead>
+                                    <TableHead>Dataset</TableHead>
+                                    <TableHead>Log ID</TableHead>
+                                    <TableHead>Note</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {analytics.map((analytic) => (
+                                    <TableRow key={analytic.analytic_id}>
+                                        <TableCell>{analytic.analytic_id}</TableCell>
+                                        <TableCell>{analytic.title}</TableCell>
+                                        <TableCell>{analytic.dataset}</TableCell>
+                                        <TableCell>{analytic.log_id}</TableCell>
+                                        <TableCell>{analytic.note || '-'}</TableCell>
+                                        <TableCell>
+                                            <Button variant="destructive" size="sm" onClick={() => deleteAnalytic(analytic.analytic_id)}>
+                                                Delete
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
 
-                {/* Grafik */}
-                <section>
-                    <h3 className="text-xl font-semibold mb-2">Grafik Penjualan Bulanan</h3>
-                    <div className="w-full h-80">
-                        <BarChart data={dummyGraphData} width={600} height={400} />
-                    </div>
-                </section>
-            </main>
+                {/* Statistics Section */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Statistics</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {statistics.map((stat) => (
+                            <div key={stat.stat_id} className="mb-6">
+                                {stat.components === 'FrequencyStatisticsTable' ? (
+                                    <FrequenciesTable statistic={stat} />
+                                ) : (
+                                    <p>Unsupported component: {stat.components}</p>
+                                )}
+                                <Button variant="destructive" size="sm" onClick={() => deleteStatistic(stat.stat_id)}>
+                                    Delete
+                                </Button>
+                            </div>
+                        ))}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };

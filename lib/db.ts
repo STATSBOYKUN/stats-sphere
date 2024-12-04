@@ -16,7 +16,7 @@ export interface Variable {
     type: string;
     width: number;
     decimals: number;
-    label: string;
+    label?: string;
     values: string;
     missing: string;
     columns: string;
@@ -25,26 +25,23 @@ export interface Variable {
 }
 
 export interface Log {
-    log_id?: number;
-    timestamp?: Date;
-    values?: string;
+    id?: number;
+    log: string;
 }
 
 export interface Analytic {
-    analytic_id?: number;
+    id?: number;
     log_id?: number;
-    parent_id?: number;
     title: string;
     note?: string;
 }
 
 export interface Statistic {
-    stat_id?: number;
+    id?: number;
     analytic_id: number;
     title: string;
-    output_type: string;
-    output_data: object;
-    components?: object;
+    output_data: string;
+    components: string;
 }
 
 class MyDatabase extends Dexie {
@@ -58,27 +55,43 @@ class MyDatabase extends Dexie {
     constructor() {
         super('Statify');
 
-        this.version(1).stores({
-            coordinates: '++id, [x+y], x, y, isiData',
+        this.version(2).stores({
             cells: '[x+y], x, y, value',
             variables: '++id, columnIndex, name, type, width, decimals, label, values, missing, columns, align, measure',
 
-            logs: '++log_id, timestamp, values',
-            analytics: '++analytic_id, log_id, parent_id, title, note',
-            statistics: '++stat_id, analytic_id, title, output_type, output_data, components',
+            logs: '++id, log',
+            analytics: '++id, log_id, title, note',
+            statistics: '++id, analytic_id, title, output_data, components',
         });
 
         this.cells = this.table('cells');
+
         this.variables = this.table('variables');
 
         this.logs = this.table('logs');
         this.analytics = this.table('analytics');
         this.statistics = this.table('statistics');
 
+        // Event listener for unhandled promise rejections
         if (typeof window !== "undefined") {
             window.addEventListener('unhandledrejection', (event) => {
                 console.error('Unhandled promise rejection:', event.reason);
             });
+        }
+    }
+
+    // Optional: Adding a method to handle the output_data serialization
+    serializeData(obj: any): string {
+        return JSON.stringify(obj);
+    }
+
+    // Optional: Adding a method to deserialize output_data
+    deserializeData(json: string): any {
+        try {
+            return JSON.parse(json);
+        } catch (e) {
+            console.error("Error deserializing data:", e);
+            return null;
         }
     }
 }

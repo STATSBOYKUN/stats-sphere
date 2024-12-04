@@ -8,7 +8,7 @@ import OpenFileModal from './File/OpenFileModal';
 import SaveFileModal from './File/SaveFileModal';
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import ExportDataModal from './File/ExportDataModal';
-import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/FrequenciesModal";
+import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
 import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from '@/components/ui/dialog';
 

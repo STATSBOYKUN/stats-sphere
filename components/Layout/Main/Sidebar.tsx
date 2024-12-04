@@ -1,4 +1,4 @@
-// components/Sidebar/Sidebar.tsx
+// components/Layout/Main/Sidebar.tsx
 
 "use client";
 
@@ -126,43 +126,40 @@ const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
 
     return (
-        <div className="flex">
-            {/* Sidebar */}
-            <div
-                className={cn(
-                    "bg-white border-r transition-all duration-300 overflow-hidden",
-                    isOpen ? "w-64" : "w-20"
+        <div
+            className={cn(
+                "bg-white border-r transition-all duration-300 overflow-hidden flex flex-col h-full",
+                isOpen ? "w-64" : "w-20"
+            )}
+        >
+            <div className="flex items-center justify-between p-4 border-b">
+                {isOpen && <h1 className="text-lg font-semibold">Result</h1>}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <ChevronRight
+                        className={cn(
+                            "w-4 h-4 transform transition-transform",
+                            isOpen ? "rotate-180" : "rotate-0"
+                        )}
+                    />
+                </Button>
+            </div>
+            <div className="p-4 flex-grow overflow-y-auto">
+                {/* Search Input */}
+                {isOpen && (
+                    <div className="mb-4">
+                        <Input placeholder="Search..." />
+                    </div>
                 )}
-            >
-                <div className="flex items-center justify-between p-4 border-b">
-                    {isOpen && <h1 className="text-lg font-semibold">Result</h1>}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setIsOpen(!isOpen)}
-                    >
-                        <ChevronRight
-                            className={cn(
-                                "w-4 h-4 transform transition-transform",
-                                isOpen ? "rotate-180" : "rotate-0"
-                            )}
-                        />
-                    </Button>
-                </div>
-                <div className="p-4">
-                    {/* Search Input */}
-                    {isOpen && (
-                        <div className="mb-4">
-                            <Input placeholder="Search..." />
-                        </div>
-                    )}
-                    {/* Sidebar Menu */}
-                    <nav>
-                        {sidebarData.map((item, index) => (
-                            <SidebarMenuItem key={index} item={item} isOpen={isOpen} />
-                        ))}
-                    </nav>
-                </div>
+                {/* Sidebar Menu */}
+                <nav>
+                    {sidebarData.map((item, index) => (
+                        <SidebarMenuItem key={index} item={item} isOpen={isOpen} />
+                    ))}
+                </nav>
             </div>
         </div>
     );

@@ -1,6 +1,8 @@
 // stores/useModalStore.ts
 
 import { create } from 'zustand';
+import StatisticsSettingsModal
+    from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesStatistics";
 
 export enum ModalType {
     OpenFile = 'openFile',
@@ -9,6 +11,8 @@ export enum ModalType {
     ComputeVariable = 'computeVariable',
     FrequenciesStatistic = 'frequenciesStatistic',
     DescriptiveStatistic = 'descriptiveStatistic',
+    StatisticsSettingsModal = 'statisticsSettingsModal',
+    ChartSettingsModal = 'chartSettingsModal',
 }
 
 interface ModalInstance {

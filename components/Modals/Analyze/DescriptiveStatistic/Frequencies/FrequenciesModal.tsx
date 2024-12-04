@@ -1,12 +1,14 @@
 // components/Modals/FrequenciesModal.tsx
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 import { useStatistics } from "@/hooks/useStatistics"; // Import hook statistik
 import { useVariableStore } from "@/stores/useVariableStore"; // Import store variabel
-import useStatifyStore from "@/stores/useStatStore"; // Import store statistik
+import useResultStore from "@/stores/useResultStore"; // Import store statistik
+import { Statistic } from "@/lib/db";
 
 interface FrequenciesModalProps {
     onClose: () => void;
@@ -17,12 +19,11 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
     const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
 
-    const { calculateFrequencies, getVariableByColumnIndex } = useStatistics();
+    const { calculateFrequencies, calculateCompleteStatisticsForAll, getVariableByColumnIndex } = useStatistics();
     const variables = useVariableStore((state) => state.variables);
-    const { addLog, addAnalytic, addStatistic } = useStatifyStore();
+    const { addLog, addAnalytic, addStatistic } = useResultStore();
 
-    // Mengisi variabel yang tersedia (nama variabel)
-    React.useEffect(() => {
+    useEffect(() => {
         setLeftVariables(variables.map((v) => v.name));
     }, [variables]);
 
@@ -36,7 +37,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
-    // Fungsi untuk membatalkan pemilihan variabel di kanan
     const handleDeselectRight = (variable: string) => {
         if (highlightedVariable === variable) {
             setLeftVariables((prev) => [...prev, variable]);
@@ -47,7 +47,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
-    // Fungsi untuk memindahkan variabel antara kiri dan kanan
     const handleMoveVariable = () => {
         if (highlightedVariable) {
             if (leftVariables.includes(highlightedVariable)) {
@@ -61,79 +60,112 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         }
     };
 
-    // Fungsi untuk menghitung frekuensi dan memasukkan data ke IndexedDB
     const handleAnalyze = async () => {
-        // 1. Menambahkan log frekuensi
-        const logMessage = `FREQUENCIES VARIABLES=${selectedVariables.join(", ")} /ORDER=ANALYSIS.`;
-        const log = { log: logMessage };
-        const logId = await addLog(log);
+        try {
+            // 1. Menambahkan log frekuensi
+            const logMessage = `FREQUENCIES VARIABLES=${selectedVariables.join(", ")} /ORDER=ANALYSIS.`;
+            const log = { log: logMessage };
+            const logId = await addLog(log);
 
-        // 2. Menambahkan Analitik terkait dengan log
-        const analytic = {
-            title: "Frequencies",
-            dataset: "testes123", // Gunakan nama dataset yang sesuai
-            log_id: logId,
-            note: "",
-            parent_id: null
-        };
-        const analyticId = await addAnalytic(analytic);
+            // 2. Menambahkan Analitik terkait dengan log
+            const analytic = {
+                title: "Frequencies",
+                log_id: logId,
+                note: "",
+            };
+            const analyticId = await addAnalytic(analytic);
 
-        // 3. Menambahkan statistik untuk analitik
-        const statistics = selectedVariables.map((variableName) => {
-            const variable = variables.find((v) => v.name === variableName);
-            if (variable) {
-                const frequencies = calculateFrequencies(variable.columnIndex);
-                const valid = frequencies.valid;  // Jumlah data valid
-                const missing = frequencies.missing; // Jumlah data yang hilang
-                return {
+            // 3. Menambahkan statistik lengkap untuk semua variabel numerik
+            const columnIndices = selectedVariables.map(variableName => {
+                const variable = variables.find(v => v.name === variableName);
+                return variable ? variable.columnIndex : -1;
+            }).filter(index => index !== -1) as number[];
+
+            const completeStatistics = calculateCompleteStatisticsForAll(columnIndices);
+            if (Object.keys(completeStatistics).length > 0) {
+                const completeStatsStat: Omit<Statistic, 'id'> = {
                     analytic_id: analyticId,
                     title: "Statistics",
-                    output_data: {
-                        variable: variableName,
-                        valid,
-                        missing,
-                    },
-                    output_type: "table",
-                    component: "FrequencyStatisticsTable",
+                    output_data: JSON.stringify(completeStatistics), // Serialize complete statistics
+                    components: "Frequency",
                 };
+                await addStatistic(completeStatsStat);
             }
-            return null;
-        }).filter(stat => stat !== null);
 
-        for (const stat of statistics) {
-            if (stat) await addStatistic(stat);
-        }
+            // 4. Menambahkan statistik untuk tabel frekuensi tiap variabel
+            for (const variableName of selectedVariables) {
+                const variable = variables.find((v) => v.name === variableName);
+                if (variable) {
+                    const { frequencies, valid, missing } = calculateFrequencies(variable.columnIndex);
+                    const frequencyData = Object.entries(frequencies).map(([key, value]) => ({
+                        Frequency: key,
+                        Percent: parseFloat(((value / valid) * 100).toFixed(1)),
+                        "Valid Percent": parseFloat(((value / valid) * 100).toFixed(1)),
+                        "Cumulative Percent": 0, // Akan dihitung nanti
+                    }));
 
-        // 4. Menambahkan statistik untuk tabel frekuensi tiap variabel
-        for (const variableName of selectedVariables) {
-            const variable = variables.find((v) => v.name === variableName);
-            if (variable) {
-                const frequencies = calculateFrequencies(variable.columnIndex);
-                const stat = {
-                    analytic_id: analyticId,
-                    title: variableName,
-                    output_data: frequencies,  // Data frekuensi untuk variabel ini
-                    output_type: "table",
-                    component: "FrequencyTable",
-                };
-                await addStatistic(stat);
+                    // Menghitung Cumulative Percent
+                    let cumulative = 0;
+                    frequencyData.forEach((item) => {
+                        cumulative += item.Percent;
+                        item["Cumulative Percent"] = parseFloat(cumulative.toFixed(1));
+                    });
+
+                    // Menambahkan baris Total
+                    frequencyData.push({
+                        Frequency: "Total",
+                        Percent: 100.0,
+                        "Valid Percent": 100.0,
+                        "Cumulative Percent": "",
+                    });
+
+                    const stat = {
+                        analytic_id: analyticId,
+                        title: variableName,
+                        output_data: JSON.stringify({
+                            Frequency: frequencyData.map(fd => ({
+                                Frequency: fd.Frequency,
+                                Percent: fd.Percent,
+                                "Valid Percent": fd["Valid Percent"],
+                                "Cumulative Percent": fd["Cumulative Percent"],
+                            })),
+                            Total: {
+                                Frequency: valid,
+                                Percent: 100.0,
+                                "Valid Percent": 100.0,
+                                "Cumulative Percent": "",
+                            },
+                        }), // Serialize frequency table
+                        output_type: "table",
+                        components: "FrequencyTable",
+                    };
+                    await addStatistic(stat);
+                }
             }
-        }
 
-        onClose();
+            onClose();
+        } catch (error) {
+            console.error('Failed to analyze frequencies:', error);
+        }
     };
 
     const handleClose = () => {
         onClose();
     };
 
+    const descriptionId = "frequencies-modal-description"; // ID unik untuk deskripsi
+
     return (
-        <DialogContent className="sm:max-w-[700px]">
+        <DialogContent className="sm:max-w-[700px]" aria-describedby={descriptionId}>
             <DialogHeader>
                 <DialogTitle>Frequencies</DialogTitle>
             </DialogHeader>
 
             <Separator className="my-0" />
+
+            <p id={descriptionId} className="sr-only">
+                Modal ini digunakan untuk menghitung frekuensi dan statistik variabel yang dipilih.
+            </p>
 
             <div className="grid grid-cols-9 gap-2 py-2">
                 <div className="col-span-3 flex flex-col border p-4 rounded-md max-h-[300px] overflow-y-auto">
@@ -183,16 +215,16 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                 </div>
 
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
-                    <Button variant="outline" onClick={handleAnalyze}>Analyze</Button>
+                    <Button variant="outline">Statistics</Button>
                     <Button variant="outline">Charts</Button>
-                    <Button variant="outline">Format</Button>
-                    <Button variant="outline">Style</Button>
-                    <Button variant="outline">Bootstrap</Button>
+                    {/*<Button variant="outline">Format</Button>*/}
+                    {/*<Button variant="outline">Style</Button>*/}
+                    {/*<Button variant="outline">Bootstrap</Button>*/}
                 </div>
             </div>
 
             <DialogFooter className="flex justify-center space-x-4">
-                <Button onClick={handleClose}>OK</Button>
+                <Button onClick={handleAnalyze}>OK</Button>
                 <Button variant="outline">Paste</Button>
                 <Button variant="outline">Reset</Button>
                 <Button variant="outline" onClick={handleClose}>Cancel</Button>

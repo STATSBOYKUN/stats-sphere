@@ -1,31 +1,32 @@
-// useStatStore.ts
-
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import db, { Log, Analytic, Statistic } from '@/lib/db';
 import { devtools } from 'zustand/middleware';
 
-interface StatifyState {
+interface ResultState {
     logs: Log[];
     analytics: Analytic[];
     statistics: Statistic[];
 
     fetchLogs: () => Promise<void>;
-    addLog: (log: Omit<Log, 'log_id' | 'timestamp'>) => Promise<void>;
+    getLogById: (id: number) => Promise<Log | undefined>;
+    addLog: (log: Omit<Log, 'id'>) => Promise<number>;
     deleteLog: (log_id: number) => Promise<void>;
 
     fetchAnalytics: () => Promise<void>;
-    addAnalytic: (analytic: Omit<Analytic, 'analytic_id'>) => Promise<void>;
+    getAnalyticById: (id: number) => Promise<Analytic | undefined>;
+    addAnalytic: (analytic: Omit<Analytic, 'id'>) => Promise<number>;
     deleteAnalytic: (analytic_id: number) => Promise<void>;
 
     fetchStatistics: () => Promise<void>;
-    addStatistic: (stat: Omit<Statistic, 'stat_id'>) => Promise<void>;
+    getStatisticById: (id: number) => Promise<Statistic | undefined>;
+    addStatistic: (stat: Omit<Statistic, 'id'>) => Promise<number>;
     deleteStatistic: (stat_id: number) => Promise<void>;
 
     clearAll: () => Promise<void>;
 }
 
-const useStatifyStore = create<StatifyState>()(
+const useResultStore = create<ResultState>()(
     devtools(
         immer((set) => ({
             logs: [] as Log[],
@@ -43,34 +44,34 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
+            getLogById: async (id: number) => {
+                try {
+                    const log = await db.logs.get(id);
+                    return log;
+                } catch (error) {
+                    console.error('Failed to fetch log by id:', error);
+                    return undefined;
+                }
+            },
+
             addLog: async (log) => {
                 try {
-                    const logWithTimestamp = { ...log, timestamp: new Date() };
-                    const id = await db.logs.add(logWithTimestamp);
+                    const id = await db.logs.add(log);
                     set((state) => {
-                        state.logs.push({ ...logWithTimestamp, log_id: id });
+                        state.logs.push({ ...log, id });
                     });
+                    return id;
                 } catch (error) {
                     console.error('Failed to add log:', error);
+                    throw error;
                 }
             },
 
             deleteLog: async (log_id: number) => {
                 try {
-                    const analyticsToDelete = await db.analytics.where('log_id').equals(log_id).toArray();
-                    const analyticIds = analyticsToDelete.map(analytic => analytic.analytic_id);
-
-                    if (analyticIds.length > 0) {
-                        await db.statistics.where('analytic_id').anyOf(analyticIds).delete();
-                        await db.analytics.where('log_id').equals(log_id).delete();
-                    }
-
                     await db.logs.delete(log_id);
-
                     set((state) => {
-                        state.logs = state.logs.filter(log => log.log_id !== log_id);
-                        state.analytics = state.analytics.filter(analytic => analytic.log_id !== log_id);
-                        state.statistics = state.statistics.filter(stat => !analyticIds.includes(stat.analytic_id));
+                        state.logs = state.logs.filter(log => log.id !== log_id);
                     });
                 } catch (error) {
                     console.error('Failed to delete log:', error);
@@ -88,33 +89,34 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
+            getAnalyticById: async (id: number) => {
+                try {
+                    const analytic = await db.analytics.get(id);
+                    return analytic;
+                } catch (error) {
+                    console.error('Failed to fetch analytic by id:', error);
+                    return undefined;
+                }
+            },
+
             addAnalytic: async (analytic) => {
                 try {
                     const id = await db.analytics.add(analytic);
                     set((state) => {
-                        state.analytics.push({ ...analytic, analytic_id: id });
+                        state.analytics.push({ ...analytic, id });
                     });
+                    return id;
                 } catch (error) {
                     console.error('Failed to add analytic:', error);
+                    throw error;
                 }
             },
 
             deleteAnalytic: async (analytic_id: number) => {
                 try {
-                    const subAnalytics = await db.analytics.where('parent_id').equals(analytic_id).toArray();
-                    const subAnalyticIds = subAnalytics.map(analytic => analytic.analytic_id);
-
-                    if (subAnalyticIds.length > 0) {
-                        await db.statistics.where('analytic_id').anyOf(subAnalyticIds).delete();
-                        await db.analytics.where('parent_id').equals(analytic_id).delete();
-                    }
-
-                    await db.statistics.where('analytic_id').equals(analytic_id).delete();
                     await db.analytics.delete(analytic_id);
-
                     set((state) => {
-                        state.analytics = state.analytics.filter(analytic => analytic.analytic_id !== analytic_id && !subAnalyticIds.includes(analytic.analytic_id));
-                        state.statistics = state.statistics.filter(stat => stat.analytic_id !== analytic_id && !subAnalyticIds.includes(stat.analytic_id));
+                        state.analytics = state.analytics.filter(analytic => analytic.id !== analytic_id);
                     });
                 } catch (error) {
                     console.error('Failed to delete analytic:', error);
@@ -132,14 +134,26 @@ const useStatifyStore = create<StatifyState>()(
                 }
             },
 
+            getStatisticById: async (id: number) => {
+                try {
+                    const statistic = await db.statistics.get(id);
+                    return statistic;
+                } catch (error) {
+                    console.error('Failed to fetch statistic by id:', error);
+                    return undefined;
+                }
+            },
+
             addStatistic: async (stat) => {
                 try {
                     const id = await db.statistics.add(stat);
                     set((state) => {
-                        state.statistics.push({ ...stat, stat_id: id });
+                        state.statistics.push({ ...stat, id });
                     });
+                    return id;
                 } catch (error) {
                     console.error('Failed to add statistic:', error);
+                    throw error;
                 }
             },
 
@@ -147,7 +161,7 @@ const useStatifyStore = create<StatifyState>()(
                 try {
                     await db.statistics.delete(stat_id);
                     set((state) => {
-                        state.statistics = state.statistics.filter(stat => stat.stat_id !== stat_id);
+                        state.statistics = state.statistics.filter(stat => stat.id !== stat_id);
                     });
                 } catch (error) {
                     console.error('Failed to delete statistic:', error);
@@ -173,4 +187,4 @@ const useStatifyStore = create<StatifyState>()(
     )
 );
 
-export default useStatifyStore;
+export default useResultStore;
