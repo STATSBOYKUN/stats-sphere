@@ -7,7 +7,7 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
-    ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling'
+    ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling',
 
     // Time Series
     Smoothing = 'smoothing', //Time Series Smoothing

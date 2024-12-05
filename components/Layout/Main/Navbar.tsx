@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
                                 <MenubarSubTrigger>Open</MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={() => openModal(ModalType.OpenFile)}>Data</MenubarItem>
-                                    <MenubarItem onClick={() => openModal(ModalType.ModalAutomaticLinearModeling)}>Syntax</MenubarItem>
+                                    <MenubarItem>Syntax</MenubarItem>
                                     <MenubarItem>Output</MenubarItem>
                                     <MenubarSub>
                                         <MenubarSubTrigger>Script</MenubarSubTrigger>
@@ -250,6 +250,29 @@ const Navbar: React.FC = () => {
                                     <MenubarItem>Partial...</MenubarItem>
                                     <MenubarItem>Distances...</MenubarItem>
                                     <MenubarItem>Canonical Correlation...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>Regression</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalAutomaticLinearModeling)}>Automatic Linear Modeling...</MenubarItem>
+                                    <MenubarItem>Linear...</MenubarItem>
+                                    <MenubarItem>Curve Estimation...</MenubarItem>
+                                    <MenubarItem>Partial Least Squares...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Binary Logistic...</MenubarItem>
+                                    <MenubarItem>Multinomial Logistic...</MenubarItem>
+                                    <MenubarItem>Ordinal...</MenubarItem>
+                                    <MenubarItem>Probit...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Nonlinear...</MenubarItem>
+                                    <MenubarItem>Weight Estimation...</MenubarItem>
+                                    <MenubarItem>2-Stage Least Squares...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Quantiles...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Optimal Scaling (Catreg)...</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
 
