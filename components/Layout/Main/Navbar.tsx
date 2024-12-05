@@ -211,8 +211,8 @@ const Navbar: React.FC = () => {
                         <MenubarSub>
                                 <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
                                 <MenubarSubContent>
-                                    <MenubarItem>Frequencies...</MenubarItem>
-                                    <MenubarItem>Descriptives...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.FrequenciesStatistic)}>Frequencies</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.DescriptiveStatistic)}>Descriptives</MenubarItem>
                                     <MenubarItem>Explore...</MenubarItem>
                                     <MenubarItem>Crosstabs...</MenubarItem>
                                     <MenubarItem>TURF Analisys</MenubarItem>
@@ -272,7 +272,26 @@ const Navbar: React.FC = () => {
                                     </MenubarSub>
                                 </MenubarSubContent>
                             </MenubarSub>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>Time Series</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={()=>openModal(ModalType.Decomposition)}>Decomposition</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.Smoothing)}>Smoothing</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.StationaryTest)}>Stationary Test</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.CreateModel)}>Create Models</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
                         </MenubarContent>
+                        <MenubarContent>
+                            <MenubarSub>
+                                <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={() => openModal(ModalType.FrequenciesStatistic)}>Frequencies</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.DescriptiveStatistic)}>Descriptives</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            </MenubarContent>
                     </MenubarMenu>
 
                     <MenubarMenu>
