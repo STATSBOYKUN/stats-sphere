@@ -7,6 +7,8 @@ import { useModal, ModalType } from '@/hooks/useModal';
 import OpenFileModal from './OpenFileModal';
 import SaveFileModal from './SaveFileModal';
 import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
+import OneSampleTTestModal from './Analyze/Compare Means/OneSampleTTestModal';
+import IndependentSamplesTTestModal from './Analyze/Compare Means/IndependentSamplesTTestModal';
 import ExportDataModal from './ExportDataModal';
 import { Dialog } from '@/components/ui/dialog';
 
@@ -27,6 +29,10 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.OneSampleTTest:
+                return <OneSampleTTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.IndependentSamplesTTest:
+                return <IndependentSamplesTTestModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }

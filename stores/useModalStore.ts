@@ -7,6 +7,8 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
+    OneSampleTTest = 'oneSampleTTest',
+    IndependentSamplesTTest = 'independentSamplesTTest'
 }
 
 interface ModalInstance {

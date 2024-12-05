@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
                         <MenubarTrigger>Transform</MenubarTrigger>
                         <MenubarContent>
                             <MenubarItem onClick={() => openModal(ModalType.ComputeVariable)}>Compute Variable...</MenubarItem>
-                            <MenubarItem>Programmability Transformation...</MenubarItem>
+                            <MenubarItem >Programmability Transformation...</MenubarItem>
                             <MenubarItem>Count Values within Cases...</MenubarItem>
                             <MenubarItem>Shift Values...</MenubarItem>
                             <MenubarSeparator />
@@ -207,6 +207,72 @@ const Navbar: React.FC = () => {
 
                     <MenubarMenu>
                         <MenubarTrigger>Analyze</MenubarTrigger>
+                        <MenubarContent>
+                        <MenubarSub>
+                                <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem>Frequencies...</MenubarItem>
+                                    <MenubarItem>Descriptives...</MenubarItem>
+                                    <MenubarItem>Explore...</MenubarItem>
+                                    <MenubarItem>Crosstabs...</MenubarItem>
+                                    <MenubarItem>TURF Analisys</MenubarItem>
+                                    <MenubarItem>Ratio...</MenubarItem>
+                                    <MenubarItem>P-P Plots...</MenubarItem>
+                                    <MenubarItem>Q-Q Plots...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            
+                            <MenubarSub>
+                                <MenubarSubTrigger>Compare Means</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={() => openModal(ModalType.OneSampleTTest)}>One-Sample T Test...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.IndependentSamplesTTest)}>Independent-Samples T Test...</MenubarItem>
+                                    <MenubarItem>Paired-Samples T Test...</MenubarItem>
+                                    <MenubarItem>One-Way ANOVA...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>General Linear Model</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem>Univariate...</MenubarItem>
+                                    <MenubarItem>Multivariate...</MenubarItem>
+                                    <MenubarItem>Repeated Measures...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Variance Components...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                            
+                            <MenubarSub>
+                                <MenubarSubTrigger>Correlate</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem>Bivariate...</MenubarItem>
+                                    <MenubarItem>Partial...</MenubarItem>
+                                    <MenubarItem>Distances...</MenubarItem>
+                                    <MenubarItem>Canonical Correlation...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>Nonparametric Test</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem>One Sample...</MenubarItem>
+                                    <MenubarItem>Independent Samples...</MenubarItem>
+                                    <MenubarItem>Related Samples...</MenubarItem>
+                                    <MenubarSub>
+                                        <MenubarSubTrigger>Legacy Dialogs</MenubarSubTrigger>
+                                        <MenubarSubContent>
+                                            <MenubarItem>Chi-square...</MenubarItem>
+                                            <MenubarItem>Runs...</MenubarItem>
+                                            <MenubarItem>2 Independent Samples...</MenubarItem>
+                                            <MenubarItem>K Independent Samples...</MenubarItem>
+                                            <MenubarItem>2 Related Samples...</MenubarItem>
+                                            <MenubarItem>K Related Samples...</MenubarItem>
+                                        </MenubarSubContent>
+                                    </MenubarSub>
+                                </MenubarSubContent>
+                            </MenubarSub>
+                        </MenubarContent>
                     </MenubarMenu>
 
                     <MenubarMenu>
