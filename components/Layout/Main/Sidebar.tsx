@@ -6,18 +6,9 @@ import React, { useState, useEffect } from "react";
 import { ChevronRight, Logs, FileText, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbSeparator,
-    BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
 import { cn } from "@/lib/utils";
 
-// Data dummy
+// Data dummy (ditambah item lebih banyak untuk menampilkan scroll)
 const sidebarData = [
     {
         title: "Output",
@@ -46,6 +37,36 @@ const sidebarData = [
                         url: "/output/result/active-dataset",
                     },
                 ],
+            },
+        ],
+    },
+    {
+        title: "Another Category",
+        icon: FileText,
+        items: [
+            {
+                title: "Item 1",
+                url: "/category/item1",
+            },
+            {
+                title: "Item 2",
+                url: "/category/item2",
+            },
+            {
+                title: "Item 3",
+                url: "/category/item3",
+            },
+            {
+                title: "Item 4",
+                url: "/category/item4",
+            },
+            {
+                title: "Item 5",
+                url: "/category/item5",
+            },
+            {
+                title: "Item 6",
+                url: "/category/item6",
             },
         ],
     },
@@ -128,7 +149,7 @@ const Sidebar = () => {
     return (
         <div
             className={cn(
-                "bg-white border-r transition-all duration-300 overflow-hidden flex flex-col h-full",
+                "bg-white border-r transition-all duration-300 flex flex-col h-full",
                 isOpen ? "w-64" : "w-20"
             )}
         >
@@ -147,7 +168,7 @@ const Sidebar = () => {
                     />
                 </Button>
             </div>
-            <div className="p-4 flex-grow overflow-y-auto">
+            <div className="p-4 flex-grow overflow-y-auto max-h-screen">
                 {/* Search Input */}
                 {isOpen && (
                     <div className="mb-4">

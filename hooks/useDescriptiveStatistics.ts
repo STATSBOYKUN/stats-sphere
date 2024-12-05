@@ -1,4 +1,4 @@
-// hooks/useStatistics.ts
+// hooks/useDescriptiveStatistics.ts
 
 import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
@@ -18,7 +18,7 @@ import {
     range
 } from '@/utils/statistics';
 
-export const useStatistics = () => {
+export const useDescriptiveStatistics = () => {
     const data = useDataStore((state) => state.data);
     const variables = useVariableStore((state) => state.variables);
 

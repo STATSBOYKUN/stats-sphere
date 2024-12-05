@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
-import { useStatistics } from "@/hooks/useStatistics"; // Import hook statistik
+import { useDescriptiveStatistics } from "@/hooks/useDescriptiveStatistics"; // Import hook statistik
 import { useVariableStore } from "@/stores/useVariableStore"; // Import store variabel
 import useResultStore from "@/stores/useResultStore"; // Import store statistik
 import { Statistic } from "@/lib/db";
@@ -19,7 +19,7 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
     const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
 
-    const { calculateFrequencies, calculateCompleteStatisticsForAll, getVariableByColumnIndex } = useStatistics();
+    const { calculateFrequencies, calculateCompleteStatisticsForAll, getVariableByColumnIndex } = useDescriptiveStatistics();
     const variables = useVariableStore((state) => state.variables);
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
