@@ -4,14 +4,16 @@
 
 import React from 'react';
 import { useModal, ModalType } from '@/hooks/useModal';
-import OpenFileModal from './OpenFileModal';
-import SaveFileModal from './SaveFileModal';
-import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
 import SmoothingModal from '@/components/Modals/Analyze/TimeSeries/SmoothingModal';
 import DecompositionModal from '@/components/Modals/Analyze/TimeSeries/DecompositionModal';
 import StationaryTestModal from '@/components/Modals/Analyze/TimeSeries/StationaryTestModal';
 import CreateModelModal from '@/components/Modals/Analyze/TimeSeries/CreateModelModal';
-import ExportDataModal from './ExportDataModal';
+import OpenFileModal from './File/OpenFileModal';
+import SaveFileModal from './File/SaveFileModal';
+import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
+import ExportDataModal from './File/ExportDataModal';
+import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
+import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from '@/components/ui/dialog';
 import ModalAutomaticLinearModeling from '@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling'
 
@@ -45,6 +47,10 @@ const ModalContainer: React.FC = () => {
             case ModalType.CreateModel:
                 return <CreateModelModal onClose={closeModal} {...currentModal.props} />;
 
+            case ModalType.FrequenciesStatistic:
+                return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.DescriptiveStatistic:
+                return <DescriptivesModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }
