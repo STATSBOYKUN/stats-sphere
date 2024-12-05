@@ -9,7 +9,8 @@ import SaveFileModal from './SaveFileModal';
 import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
 import SmoothingModal from '@/components/Modals/Analyze/TimeSeries/SmoothingModal';
 import DecompositionModal from '@/components/Modals/Analyze/TimeSeries/DecompositionModal';
-import StationaryTestModal from '@/components/Modals/Analyze/TimeSeries/StationaryTestModal';
+import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
+import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
 import CreateModelModal from '@/components/Modals/Analyze/TimeSeries/CreateModelModal';
 import ExportDataModal from './ExportDataModal';
 import { Dialog } from '@/components/ui/dialog';
@@ -37,8 +38,10 @@ const ModalContainer: React.FC = () => {
                 return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.Decomposition:
                 return <DecompositionModal onClose={closeModal} {...currentModal.props} />;
-            case ModalType.StationaryTest:
-                return <StationaryTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Autocorrelation:
+                return <AutocorrelationModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.UnitRootTest:
+                return <UnitRootTestModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.CreateModel:
                 return <CreateModelModal onClose={closeModal} {...currentModal.props} />;
 

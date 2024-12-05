@@ -247,7 +247,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                                     checked={selectedSave !== null} 
                                     onCheckedChange={(isChecked) => setSelectedSave(isChecked ? "selected" : null)}
                                 />
-                                <Label>Save Forecasting Result as Variable</Label>
+                                <Label>Save Smoothing Result as Variable</Label>
                             </div>
                         </div>
                     </div>

@@ -11,7 +11,8 @@ export enum ModalType {
     // Time Series
     Smoothing = 'smoothing', //Time Series Smoothing
     Decomposition = 'decomposition', //Time Series Decomposition
-    StationaryTest = 'stationaryTest', //Time Series Stationary Test
+    Autocorrelation = 'autocorrelation', //Time Series Stationary Test
+    UnitRootTest = 'unitRootTest', //Time Series Stationary Test
     CreateModel = 'createModel', //Time Series Create Model
 }
 
