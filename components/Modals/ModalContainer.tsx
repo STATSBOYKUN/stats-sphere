@@ -12,6 +12,12 @@ import DecompositionModal from '@/components/Modals/Analyze/TimeSeries/Decomposi
 import StationaryTestModal from '@/components/Modals/Analyze/TimeSeries/StationaryTestModal';
 import CreateModelModal from '@/components/Modals/Analyze/TimeSeries/CreateModelModal';
 import ExportDataModal from './ExportDataModal';
+import OpenFileModal from './File/OpenFileModal';
+import SaveFileModal from './File/SaveFileModal';
+import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
+import ExportDataModal from './File/ExportDataModal';
+import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
+import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from '@/components/ui/dialog';
 
 const ModalContainer: React.FC = () => {
@@ -31,17 +37,6 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
-
-            // Time Series
-            case ModalType.Smoothing:
-                return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
-            case ModalType.Decomposition:
-                return <DecompositionModal onClose={closeModal} {...currentModal.props} />;
-            case ModalType.StationaryTest:
-                return <StationaryTestModal onClose={closeModal} {...currentModal.props} />;
-            case ModalType.CreateModel:
-                return <CreateModelModal onClose={closeModal} {...currentModal.props} />;
-
             default:
                 return null;
         }
