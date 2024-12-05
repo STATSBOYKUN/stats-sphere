@@ -272,6 +272,16 @@ const Navbar: React.FC = () => {
                                     </MenubarSub>
                                 </MenubarSubContent>
                             </MenubarSub>
+
+                            <MenubarSub>
+                                <MenubarSubTrigger>Time Series</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={()=>openModal(ModalType.Decomposition)}>Decomposition</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.Smoothing)}>Smoothing</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.StationaryTest)}>Stationary Test</MenubarItem>
+                                    <MenubarItem onClick={()=>openModal(ModalType.CreateModel)}>Create Models</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
                         </MenubarContent>
                     </MenubarMenu>
 
