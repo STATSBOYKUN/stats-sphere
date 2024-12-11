@@ -1,14 +1,16 @@
-// components/Modals/FrequenciesModal.tsx
+// components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal.tsx
+"use client;"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
-import { useDescriptiveStatistics } from "@/hooks/useDescriptiveStatistics"; // Import hook statistik
-import { useVariableStore } from "@/stores/useVariableStore"; // Import store variabel
-import useResultStore from "@/stores/useResultStore"; // Import store statistik
+import { useVariableStore } from "@/stores/useVariableStore";
+import useResultStore from "@/stores/useResultStore";
 import { Statistic } from "@/lib/db";
+import { useDataStore } from '@/stores/useDataStore';
+import { useDescriptiveStatistics } from "@/hooks/useDescriptiveStatistics"; // Hook yang masih ada
 
 interface FrequenciesModalProps {
     onClose: () => void;
@@ -19,13 +21,30 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
     const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
 
-    const { calculateFrequencies, calculateCompleteStatisticsForAll, getVariableByColumnIndex } = useDescriptiveStatistics();
     const variables = useVariableStore((state) => state.variables);
+    const data = useDataStore((state) => state.data);
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    // Import fungsi dari hook
+    const { calculateFrequencies, calculateCompleteStatisticsForAll } = useDescriptiveStatistics();
+
+    const workerRef = useRef<Worker | null>(null);
 
     useEffect(() => {
         setLeftVariables(variables.map((v) => v.name));
     }, [variables]);
+
+    useEffect(() => {
+        // Inisialisasi worker saat komponen mount
+        workerRef.current = new Worker('/workers/descriptiveStatisticsWorker.js', { type: 'module' });
+
+        return () => {
+            // Terminasi worker saat komponen unmount
+            if (workerRef.current) {
+                workerRef.current.terminate();
+            }
+        };
+    }, []);
 
     const handleSelectLeft = (variable: string) => {
         if (highlightedVariable === variable) {
@@ -62,12 +81,12 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
 
     const handleAnalyze = async () => {
         try {
-            // 1. Menambahkan log frekuensi
+            // Buat log
             const logMessage = `FREQUENCIES VARIABLES=${selectedVariables.join(", ")} /ORDER=ANALYSIS.`;
             const log = { log: logMessage };
             const logId = await addLog(log);
 
-            // 2. Menambahkan Analitik terkait dengan log
+            // Buat analytic
             const analytic = {
                 title: "Frequencies",
                 log_id: logId,
@@ -75,33 +94,37 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
             };
             const analyticId = await addAnalytic(analytic);
 
-            // 3. Menambahkan statistik lengkap untuk semua variabel numerik
+            // Ambil columnIndices dari selectedVariables
             const columnIndices = selectedVariables.map(variableName => {
                 const variable = variables.find(v => v.name === variableName);
                 return variable ? variable.columnIndex : -1;
             }).filter(index => index !== -1) as number[];
 
+            console.log("=== Perhitungan Menggunakan Hook ===");
+            const startHook = performance.now();
+
+            // Perhitungan menggunakan Hook (Main Thread)
             const completeStatistics = calculateCompleteStatisticsForAll(columnIndices);
+
             if (Object.keys(completeStatistics).length > 0) {
                 const completeStatsStat: Omit<Statistic, 'id'> = {
                     analytic_id: analyticId,
-                    title: "Statistics",
-                    output_data: JSON.stringify(completeStatistics), // Serialize complete statistics
+                    title: "Statistics (Hook)",
+                    output_data: JSON.stringify(completeStatistics),
                     components: "Frequency",
                 };
                 await addStatistic(completeStatsStat);
             }
 
-            // 4. Menambahkan statistik untuk tabel frekuensi tiap variabel
             for (const variableName of selectedVariables) {
                 const variable = variables.find((v) => v.name === variableName);
                 if (variable) {
-                    const { frequencies, valid, missing } = calculateFrequencies(variable.columnIndex);
+                    const { frequencies, valid } = calculateFrequencies(variable.columnIndex);
                     const frequencyData = Object.entries(frequencies).map(([key, value]) => ({
                         Frequency: key,
                         Percent: parseFloat(((value / valid) * 100).toFixed(1)),
                         "Valid Percent": parseFloat(((value / valid) * 100).toFixed(1)),
-                        "Cumulative Percent": 0, // Akan dihitung nanti
+                        "Cumulative Percent": 0,
                     }));
 
                     // Menghitung Cumulative Percent
@@ -121,7 +144,7 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
 
                     const stat = {
                         analytic_id: analyticId,
-                        title: variableName,
+                        title: `${variableName} (Hook)`,
                         output_data: JSON.stringify({
                             Frequency: frequencyData.map(fd => ({
                                 Frequency: fd.Frequency,
@@ -135,7 +158,7 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                                 "Valid Percent": 100.0,
                                 "Cumulative Percent": "",
                             },
-                        }), // Serialize frequency table
+                        }),
                         output_type: "table",
                         components: "FrequencyTable",
                     };
@@ -143,6 +166,72 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                 }
             }
 
+            const endHook = performance.now();
+            console.log(`Waktu eksekusi (Hook): ${endHook - startHook} ms`);
+
+
+            console.log("=== Perhitungan Menggunakan Web Worker ===");
+            const startWorker = performance.now();
+
+            // Perhitungan menggunakan Worker
+            // Gunakan Promise untuk menunggu respon dari worker
+            const workerResult = await new Promise<{ completeStatistics: any; frequencyResults: any[] }>((resolve) => {
+                if (workerRef.current) {
+                    workerRef.current.onmessage = (e) => {
+                        resolve(e.data);
+                    };
+
+                    workerRef.current.postMessage({
+                        action: 'calculate',
+                        payload: {
+                            data,
+                            variables,
+                            selectedVariables
+                        }
+                    });
+                }
+            });
+
+            const endWorker = performance.now();
+            console.log(`Waktu eksekusi (Worker): ${endWorker - startWorker} ms`);
+
+            // Simpan hasil dari Worker
+            if (Object.keys(workerResult.completeStatistics).length > 0) {
+                const completeStatsStat: Omit<Statistic, 'id'> = {
+                    analytic_id: analyticId,
+                    title: "Statistics (Worker)",
+                    output_data: JSON.stringify(workerResult.completeStatistics),
+                    components: "Frequency",
+                };
+                await addStatistic(completeStatsStat);
+            }
+
+            for (const freqRes of workerResult.frequencyResults) {
+                const { variableName, frequencyData, valid } = freqRes;
+                const stat = {
+                    analytic_id: analyticId,
+                    title: `${variableName} (Worker)`,
+                    output_data: JSON.stringify({
+                        Frequency: frequencyData.map((fd: any) => ({
+                            Frequency: fd.Frequency,
+                            Percent: fd.Percent,
+                            "Valid Percent": fd["Valid Percent"],
+                            "Cumulative Percent": fd["Cumulative Percent"],
+                        })),
+                        Total: {
+                            Frequency: valid,
+                            Percent: 100.0,
+                            "Valid Percent": 100.0,
+                            "Cumulative Percent": "",
+                        },
+                    }),
+                    output_type: "table",
+                    components: "FrequencyTable",
+                };
+                await addStatistic(stat);
+            }
+
+            // Setelah semua selesai
             onClose();
         } catch (error) {
             console.error('Failed to analyze frequencies:', error);
@@ -153,7 +242,7 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
         onClose();
     };
 
-    const descriptionId = "frequencies-modal-description"; // ID unik untuk deskripsi
+    const descriptionId = "frequencies-modal-description";
 
     return (
         <DialogContent className="sm:max-w-[700px]" aria-describedby={descriptionId}>
@@ -217,9 +306,6 @@ const FrequenciesModal: React.FC<FrequenciesModalProps> = ({ onClose }) => {
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
                     <Button variant="outline">Statistics</Button>
                     <Button variant="outline">Charts</Button>
-                    {/*<Button variant="outline">Format</Button>*/}
-                    {/*<Button variant="outline">Style</Button>*/}
-                    {/*<Button variant="outline">Bootstrap</Button>*/}
                 </div>
             </div>
 

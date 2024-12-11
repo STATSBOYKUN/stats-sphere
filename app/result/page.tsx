@@ -1,4 +1,4 @@
-// app/data/page.tsx
+// app/result/page.tsx
 "use client";
 
 import React from 'react';

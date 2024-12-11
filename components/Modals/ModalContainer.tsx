@@ -33,6 +33,19 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Smoothing:
+                return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Decomposition:
+                return <DecompositionModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.StationaryTest:
+                return <StationaryTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.CreateModel:
+                return <CreateModelModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.FrequenciesStatistic:
+                return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.DescriptiveStatistic:
+                return <DescriptivesModal onClose={closeModal} {...currentModal.props} />;
+
             default:
                 return null;
         }
