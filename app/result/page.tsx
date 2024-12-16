@@ -1,16 +1,16 @@
 // app/result/page.tsx
+
 "use client";
 
 import React from 'react';
-import DataTable from '../../components/DataTable/DataTable';
 import Sidebar from '../../components/Layout/Main/Sidebar';
 import ResultOutput from "@/components/Output/ResultOutput";
 
-export default function DataPage() {
+export default function ResultPage() { // Ganti nama fungsi menjadi ResultPage untuk menghindari duplikasi
     return (
-        <div className="flex w-full h-80 flex-grow">
+        <div className="h-full w-full flex">
             <Sidebar />
-            <div className="flex-grow h-full overflow-hidden">
+            <div className="flex-grow h-full overflow-y-auto">
                 <ResultOutput />
             </div>
         </div>

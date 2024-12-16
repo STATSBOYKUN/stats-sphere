@@ -1,78 +1,104 @@
-// components/Layout/Main/Sidebar.tsx
-
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ChevronRight, Logs, FileText, Database } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronRight, ChevronDown, List, BarChart2 } from "lucide-react"; // Import ikon yang diperlukan
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
-// Data dummy (ditambah item lebih banyak untuk menampilkan scroll)
-const sidebarData = [
-    {
-        title: "Output",
-        icon: Logs,
-        items: [
-            {
-                title: "Log",
-                icon: Logs,
-                url: "/output/log",
-            },
-            {
-                title: "Result",
-                icon: FileText,
-                items: [
-                    {
-                        title: "Title",
-                        url: "/output/result/title",
-                    },
-                    {
-                        title: "Notes",
-                        url: "/output/result/notes",
-                    },
-                    {
-                        title: "Active Dataset",
-                        icon: Database,
-                        url: "/output/result/active-dataset",
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        title: "Another Category",
-        icon: FileText,
-        items: [
-            {
-                title: "Item 1",
-                url: "/category/item1",
-            },
-            {
-                title: "Item 2",
-                url: "/category/item2",
-            },
-            {
-                title: "Item 3",
-                url: "/category/item3",
-            },
-            {
-                title: "Item 4",
-                url: "/category/item4",
-            },
-            {
-                title: "Item 5",
-                url: "/category/item5",
-            },
-            {
-                title: "Item 6",
-                url: "/category/item6",
-            },
-        ],
-    },
+// Definisi tipe data (Jika menggunakan TypeScript)
+type Log = {
+    id: number;
+    log: string;
+};
+
+type Analytic = {
+    id: number;
+    log_id: number;
+    title: string;
+    note: string;
+};
+
+type Statistic = {
+    id: number;
+    analytic_id: number;
+    title: string;
+    components: string;
+};
+
+// Dummy data
+const dummyLogs: Log[] = [
+    { id: 2, log: "FREQUENCIES VARIABLES=Var1, Var2 /ORDER=ANALYSIS." },
 ];
 
-// Komponen SidebarMenuItem yang mendukung kolaps
+const dummyAnalytics: Analytic[] = [
+    { id: 2, log_id: 2, title: "Frequencies", note: "" },
+];
+
+const dummyStatistics: Statistic[] = [
+    { id: 1, analytic_id: 2, title: "Descriptive Statistics", components: "Descriptive Statistics" },
+    { id: 2, analytic_id: 2, title: "Frequency Table for Var1", components: "Frequency Table" },
+    { id: 3, analytic_id: 2, title: "Frequency Table for Var2", components: "Frequency Table" },
+    { id: 4, analytic_id: 2, title: "Descriptive Statistics", components: "Descriptive Statistics" },
+];
+
+// Helper function to build sidebar data with separate Log and Analytic sections
+const buildSidebarData = () => {
+    const logs = dummyLogs.map((log) => ({
+        title: "Log", // Menghapus ID dari judul
+        items: [], // Log tidak memiliki anak
+        isLog: true, // Menandai bahwa ini adalah item Log
+    }));
+
+    const analytics = dummyAnalytics.map((analytic) => {
+        // Mendapatkan statistik untuk analisis ini
+        const statisticsForAnalytic = dummyStatistics.filter(
+            (statistic) => statistic.analytic_id === analytic.id
+        );
+
+        // Mengelompokkan statistik berdasarkan komponen
+        const componentsMap = statisticsForAnalytic.reduce((acc, stat) => {
+            const component = stat.components;
+            if (!acc[component]) {
+                acc[component] = [];
+            }
+            acc[component].push(stat);
+            return acc;
+        }, {} as Record<string, Statistic[]>);
+
+        const componentsItems: any[] = [];
+
+        Object.keys(componentsMap).forEach((component) => {
+            const stats = componentsMap[component];
+            if (stats.length === 1 && stats[0].title === component) {
+                // Hanya satu statistik dan judul sama dengan komponen, lewati tingkat komponen
+                componentsItems.push({
+                    title: stats[0].title,
+                    url: `/output/${analytic.id}/${stats[0].id}`, // Struktur URL contoh
+                });
+            } else {
+                // Multiple statistik atau judul berbeda, sertakan tingkat komponen
+                componentsItems.push({
+                    title: component,
+                    items: stats.map((statistic) => ({
+                        title: statistic.title,
+                        url: `/output/${analytic.id}/${statistic.id}`, // Struktur URL contoh
+                    })),
+                });
+            }
+        });
+
+        return {
+            title: analytic.title,
+            items: componentsItems,
+            isLog: false,
+        };
+    });
+
+    return [...logs, ...analytics];
+};
+
+// Sidebar Menu Item
 const SidebarMenuItem = ({
                              item,
                              depth = 0,
@@ -85,13 +111,6 @@ const SidebarMenuItem = ({
     const [open, setOpen] = useState(false);
     const hasChildren = item.items && item.items.length > 0;
 
-    // Saat sidebar dikompresi, tutup semua submenu
-    useEffect(() => {
-        if (!isOpen) {
-            setOpen(false);
-        }
-    }, [isOpen]);
-
     const handleToggle = () => {
         if (hasChildren) {
             setOpen(!open);
@@ -100,51 +119,106 @@ const SidebarMenuItem = ({
 
     return (
         <div className="flex flex-col">
-            <button
-                onClick={handleToggle}
-                className={cn(
-                    "flex items-center p-2 text-sm font-medium text-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-gray-500",
-                    depth > 0 && "pl-4",
-                    !isOpen && "justify-center"
-                )}
-            >
-                {item.icon && <item.icon className="w-4 h-4 mr-2" />}
-                {isOpen && <span>{item.title}</span>}
-                {hasChildren && isOpen && (
-                    <ChevronRight
+            {item.isLog ? (
+                isOpen ? (
+                    // Sidebar terbuka, tampilkan teks "Log" tanpa ikon
+                    <a
+                        href="#log" // Ganti dengan URL yang sesuai jika perlu
                         className={cn(
-                            "ml-auto h-4 w-4 transition-transform duration-200",
-                            open ? "rotate-90" : "rotate-0"
+                            "flex items-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
+                            depth > 0 ? "pl-3 py-1" : "py-2 px-3", // Padding yang lebih ringkas
+                            "w-full text-left", // Membuat link mengambil lebar penuh
+                            "hover:bg-gray-100",
+                            "focus:outline-none"
                         )}
-                    />
-                )}
-            </button>
-            {hasChildren && isOpen && open && (
-                <div className="pl-4">
+                    >
+                        <span>Log</span>
+                        {/* Spacer untuk menyamakan posisi teks */}
+                        <span className="ml-auto w-4"></span>
+                    </a>
+                ) : (
+                    // Sidebar diminimalkan, tampilkan ikon saja
+                    <a
+                        href="#log" // Ganti dengan URL yang sesuai jika perlu
+                        className={cn(
+                            "flex items-center justify-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
+                            depth > 0 ? "pl-3 py-1" : "py-2 px-3", // Padding yang lebih ringkas
+                            "w-full",
+                            "hover:bg-gray-100",
+                            "focus:outline-none"
+                        )}
+                        title="Log" // Tooltip untuk aksesibilitas
+                    >
+                        <List size={20} />
+                    </a>
+                )
+            ) : hasChildren ? (
+                // Item Analytic dengan anak
+                <>
+                    {isOpen ? (
+                        // Sidebar terbuka, tampilkan teks dengan ikon ChartBar dan Chevron
+                        <button
+                            onClick={handleToggle}
+                            className={cn(
+                                "flex items-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
+                                depth > 0 ? "pl-3 py-1" : "py-2 px-3", // Padding yang lebih ringkas
+                                "w-full text-left", // Membuat tombol mengambil lebar penuh
+                                "hover:bg-gray-100"
+                            )}
+                        >
+                            <span>{item.title}</span>
+                            <span className="ml-auto">
+                                {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                            </span>
+                        </button>
+                    ) : (
+                        // Sidebar diminimalkan, tampilkan ikon ChartBar saja
+                        <button
+                            onClick={handleToggle}
+                            className={cn(
+                                "flex items-center justify-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
+                                depth > 0 ? "pl-3 py-1" : "py-2 px-3", // Padding yang lebih ringkas
+                                "w-full",
+                                "hover:bg-gray-100"
+                            )}
+                            title={item.title} // Tooltip untuk aksesibilitas
+                        >
+                            <BarChart2 size={20} />
+                        </button>
+                    )}
+                </>
+            ) : (
+                // Jika item tidak memiliki anak, render sebagai link
+                <a
+                    href={item.url}
+                    className={cn(
+                        "flex items-center text-sm text-gray-700 rounded hover:bg-gray-100",
+                        depth > 0 ? "pl-6 py-1" : "pl-3 py-2",
+                        "w-full",
+                        "focus:outline-none" // Menghapus outline fokus
+                    )}
+                >
+                    <span>{item.title}</span>
+                    {/* Spacer untuk menyamakan posisi teks */}
+                    <span className="ml-auto w-4"></span>
+                </a>
+            )}
+            {hasChildren && open && isOpen && (
+                <div className="ml-4 border-l border-gray-200">
                     {item.items.map((child: any, index: number) => (
                         <SidebarMenuItem key={index} item={child} depth={depth + 1} isOpen={isOpen} />
                     ))}
                 </div>
             )}
-            {!hasChildren && isOpen && (
-                <a
-                    href={item.url}
-                    className={cn(
-                        "flex items-center p-2 text-sm font-medium text-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-gray-500",
-                        depth > 0 && "pl-4",
-                        !isOpen && "justify-center"
-                    )}
-                >
-                    {item.icon && <item.icon className="w-4 h-4 mr-2" />}
-                    {isOpen && <span>{item.title}</span>}
-                </a>
-            )}
         </div>
-    );
-};
+    ); // <-- Pastikan ada kurung tutup ')' di sini
 
+}; // <-- Pastikan ada kurung kurawal penutup '}' di sini
+
+// Sidebar Component
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
+    const sidebarData = buildSidebarData();
 
     return (
         <div
@@ -153,8 +227,9 @@ const Sidebar = () => {
                 isOpen ? "w-64" : "w-20"
             )}
         >
-            <div className="flex items-center justify-between p-4 border-b">
-                {isOpen && <h1 className="text-lg font-semibold">Result</h1>}
+            {/* Header Sidebar */}
+            <div className="flex items-center justify-between p-3 border-b">
+                {isOpen && <h1 className="text-md font-semibold">Result</h1>}
                 <Button
                     variant="ghost"
                     size="icon"
@@ -168,11 +243,12 @@ const Sidebar = () => {
                     />
                 </Button>
             </div>
-            <div className="p-4 flex-grow overflow-y-auto max-h-screen">
+            {/* Konten Sidebar */}
+            <div className="p-2 flex-grow overflow-y-auto">
                 {/* Search Input */}
                 {isOpen && (
-                    <div className="mb-4">
-                        <Input placeholder="Search..." />
+                    <div className="mb-3">
+                        <Input placeholder="Search..." size="sm" />
                     </div>
                 )}
                 {/* Sidebar Menu */}

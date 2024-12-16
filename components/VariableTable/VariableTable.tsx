@@ -34,7 +34,7 @@ export default function VariableTable() {
     );
 
     return (
-        <div className="flex-grow z-0 h-full w-full">
+        <div className="z-0 h-full w-full">
             <HotTable
                 ref={hotTableRef}
                 settings={settings}
