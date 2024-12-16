@@ -68,18 +68,18 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
         setUsedVariable([])
         setSelectedVariable(null);
         setSelectedSave(null);
-        setSelectedTrend(null);
-        setSelectedLevel(null);
-        setSelectedMethod(null);
+        setSelectedTrend("Linear");
+        setSelectedLevel("Level");
+        setSelectedMethod("Ljung-Box");
         setInputMaximumLags(10);
         setIsCheckedDetrended(null);
         setIsCheckedSeasonal(null);
     };
 
     const [selectedSave, setSelectedSave] = useState<string | null>(null);
-    const [selectedTrend, setSelectedTrend] = useState<string | null>(null);
-    const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
-    const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+    const [selectedTrend, setSelectedTrend] = useState<string | null>("Linear");
+    const [selectedLevel, setSelectedLevel] = useState<string | null>("Level");
+    const [selectedMethod, setSelectedMethod] = useState<string | null>("Ljung-Box");
     const [inputMaximumLags, setInputMaximumLags] = useState<number>(10);
     const [isCheckedDetrended, setIsCheckedDetrended] = useState<string | null>(null);
     const [isCheckedSeasonal, setIsCheckedSeasonal] = useState<string | null>(null);
@@ -172,9 +172,10 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                             <Label>Q-Stat:</Label>
                         </div>
                         <div className="ml-4 mb-2">
-                            <Select onValueChange={(value)=>handleSelectedMethod(value)}>
+                            <Select onValueChange={(value)=>handleSelectedMethod(value)}
+                                defaultValue={selectedMethod || "Choose Your Method"}>
                                 <SelectTrigger className="mr-2">
-                                    <SelectValue placeholder="Choose Your Method">
+                                    <SelectValue>
                                         {selectedMethod || "Choose Your Method"}
                                     </SelectValue>
                                 </SelectTrigger>
@@ -202,7 +203,7 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                             <Label>Seasonally Differencing</Label>
                         </div>
                         <div className="ml-4 flex flex-row gap-2">
-                        <div className="flex items-center">
+                            <div className="flex items-center">
                                 <div className="flex flex-row gap-2">
                                     <Checkbox
                                         checked={isCheckedDetrended !== null}
@@ -211,9 +212,11 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                                     <Label>Detrended:</Label>
                                 </div>
                             </div>
-                            {isCheckedDetrended? <Select onValueChange={(value) => handleSelectedTrend(value)}>
+                            {isCheckedDetrended? 
+                            <Select onValueChange={(value) => handleSelectedTrend(value)}
+                                defaultValue={selectedTrend || "Choose Your Trend"}>
                                 <SelectTrigger className="mr-2 w-[200px]">
-                                    <SelectValue placeholder="Choose Your Trend">
+                                    <SelectValue>
                                         {selectedTrend || "Choose Your Trend"}
                                     </SelectValue>
                                 </SelectTrigger>
@@ -230,9 +233,10 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                                     <Label>Autocorrelation on:</Label>
                                 </div>
                             </div>
-                            <Select onValueChange={(value)=>handleSelectedLevel(value)}>
+                            <Select onValueChange={(value)=>handleSelectedLevel(value)}
+                                defaultValue={selectedLevel || "Choose Your Frequency"}>
                                 <SelectTrigger className="mr-2 w-[200px] mb-2">
-                                    <SelectValue placeholder="Choose Your Level">
+                                    <SelectValue>
                                         {selectedLevel || "Choose Your Level"}
                                     </SelectValue>
                                 </SelectTrigger>

@@ -11,9 +11,9 @@ import SmoothingModal from '@/components/Modals/Analyze/TimeSeries/SmoothingModa
 import DecompositionModal from '@/components/Modals/Analyze/TimeSeries/DecompositionModal';
 import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
 import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
-import CreateModelModal from '@/components/Modals/Analyze/TimeSeries/CreateModelModal';
 import ExportDataModal from './ExportDataModal';
 import { Dialog } from '@/components/ui/dialog';
+import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -42,8 +42,8 @@ const ModalContainer: React.FC = () => {
                 return <AutocorrelationModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.UnitRootTest:
                 return <UnitRootTestModal onClose={closeModal} {...currentModal.props} />;
-            case ModalType.CreateModel:
-                return <CreateModelModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.BoxJenkinsModel:
+                return <BoxJenkinsModelModal onClose={closeModal} {...currentModal.props} />;
 
             default:
                 return null;

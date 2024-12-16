@@ -13,7 +13,7 @@ export enum ModalType {
     Decomposition = 'decomposition', //Time Series Decomposition
     Autocorrelation = 'autocorrelation', //Time Series Stationary Test
     UnitRootTest = 'unitRootTest', //Time Series Stationary Test
-    CreateModel = 'createModel', //Time Series Create Model
+    BoxJenkinsModel = 'BoxJenkinsModel', //Time Series Create Model
 }
 
 interface ModalInstance {

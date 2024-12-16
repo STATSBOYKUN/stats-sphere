@@ -18,11 +18,11 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 
-interface DecompositionModalProps {
+interface BoxJenkinsModelModalProps {
   onClose: () => void;
 }
 
-const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
+const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) => {
     const [availableVariables, setAvailableVariables] = useState<string[]>([ 
         "PDB",
         "Nilai_Tukar_Petani",
@@ -80,27 +80,43 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
         setUsedVariable([])
         setXAxisVariables([]);
         setSelectedVariable(null);
-        setSelectedMethod("Trend Linear");
-        setCheckedSave(null);
+        setSelectedSave(null);
         setCheckedSeasonal(null);
+        setSelectedFrequency("Monthly");
+        setInputP(1);
+        setInputD(0);
+        setInputQ(0);
     };
 
     // State untuk menyimpan metode yang dipilih
-    const [selectedMethod, setSelectedMethod] = useState<string | null>("Trend Linear");
-    const [checkedSave, setCheckedSave] = useState<string | null>(null);
-    const [checkedSeasonal, setCheckedSeasonal] = useState<string | null>(null);
+    const [selectedSave, setSelectedSave] = useState<string | null>(null);
+    const [isCheckedSeasonal, setCheckedSeasonal] = useState<string | null>(null);
+    const [selectedFrequency, setSelectedFrequency] = useState<string | null>("Monthly");
+    const [inputP, setInputP] = useState<number>(1);
+    const [inputD, setInputD] = useState<number>(0);
+    const [inputQ, setInputQ] = useState<number>(0);
 
-    const handleSelectedMethod = (value: string) => {
-        setSelectedMethod(value);
-        setCheckedSave('checked');
-        setCheckedSeasonal('checked');
+    const handleSelectedFrequency = (frequency: string) => {
+        setSelectedFrequency(frequency);
+    };
+
+    const handleInputP = (value: number) => {
+        setInputP(value);
+    };
+    
+    const handleInputD = (value: number) => {
+        setInputD(value);
+    };
+
+    const handleInputQ = (value: number) => {
+        setInputQ(value);
     };
 
   return (
     <DialogContent className="max-w-[75vw] max-h-[90vh] flex flex-col space-y-0 overflow-y-auto">
         <div className="pb-4 ml-4">
             <DialogHeader>
-                <DialogTitle className="font-bold text-2xl">Decomposition</DialogTitle>
+                <DialogTitle className="font-bold text-2xl">BoxJenkinsModel</DialogTitle>
                 <DialogDescription></DialogDescription>
             </DialogHeader>
         </div>
@@ -181,30 +197,100 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     <div className="border-2 rounded-md w-[420px] py-2">
                         <div className="w-full p-2 border-0 rounded-t-md flex flex-row gap-4">
                             <div className="flex items-center ml-2 min-w-max">
-                                <Label className="font-bold">Trend Methods:</Label>
+                                <Label className="font-bold">Parameters:</Label>
                             </div>
-                            <Select onValueChange={(value) => handleSelectedMethod(value)}
-                                defaultValue={selectedMethod || "Choose Your Frequency"}>
-                                <SelectTrigger className="mr-2">
-                                    <SelectValue>
-                                        {selectedMethod || "Choose Your Method"}
-                                    </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Trend Linear">Trend Linear</SelectItem>
-                                    <SelectItem value="Trend Quadratic">Trend Quadratic</SelectItem>
-                                    <SelectItem value="Trend Exponential">Trend Exponential</SelectItem>
-                                </SelectContent>
-                            </Select>
                         </div>
-                        <div className="flex flex-col gap-2 p-2">
-                            <div className="flex flex-row gap-2 ml-8">
+                        <div className="flex flex-row ml-4 mt-2">
+                            <div className="flex flex-row gap-4 ml-4">
+                                <div className="flex items-center">
+                                    <Label>p:</Label>
+                                </div>
+                                <Input type="number" className="w-[80px]" 
+                                    placeholder="1" min="0" max="10" step="1"
+                                    value={inputP}
+                                    onChange={(e) => handleInputP(Number(e.target.value))}
+                                />
+                            </div>
+                            <div className="flex flex-row gap-4 ml-4">
+                                <div className="flex items-center">
+                                    <Label>d:</Label>
+                                </div>
+                                <Input type="number" className="w-[80px]" 
+                                    placeholder="1" min="0" max="10" step="1"
+                                    value={inputD}
+                                    onChange={(e) => handleInputD(Number(e.target.value))}
+                                />
+                            </div>
+                            <div className="flex flex-row gap-4 ml-4">
+                                <div className="flex items-center">
+                                    <Label>q:</Label>
+                                </div>
+                                <Input type="number" className="w-[80px]" 
+                                    placeholder="1" min="0" max="10" step="1"
+                                    value={inputQ}
+                                    onChange={(e) => handleInputQ(Number(e.target.value))}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-2 p-2 mt-2">
+                            <div className="flex flex-row gap-2 ml-6">
                                 <Checkbox 
-                                    checked={checkedSeasonal !== null} 
-                                    onCheckedChange={(isChecked) => setCheckedSeasonal(isChecked ? "selected" : null)}
+                                    checked={isCheckedSeasonal !== null}
+                                    onCheckedChange={(isChecked)=>setCheckedSeasonal(isChecked? "selected" : null)}
                                 />
                                 <Label>Contains Seasonal Influences</Label>
                             </div>
+                            {isCheckedSeasonal? 
+                                <>
+                                    <div className="flex flex-row ml-2 mt-2">
+                                        <div className="flex flex-row gap-4 ml-4">
+                                            <div className="flex items-center">
+                                                <Label>P:</Label>
+                                            </div>
+                                            <Input type="number" className="w-[80px]" 
+                                                placeholder="1" min="0" max="10" step="1"
+                                            />
+                                        </div>
+                                        <div className="flex flex-row gap-4 ml-4">
+                                            <div className="flex items-center">
+                                                <Label>D:</Label>
+                                            </div>
+                                            <Input type="number" className="w-[80px]" 
+                                                placeholder="1" min="0" max="10" step="1"
+                                            />
+                                        </div>
+                                        <div className="flex flex-row gap-4 ml-4">
+                                            <div className="flex items-center">
+                                                <Label>Q:</Label>
+                                            </div>
+                                            <Input type="number" className="w-[80px]" 
+                                                placeholder="1" min="0" max="10" step="1"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="ml-6 flex flex-row gap-2 mt-2">
+                                        <div className="flex items-center">
+                                                <Label>Frequency:</Label>
+                                        </div>
+                                        <div>
+                                        <Select 
+                                                onValueChange={(value) => handleSelectedFrequency(value)} 
+                                                defaultValue={selectedFrequency || "Choose Your Frequency"}
+                                                >
+                                                <SelectTrigger className="mr-2 w-[200px]">
+                                                    <SelectValue>{selectedFrequency || "Choose Your Frequency"}</SelectValue>
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Monthly">Monthly</SelectItem>
+                                                    <SelectItem value="Three-Month Period">Three-Month Period</SelectItem>
+                                                    <SelectItem value="Four-Month Period">Four-Month Period</SelectItem>
+                                                    <SelectItem value="Six-Month Period">Six-Month Period</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                </>
+                            :""}
                         </div>
                     </div>
 
@@ -214,10 +300,10 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                             <div className="ml-2">
                                 <Label className="font-bold">Save:</Label>
                             </div>
-                            <div className="flex flex-row gap-2 ml-8">
+                            <div className="flex flex-row gap-2 ml-6">
                                 <Checkbox 
-                                    checked={checkedSave !== null} 
-                                    onCheckedChange={(isChecked) => setCheckedSave(isChecked ? "selected" : null)}
+                                    checked={selectedSave !== null} 
+                                    onCheckedChange={(isChecked) => setSelectedSave(isChecked ? "selected" : null)}
                                 />
                                 <Label>Save Forecasting Result as Variable</Label>
                             </div>
@@ -241,4 +327,4 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
   );
 };
 
-export default DecompositionModal;
+export default BoxJenkinsModelModal;

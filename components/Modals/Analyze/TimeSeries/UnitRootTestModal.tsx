@@ -67,16 +67,18 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
         ]);
         setUsedVariable([]);
         setSelectedVariable(null);
-        setSelectedMethod(null);
         setSelectedSave(null);
-        setSelectedLevel(null);
+        setSelectedMethod("Dickey-Fuller");
+        setSelectedLevel("Level");
+        setSelectedDetrended("Linear");
         setIsCheckedDetrended(null);
         setIsCheckedSeasonal(null);
     };
 
     // State untuk menyimpan metode yang dipilih
-    const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
-    const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+    const [selectedMethod, setSelectedMethod] = useState<string | null>("Dickey-Fuller");
+    const [selectedLevel, setSelectedLevel] = useState<string | null>("Level");
+    const [selectedDetrended, setSelectedDetrended] = useState<string | null>("Linear");
     const [isCheckedDetrended, setIsCheckedDetrended] = useState<string | null>(null);
     const [isCheckedSeasonal, setIsCheckedSeasonal] = useState<string | null>(null);
 
@@ -88,6 +90,10 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
 
     const handleSelectedLevel = (level: string) => {
         setSelectedLevel(level);
+    };
+    
+    const handleSelectedDetrended = (detrended: string) => {
+        setSelectedDetrended(detrended);
     };
 
     // Ambil pertanyaan berdasarkan metode yang dipilih
@@ -158,7 +164,8 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                             <Label className="font-bold">Root Test Method:</Label>
                         </div>
                         <div className="ml-4">
-                            <Select onValueChange={(value)=>handleSelectedMethod(value)}>
+                            <Select onValueChange={(value)=>handleSelectedMethod(value)}
+                                defaultValue={selectedMethod || "Choose Your Method"}>
                                 <SelectTrigger className="mr-2">
                                     <SelectValue placeholder="Choose Your Method">
                                         {selectedMethod || "Choose Your Method"}
@@ -207,7 +214,9 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                     <Label>Detrended:</Label>
                                 </div>
                             </div>
-                            {isCheckedDetrended? <Select>
+                            {isCheckedDetrended? 
+                            <Select onValueChange={(value)=>setSelectedDetrended(value)}
+                                defaultValue={selectedDetrended || "Choose Your Detrended"}>
                                 <SelectTrigger className="mr-2 w-[200px]">
                                     <SelectValue placeholder="Choose Your Method">
                                         {/* {selectedMethod || "Choose Your Method"} */}
@@ -226,7 +235,8 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                     <Label>UnitRootTest on:</Label>
                                 </div>
                             </div>
-                            <Select onValueChange={(value)=>handleSelectedLevel(value)}>
+                            <Select onValueChange={(value)=>handleSelectedLevel(value)}
+                                defaultValue={selectedLevel || "Choose Your Level"}>
                                 <SelectTrigger className="mr-2 w-[200px] mb-2">
                                     <SelectValue placeholder="Choose Your Level">
                                         {selectedLevel || "Choose Your Level"}

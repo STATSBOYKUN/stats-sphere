@@ -196,7 +196,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                 <div className="flex flex-col gap-4">
                     {/* Baris 1 */}
                     <div className="border-2 rounded-md w-[420px]">
-                        <div className="w-full p-2 border-0 rounded-t-md flex flex-row gap-4">
+                        <div className="w-full p-2 border-0 rounded-t-md flex flex-row gap-4 mt-2">
                             <div className="flex items-center ml-2">
                                 <Label className="font-bold">Methods:</Label>
                             </div>
