@@ -16,6 +16,7 @@ import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/F
 import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from '@/components/ui/dialog';
 import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
+import ModalAutomaticLinearModeling from '@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling'
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -34,6 +35,8 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalAutomaticLinearModeling:
+                return <ModalAutomaticLinearModeling onClose={closeModal} {...currentModal.props}/>;
 
             // Time Series
             case ModalType.Smoothing:

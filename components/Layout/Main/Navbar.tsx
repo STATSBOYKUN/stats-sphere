@@ -254,6 +254,29 @@ const Navbar: React.FC = () => {
                             </MenubarSub>
 
                             <MenubarSub>
+                                <MenubarSubTrigger>Regression</MenubarSubTrigger>
+                                <MenubarSubContent>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalAutomaticLinearModeling)}>Automatic Linear Modeling...</MenubarItem>
+                                    <MenubarItem>Linear...</MenubarItem>
+                                    <MenubarItem>Curve Estimation...</MenubarItem>
+                                    <MenubarItem>Partial Least Squares...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Binary Logistic...</MenubarItem>
+                                    <MenubarItem>Multinomial Logistic...</MenubarItem>
+                                    <MenubarItem>Ordinal...</MenubarItem>
+                                    <MenubarItem>Probit...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Nonlinear...</MenubarItem>
+                                    <MenubarItem>Weight Estimation...</MenubarItem>
+                                    <MenubarItem>2-Stage Least Squares...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Quantiles...</MenubarItem>
+                                    <MenubarSeparator />
+                                    <MenubarItem>Optimal Scaling (Catreg)...</MenubarItem>
+                                </MenubarSubContent>
+                            </MenubarSub>
+
+                            <MenubarSub>
                                 <MenubarSubTrigger>Nonparametric Test</MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem>One Sample...</MenubarItem>
