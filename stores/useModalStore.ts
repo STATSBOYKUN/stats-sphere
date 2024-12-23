@@ -1,6 +1,8 @@
 // stores/useModalStore.ts
 
 import { create } from 'zustand';
+import StatisticsSettingsModal
+    from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesStatistics";
 
 export enum ModalType {
     OpenFile = 'openFile',
@@ -14,6 +16,10 @@ export enum ModalType {
     Autocorrelation = 'autocorrelation', //Time Series Stationary Test
     UnitRootTest = 'unitRootTest', //Time Series Stationary Test
     BoxJenkinsModel = 'BoxJenkinsModel', //Time Series Create Model
+    FrequenciesStatistic = 'frequenciesStatistic',
+    DescriptiveStatistic = 'descriptiveStatistic',
+    StatisticsSettingsModal = 'statisticsSettingsModal',
+    ChartSettingsModal = 'chartSettingsModal',
 }
 
 interface ModalInstance {
