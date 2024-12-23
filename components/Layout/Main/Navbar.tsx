@@ -208,7 +208,7 @@ const Navbar: React.FC = () => {
                     <MenubarMenu>
                         <MenubarTrigger>Analyze</MenubarTrigger>
                         <MenubarContent>
-                        <MenubarSub>
+                            <MenubarSub>
                                 <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={() => openModal(ModalType.FrequenciesStatistic)}>Frequencies</MenubarItem>
@@ -283,8 +283,7 @@ const Navbar: React.FC = () => {
                                     <MenubarItem onClick={()=>openModal(ModalType.BoxJenkinsModel)}>Box-Jenkins Model</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
-                        </MenubarContent>
-                        <MenubarContent>
+                            
                             <MenubarSub>
                                 <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
                                 <MenubarSubContent>
@@ -292,7 +291,7 @@ const Navbar: React.FC = () => {
                                     <MenubarItem onClick={() => openModal(ModalType.DescriptiveStatistic)}>Descriptives</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
-                            </MenubarContent>
+                        </MenubarContent>
                     </MenubarMenu>
 
                     <MenubarMenu>
