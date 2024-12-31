@@ -31,8 +31,25 @@ export const useDescriptiveStatistics = () => {
         });
         const valid = columnData.length; // Jumlah data valid
         const missing = data.length - valid; // Jumlah data yang hilang
-        return { frequencies, valid, missing };
+
+        // Membentuk data frekuensi sesuai format JSON yang diinginkan
+        const frequencyData = Object.entries(frequencies).map(([key, value]) => ({
+            Frequency: key,
+            Percent: parseFloat(((value / valid) * 100).toFixed(1)),
+            "Valid Percent": parseFloat(((value / valid) * 100).toFixed(1)),
+            "Cumulative Percent": 0, // Akan dihitung kemudian
+        }));
+
+        // Menghitung Cumulative Percent
+        let cumulative = 0;
+        frequencyData.forEach((item) => {
+            cumulative += item.Percent;
+            item["Cumulative Percent"] = parseFloat(cumulative.toFixed(1));
+        });
+
+        return { frequencyData, valid, missing };
     };
+
 
     // Fungsi untuk menghitung statistik lengkap untuk satu variabel
     const calculateCompleteStatistics = (columnIndex: number) => {

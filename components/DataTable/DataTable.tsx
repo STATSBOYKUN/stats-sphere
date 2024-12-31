@@ -46,7 +46,7 @@ export default function DataTable() {
                 licenseKey="non-commercial-and-evaluation"
                 afterChange={handleAfterChange}
                 afterValidate={handleAfterValidate}
-                className="h-full w-full"
+                className="h-full w-full z-0"
             />
         </div>
     );
