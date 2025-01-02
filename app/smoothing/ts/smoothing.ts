@@ -1,6 +1,6 @@
 import init, {Smoothing} from '../../../src/wasm/pkg/wasm.js';
 
-export async function handleSmoothing(data: (number|string)[][], pars: (HTMLInputElement)[], resultElement: HTMLElement, method: string): Promise<void> {
+export async function handleSmoothing(data: (number|string)[][], pars: (number)[], resultElement: HTMLElement, method: string): Promise<void> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data[0]) ? data : null;
     const resultPlace = resultElement;
@@ -24,20 +24,33 @@ export async function handleSmoothing(data: (number|string)[][], pars: (HTMLInpu
 
         let smoothing;
         let smoothingValue;
+        let nameMethod;
 
         smoothing = new Smoothing(dataHeader, new Float64Array(dataValue), timeHeader, time);
         switch (method) {
             case 'sma':
-                smoothingValue = smoothing.calculate_sma(pars[0].valueAsNumber);
+                smoothingValue = smoothing.calculate_sma(pars[0]);
+                nameMethod = 'Simple Moving Average';
                 break;
             case 'dma':
-                smoothingValue = smoothing.calculate_dma(pars[0].valueAsNumber);
+                smoothingValue = smoothing.calculate_dma(pars[0]);
+                nameMethod = 'Double Moving Average';
                 break;
             case 'ses':
-                smoothingValue = smoothing.calculate_ses(pars[0].valueAsNumber);
+                smoothingValue = smoothing.calculate_ses(pars[0]);
+                nameMethod = 'Simple Exponential Smoothing';
                 break;
             case 'des':
-                smoothingValue = smoothing.calculate_des(pars[0].valueAsNumber);
+                smoothingValue = smoothing.calculate_des(pars[0]);
+                nameMethod = 'Double Exponential Smoothing';
+                break;
+            case 'holt':
+                smoothingValue = smoothing.calculate_holt(pars[0], pars[1]);
+                nameMethod = 'Holt\'s Method';
+                break;
+            case 'winter':
+                smoothingValue = smoothing.calculate_winter(pars[0], pars[1], pars[2], pars[3]);
+                nameMethod = 'Winter\'s Method';
                 break;
             default:
                 throw new Error(`Unknown method: ${method}`);
@@ -52,7 +65,7 @@ export async function handleSmoothing(data: (number|string)[][], pars: (HTMLInpu
         
         // Menambahkan header
         html += `<th>${timeHeader}</th>`;
-        html += method === 'sma'? `<th>Simple Moving Average</th>`:`<th>Double Moving Average</th>`;
+        html += `<th>${nameMethod}</th>`;
         html += `</tr></thead><tbody>`;
 
         // Menambahkan baris data
