@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-pub use crate::Smoothing;
+use crate::Smoothing;
 
 #[wasm_bindgen]
 impl Smoothing {

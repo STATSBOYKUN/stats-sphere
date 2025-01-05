@@ -1,6 +1,6 @@
 import init, {Smoothing} from '../../../src/wasm/pkg/wasm.js';
 
-export async function handleSmoothing(data: (number|string)[][], pars: (number)[], resultElement: HTMLElement, method: string): Promise<void> {
+export async function handleSmoothing(data: (number|string)[][], pars: (number)[], resultElement: HTMLElement, evalElement: HTMLElement, method: string): Promise<void> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data[0]) ? data : null;
     const resultPlace = resultElement;
@@ -35,6 +35,10 @@ export async function handleSmoothing(data: (number|string)[][], pars: (number)[
             case 'dma':
                 smoothingValue = smoothing.calculate_dma(pars[0]);
                 nameMethod = 'Double Moving Average';
+                break;
+            case 'wma':
+                smoothingValue = smoothing.calculate_wma(pars[0]);
+                nameMethod = `Weighted Moving Average`;
                 break;
             case 'ses':
                 smoothingValue = smoothing.calculate_ses(pars[0]);
@@ -78,6 +82,32 @@ export async function handleSmoothing(data: (number|string)[][], pars: (number)[
 
         html += `</tbody></table>`;
         resultPlace.innerHTML = html;
+
+        let evalValue = await smoothing.smoothing_evaluation(smoothingValue) as Record<string, number>;
+
+        // Menambahkan evaluasi
+        let evalHtml = `
+            <table class="table table-zebra shadow-xl text-center w-full">
+                    <thead class="bg-grey">
+                        <tr>
+            `;
+        
+        // Menambahkan header
+        evalHtml += `<th>evaluation</th>`;
+        evalHtml += `<th>value</th>`;
+        evalHtml += `</tr></thead><tbody>`;
+
+        // Menambahkan baris data
+        for (let [key, value] of Object.entries(evalValue)) {
+            evalHtml += '<tr>';
+            evalHtml += `<td>${key}</td>`;
+            evalHtml += `<td>${value}</td>`;
+            evalHtml += '</tr>';
+        }
+        
+
+        evalHtml += `</tbody></table>`;
+        evalElement.innerHTML = evalHtml;
     } catch (error) {
         resultElement.innerHTML = `<p>Error: ${error instanceof Error ? error.message : "Unknown error"}</p>`;
     }

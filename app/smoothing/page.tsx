@@ -9,6 +9,7 @@ export default function Smoothing(){
     const methods = [
         { value: 'sma', label: 'Simple Moving Average' },
         { value: 'dma', label: 'Double Moving Average' },
+        { value: 'wma', label: 'Weighted Moving Average' },
         { value: 'ses', label: 'Simple Exponential Smoothing' },
         { value: 'des', label: 'Double Exponential Smoothing' },
         { value: 'holt', label: 'Holt\'s Method Exponential Smoothing' },
@@ -24,7 +25,7 @@ export default function Smoothing(){
 
     useEffect(() => {
         switch (selectedMethod) {
-            case 'sma': case 'dma':
+            case 'sma': case 'dma': case 'wma':
                 setPars([2]);
                 break;
             case 'ses': case 'des':
@@ -44,7 +45,7 @@ export default function Smoothing(){
 
     const inputPars = (method: string) => {
         switch (method) {
-        case 'sma': case 'dma':
+        case 'sma': case 'dma': case 'wma':
             return (
                 <div className="flex flex-row gap-2">
                     <label className="max-w-sm p-2 mt-4 rounded-lg" htmlFor="par1">distance :</label>
@@ -128,13 +129,14 @@ export default function Smoothing(){
         const fileInput = document.getElementById('file') as HTMLInputElement;
         const dataElement = document.getElementById('data') as HTMLElement;
         const resultElement = document.getElementById('result') as HTMLElement;
+        const evalElement = document.getElementById('eval') as HTMLElement;
         const calculateButton = document.getElementById('calculateButton') as HTMLButtonElement;
         if (fileInput && dataElement) {
             handleDisplayTable(fileInput, dataElement).then(data => {
                 if (calculateButton && pars && resultElement) {
                     calculateButton.addEventListener('click', () => {
                         const filteredData = data.map(row => row.filter(item => item !== null));
-                        handleSmoothing(filteredData, parsRef.current, resultElement, selectedMethodRef.current);
+                        handleSmoothing(filteredData, parsRef.current, resultElement, evalElement, selectedMethodRef.current);
                     });
                 }
             });
@@ -165,6 +167,9 @@ export default function Smoothing(){
                 <div className="w-full flex flex-row gap-2">
                     <div id="data" className="w-1/2 my-2 max-h-80 overflow-auto bg-white border-2 border-gray-300 rounded-md flex justify-center">Data</div>
                     <div id="result" className="w-1/2 my-2 max-h-80 overflow-auto bg-white border-2 border-gray-300 rounded-md flex justify-center">Hasil</div>
+                </div>
+                <div id="eval" className="w-full overflow-auto bg-white border-2 border-gray-300 rounded-md flex justify-center">
+                    Evaluasi
                 </div>
             </div>
         </div>

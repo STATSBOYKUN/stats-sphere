@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-pub use crate::Smoothing;
+use crate::Smoothing;
 
 #[wasm_bindgen]
 impl Smoothing{
@@ -46,7 +46,7 @@ impl Smoothing{
                 winter_values.push(0.0);
             } else if i == period-1{
                 level.push(level_12_avg);
-                trend.push(trend_period.iter().sum::<f64>() / (period*period) as f64);
+                trend.push(trend_period.iter().sum::<f64>() / (period).pow(2) as f64);
                 seasonal.push(self.get_data()[i]/level_12_avg);
                 winter_values.push(0.0);
             }
