@@ -7,22 +7,26 @@ use crate::time_series::evaluation::evaluation::*;
 #[wasm_bindgen]
 impl Smoothing {
     pub fn smoothing_evaluation(&self, forecast: Vec<f64>) -> JsValue {
-        let mut data_copy = self.get_data().clone();
-        let mut forecast_copy = forecast.clone();
+        let mut data_copy = self.get_data();
+        let mut forecast_copy = forecast;
+        let mut count = 0;
         for i in 0..forecast_copy.len(){
             if forecast_copy[i] == 0.0{
-                forecast_copy.remove(i);
-                data_copy.remove(i);
+                count += 1;
             }
             else{
                 break;
             }
         }
-        let mse = mse(data_copy.clone(), forecast.clone()) as f64;
-        let rmse = rmse(data_copy.clone(), forecast.clone()) as f64;
-        let mae = mae(data_copy.clone(), forecast.clone()) as f64;
-        let mpe = mpe(data_copy.clone(), forecast.clone()) as f64;
-        let mape = mape(data_copy.clone(), forecast.clone()) as f64;
+        for _i in 0..count{
+            data_copy.remove(0);
+            forecast_copy.remove(0);
+        }
+        let mse = mse(data_copy.clone(), forecast_copy.clone()) as f64;
+        let rmse = rmse(data_copy.clone(), forecast_copy.clone()) as f64;
+        let mae = mae(data_copy.clone(), forecast_copy.clone()) as f64;
+        let mpe = mpe(data_copy.clone(), forecast_copy.clone()) as f64;
+        let mape = mape(data_copy.clone(), forecast_copy.clone()) as f64;
         
         let results = Object::new();
         Reflect::set(&results, &"MSE".into(), &mse.into()).unwrap();

@@ -33,4 +33,18 @@ impl Smoothing{
     pub fn get_time_header(&self) -> String {
         self.time_header.clone()
     }
+
+    // Setter
+    pub fn set_data_header(&mut self, data_header: String) {
+        self.data_header = data_header;
+    }
+    pub fn set_data(&mut self, data: Vec<f64>) {
+        self.data = data;
+    }
+    pub fn set_time(&mut self, time: Vec<String>) {
+        self.time = time;
+    }
+    pub fn set_time_header(&mut self, time_header: String) {
+        self.time_header = time_header;
+    }
 }
