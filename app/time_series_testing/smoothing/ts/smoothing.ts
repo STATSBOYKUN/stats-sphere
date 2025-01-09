@@ -1,4 +1,4 @@
-import init, {Smoothing} from '../../../src/wasm/pkg/wasm.js';
+import init, {Smoothing} from '../../../../src/wasm/pkg/wasm.js';
 
 export async function handleSmoothing(data: (number|string)[][], pars: (number)[], resultElement: HTMLElement, evalElement: HTMLElement, method: string): Promise<void> {
     await init(); // Inisialisasi WebAssembly
