@@ -11,6 +11,9 @@ export enum ModalType {
     ComputeVariable = 'computeVariable',
     ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling',
 
+    // Descriptive Statistic
+    Frequencies = 'frequencies',
+
     // Time Series
     Smoothing = 'smoothing', //Time Series Smoothing
     Decomposition = 'decomposition', //Time Series Decomposition

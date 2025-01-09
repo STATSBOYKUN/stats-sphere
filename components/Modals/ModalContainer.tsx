@@ -37,6 +37,8 @@ const ModalContainer: React.FC = () => {
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ModalAutomaticLinearModeling:
                 return <ModalAutomaticLinearModeling onClose={closeModal} {...currentModal.props}/>;
+            case ModalType.FrequenciesStatistic:
+                return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
 
             // Time Series
             case ModalType.Smoothing:
