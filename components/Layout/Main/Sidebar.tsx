@@ -1,73 +1,51 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown, List, BarChart2 } from "lucide-react";
+import { ChevronRight, ChevronDown, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import useResultStore from "@/stores/useResultStore";
 
-const SidebarMenuItem = ({ item, depth = 0, isOpen }: { item: any; depth?: number; isOpen: boolean }) => {
+interface SidebarItem {
+    title: string;
+    url?: string;
+    items?: SidebarItem[];
+}
+
+const SidebarMenuItem: React.FC<{ item: SidebarItem; depth?: number; isOpen: boolean }> = ({ item, depth = 0, isOpen }) => {
     const [open, setOpen] = useState(false);
     const hasChildren = item.items && item.items.length > 0;
+
     const handleToggle = () => {
         if (hasChildren) setOpen(!open);
     };
 
+    // Define padding based on depth
+    const paddingLeft = depth * 4; // Adjust as needed
+
     return (
         <div className="flex flex-col">
-            {item.isLog ? (
-                isOpen ? (
-                    <a
-                        href="#log"
-                        className={cn(
-                            "flex items-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
-                            depth > 0 ? "pl-3 py-1" : "py-2 px-3",
-                            "w-full text-left hover:bg-gray-100 focus:outline-none"
-                        )}
-                    >
-                        <span>Log</span>
-                        <span className="ml-auto w-4"></span>
-                    </a>
-                ) : (
-                    <a
-                        href="#log"
-                        className={cn(
-                            "flex items-center justify-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
-                            depth > 0 ? "pl-3 py-1" : "py-2 px-3",
-                            "w-full hover:bg-gray-100 focus:outline-none"
-                        )}
-                        title="Log"
-                    >
-                        <List size={20} />
-                    </a>
-                )
-            ) : hasChildren ? (
+            {hasChildren ? (
                 <>
-                    {isOpen ? (
-                        <button
-                            onClick={handleToggle}
-                            className={cn(
-                                "flex items-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
-                                depth > 0 ? "pl-3 py-1" : "py-2 px-3",
-                                "w-full text-left hover:bg-gray-100"
-                            )}
-                        >
-                            <span>{item.title}</span>
-                            <span className="ml-auto">
-                {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-              </span>
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleToggle}
-                            className={cn(
-                                "flex items-center justify-center text-sm font-medium text-gray-700 rounded focus:outline-none transition-colors duration-200",
-                                depth > 0 ? "pl-3 py-1" : "py-2 px-3",
-                                "w-full hover:bg-gray-100"
-                            )}
-                            title={item.title}
-                        >
-                            <BarChart2 size={20} />
-                        </button>
+                    <button
+                        onClick={handleToggle}
+                        className={cn(
+                            "flex items-center text-sm text-gray-700 rounded focus:outline-none transition-colors duration-200",
+                            "w-full text-left hover:bg-gray-100",
+                            { "pl-3 py-1": depth > 0, "py-2 px-3": depth === 0 }
+                        )}
+                        style={{ paddingLeft: `${paddingLeft}px` }}
+                    >
+                        <span>{item.title}</span>
+                        <span className="ml-auto">
+                            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </span>
+                    </button>
+                    {open && isOpen && (
+                        <div className="ml-2">
+                            {item.items!.map((child, idx) => (
+                                <SidebarMenuItem key={idx} item={child} depth={depth + 1} isOpen={isOpen} />
+                            ))}
+                        </div>
                     )}
                 </>
             ) : (
@@ -75,85 +53,71 @@ const SidebarMenuItem = ({ item, depth = 0, isOpen }: { item: any; depth?: numbe
                     href={item.url}
                     className={cn(
                         "flex items-center text-sm text-gray-700 rounded hover:bg-gray-100",
-                        depth > 0 ? "pl-6 py-1" : "pl-3 py-2",
-                        "w-full focus:outline-none"
+                        "w-full",
+                        { "pl-6 py-1": depth > 0, "py-2 px-3": depth === 0 }
                     )}
+                    style={{ paddingLeft: `${paddingLeft}px` }}
                 >
                     <span>{item.title}</span>
-                    <span className="ml-auto w-4"></span>
                 </a>
-            )}
-            {hasChildren && open && isOpen && (
-                <div className="ml-4 border-l border-gray-200">
-                    {item.items.map((child: any, idx: number) => (
-                        <SidebarMenuItem key={idx} item={child} depth={depth + 1} isOpen={isOpen} />
-                    ))}
-                </div>
             )}
         </div>
     );
 };
 
-function buildSidebarData(logs: any[], analytics: any[], statistics: any[]) {
-    const logsData = logs.map(() => ({
-        title: "Log",
-        items: [],
-        isLog: true
-    }));
-
-    const analyticsData = analytics.map((analytic) => {
+function buildSidebarData(analytics: any[], statistics: any[]): SidebarItem[] {
+    return analytics.map((analytic) => {
         const statsForAnalytic = statistics.filter((stat) => stat.analytic_id === analytic.id);
         const componentsMap = statsForAnalytic.reduce((acc: Record<string, any[]>, stat) => {
-            const component = stat.components;
+            const component = stat.components || "General"; // Default component name if not provided
             if (!acc[component]) acc[component] = [];
             acc[component].push(stat);
             return acc;
         }, {});
 
-        const componentsItems: any[] = [];
+        const items: SidebarItem[] = [];
+
         Object.keys(componentsMap).forEach((component) => {
             const stats = componentsMap[component];
-            if (stats.length === 1 && stats[0].title === component) {
-                componentsItems.push({
-                    title: stats[0].title,
-                    url: `#output-${analytic.id}-${stats[0].id}`
-                });
-            } else {
-                componentsItems.push({
+            if (stats.length > 1) {
+                // Komponen dengan lebih dari satu statistik
+                items.push({
                     title: component,
                     items: stats.map((stat) => ({
                         title: stat.title,
                         url: `#output-${analytic.id}-${stat.id}`
                     }))
                 });
+            } else if (stats.length === 1) {
+                // Komponen dengan satu statistik, tambahkan langsung tanpa nama komponen
+                items.push({
+                    title: stats[0].title,
+                    url: `#output-${analytic.id}-${stats[0].id}`
+                });
             }
         });
 
         return {
             title: analytic.title,
-            items: componentsItems,
-            isLog: false
+            items: items
         };
     });
-
-    return [...logsData, ...analyticsData];
 }
 
-const Sidebar = () => {
+const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(true);
-    const { logs, analytics, statistics, fetchLogs, fetchAnalytics, fetchStatistics } = useResultStore();
-    const [sidebarData, setSidebarData] = useState<any[]>([]);
+    const { analytics, statistics, fetchAnalytics, fetchStatistics } = useResultStore();
+    const [sidebarData, setSidebarData] = useState<SidebarItem[]>([]);
 
     useEffect(() => {
-        fetchLogs();
         fetchAnalytics();
         fetchStatistics();
-    }, [fetchLogs, fetchAnalytics, fetchStatistics]);
+    }, [fetchAnalytics, fetchStatistics]);
 
     useEffect(() => {
-        const data = buildSidebarData(logs, analytics, statistics);
+        const data = buildSidebarData(analytics, statistics);
         setSidebarData(data);
-    }, [logs, analytics, statistics]);
+    }, [analytics, statistics]);
 
     return (
         <div

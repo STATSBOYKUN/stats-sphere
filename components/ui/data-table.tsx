@@ -30,11 +30,50 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
         return <div className="text-red-500">Invalid tables format</div>;
     }
 
+    // Fungsi untuk memeriksa apakah sebuah baris harus dihapus
+    // Periksa apakah row tidak punya data di salah satu kolom Var1, Var2, Var3
+    const isRowEmpty = (row: TableRowData, columns: string[]): boolean => {
+        // Jika rowHeader adalah 'Mean', kita tetap ingin menampilkannya
+        const isMeanRow = row.rowHeader[0]?.toLowerCase() === 'mean';
+        if (isMeanRow) {
+            return false; // Jangan hapus baris "Mean"
+        }
+
+        // Untuk baris lain, cek apakah semua kolom bernilai kosong
+        const isAllEmpty = columns.every(col => {
+            // cek null, undefined, atau string kosong
+            const val = row[col];
+            return val === null || val === undefined || val === '';
+        });
+
+        return isAllEmpty;
+    };
+
+
     return (
         <div className="my-5">
             {parsedData.tables.map((table: TableData, index: number) => {
+                // Filter baris berdasarkan kondisi
+                const filteredRows = table.rows.filter(row => {
+                    if (row.children && row.children.length > 0) {
+                        const filteredChildren = row.children.filter(child => !isRowEmpty(child, table.columns));
+                        row.children = filteredChildren;
+                        // Tampilkan parent row jika anaknya masih ada yang tidak kosong
+                        return row.children.length > 0;
+                    } else {
+                        // Tampilkan baris jika barisnya tidak kosong
+                        return !isRowEmpty(row, table.columns);
+                    }
+                });
+
+
+                // Jika setelah difilter tidak ada baris, lewati rendering tabel ini
+                if (filteredRows.length === 0) {
+                    return null;
+                }
+
                 // Check if the table requires a detail column
-                const hasDetailColumn = table.rows.some(row => row.children && row.children.length > 0);
+                const hasDetailColumn = filteredRows.some(row => row.children && row.children.length > 0);
 
                 return (
                     <table
@@ -82,7 +121,7 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
                         </tr>
                         </thead>
                         <tbody>
-                        {table.rows.map((row, rowIndex) => {
+                        {filteredRows.map((row, rowIndex) => {
                             if (row.children && row.children.length > 0) {
                                 return (
                                     <React.Fragment key={rowIndex}>
