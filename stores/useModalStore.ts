@@ -1,11 +1,24 @@
 // stores/useModalStore.ts
 
 import { create } from "zustand";
+import StatisticsSettingsModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesStatistics";
 
 export enum ModalType {
   OpenFile = "openFile",
   SaveFile = "saveFile",
   ExportData = "exportData",
+
+  // Time Series
+  Smoothing = "smoothing", //Time Series Smoothing
+  Decomposition = "decomposition", //Time Series Decomposition
+  StationaryTest = "stationaryTest", //Time Series Stationary Test
+  CreateModel = "createModel", //Time Series Create Model
+
+  FrequenciesStatistic = "frequenciesStatistic",
+  DescriptiveStatistic = "descriptiveStatistic",
+  StatisticsSettingsModal = "statisticsSettingsModal",
+  ChartSettingsModal = "chartSettingsModal",
+
   ComputeVariable = "computeVariable",
   ChartBuilderModal = "chartBuilderModal",
   SimpleBarModal = "simpleBarModal",

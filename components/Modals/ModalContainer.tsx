@@ -4,11 +4,17 @@
 
 import React from "react";
 import { useModal, ModalType } from "@/hooks/useModal";
-import OpenFileModal from "./OpenFileModal";
-import SaveFileModal from "./SaveFileModal";
-import ComputeVariableModal from "@/components/Modals/ComputeVariableModal";
+import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
+import DecompositionModal from "@/components/Modals/Analyze/TimeSeries/DecompositionModal";
+import StationaryTestModal from "@/components/Modals/Analyze/TimeSeries/StationaryTestModal";
+import CreateModelModal from "@/components/Modals/Analyze/TimeSeries/CreateModelModal";
+import OpenFileModal from "./File/OpenFileModal";
+import SaveFileModal from "./File/SaveFileModal";
+import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import ChartBuilderModal from "@/components/Modals/Graphs/ChartBuilder/ChartBuilderModal";
-import ExportDataModal from "./ExportDataModal";
+import ExportDataModal from "./File/ExportDataModal";
+import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
+import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
 import { Dialog } from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
 
@@ -37,6 +43,29 @@ const ModalContainer: React.FC = () => {
         );
       case ModalType.SimpleBarModal:
         return <SimpleBarModal onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Smoothing:
+        return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Decomposition:
+        return (
+          <DecompositionModal onClose={closeModal} {...currentModal.props} />
+        );
+      case ModalType.StationaryTest:
+        return (
+          <StationaryTestModal onClose={closeModal} {...currentModal.props} />
+        );
+      case ModalType.CreateModel:
+        return (
+          <CreateModelModal onClose={closeModal} {...currentModal.props} />
+        );
+      case ModalType.FrequenciesStatistic:
+        return (
+          <FrequenciesModal onClose={closeModal} {...currentModal.props} />
+        );
+      case ModalType.DescriptiveStatistic:
+        return (
+          <DescriptivesModal onClose={closeModal} {...currentModal.props} />
+        );
+
       default:
         return null;
     }
