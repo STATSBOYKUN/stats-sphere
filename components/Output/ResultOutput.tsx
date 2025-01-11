@@ -59,7 +59,62 @@ const ResultOutput: React.FC = () => {
                                                         id={`output-${analytic.id}-${stat.id}`}
                                                         className="mb-4"
                                                     >
-                                                        <DataTableRenderer data={stat.output_data} />
+                                                        <DataTableRenderer data='{
+                                                        "tables": [
+    {
+      "title": "Example Table",
+      "columnHeaders": [
+        { "header": "Model" },
+        { "header": "Type" },
+        {
+          "header": "Test",
+          "children": [
+            { "header": "Critical Point" },
+            { "header": "p-value" }
+          ]
+        }
+      ],
+      "rows": [
+        {
+          "rowHeader": ["1"],
+          "children": [
+            {
+              "rowHeader": [null, "A"],
+              "Critical Point": 1,
+              "p-value": 2
+            },
+            {
+              "rowHeader": [null, "B"],
+              "Critical Point": 3,
+              "p-value": 4
+            }
+          ]
+        },
+        {
+          "rowHeader": ["2"],
+          "children": [
+            {
+              "rowHeader": [null, "C"],
+              "Critical Point": 1,
+              "p-value": 5
+            },
+            {
+              "rowHeader": [null, "D"],
+              "Critical Point": 1,
+              "p-value": 3
+            },
+            {
+              "rowHeader": [null, "E"],
+              "Critical Point": 2,
+              "p-value": 3
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}' />
+
                                                     </div>
                                                 </div>
                                             );

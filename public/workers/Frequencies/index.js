@@ -7,7 +7,7 @@ self.onmessage = (e) => {
 
     try {
         // Contoh jika Anda ingin menghitung descriptive statistics juga:
-        if (action === 'FREQUENCIES' || action === 'DESCRIPTIVE_ONLY') {
+        if (action === 'FREQUENCIES') {
             const desc = formatDescriptiveStats(data, variables);
             result.descriptive = JSON.stringify(desc);
         }

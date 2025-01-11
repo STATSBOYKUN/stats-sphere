@@ -95,7 +95,6 @@ function summarizeAll(data, variables) {
 
     variables.forEach((variable) => {
         let col = data.map((d) => d[variable.name]);
-        // Perbaikan: gunakan (variable.type || '') untuk switch
         switch ((variable.type || '').toLowerCase()) {
             case 'numeric': {
                 const numericArr = col.filter((x) => x !== null && x !== '' && x !== undefined).map(Number);

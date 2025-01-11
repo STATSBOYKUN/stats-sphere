@@ -2,6 +2,11 @@
 
 import React from "react";
 
+interface ColumnHeader {
+    header: string;
+    children?: ColumnHeader[];
+}
+
 interface TableRowData {
     rowHeader: (string | null)[];
     [key: string]: any;
@@ -10,7 +15,7 @@ interface TableRowData {
 
 interface TableData {
     title: string;
-    columns: string[];
+    columnHeaders: ColumnHeader[];
     rows: TableRowData[];
 }
 
@@ -19,172 +24,219 @@ interface DataTableProps {
 }
 
 const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
-    let parsedData: any;
+    let parsedData: { tables: TableData[] };
     try {
         parsedData = JSON.parse(data);
     } catch {
-        return <div className="text-red-500">Invalid data format</div>;
+        return <div className="text-red-500">Invalid JSON format</div>;
     }
 
     if (!parsedData.tables || !Array.isArray(parsedData.tables)) {
         return <div className="text-red-500">Invalid tables format</div>;
     }
 
-    // Fungsi untuk memeriksa apakah sebuah baris harus dihapus
-    // Periksa apakah row tidak punya data di salah satu kolom Var1, Var2, Var3
-    const isRowEmpty = (row: TableRowData, columns: string[]): boolean => {
-        // Jika rowHeader adalah 'Mean', kita tetap ingin menampilkannya
-        const isMeanRow = row.rowHeader[0]?.toLowerCase() === 'mean';
-        if (isMeanRow) {
-            return false; // Jangan hapus baris "Mean"
-        }
-
-        // Untuk baris lain, cek apakah semua kolom bernilai kosong
-        const isAllEmpty = columns.every(col => {
-            // cek null, undefined, atau string kosong
-            const val = row[col];
-            return val === null || val === undefined || val === '';
-        });
-
-        return isAllEmpty;
+    const getLeafColumnCount = (col: ColumnHeader): number => {
+        if (!col.children || col.children.length === 0) return 1;
+        return col.children.reduce((sum, child) => sum + getLeafColumnCount(child), 0);
     };
 
+    const getMaxDepth = (columns: ColumnHeader[]): number => {
+        let max = 1;
+        columns.forEach(col => {
+            if (col.children && col.children.length > 0) {
+                const depth = 1 + getMaxDepth(col.children);
+                if (depth > max) max = depth;
+            }
+        });
+        return max;
+    };
+
+    const buildColumnLevels = (columns: ColumnHeader[]) => {
+        const maxLevel = getMaxDepth(columns);
+        const levels: ColumnHeader[][] = Array.from({ length: maxLevel }, () => []);
+
+        const traverse = (cols: ColumnHeader[], level: number) => {
+            cols.forEach(col => {
+                levels[level].push(col);
+                if (col.children && col.children.length > 0) {
+                    traverse(col.children, level + 1);
+                }
+            });
+        };
+
+        traverse(columns, 0);
+        return levels;
+    };
+
+    const renderColumnHeaderRow = (
+        cols: ColumnHeader[],
+        level: number,
+        maxLevel: number
+    ) => {
+        return (
+            <tr>
+                {cols.map((col, idx) => {
+                    const colSpan = getLeafColumnCount(col);
+                    const hasChildren = col.children && col.children.length > 0;
+                    const rowSpan = hasChildren ? 1 : maxLevel - level;
+                    return (
+                        <th
+                            key={`col-header-${level}-${idx}`}
+                            colSpan={colSpan}
+                            rowSpan={rowSpan}
+                            className="border border-gray-300 bg-gray-100 px-2 py-1 text-center text-sm font-medium"
+                        >
+                            {col.header}
+                        </th>
+                    );
+                })}
+            </tr>
+        );
+    };
+
+    const isRowEmpty = (row: TableRowData, columns: string[]): boolean => {
+        return columns.every(colKey => {
+            const val = row[colKey];
+            return val === null || val === undefined || val === "";
+        });
+    };
+
+    const getLeafColumnKeys = (cols: ColumnHeader[]): string[] => {
+        const keys: string[] = [];
+        const traverse = (col: ColumnHeader) => {
+            if (!col.children || col.children.length === 0) {
+                keys.push(col.header);
+            } else {
+                col.children.forEach(ch => traverse(ch));
+            }
+        };
+        cols.forEach(c => traverse(c));
+        return keys;
+    };
+
+    const renderRow = (
+        parentRow: TableRowData,
+        leafCols: string[],
+        rowIndex: number,
+        rowHeaderCount: number
+    ): JSX.Element[] => {
+        const children = parentRow.children;
+        if (children && children.length > 0) {
+            const rowSpan = children.length;
+            const firstChild = children[0];
+            return [
+                <tr key={`${rowIndex}-0`}>
+                    <th
+                        rowSpan={rowSpan}
+                        className="border border-gray-300 bg-gray-50 px-2 py-1 text-left text-sm font-normal"
+                    >
+                        {parentRow.rowHeader[0]}
+                    </th>
+                    <td className="border border-gray-300 px-2 py-1 text-sm">
+                        {firstChild.rowHeader[1]}
+                    </td>
+                    {leafCols.map((colKey, i) => (
+                        <td
+                            key={i}
+                            className="border border-gray-300 px-2 py-1 text-center text-sm"
+                        >
+                            {firstChild[colKey] ?? ""}
+                        </td>
+                    ))}
+                </tr>,
+                ...children.slice(1).map((c, childIndex) => (
+                    <tr key={`${rowIndex}-${childIndex + 1}`}>
+                        <td className="border border-gray-300 px-2 py-1 text-sm">
+                            {c.rowHeader[1]}
+                        </td>
+                        {leafCols.map((colKey, i) => (
+                            <td
+                                key={i}
+                                className="border border-gray-300 px-2 py-1 text-center text-sm"
+                            >
+                                {c[colKey] ?? ""}
+                            </td>
+                        ))}
+                    </tr>
+                )),
+            ];
+        } else {
+            return [
+                <tr key={rowIndex}>
+                    <th
+                        colSpan={rowHeaderCount}
+                        className="border border-gray-300 bg-gray-50 px-2 py-1 text-left text-sm font-normal"
+                    >
+                        {parentRow.rowHeader[0]}
+                    </th>
+                    {leafCols.map((colKey, i) => (
+                        <td
+                            key={i}
+                            className="border border-gray-300 px-2 py-1 text-center text-sm"
+                        >
+                            {parentRow[colKey] ?? ""}
+                        </td>
+                    ))}
+                </tr>,
+            ];
+        }
+    };
+
+    const computeMaxRowHeaderDepth = (rows: TableRowData[]): number => {
+        let max = 0;
+        const traverse = (rs: TableRowData[]) => {
+            rs.forEach(r => {
+                if(r.rowHeader.length > max) max = r.rowHeader.length;
+                if(r.children && r.children.length > 0) traverse(r.children);
+            });
+        };
+        traverse(rows);
+        return max;
+    };
 
     return (
-        <div className="my-5">
-            {parsedData.tables.map((table: TableData, index: number) => {
-                // Filter baris berdasarkan kondisi
-                const filteredRows = table.rows.filter(row => {
-                    if (row.children && row.children.length > 0) {
-                        const filteredChildren = row.children.filter(child => !isRowEmpty(child, table.columns));
-                        row.children = filteredChildren;
-                        // Tampilkan parent row jika anaknya masih ada yang tidak kosong
-                        return row.children.length > 0;
+        <div className="my-4">
+            {parsedData.tables.map((table, tableIndex) => {
+                const { title, columnHeaders, rows } = table;
+                const levels = buildColumnLevels(columnHeaders);
+                const maxDepth = getMaxDepth(columnHeaders);
+                const filteredRows = rows.filter(parent => {
+                    if (parent.children && parent.children.length > 0) {
+                        const valid = parent.children.filter(
+                            child => !isRowEmpty(child, getLeafColumnKeys(columnHeaders).slice(0))
+                        );
+                        parent.children = valid;
+                        return valid.length > 0;
                     } else {
-                        // Tampilkan baris jika barisnya tidak kosong
-                        return !isRowEmpty(row, table.columns);
+                        return !isRowEmpty(parent, getLeafColumnKeys(columnHeaders).slice(0));
                     }
                 });
-
-
-                // Jika setelah difilter tidak ada baris, lewati rendering tabel ini
-                if (filteredRows.length === 0) {
-                    return null;
-                }
-
-                // Check if the table requires a detail column
-                const hasDetailColumn = filteredRows.some(row => row.children && row.children.length > 0);
-
+                if (filteredRows.length === 0) return null;
+                const rowHeaderCount = computeMaxRowHeaderDepth(filteredRows);
+                const allLeafCols = getLeafColumnKeys(columnHeaders);
+                const leafCols = allLeafCols.slice(rowHeaderCount);
                 return (
                     <table
-                        key={index}
-                        className="border-collapse border border-gray-400 mb-6"
-                        style={{ width: "auto" }}
+                        key={tableIndex}
+                        className="border-collapse border border-gray-300 text-sm mb-6"
                     >
                         <thead>
-                        {/* Title Row */}
                         <tr>
                             <th
-                                colSpan={(hasDetailColumn ? 2 : 1) + table.columns.length}
-                                className="bg-gray-300 px-4 py-2 text-sm font-semibold text-center border border-gray-400"
+                                colSpan={rowHeaderCount + leafCols.length}
+                                className="border border-gray-300 bg-gray-200 px-2 py-2 text-center font-semibold"
                             >
-                                {table.title}
+                                {title}
                             </th>
                         </tr>
-                        {/* Header Row */}
-                        <tr>
-                            {/* Statistic and Detail headers */}
-                            {hasDetailColumn && (
-                                <>
-                                    <th className="bg-gray-200 px-4 py-2 text-xs text-center border border-gray-400">
-                                        {""}
-                                    </th>
-                                    <th className="bg-gray-200 px-4 py-2 text-xs text-center border border-gray-400">
-                                        {""}
-                                    </th>
-                                </>
-                            )}
-                            {!hasDetailColumn && (
-                                <th className="bg-gray-200 px-4 py-2 text-xs text-center border border-gray-400">
-                                    {""}
-                                </th>
-                            )}
-                            {/* Data Columns */}
-                            {table.columns.map((col, colIndex) => (
-                                <th
-                                    key={colIndex}
-                                    className="bg-gray-200 px-4 py-2 text-xs text-center border border-gray-400 whitespace-nowrap"
-                                >
-                                    {col}
-                                </th>
-                            ))}
-                        </tr>
+                        {levels.map((cols, lvlIndex) =>
+                            renderColumnHeaderRow(cols, lvlIndex, maxDepth)
+                        )}
                         </thead>
                         <tbody>
-                        {filteredRows.map((row, rowIndex) => {
-                            if (row.children && row.children.length > 0) {
-                                return (
-                                    <React.Fragment key={rowIndex}>
-                                        {/* Parent Row */}
-                                        <tr>
-                                            <th
-                                                rowSpan={row.children.length}
-                                                className="bg-gray-300 px-4 py-2 text-xs text-left border border-gray-400 whitespace-nowrap"
-                                            >
-                                                {row.rowHeader[0]}
-                                            </th>
-                                            <td className="bg-gray-300 px-4 py-2 text-xs text-left border border-gray-400 whitespace-nowrap">
-                                                {row.children![0].rowHeader[1]}
-                                            </td>
-                                            {table.columns.map((col, colIndex) => (
-                                                <td
-                                                    key={colIndex}
-                                                    className="px-4 py-2 text-xs text-center border border-gray-400 whitespace-nowrap"
-                                                >
-                                                    {row.children![0][col] ?? ""}
-                                                </td>
-                                            ))}
-                                        </tr>
-                                        {/* Child Rows */}
-                                        {row.children.slice(1).map((child, childIndex) => (
-                                            <tr key={`${rowIndex}-${childIndex}`}>
-                                                <td className="bg-gray-300 px-4 py-2 text-xs text-left border border-gray-400 whitespace-nowrap">
-                                                    {child.rowHeader[1]}
-                                                </td>
-                                                {table.columns.map((col, colIndex) => (
-                                                    <td
-                                                        key={colIndex}
-                                                        className="px-4 py-2 text-xs text-center border border-gray-400 whitespace-nowrap"
-                                                    >
-                                                        {child[col] ?? ""}
-                                                    </td>
-                                                ))}
-                                            </tr>
-                                        ))}
-                                    </React.Fragment>
-                                );
-                            } else {
-                                // Row without children: Merge Statistic and Detail cells
-                                return (
-                                    <tr key={rowIndex}>
-                                        <th
-                                            colSpan={hasDetailColumn ? 2 : 1}
-                                            className="bg-gray-300 px-4 py-2 text-xs text-left border border-gray-400 whitespace-nowrap"
-                                        >
-                                            {row.rowHeader[0]}
-                                        </th>
-                                        {table.columns.map((col, colIndex) => (
-                                            <td
-                                                key={colIndex}
-                                                className="px-4 py-2 text-xs text-center border border-gray-400 whitespace-nowrap"
-                                            >
-                                                {row[col] ?? ""}
-                                            </td>
-                                        ))}
-                                    </tr>
-                                );
-                            }
-                        })}
+                        {filteredRows.flatMap((row, rowIndex) =>
+                            renderRow(row, leafCols, rowIndex, rowHeaderCount)
+                        )}
                         </tbody>
                     </table>
                 );
