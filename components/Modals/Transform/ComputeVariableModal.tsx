@@ -1,8 +1,7 @@
-// components/ComputeVariable.tsx
-
 import React, { useState } from "react";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
+import useResultStore from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +35,8 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   const [selectedFunction, setSelectedFunction] = useState("");
   const [showTypeLabelModal, setShowTypeLabelModal] = useState(false);
   const [additionalInput, setAdditionalInput] = useState("");
+  const { addLog, addAnalytic, addStatistic } = useResultStore();
+
   const [variableType, setVariableType] = useState("Numeric"); // Tambahkan state untuk tipe variabel
   const [variableLabel, setVariableLabel] = useState(""); // Tambahkan state untuk label variabel
 
@@ -43,30 +44,25 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   const addVariable = useVariableStore((state) => state.addVariable);
   const data = useDataStore((state) => state.data);
   const setData = useDataStore((state) => state.setData);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleAddToExpression = (value: string) => {
     setNumericExpression((prev) => prev + value);
   };
 
   const handleCompute = async () => {
-    // Here you would parse the numericExpression and compute the new variable values
-    // Then, add the new variable to the variable store and data store
-    // For now, we'll just add the variable to the variable store
-
-    // Cek apakah targetVariable dan numeric expression sudah diisi
     if (!targetVariable || !numericExpression) {
       alert("Target Variable dan Numeric Expression wajib diisi.");
       return;
     }
 
-    // Cek apakah ada duplikasi nama targetVariable dengan variabel yang sudah ada
     const variableExists = variables.find((v) => v.name === targetVariable);
     if (variableExists) {
       alert("Nama variabel target sudah ada. Silakan pilih nama lain.");
       return;
     }
 
-    // Cek apakah semua variabel dalam ekspresi ada di store
     const variableNames = variables.map((v) => v.name);
     const regex = /[a-zA-Z_][a-zA-Z0-9_]*/g;
     const exprVariables = numericExpression.match(regex) || [];
@@ -83,98 +79,149 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
       return;
     }
 
+    setIsCalculating(true); // Set state isCalculating ke true saat proses dimulai
+
     try {
-      const dataStore = useDataStore.getState();
-      // Evaluasi ekspresi untuk setiap baris data
-      const newData = data.map((row, rowIndex) => {
-        // Buat konteks variabel untuk math.js
-        const context: { [key: string]: any } = {};
-        variables.forEach((variable) => {
-          const colIndex = variable.columnIndex;
-          const cellValue = row[colIndex];
+      // Inisialisasi worker
+      const worker = new Worker(
+        new URL(
+          "/public/workers/ComputeVariable/ComputeVariable.js",
+          import.meta.url
+        )
+      );
 
-          // Konversi nilai sel dari string ke number jika tipe variabel adalah Numeric
-          context[variable.name] =
-            variable.type === "Numeric" ? parseFloat(cellValue) : cellValue;
-        });
-
-        // Hitung nilai ekspresi
-        let computedValue = math.evaluate(numericExpression, context);
-
-        // Konversi kembali ke string jika tipe variabel bukan Numeric
-        computedValue =
-          variableType === "Numeric"
-            ? computedValue.toString()
-            : String(computedValue);
-
-        // Pastikan dataRow memiliki cukup kolom
-        const updatedRow = [...row];
-        const newColumnIndex = variables.length;
-
-        if (updatedRow.length <= newColumnIndex) {
-          // Tambahkan kolom kosong jika perlu
-          while (updatedRow.length <= newColumnIndex) {
-            updatedRow.push("");
-          }
-        }
-
-        // Assign computed value ke kolom baru
-        updatedRow[newColumnIndex] = computedValue;
-        // Simpan ke IndexedDB
-        dataStore.updateCell(rowIndex, newColumnIndex, computedValue);
-
-        return updatedRow;
+      worker.postMessage({
+        data,
+        variables,
+        numericExpression,
+        variableType,
       });
 
-      const newVariable = {
-        columnIndex: variables.length,
-        name: targetVariable,
-        type: variableType, // You can adjust this based on Type & Label settings
-        width: 8,
-        decimals: variableType === "Numeric" ? 2 : 0,
-        label: variableLabel,
-        values: "",
-        missing: "",
-        columns: 200,
-        align: variableType === "Numeric" ? "Right" : "Left",
-        measure: variableType === "Numeric" ? "Scale" : "Nominal",
+      worker.onmessage = async (event) => {
+        const { success, computedValues, tableData, error } = event.data;
+
+        if (success) {
+          try {
+            // Tambahkan nilai baru ke baris data di thread utama
+            const newData = data.map((row, rowIndex) => {
+              const updatedRow = [...row];
+              const newColumnIndex = variables.length;
+
+              // Tambahkan kolom baru jika perlu
+              if (updatedRow.length <= newColumnIndex) {
+                while (updatedRow.length <= newColumnIndex) {
+                  updatedRow.push("");
+                }
+              }
+
+              // Assign nilai hasil komputasi
+              updatedRow[newColumnIndex] = computedValues[rowIndex];
+
+              return updatedRow;
+            });
+
+            // Tambahkan definisi variabel baru
+            const newVariable = {
+              columnIndex: variables.length,
+              name: targetVariable,
+              type: variableType,
+              width: 8,
+              decimals: variableType === "Numeric" ? 2 : 0,
+              label: variableLabel,
+              values: "",
+              missing: "",
+              columns: 200,
+              align: variableType === "Numeric" ? "Right" : "Left",
+              measure: variableType === "Numeric" ? "Scale" : "Nominal",
+            };
+
+            await addVariable(newVariable);
+
+            // Perbarui data di store
+            newData.forEach((row, rowIndex) => {
+              const newColumnIndex = variables.length;
+              useDataStore
+                .getState()
+                .updateCell(rowIndex, newColumnIndex, row[newColumnIndex]);
+            });
+
+            // Perbarui state
+            setData(newData);
+
+            // Tambahkan log dan analytics
+            const logMsg = `COMPUTE VARIABLE ${targetVariable} WITH EXPRESSION "${numericExpression}"`;
+            const logId = await addLog({ log: logMsg });
+            const analyticId = await addAnalytic({
+              log_id: logId,
+              title: "Compute Variable",
+              note: "",
+            });
+            await addStatistic({
+              analytic_id: analyticId,
+              title: "Log",
+              output_data: `COMPUTE VARIABLE ${targetVariable} WITH EXPRESSION "${numericExpression}". \n EXECUTED.`,
+              components: "Log",
+            });
+
+            setIsCalculating(false); // Set isCalculating ke false setelah sukses
+            onClose(); // Tutup modal
+          } catch (err) {
+            console.error("Error during post-compute actions:", err);
+            setErrorMsg("Terjadi kesalahan saat menyimpan hasil.");
+            setIsCalculating(false); // Set isCalculating ke false jika ada error
+          }
+        } else {
+          setErrorMsg(error || "Worker gagal menghitung variabel.");
+          setIsCalculating(false); // Set isCalculating ke false jika worker gagal
+        }
+        worker.terminate(); // Hentikan worker
       };
 
-      await addVariable(newVariable);
-
-      // Update data store dengan data baru
-      setData(newData);
-
-      onClose();
+      worker.onerror = (error) => {
+        console.error("Worker error:", error);
+        setErrorMsg(
+          "Terjadi kesalahan pada worker. Periksa konsol untuk detail."
+        );
+        setIsCalculating(false); // Set isCalculating ke false jika terjadi error pada worker
+        worker.terminate();
+      };
     } catch (error) {
-      console.error("Error computing variable:", error);
-      alert(
-        "Terjadi kesalahan saat menghitung variabel. Periksa ekspresi Anda."
-      );
+      console.error("Error during computation:", error);
+      setErrorMsg("Gagal memulai proses perhitungan.");
+      setIsCalculating(false); // Set isCalculating ke false jika terjadi error
     }
   };
 
+  // Default Tanpa Worker
+
   // const handleCompute = async () => {
+  //   // Here you would parse the numericExpression and compute the new variable values
+  //   // Then, add the new variable to the variable store and data store
+  //   // For now, we'll just add the variable to the variable store
+
+  //   // Cek apakah targetVariable dan numeric expression sudah diisi
   //   if (!targetVariable || !numericExpression) {
   //     alert("Target Variable dan Numeric Expression wajib diisi.");
   //     return;
   //   }
 
+  //   // Cek apakah ada duplikasi nama targetVariable dengan variabel yang sudah ada
   //   const variableExists = variables.find((v) => v.name === targetVariable);
   //   if (variableExists) {
   //     alert("Nama variabel target sudah ada. Silakan pilih nama lain.");
   //     return;
   //   }
 
+  //   // Cek apakah semua variabel dalam ekspresi ada di store
   //   const variableNames = variables.map((v) => v.name);
   //   const regex = /[a-zA-Z_][a-zA-Z0-9_]*/g;
   //   const exprVariables = numericExpression.match(regex) || [];
-  //   const allowedFunctions = ["mean", "stddev", "abs", "sqrt"];
+  //   const allowedFunctions = ["mean", "stddev", "abs", "sqrt", "not"];
   //   const missingVars = exprVariables.filter(
   //     (varName) =>
   //       varName &&
   //       !variableNames.includes(varName) &&
-  //       !allowedFunctions.includes(varName)
+  //       !allowedFunctions.includes(varName.toLowerCase())
   //   );
 
   //   if (missingVars.length > 0) {
@@ -184,12 +231,10 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
 
   //   try {
   //     const dataStore = useDataStore.getState();
-  //     const variableStore = useVariableStore.getState();
-
+  //     // Evaluasi ekspresi untuk setiap baris data
   //     const newData = data.map((row, rowIndex) => {
   //       // Buat konteks variabel untuk math.js
-  //       const context: { [key: string]: any } = {}; // Explicitly define the type
-
+  //       const context: { [key: string]: any } = {};
   //       variables.forEach((variable) => {
   //         const colIndex = variable.columnIndex;
   //         const cellValue = row[colIndex];
@@ -205,10 +250,10 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   //       // Konversi kembali ke string jika tipe variabel bukan Numeric
   //       computedValue =
   //         variableType === "Numeric"
-  //           ? computedValue.toFixed(2) // Format angka untuk Numeric
+  //           ? computedValue.toString()
   //           : String(computedValue);
 
-  //       // Perbarui baris dengan nilai baru
+  //       // Pastikan dataRow memiliki cukup kolom
   //       const updatedRow = [...row];
   //       const newColumnIndex = variables.length;
 
@@ -219,9 +264,8 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   //         }
   //       }
 
-  //       // Assign nilai yang dihitung ke kolom baru
+  //       // Assign computed value ke kolom baru
   //       updatedRow[newColumnIndex] = computedValue;
-
   //       // Simpan ke IndexedDB
   //       dataStore.updateCell(rowIndex, newColumnIndex, computedValue);
 
@@ -231,7 +275,7 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   //     const newVariable = {
   //       columnIndex: variables.length,
   //       name: targetVariable,
-  //       type: variableType,
+  //       type: variableType, // You can adjust this based on Type & Label settings
   //       width: 8,
   //       decimals: variableType === "Numeric" ? 2 : 0,
   //       label: variableLabel,
@@ -242,10 +286,10 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
   //       measure: variableType === "Numeric" ? "Scale" : "Nominal",
   //     };
 
-  //     await variableStore.addVariable(newVariable);
+  //     await addVariable(newVariable);
 
-  //     // Update data di store
-  //     dataStore.setData(newData);
+  //     // Update data store dengan data baru
+  //     setData(newData);
 
   //     onClose();
   //   } catch (error) {
