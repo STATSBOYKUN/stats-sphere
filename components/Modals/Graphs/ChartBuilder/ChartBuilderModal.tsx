@@ -12,11 +12,12 @@ import {
   TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-} from "@/components/ui/tooltip"; // Sesuaikan path-nya
+} from "@/components/ui/tooltip";
 import { useVariableStore } from "@/stores/useVariableStore";
-import ChartPreview from "./ChartPreview"; // Import ChartPreview yang baru saja dibuat
+import ChartPreview from "./ChartPreview";
 import ChartSelection from "./ChartSelection";
 import { chartTypes, ChartType } from "@/components/Modals/Graphs/ChartTypes";
+import VariableSelection from "./VariableSelection"; // Import VariableSelection
 
 interface ChartBuilderModalProps {
   onClose: () => void;
@@ -25,19 +26,18 @@ interface ChartBuilderModalProps {
 const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
   const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
   const [chartType, setChartType] = useState<ChartType>("bar2");
-  const { variables, loadVariables } = useVariableStore(); // Mengambil variabel dari store
+  const { variables, loadVariables } = useVariableStore();
 
   useEffect(() => {
-    const totalVariables = variables.length > 0 ? variables.length : 45; // Memuat jumlah variabel yang ada, default 45
-    loadVariables(totalVariables); // Memuat variabel sesuai jumlah yang ada
-  }, [loadVariables, variables.length]); // Menambahkan dependensi ke panjang array variabel
+    const totalVariables = variables.length > 0 ? variables.length : 45;
+    loadVariables(totalVariables);
+  }, [loadVariables, variables.length]);
 
-  // Fungsi untuk menangani drag start
   const handleDragStart = (
     e: React.DragEvent<HTMLDivElement>,
     variableName: string
   ) => {
-    e.dataTransfer.setData("text/plain", variableName); // Menyimpan variabel yang di-drag
+    e.dataTransfer.setData("text/plain", variableName);
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -56,25 +56,11 @@ const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
       <div className="grid grid-cols-3 gap-6 py-4">
         {/* Kolom Kiri - Pilih Variabel dan Jenis Chart */}
         <div className="col-span-1 space-y-6 pr-6 border-r-2 border-gray-100">
-          <div className="border p-4 rounded-lg shadow-sm h-[250px]">
-            <div className="mb-2">
-              <Label>Choose Variables</Label>
-            </div>
-            <div className="space-y-2 mt-4 overflow-y-auto max-h-[200px]">
-              {variables.map((variable, index) => (
-                <div
-                  key={variable.columnIndex}
-                  className="ml-[10px] cursor-pointer"
-                  draggable="true"
-                  onDragStart={(e) => handleDragStart(e, variable.name)} // Menggunakan onDragStart
-                >
-                  <Label htmlFor={`var${index}`} className="ml-2">
-                    {variable.name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Gunakan VariableSelection di sini */}
+          <VariableSelection
+            variables={variables}
+            onDragStart={handleDragStart}
+          />
 
           <TooltipProvider>
             <div className="border p-4 rounded-lg shadow-sm h-[300px] mt-4">
@@ -130,7 +116,7 @@ const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
             width={600}
             height={400}
             useaxis={true}
-            variableNames={selectedVariables} // Kirim nama variabel yang dipilih
+            variableNames={selectedVariables}
             setVariableNames={setSelectedVariables}
           />
         </div>
