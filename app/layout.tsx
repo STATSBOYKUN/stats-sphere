@@ -22,7 +22,7 @@ export default function RootLayout({
         <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
         <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme=""
             enableSystem
             disableTransitionOnChange
         >

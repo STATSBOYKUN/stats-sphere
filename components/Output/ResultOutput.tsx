@@ -61,40 +61,7 @@ const ResultOutput: React.FC = () => {
                                                     >
                                                         {/*<DataTableRenderer data={stat.output_data} />*/}
                                                         <DataTableRenderer data='
-                                                        {
-  "tables": [
-    {
-      "title": "M-Estimators",
-      "columnHeaders": [
-        { "header": "Huber' s M-Estimatora" },
-        { "header": "Tukey's Biweightb" },
-        { "header": "Hampel's M-Estimatorc" },
-        { "header": "Andrews' Waved" }
-      ],
-      "rows": [
-        {
-          "rowHeader": ["Age"],
-          "children": [
-            {
-              "rowHeader": [null, "female"],
-              "Huber's M-Estimatora": 32.18,
-              "Tukey\\'s Biweightb": 31.79,
-              "Hampel\\'s M-Estimatorc": 31.00,
-              "Andrews' Waved": 31.80
-            },
-            {
-              "rowHeader": [null, "male"],
-              "Huber\\'s M-Estimatora": 34.50,
-              "Tukey's Biweightb": 34.50,
-              "Hampel's M-Estimatorc": 34.50,
-              "Andrews' Waved": 34.50
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
+
 
                                                         '/>
 
