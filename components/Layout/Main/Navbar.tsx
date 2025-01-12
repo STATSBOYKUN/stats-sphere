@@ -257,22 +257,22 @@ const Navbar: React.FC = () => {
                                 <MenubarSubTrigger>Regression</MenubarSubTrigger>
                                 <MenubarSubContent>
                                     <MenubarItem onClick={() => openModal(ModalType.ModalAutomaticLinearModeling)}>Automatic Linear Modeling...</MenubarItem>
-                                    <MenubarItem>Linear...</MenubarItem>
-                                    <MenubarItem>Curve Estimation...</MenubarItem>
-                                    <MenubarItem>Partial Least Squares...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalLinear)}>Linear...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalCurveEstimation)}>Curve Estimation...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalPartialLeastSquares)}>Partial Least Squares...</MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem>Binary Logistic...</MenubarItem>
-                                    <MenubarItem>Multinomial Logistic...</MenubarItem>
-                                    <MenubarItem>Ordinal...</MenubarItem>
-                                    <MenubarItem>Probit...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalBinaryLogistic)}>Binary Logistic...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalMultinomialLogistic)}>Multinomial Logistic...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalOrdinal)}>Ordinal...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalProbit)}>Probit...</MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem>Nonlinear...</MenubarItem>
-                                    <MenubarItem>Weight Estimation...</MenubarItem>
-                                    <MenubarItem>2-Stage Least Squares...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalNonlinear)}>Nonlinear...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalWeightEstimation)}>Weight Estimation...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalTwoStageLeastSquares)}>2-Stage Least Squares...</MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem>Quantiles...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalQuantiles)}>Quantiles...</MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem>Optimal Scaling (Catreg)...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.ModalOptimalScaling)}>Optimal Scaling (Catreg)...</MenubarItem>
                                 </MenubarSubContent>
                             </MenubarSub>
 
@@ -306,15 +306,6 @@ const Navbar: React.FC = () => {
                                 </MenubarSubContent>
                             </MenubarSub>
                         </MenubarContent>
-                        <MenubarContent>
-                            <MenubarSub>
-                                <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
-                                <MenubarSubContent>
-                                    <MenubarItem onClick={() => openModal(ModalType.FrequenciesStatistic)}>Frequencies</MenubarItem>
-                                    <MenubarItem onClick={() => openModal(ModalType.DescriptiveStatistic)}>Descriptives</MenubarItem>
-                                </MenubarSubContent>
-                            </MenubarSub>
-                            </MenubarContent>
                     </MenubarMenu>
 
                     <MenubarMenu>

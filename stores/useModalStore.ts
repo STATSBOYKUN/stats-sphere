@@ -9,7 +9,20 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
+    // Punya Nopal
     ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling',
+    ModalLinear = 'modalLinear',
+    ModalCurveEstimation = 'modalCurveEstimation',
+    ModalPartialLeastSquares = 'modalPartialLeastSquares',
+    ModalBinaryLogistic = 'modalBinaryLogistic',
+    ModalMultinomialLogistic = 'modalMultinomialLogistic',
+    ModalOrdinal= 'modalOrdinal',
+    ModalProbit = 'modalProbit',
+    ModalNonlinear = 'modalNonlinear',
+    ModalWeightEstimation = 'modalWeightEstimation',
+    ModalTwoStageLeastSquares = 'modalTwoStageLeastSquares',
+    ModalQuantiles = 'modalQuantiles',
+    ModalOptimalScaling = 'modalOptimalScaling',
 
     // Time Series
     Smoothing = 'smoothing', //Time Series Smoothing
