@@ -59,61 +59,44 @@ const ResultOutput: React.FC = () => {
                                                         id={`output-${analytic.id}-${stat.id}`}
                                                         className="mb-4"
                                                     >
-                                                        <DataTableRenderer data='{
-                                                        "tables": [
+                                                        {/*<DataTableRenderer data={stat.output_data} />*/}
+                                                        <DataTableRenderer data='
+                                                        {
+  "tables": [
     {
-      "title": "Example Table",
+      "title": "M-Estimators",
       "columnHeaders": [
-        { "header": "Model" },
-        { "header": "Type" },
-        {
-          "header": "Test",
-          "children": [
-            { "header": "Critical Point" },
-            { "header": "p-value" }
-          ]
-        }
+        { "header": "Huber' s M-Estimatora" },
+        { "header": "Tukey's Biweightb" },
+        { "header": "Hampel's M-Estimatorc" },
+        { "header": "Andrews' Waved" }
       ],
       "rows": [
         {
-          "rowHeader": ["1"],
+          "rowHeader": ["Age"],
           "children": [
             {
-              "rowHeader": [null, "A"],
-              "Critical Point": 1,
-              "p-value": 2
+              "rowHeader": [null, "female"],
+              "Huber's M-Estimatora": 32.18,
+              "Tukey\\'s Biweightb": 31.79,
+              "Hampel\\'s M-Estimatorc": 31.00,
+              "Andrews' Waved": 31.80
             },
             {
-              "rowHeader": [null, "B"],
-              "Critical Point": 3,
-              "p-value": 4
-            }
-          ]
-        },
-        {
-          "rowHeader": ["2"],
-          "children": [
-            {
-              "rowHeader": [null, "C"],
-              "Critical Point": 1,
-              "p-value": 5
-            },
-            {
-              "rowHeader": [null, "D"],
-              "Critical Point": 1,
-              "p-value": 3
-            },
-            {
-              "rowHeader": [null, "E"],
-              "Critical Point": 2,
-              "p-value": 3
+              "rowHeader": [null, "male"],
+              "Huber\\'s M-Estimatora": 34.50,
+              "Tukey's Biweightb": 34.50,
+              "Hampel's M-Estimatorc": 34.50,
+              "Andrews' Waved": 34.50
             }
           ]
         }
       ]
     }
   ]
-}' />
+}
+
+                                                        '/>
 
                                                     </div>
                                                 </div>
