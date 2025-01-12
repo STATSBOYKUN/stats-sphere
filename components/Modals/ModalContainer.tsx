@@ -90,6 +90,7 @@ const ModalContainer: React.FC = () => {
                 return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.DescriptiveStatistic:
                 return <DescriptivesModal onClose={closeModal} {...currentModal.props} />;
+
             default:
                 return null;
         }

@@ -18,26 +18,29 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-        <body className={`flex flex-col min-h-screen`}>
+        <html lang="en" className="h-full w-full">
+        <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
         <ThemeProvider
             attribute="class"
-            defaultTheme="light"
+            defaultTheme=""
             enableSystem
             disableTransitionOnChange
         >
-            <header className="sticky top-0 z-50">
+            <header className="z-50">
                 <Header />
             </header>
 
-            <main className="flex-grow flex overflow-hidden">
-                <div className="w-full flex flex-col overflow-y-auto">
+            <main className="overflow-y-auto">
+                {/* Pastikan anak main memiliki tinggi agar konten muncul penuh */}
+                <div className="h-full w-full">
                     {children}
                     <ModalContainer />
                 </div>
             </main>
 
-            <Footer />
+            <footer>
+                <Footer />
+            </footer>
         </ThemeProvider>
         </body>
         </html>

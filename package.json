@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -25,6 +25,7 @@
     "@radix-ui/react-tabs": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.3",
     "chart.js": "^4.4.7",
+    "@tanstack/react-table": "^8.20.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
@@ -32,29 +33,38 @@
     "handsontable": "^14.6.1",
     "immer": "^10.1.1",
     "lucide-react": "^0.453.0",
-    "next": "13.5.7",
+    "next": "15.1.4",
     "next-themes": "^0.3.0",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "react-icons": "^5.3.0",
     "react-modal": "^3.16.1",
+    "sav-reader": "^2.0.8",
     "simple-statistics": "^7.8.7",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "zukeeper": "^1.0.2",
     "zustand": "^5.0.1"
   },
   "devDependencies": {
     "@types/d3": "^7.4.3",
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react": "19.0.4",
+    "@types/react-dom": "19.0.2",
     "@types/react-modal": "^3.16.3",
     "autoprefixer": "^10",
     "eslint": "^8",
-    "eslint-config-next": "13.5.7",
+    "eslint-config-next": "15.1.4",
+    "mini-css-extract-plugin": "^2.9.2",
     "postcss": "^8",
     "tailwindcss": "^3",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@types/react": "19.0.4",
+    "@types/react-dom": "19.0.2"
   }
 }
