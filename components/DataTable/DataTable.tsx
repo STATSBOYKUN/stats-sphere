@@ -26,7 +26,7 @@ export default function DataTable() {
     const columns = useMemo(() => generateColumnConfig(data, getVariableByColumnIndex), [data, getVariableByColumnIndex]);
 
     return (
-        <div className="flex-grow z-0 h-full w-full">
+        <div className="h-full w-full">
             <HotTable
                 ref={hotTableRef}
                 data={data}
@@ -46,7 +46,7 @@ export default function DataTable() {
                 licenseKey="non-commercial-and-evaluation"
                 afterChange={handleAfterChange}
                 afterValidate={handleAfterValidate}
-                className="h-full w-full"
+                className="h-full w-full z-0"
             />
         </div>
     );

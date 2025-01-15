@@ -35,13 +35,12 @@ export const useVariableStore = create<VariableStoreState>()(
         setVariables: (variables) => set({ variables }),
         updateVariable: async (rowIndex, field, value) => {
             const variables = get().variables.map((variable) => ({ ...variable }));
-            // @ts-ignore
             variables[rowIndex][field] = value;
             set({ variables });
 
             try {
                 const variableToUpdate = variables[rowIndex];
-                // @ts-ignore
+                
                 await db.variables.put(variableToUpdate);
             } catch (error) {
                 console.error('Failed to update variable in Dexie:', error);
@@ -52,7 +51,7 @@ export const useVariableStore = create<VariableStoreState>()(
             set({ variables });
 
             try {
-                // @ts-ignore
+                
                 await db.variables.add(variable);
             } catch (error) {
                 console.error('Failed to add variable to Dexie:', error);
@@ -67,7 +66,7 @@ export const useVariableStore = create<VariableStoreState>()(
                 const variables = variablesFromDb.slice();
 
                 for (let i = variables.length; i < totalVariables; i++) {
-                    // @ts-ignore
+                    
                     variables.push({
                         columnIndex: i,
                         name: '',
@@ -83,7 +82,7 @@ export const useVariableStore = create<VariableStoreState>()(
                     });
                 }
 
-                // @ts-ignore
+                
                 set({ variables });
             } catch (error) {
                 console.error('Failed to fetch variables from Dexie:', error);
