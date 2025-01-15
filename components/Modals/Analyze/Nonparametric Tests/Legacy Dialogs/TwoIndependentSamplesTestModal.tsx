@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import {
     DialogContent,
     DialogFooter,
@@ -11,11 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 
-interface IndependentSamplesTTestModalProps {
+interface TwoIndependentSamplesTestModalProps {
     onClose: () => void;
 }
 
-const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> = ({ onClose }) => {
+const TwoIndependentSamplesTestModal: React.FC<TwoIndependentSamplesTestModalProps> = ({ onClose }) => {
     const initialListVariables = [
         "Age in years [age]",
         "Marital status [marital]",
@@ -31,7 +32,10 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     const [testVariables, setTestVariables] = useState<string[]>([]);
     const [groupingVariable, setGroupingVariable] = useState<string | null>(null);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
-    const [estimateEffectSize, setEstimateEffectSize] = useState<boolean>(true);
+    const [mannWhitneyUOption, setMannWhitneyUOption] = useState<boolean>(true);
+    const [kolmogorovSmirnovZOption, setKolmogorovSmirnovZOption] = useState<boolean>(false);
+    const [mosesExtremeReactionsOption, setMosesExtremeReactionsOption] = useState<boolean>(false);
+    const [waldWolfowitzRunsOption, setWaldWolfowitzRunsOption] = useState<boolean>(false);
 
     const handleMoveTestVariables = () => {
         if (highlightedVariable) {
@@ -64,18 +68,21 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
         setTestVariables([]);
         setGroupingVariable(null);
         setHighlightedVariable(null);
-        setEstimateEffectSize(true);
+        setMannWhitneyUOption(true);
+        setKolmogorovSmirnovZOption(false);
+        setMosesExtremeReactionsOption(false);
+        setWaldWolfowitzRunsOption(false);
     };
 
     const handleRunTest = () => {
-        console.log("Running test with:", { testVariables, groupingVariable, estimateEffectSize });
+        console.log("Running test with:", { testVariables, groupingVariable, mannWhitneyUOption, kolmogorovSmirnovZOption, mosesExtremeReactionsOption, waldWolfowitzRunsOption });
         onClose();
     };
 
     return (
         <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
-                <DialogTitle>Independent-Samples T Test</DialogTitle>
+                <DialogTitle>Two-Independent-Samples Test</DialogTitle>
             </DialogHeader>
 
             <Separator className="my-2" />
@@ -86,8 +93,7 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     className="col-span-3 flex flex-col border p-4 rounded-md overflow-y-auto"
                     style={{
                         width: "250px", // Fixed width
-                        minHeight: "556px", // Minimum height
-                        maxHeight: "556px", // Maximum height
+                        height: "442px",
                     }}
                 >
                     <label className="font-semibold">List Variables</label>
@@ -153,11 +159,11 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     <div className="col-span-3 flex flex-col border p-4 rounded-md overflow-y-auto"
                         style={{
                             width: "250px", // Fixed width
-                            minHeight: "300px", // Minimum height
-                            maxHeight: "300px", // Maximum height
+                            minHeight: "234px", // Minimum height
+                            maxHeight: "234px", // Maximum height
                         }}
                     >
-                        <label className="font-semibold">Test Variables</label>
+                        <label className="font-semibold">Test Variable List</label>
                         <div className="space-y-2">
                             {testVariables.map((variable) => (
                                 <div
@@ -202,30 +208,69 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     <div className="col-span-3 flex items-center space-x-4 px-6 py-2">
                         <Button variant="outline">Define Groups...</Button>
                     </div>
-                    
-                    {/* Options */}
-                    <div className="col-span-3 flex items-center space-x-4 py-2">
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="estimate-effect-sizes"
-                                checked={estimateEffectSize}
-                                onCheckedChange={(checked) => setEstimateEffectSize(checked as boolean)}
-                            />
-                            <label htmlFor="estimate-effect-sizes">Estimate effect sizes</label>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Sidebar */}
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
+                    <Button variant="outline">Exact...</Button>
                     <Button variant="outline">Options...</Button>
-                    <Button variant="outline">Bootstrap...</Button>
+                </div>
+
+                {/* Cut Point */}
+                <div className="col-span-7 ">
+                    <Label htmlFor="display-options" className="font-semibold text-base">Test Type</Label>
+                    <div className="grid grid-cols-2 border p-4 rounded-md space-x-4 items-center">
+                        <div className="col-span-1">
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="mann-whitney-u-option"
+                                    checked={mannWhitneyUOption}
+                                    onCheckedChange={(checked) => setMannWhitneyUOption(checked as boolean)}
+                                />
+                            <label htmlFor="mann-whitney-u-option">Mann-Whitney U</label>
+                            </div>
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="kolmogorov-smirnov-z-option"
+                                    checked={kolmogorovSmirnovZOption}
+                                    onCheckedChange={(checked) => setKolmogorovSmirnovZOption(checked as boolean)}
+                                />
+                                <label htmlFor="kolmogorov-smirnov-z-option">Kolmogorov-Smirnov Z</label>
+                            </div>
+                        </div>
+                        <div className="col-span-1">
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="moses-extreme-reactions-option"
+                                    checked={mosesExtremeReactionsOption}
+                                    onCheckedChange={(checked) => setMosesExtremeReactionsOption(checked as boolean)}
+                                />
+                                <label htmlFor="moses-extreme-reactions-option">Moses extreme reactions</label>
+                            </div>
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="wald-wolfowitz-runs-option"
+                                    checked={waldWolfowitzRunsOption}
+                                    onCheckedChange={(checked) => setWaldWolfowitzRunsOption(checked as boolean)}
+                                />
+                                <label htmlFor="wald-wolfowitz-runs-option">Wald-Wolfowitz runs</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Footer Buttons */}
             <DialogFooter className="flex justify-center space-x-4">
-                <Button onClick={handleRunTest} disabled={testVariables.length === 0 || !groupingVariable}>OK</Button>
+                <Button onClick={handleRunTest} disabled={testVariables.length === 0 ||
+                                                          !groupingVariable ||
+                                                          mannWhitneyUOption === false ||
+                                                          kolmogorovSmirnovZOption === false ||
+                                                          mosesExtremeReactionsOption === false ||
+                                                          waldWolfowitzRunsOption === false}
+                >
+                    OK
+                </Button>
                 <Button variant="outline">Paste</Button>
                 <Button variant="outline" onClick={handleReset}>Reset</Button>
                 <Button variant="outline" onClick={onClose}>Cancel</Button>
@@ -235,4 +280,4 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     );
 };
 
-export default IndependentSamplesTTestModal;
+export default TwoIndependentSamplesTestModal;

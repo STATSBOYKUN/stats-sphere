@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 
-interface IndependentSamplesTTestModalProps {
+interface OneWayAnovaModalProps {
     onClose: () => void;
 }
 
-const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> = ({ onClose }) => {
+const OneWayAnovaModal: React.FC<OneWayAnovaModalProps> = ({ onClose }) => {
     const initialListVariables = [
         "Age in years [age]",
         "Marital status [marital]",
@@ -28,32 +28,32 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     ];
 
     const [listVariables, setListVariables] = useState<string[]>(initialListVariables);
-    const [testVariables, setTestVariables] = useState<string[]>([]);
-    const [groupingVariable, setGroupingVariable] = useState<string | null>(null);
+    const [dependentList, setDependentList] = useState<string[]>([]);
+    const [factorVariable, setFactorVariable] = useState<string | null>(null);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
-    const [estimateEffectSize, setEstimateEffectSize] = useState<boolean>(true);
+    const [estimateEffectSize, setEstimateEffectSize] = useState<boolean>(false);
 
-    const handleMoveTestVariables = () => {
+    const handleMoveDependentList = () => {
         if (highlightedVariable) {
             if (listVariables.includes(highlightedVariable)) {
-                setTestVariables((prev) => [...prev, highlightedVariable]);
+                setDependentList((prev) => [...prev, highlightedVariable]);
                 setListVariables((prev) => prev.filter((item) => item !== highlightedVariable));
-            } else if (testVariables.includes(highlightedVariable)) {
+            } else if (dependentList.includes(highlightedVariable)) {
                 setListVariables((prev) => [...prev, highlightedVariable].sort((a, b) => initialListVariables.indexOf(a) - initialListVariables.indexOf(b)));
-                setTestVariables((prev) => prev.filter((item) => item !== highlightedVariable));
+                setDependentList((prev) => prev.filter((item) => item !== highlightedVariable));
             }
             setHighlightedVariable(null);
         }
     };
 
-    const handleMoveGroupingVariable = () => {
+    const handleMoveFactorVariable = () => {
         if (highlightedVariable) {
             if (listVariables.includes(highlightedVariable)) {
-                setGroupingVariable(highlightedVariable);
+                setFactorVariable(highlightedVariable);
                 setListVariables((prev) => prev.filter((item) => item !== highlightedVariable));
-            } else if (groupingVariable && groupingVariable.includes(highlightedVariable)) {
+            } else if (factorVariable && factorVariable.includes(highlightedVariable)) {
                 setListVariables((prev) => [...prev, highlightedVariable].sort((a, b) => initialListVariables.indexOf(a) - initialListVariables.indexOf(b)));
-                setGroupingVariable(null);
+                setFactorVariable(null);
             }
             setHighlightedVariable(null);
         }
@@ -61,21 +61,21 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
 
     const handleReset = () => {
         setListVariables(initialListVariables);
-        setTestVariables([]);
-        setGroupingVariable(null);
+        setDependentList([]);
+        setFactorVariable(null);
         setHighlightedVariable(null);
-        setEstimateEffectSize(true);
+        setEstimateEffectSize(false);
     };
 
     const handleRunTest = () => {
-        console.log("Running test with:", { testVariables, groupingVariable, estimateEffectSize });
+        console.log("Running test with:", { dependentList, factorVariable, estimateEffectSize });
         onClose();
     };
 
     return (
         <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
-                <DialogTitle>Independent-Samples T Test</DialogTitle>
+                <DialogTitle>One-Way ANOVA</DialogTitle>
             </DialogHeader>
 
             <Separator className="my-2" />
@@ -109,19 +109,19 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                 </div>
 
                 {/* Move Buttons */}
-                <div className="col-span-1 flex flex-col items-center justify-center space-y-44">
+                <div className="col-span-1 flex flex-col items-center justify-center space-y-60">
                     {/* Tombol pertama */}
                     <Button
                         variant="link"
-                        onClick={handleMoveTestVariables}
+                        onClick={handleMoveDependentList}
                         disabled={
                             !highlightedVariable || // Jika tidak ada variable yang disorot
-                            (groupingVariable === highlightedVariable)
+                            (factorVariable === highlightedVariable)
                         }
                     >
                         {highlightedVariable && listVariables.includes(highlightedVariable) ? (
                             <CornerDownRight size={24} />
-                        ) : highlightedVariable && testVariables.includes(highlightedVariable) ? (
+                        ) : highlightedVariable && dependentList.includes(highlightedVariable) ? (
                             <CornerDownLeft size={24} />
                         ) : (
                             <CornerDownLeft size={24} />
@@ -131,16 +131,16 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     {/* Tombol kedua */}
                     <Button
                         variant="link"
-                        onClick={handleMoveGroupingVariable}
+                        onClick={handleMoveFactorVariable}
                         disabled={
                             !highlightedVariable ||
-                            (listVariables.includes(highlightedVariable) && groupingVariable !== null) ||
-                            testVariables.includes(highlightedVariable)
+                            (listVariables.includes(highlightedVariable) && factorVariable !== null) ||
+                            dependentList.includes(highlightedVariable)
                         }
                     >
                         {highlightedVariable && listVariables.includes(highlightedVariable) ? (
                             <CornerDownRight size={24} />
-                        ) : highlightedVariable && testVariables.includes(highlightedVariable) ? (
+                        ) : highlightedVariable && dependentList.includes(highlightedVariable) ? (
                             <CornerDownLeft size={24} />
                         ) : (
                             <CornerDownLeft size={24} />
@@ -153,13 +153,13 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     <div className="col-span-3 flex flex-col border p-4 rounded-md overflow-y-auto"
                         style={{
                             width: "250px", // Fixed width
-                            minHeight: "300px", // Minimum height
-                            maxHeight: "300px", // Maximum height
+                            minHeight: "336px", // Minimum height
+                            maxHeight: "336px", // Maximum height
                         }}
                     >
-                        <label className="font-semibold">Test Variables</label>
+                        <label className="font-semibold">Dependent List</label>
                         <div className="space-y-2">
-                            {testVariables.map((variable) => (
+                            {dependentList.map((variable) => (
                                 <div
                                     key={variable}
                                     className={`p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
@@ -175,7 +175,7 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                         </div>
                     </div>
                     
-                    {/* Grouping Variable */}
+                    {/* Factor Variable */}
                     <div className="col-span-3 flex flex-col border p-4 rounded-md mt-4"
                         style={{
                             width: "250px", // Fixed width
@@ -183,26 +183,23 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                             maxHeight: "124px", // Maximum height
                         }}
                     >
-                        <label className="font-semibold">Grouping Variable</label>
-                        {groupingVariable ? (
+                        <label className="font-semibold">Factor</label>
+                        {factorVariable ? (
                             <div
                                 className={`p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
-                                    highlightedVariable === groupingVariable
+                                    highlightedVariable === factorVariable
                                         ? "bg-blue-100 border-blue-500"
                                         : "border-gray-300"
                                 }`}
-                                onClick={() => setHighlightedVariable(groupingVariable)}
+                                onClick={() => setHighlightedVariable(factorVariable)}
                             >
-                                {groupingVariable}
+                                {factorVariable}
                             </div>
                         ) : (
                             <div className="p-2 text-gray-500">None selected</div>
                         )}
                     </div>
-                    <div className="col-span-3 flex items-center space-x-4 px-6 py-2">
-                        <Button variant="outline">Define Groups...</Button>
-                    </div>
-                    
+
                     {/* Options */}
                     <div className="col-span-3 flex items-center space-x-4 py-2">
                         <div className="flex items-center space-x-2">
@@ -211,13 +208,15 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                                 checked={estimateEffectSize}
                                 onCheckedChange={(checked) => setEstimateEffectSize(checked as boolean)}
                             />
-                            <label htmlFor="estimate-effect-sizes">Estimate effect sizes</label>
+                            <label htmlFor="estimate-effect-sizes">Estimate effect sizes for overall tests</label>
                         </div>
                     </div>
                 </div>
 
                 {/* Right Sidebar */}
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
+                    <Button variant="outline">Contrasts...</Button>
+                    <Button variant="outline">Post Hoc...</Button>
                     <Button variant="outline">Options...</Button>
                     <Button variant="outline">Bootstrap...</Button>
                 </div>
@@ -225,7 +224,7 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
 
             {/* Footer Buttons */}
             <DialogFooter className="flex justify-center space-x-4">
-                <Button onClick={handleRunTest} disabled={testVariables.length === 0 || !groupingVariable}>OK</Button>
+                <Button onClick={handleRunTest} disabled={dependentList.length === 0 || !factorVariable}>OK</Button>
                 <Button variant="outline">Paste</Button>
                 <Button variant="outline" onClick={handleReset}>Reset</Button>
                 <Button variant="outline" onClick={onClose}>Cancel</Button>
@@ -235,4 +234,4 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     );
 };
 
-export default IndependentSamplesTTestModal;
+export default OneWayAnovaModal;

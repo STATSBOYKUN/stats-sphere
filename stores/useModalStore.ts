@@ -9,8 +9,25 @@ export enum ModalType {
     SaveFile = 'saveFile',
     ExportData = 'exportData',
     ComputeVariable = 'computeVariable',
+
+    Explore = 'explore',
+    Crosstabs = 'crosstabs',
+
+    // Compare Means
     OneSampleTTest = 'oneSampleTTest',
     IndependentSamplesTTest = 'independentSamplesTTest',
+    PairedSamplesTTest = 'pairedSamplesTTest',
+    OneWayAnova = 'oneWayAnova',
+
+    Univariate = 'univariate',
+    Bivariate = 'bivariate',
+
+    // Nonparametric Tests
+    ChiSquare = 'chiSquare',
+    Runs = 'runs',
+    TwoIndependentSamplesTest = 'twoIndependentSamplesTest',
+    KIndependentSamplesTest = 'kIndependenSamplesTest',
+    KRelatedSamplesTest = 'kRelatedSamplesTest',
 
     // Time Series
     Smoothing = 'smoothing', //Time Series Smoothing

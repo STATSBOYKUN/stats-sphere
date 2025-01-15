@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 import {
     DialogContent,
     DialogFooter,
@@ -11,11 +12,11 @@ import {
 } from "@/components/ui/dialog";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 
-interface IndependentSamplesTTestModalProps {
+interface KIndependentSamplesTestModalProps {
     onClose: () => void;
 }
 
-const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> = ({ onClose }) => {
+const KIndependentSamplesTestModal: React.FC<KIndependentSamplesTestModalProps> = ({ onClose }) => {
     const initialListVariables = [
         "Age in years [age]",
         "Marital status [marital]",
@@ -31,7 +32,9 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     const [testVariables, setTestVariables] = useState<string[]>([]);
     const [groupingVariable, setGroupingVariable] = useState<string | null>(null);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(null);
-    const [estimateEffectSize, setEstimateEffectSize] = useState<boolean>(true);
+    const [kruskallWallisHOption, setKruskallWallisHOption] = useState<boolean>(true);
+    const [jonckheereTerpstraOption, setJonckheereTerpstraOption] = useState<boolean>(false);
+    const [medianOption, setMedianOption] = useState<boolean>(false);
 
     const handleMoveTestVariables = () => {
         if (highlightedVariable) {
@@ -64,18 +67,20 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
         setTestVariables([]);
         setGroupingVariable(null);
         setHighlightedVariable(null);
-        setEstimateEffectSize(true);
+        setKruskallWallisHOption(true);
+        setJonckheereTerpstraOption(false);
+        setMedianOption(false);
     };
 
     const handleRunTest = () => {
-        console.log("Running test with:", { testVariables, groupingVariable, estimateEffectSize });
+        console.log("Running test with:", { testVariables, groupingVariable, kruskallWallisHOption, jonckheereTerpstraOption, medianOption });
         onClose();
     };
 
     return (
         <DialogContent className="sm:max-w-[800px]">
             <DialogHeader>
-                <DialogTitle>Independent-Samples T Test</DialogTitle>
+                <DialogTitle>Test for Several Independent Samples</DialogTitle>
             </DialogHeader>
 
             <Separator className="my-2" />
@@ -86,8 +91,7 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     className="col-span-3 flex flex-col border p-4 rounded-md overflow-y-auto"
                     style={{
                         width: "250px", // Fixed width
-                        minHeight: "556px", // Minimum height
-                        maxHeight: "556px", // Maximum height
+                        height: "442px",
                     }}
                 >
                     <label className="font-semibold">List Variables</label>
@@ -153,11 +157,11 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     <div className="col-span-3 flex flex-col border p-4 rounded-md overflow-y-auto"
                         style={{
                             width: "250px", // Fixed width
-                            minHeight: "300px", // Minimum height
-                            maxHeight: "300px", // Maximum height
+                            minHeight: "234px", // Minimum height
+                            maxHeight: "234px", // Maximum height
                         }}
                     >
-                        <label className="font-semibold">Test Variables</label>
+                        <label className="font-semibold">Test Variable List</label>
                         <div className="space-y-2">
                             {testVariables.map((variable) => (
                                 <div
@@ -183,7 +187,7 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                             maxHeight: "124px", // Maximum height
                         }}
                     >
-                        <label className="font-semibold">Grouping Variable</label>
+                        <label className="font-semibold">Grouping Range</label>
                         {groupingVariable ? (
                             <div
                                 className={`p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
@@ -202,30 +206,60 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
                     <div className="col-span-3 flex items-center space-x-4 px-6 py-2">
                         <Button variant="outline">Define Groups...</Button>
                     </div>
-                    
-                    {/* Options */}
-                    <div className="col-span-3 flex items-center space-x-4 py-2">
-                        <div className="flex items-center space-x-2">
-                            <Checkbox
-                                id="estimate-effect-sizes"
-                                checked={estimateEffectSize}
-                                onCheckedChange={(checked) => setEstimateEffectSize(checked as boolean)}
-                            />
-                            <label htmlFor="estimate-effect-sizes">Estimate effect sizes</label>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Sidebar */}
                 <div className="col-span-2 flex flex-col justify-start space-y-4 p-4">
+                    <Button variant="outline">Exact...</Button>
                     <Button variant="outline">Options...</Button>
-                    <Button variant="outline">Bootstrap...</Button>
+                </div>
+
+                {/* Cut Point */}
+                <div className="col-span-7 ">
+                    <Label htmlFor="display-options" className="font-semibold text-base">Test Type</Label>
+                    <div className="grid grid-cols-2 border p-4 rounded-md space-x-4">
+                        <div className="col-span-1">
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="kruskall-wallis-h-option"
+                                    checked={kruskallWallisHOption}
+                                    onCheckedChange={(checked) => setKruskallWallisHOption(checked as boolean)}
+                                />
+                            <label htmlFor="kruskall-wallis-h-option">Kruskall-Wallis H</label>
+                            </div>
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="jonckheere-terpstra-option"
+                                    checked={jonckheereTerpstraOption}
+                                    onCheckedChange={(checked) => setJonckheereTerpstraOption(checked as boolean)}
+                                />
+                                <label htmlFor="jonckheere-terpstra-option">Jonckheere-Terpstra</label>
+                            </div>
+                        </div>
+                        <div className="col-span-1">
+                            <div className="space-x-1">
+                                <Checkbox
+                                    id="median-option"
+                                    checked={medianOption}
+                                    onCheckedChange={(checked) => setMedianOption(checked as boolean)}
+                                />
+                                <label htmlFor="median-option">Median</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Footer Buttons */}
             <DialogFooter className="flex justify-center space-x-4">
-                <Button onClick={handleRunTest} disabled={testVariables.length === 0 || !groupingVariable}>OK</Button>
+                <Button onClick={handleRunTest} disabled={testVariables.length === 0 ||
+                                                          !groupingVariable ||
+                                                          kruskallWallisHOption === false ||
+                                                          jonckheereTerpstraOption === false ||
+                                                          medianOption === false}
+                >
+                    OK
+                </Button>
                 <Button variant="outline">Paste</Button>
                 <Button variant="outline" onClick={handleReset}>Reset</Button>
                 <Button variant="outline" onClick={onClose}>Cancel</Button>
@@ -235,4 +269,4 @@ const IndependentSamplesTTestModal: React.FC<IndependentSamplesTTestModalProps> 
     );
 };
 
-export default IndependentSamplesTTestModal;
+export default KIndependentSamplesTestModal;

@@ -14,9 +14,20 @@ import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableM
 import ExportDataModal from './File/ExportDataModal';
 import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
 import DescriptivesModal from "@/components/Modals/Analyze/DescriptiveStatistic/DescriptivesModal";
+import ExploreModal from './Analyze/DescriptiveStatistic/ExploreModal';
+import CrosstabsModal from './Analyze/DescriptiveStatistic/CrosstabsModal';
 import OneSampleTTestModal from './Analyze/Compare Means/OneSampleTTestModal';
 import IndependentSamplesTTestModal from './Analyze/Compare Means/IndependentSamplesTTestModal';
+import PairedSamplesTTestModal from './Analyze/Compare Means/PairedSamplesTTestModal';
+import OneWayAnovaModal from './Analyze/Compare Means/OneWayAnovaModal';
+import UnivariateModal from './Analyze/General Linear Model/UnivariateModal';
+import BivariateModal from './Analyze/Correlate/BivariateModal';
+import ChiSquareModal from './Analyze/Nonparametric Tests/Legacy Dialogs/ChiSquareModal';
+import RunsModal from './Analyze/Nonparametric Tests/Legacy Dialogs/RunsModal';
+import TwoIndependentSamplesTestModal from './Analyze/Nonparametric Tests/Legacy Dialogs/TwoIndependentSamplesTestModal';
 import { Dialog } from '@/components/ui/dialog';
+import KIndependentSamplesTestModal from './Analyze/Nonparametric Tests/Legacy Dialogs/KIndependentSamplesTestModal';
+import KRelatedSamplesTestModal from './Analyze/Nonparametric Tests/Legacy Dialogs/KRelatedSamplesTestModal';
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -35,10 +46,36 @@ const ModalContainer: React.FC = () => {
                 return <ExportDataModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Explore:
+                return <ExploreModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Crosstabs:
+                return <CrosstabsModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.OneSampleTTest:
                 return <OneSampleTTestModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.IndependentSamplesTTest:
                 return <IndependentSamplesTTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.PairedSamplesTTest:
+                return <PairedSamplesTTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.OneWayAnova:
+                return <OneWayAnovaModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Univariate:
+                return <UnivariateModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Bivariate:
+                return <BivariateModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ChiSquare:
+                return <ChiSquareModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Runs:
+                return <RunsModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.TwoIndependentSamplesTest:
+                return <TwoIndependentSamplesTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.KIndependentSamplesTest:
+                return <KIndependentSamplesTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.KRelatedSamplesTest:
+                return <KRelatedSamplesTestModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.FrequenciesStatistic:
+                return <FrequenciesModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.DescriptiveStatistic:
+                return <DescriptivesModal onClose={closeModal} {...currentModal.props} />;
             default:
                 return null;
         }
