@@ -1,8 +1,8 @@
 // stores/useModalStore.ts
 
 import { create } from 'zustand';
-import StatisticsSettingsModal
-    from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesStatistics";
+import { devtools } from 'zustand/middleware';
+import zukeper from 'zukeeper';
 
 export enum ModalType {
     OpenFile = 'openFile',
@@ -34,6 +34,47 @@ export enum ModalType {
     DescriptiveStatistic = 'descriptiveStatistic',
     StatisticsSettingsModal = 'statisticsSettingsModal',
     ChartSettingsModal = 'chartSettingsModal',
+
+    // File
+    NewFile = 'newFile',
+    OpenData = 'openData',
+    OpenOutput = 'openOutput',
+    ImportExcel = 'importExcel',
+    ImportCSV = 'importCSV',
+    ExportDatabase = 'exportDatabase',
+    ExportExcel = 'exportExcel',
+    ExportCSV = 'exportCSV',
+    PrintPreview = 'printPreview',
+    Print = 'print',
+    Exit = 'exit',
+
+    // Edit
+    Find = 'find',
+    Replace = 'replace',
+    GoToCase = 'goToCase',
+    GoToVariable = 'goToVariable',
+
+    // Data
+    DefineVariableProperties = 'defineVariableProperties',
+    SetMeasurementLevel = 'setMeasurementLevel',
+    DefineDateTime = 'defineDateTime',
+    SortCases = 'sortCases',
+    SortVariables = 'sortVariables',
+    Transpose = 'transpose',
+    MergeFiles = 'mergeFiles',
+    Restructure = 'restructure',
+    SplitFile = 'splitFile',
+    WeightCases = 'weightCases',
+
+    // Descriptive
+    Frequencies = 'frequencies',
+    Descriptive = 'descriptive',
+    Explore = 'explore',
+    Crosstabs = 'crosstabs',
+    Ratio = 'ratio',
+    QQPlots = 'qqPlots',
+    ReadCSVFile = 'readCSVFile',
+    ReadExcelFile = "ReadExcelFile",
 }
 
 interface ModalInstance {
@@ -48,15 +89,19 @@ interface ModalStoreState {
     closeAllModals: () => void;
 }
 
-export const useModalStore = create<ModalStoreState>((set, get) => ({
-    modals: [],
-    openModal: (type, props) => {
-        set((state) => ({ modals: [...state.modals, { type, props }] }));
-    },
-    closeModal: () => {
-        set((state) => ({ modals: state.modals.slice(0, -1) }));
-    },
-    closeAllModals: () => {
-        set({ modals: [] });
-    },
-}));
+export const useModalStore = create<ModalStoreState>()(
+    devtools(
+        zukeper((set, get) => ({
+            modals: [],
+            openModal: (type, props) => {
+                set((state) => ({ modals: [...state.modals, { type, props }] }));
+            },
+            closeModal: () => {
+                set((state) => ({ modals: state.modals.slice(0, -1) }));
+            },
+            closeAllModals: () => {
+                set({ modals: [] });
+            },
+        }))
+    )
+);

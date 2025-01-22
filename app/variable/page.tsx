@@ -3,7 +3,7 @@
 "use client";
 
 import React from 'react';
-import VariableTable from '../../components/VariableTable/VariableTable';
+import VariableTable from './components/VariableTable';
 
 export default function VariablesPage() {
     return (

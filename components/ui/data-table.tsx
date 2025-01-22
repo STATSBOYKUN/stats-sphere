@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 
 interface ColumnHeader {
@@ -143,6 +142,65 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
         return result;
     };
 
+    const renderRowHeaderCells = (
+        row: TableRowData,
+        rowIndex: number,
+        flatRows: TableRowData[],
+        rowHeaderCount: number
+    ) => {
+        const nonEmptyHeaders = row.rowHeader.filter(h => h !== null);
+        if (rowHeaderCount === 2 && nonEmptyHeaders.length === 1) {
+            const colIdx = 0;
+            const current = row.rowHeader[colIdx] ?? "";
+            const prev =
+                rowIndex > 0 ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? "" : null;
+            const renderCell = rowIndex === 0 || current !== prev;
+            if (!renderCell) {
+                return null;
+            }
+            let rowSpan = 1;
+            for (let next = rowIndex + 1; next < flatRows.length; next++) {
+                let nextVal = flatRows[next].rowHeader[colIdx] ?? "";
+                if (nextVal === current) rowSpan++;
+                else break;
+            }
+            return (
+                <th
+                    key={`rowheader-${rowIndex}-${colIdx}`}
+                    rowSpan={rowSpan}
+                    colSpan={2}
+                    className="border border-gray-300 bg-gray-50 px-2 py-1 text-left text-sm font-normal"
+                >
+                    {current}
+                </th>
+            );
+        }
+        return Array.from({ length: rowHeaderCount }, (_, colIdx) => {
+            const current = row.rowHeader[colIdx] ?? "";
+            const prev =
+                rowIndex > 0 ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? "" : null;
+            const renderCell = rowIndex === 0 || current !== prev;
+            if (!renderCell) {
+                return null;
+            }
+            let rowSpan = 1;
+            for (let next = rowIndex + 1; next < flatRows.length; next++) {
+                let nextVal = flatRows[next].rowHeader[colIdx] ?? "";
+                if (nextVal === current) rowSpan++;
+                else break;
+            }
+            return (
+                <th
+                    key={`rowheader-${rowIndex}-${colIdx}`}
+                    rowSpan={rowSpan}
+                    className="border border-gray-300 bg-gray-50 px-2 py-1 text-left text-sm font-normal"
+                >
+                    {current}
+                </th>
+            );
+        });
+    };
+
     return (
         <div className="my-4">
             {parsedData.tables.map((table, tableIndex) => {
@@ -173,48 +231,23 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
                         )}
                         </thead>
                         <tbody>
-                        {flatRows.map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                                {Array.from({ length: rowHeaderCount }, (_, colIdx) => {
-                                    let current = row.rowHeader[colIdx] ?? "";
-                                    let prev =
-                                        rowIndex > 0
-                                            ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? ""
-                                            : null;
-                                    let renderCell = rowIndex === 0 || current !== prev;
-                                    let rowSpan = 1;
-                                    if (renderCell) {
-                                        for (
-                                            let next = rowIndex + 1;
-                                            next < flatRows.length;
-                                            next++
-                                        ) {
-                                            let nextVal =
-                                                flatRows[next].rowHeader[colIdx] ?? "";
-                                            if (nextVal === current) rowSpan++;
-                                            else break;
-                                        }
-                                    }
-                                    return renderCell ? (
-                                        <th
-                                            key={`rowheader-${rowIndex}-${colIdx}`}
-                                            rowSpan={rowSpan}
-                                            className="border border-gray-300 bg-gray-50 px-2 py-1 text-left text-sm font-normal"
+                        {flatRows.map((row, rowIndex) => {
+                            const allDataNull = leafCols.every(k => row[k] == null);
+                            if (allDataNull && row.rowHeader.every(h => h !== "")) return null;
+                            return (
+                                <tr key={rowIndex}>
+                                    {renderRowHeaderCells(row, rowIndex, flatRows, rowHeaderCount)}
+                                    {leafCols.map((colKey, i) => (
+                                        <td
+                                            key={i}
+                                            className="border border-gray-300 px-2 py-1 text-center text-sm"
                                         >
-                                            {current}
-                                        </th>
-                                    ) : null;
-                                })}
-                                {leafCols.map((colKey, i) => (
-                                    <td
-                                        key={i}
-                                        className="border border-gray-300 px-2 py-1 text-center text-sm"
-                                    >
-                                        {row[colKey] ?? ""}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
+                                            {row[colKey] ?? ""}
+                                        </td>
+                                    ))}
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
                 );
