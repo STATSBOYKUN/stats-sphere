@@ -4,6 +4,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
+import db from "@/lib/db"; // Adjust the import path according to your project structure
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";  
 import { Label } from "@/components/ui/label";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -19,6 +20,10 @@ interface VariableDef {
     values: string;
     missing: string;
     measure: string;
+    width: number;
+    decimals: number;
+    columns: number;
+    align: string;
 }
 interface SmoothingModalProps {
     onClose: () => void;
@@ -224,51 +229,54 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     components: "Smoothing Evaluation",
             });
 
-            // Pastikan smoothingResult memiliki panjang yang sesuai dengan jumlah baris data
-            const totalRows = data.length;
-
-            // Jika panjang smoothingResult lebih pendek, tambahkan nilai kosong atau nilai default
-            if (smoothingResult.length < totalRows) {
-                const missingRows = totalRows - smoothingResult.length;
-                const filler = new Array(missingRows).fill(""); // Menambahkan nilai kosong atau sesuai kebutuhan
-                smoothingResult = [...smoothingResult, ...filler];
-            }
-            // Menambahkan nilai dari newStringRow ke setiap baris di data sebagai kolom baru
-            const updatedData = data.map((row, index) => {
-                // Cari kolom pertama yang kosong
-                const updatedRow = [...row];
-                
-                for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
-                    // Jika kolom kosong, masukkan nilai dari smoothingResult
-                    if (updatedRow[colIndex] === '') {
-                        updatedRow[colIndex] = smoothingResult[index].toString(); // Menambahkan nilai ke kolom yang kosong
-                        break; // Keluar dari loop setelah mengisi kolom pertama yang kosong
-                    }
+            // Jika Menyimpan Forecasting Dicentang
+            if (saveForecasting) {
+                // Jika panjang smoothingResult lebih pendek, tambahkan nilai kosong atau nilai default
+                if (smoothingResult.length < data.length) {
+                    const missingRows = data.length - smoothingResult.length;
+                    const filler = new Array(missingRows).fill(""); // Menambahkan nilai kosong atau sesuai kebutuhan
+                    smoothingResult = [...smoothingResult, ...filler];
                 }
-        
-                return updatedRow;
-            });
+                // Menambahkan nilai dari newStringRow ke setiap baris di data sebagai kolom baru
+                const updatedData = data.map((row, index) => {
+                    // Cari kolom pertama yang kosong
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        // Jika kolom kosong, masukkan nilai dari smoothingResult
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = smoothingResult[index].toString(); // Menambahkan nilai ke kolom yang kosong
+                            break; // Keluar dari loop setelah mengisi kolom pertama yang kosong
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updatedData);
+                const smoothingVariable = {
+                    name: `${varDefs[0].name} ${selectedMethod[0]}-${variables.length}`,
+                    columnIndex: variables.length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 2,
+                    columns: 200,
+                    align: 'left',
+                };
+                await addVariable(smoothingVariable);
+                // Perbarui state `variables` di store secara langsung
+                const updatedVariables = [...variables, smoothingVariable];
+                useVariableStore.setState({ variables: updatedVariables });
+                // Simpan hasil smoothing ke IndexDB
+                const smoothingCells = smoothingResult.map((value, index) => ({
+                    x: smoothingVariable.columnIndex, // Kolom baru untuk hasil smoothing
+                    y: index, // Baris yang sesuai
+                    value: value.toString(), // Konversi nilai ke string
+                }));
+                await db.cells.bulkPut(smoothingCells);
+            }
 
-            setData(updatedData);
-
-            const smoothingVariable = {
-                name: varDefs[0].name + ' ' + selectedMethod[0],
-                columnIndex: variables.length,
-                type: 'numeric',
-                label: '',
-                values: '',
-                missing: '',
-                measure: 'scale',
-                width: 8,
-                decimals: 2,
-                columns: 200,
-                align: 'left',
-            };
-            addVariable(smoothingVariable);
-            
-            // console.log(newStringRow);
-            // console.log(data);
-            // console.log(updatedData);
             setIsCalculating(false);
             onClose();
         }
@@ -282,14 +290,6 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             setIsCalculating(false);
         }
     }
-
-    useEffect(() => {
-        // Memuat data dari Zustand jika sudah ada
-        const storedData = useDataStore.getState().data;
-        if (storedData.length > 0) {
-            setData(storedData);
-        }
-    }, []);
 
     const inputParameters = (method: string) => {
         switch (method) {
