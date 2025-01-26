@@ -1,20 +1,21 @@
 // components/Modals/Graphs/ChartTypes.ts
 
 export const chartTypes = [
-  "bar2",
-  "Bar3",
-  "Line",
-  "Pie",
-  "Area",
+  "Vertical Bar Chart",
+  "Horizontal Bar Chart",
+  "Line Chart",
+  "Pie Chart",
+  "Area Chart",
   "Histogram",
-  "Scatter",
-  "Scatter Fit Line",
+  "Scatter Plot",
+  "Scatter Plot With Fit Line",
   "Boxplot",
-  "Vertical Stacked Bar",
-  "Horizontal Stacked Bar",
-  "Grouped Bar",
-  "Multi Line",
-  "Error Bar",
+  "Vertical Stacked Bar Chart",
+  "Horizontal Stacked Bar Chart",
+  "Grouped Bar Chart",
+  "Multiple Line Chart",
+  "Error Bar Chart",
+  "None",
 ] as const;
 
 export type ChartType = (typeof chartTypes)[number];

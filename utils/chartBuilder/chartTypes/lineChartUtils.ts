@@ -49,7 +49,7 @@ export const createLineChart = (
   // Mendeklarasikan generator garis
   const line = d3
     .line<{ category: string; value: number }>()
-    .x((d) => x(d.category)!)
+    .x((d) => x(d.category)! + x.bandwidth() / 2)
     .y((d) => y(d.value)!);
 
   // Menambahkan path untuk garis

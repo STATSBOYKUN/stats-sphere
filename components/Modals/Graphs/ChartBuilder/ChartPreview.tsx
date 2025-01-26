@@ -1,17 +1,20 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDataStore } from "@/stores/useDataStore"; // Mengambil data dari useDataStore
 import { useVariableStore } from "@/stores/useVariableStore"; // Mengambil variabel dari useVariableStore
 import { chartUtils } from "@/utils/chartBuilder/chartTypes/chartUtils";
 import * as d3 from "d3"; // Mengimpor D3.js
 import { ChartType } from "@/components/Modals/Graphs/ChartTypes";
+import { chartVariableConfig } from "./ChartVariableConfig";
 
 interface ChartPreviewProps {
   chartType: ChartType;
   width: number;
   height: number;
   useaxis: boolean;
-  variableNames: string[];
-  setVariableNames: React.Dispatch<React.SetStateAction<string[]>>;
+  sideVariables: string[];
+  bottomVariables: string[];
+  onDropSide: (newSideVariables: string[]) => void; // Mengubah tipe parameter
+  onDropBottom: (newBottomVariables: string[]) => void;
 }
 
 interface ChartVariableRequirements {
@@ -28,83 +31,23 @@ interface ChartVariableRequirements {
 // Definisi interface untuk data chart
 interface ChartData {
   category: string;
-  subcategory: string;
+  subcategory?: string;
   value: number;
+  error?: number;
 }
-const chartVariableConfig: Record<ChartType, ChartVariableRequirements> = {
-  bar2: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Bar3: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Line: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Pie: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Area: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Histogram: {
-    side: { min: 0, max: 0 },
-    bottom: { min: 1, max: 1 },
-  },
-  Scatter: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  "Scatter Fit Line": {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  Boxplot: {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-  "Horizontal Stacked Bar": {
-    side: { min: 1, max: Infinity },
-    bottom: { min: 1, max: 1 },
-  },
-  "Vertical Stacked Bar": {
-    side: { min: 1, max: Infinity },
-    bottom: { min: 1, max: 1 },
-  },
-  "Grouped Bar": {
-    side: { min: 1, max: Infinity },
-    bottom: { min: 1, max: 1 },
-  },
-  "Multi Line": {
-    side: { min: 1, max: Infinity },
-    bottom: { min: 1, max: 1 },
-  },
-  "Error Bar": {
-    side: { min: 1, max: 1 },
-    bottom: { min: 1, max: 1 },
-  },
-};
 
 const ChartPreview: React.FC<ChartPreviewProps> = ({
   chartType,
   width,
   height,
   useaxis,
-  variableNames,
-  setVariableNames,
+  sideVariables,
+  bottomVariables,
+  onDropSide,
+  onDropBottom,
 }) => {
   const { data, loadData } = useDataStore(); // Mengambil data dari useDataStore
   const { variables, loadVariables } = useVariableStore(); // Mengambil variabel dari useVariableStore
-  const [sideVariables, setSideVariables] = useState<string[]>([]); // Variabel untuk sisi
-  const [bottomVariables, setBottomVariables] = useState<string[]>([]); // Variabel untuk bawah
-  const [subCategoryVariable, setSubCategoryVariable] = useState<string | null>(
-    null
-  ); // Variabel untuk subkategori (khusus stacked bar)
   const svgRef = useRef<SVGSVGElement | null>(null); // Referensi untuk elemen SVG
 
   // Memuat data dan variabel ketika komponen pertama kali dimuat
@@ -113,96 +56,53 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
     loadVariables(45); // Memuat variabel dari useVariableStore
   }, [loadData, loadVariables]);
 
-  // Fungsi untuk menangani drag start
-  const handleDragStart = (e: React.DragEvent, variable: string) => {
-    e.dataTransfer.setData("text", variable); // Menyimpan nama variabel untuk dipindahkan
+  // Fungsi untuk menangani drag over
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Mengizinkan drop
   };
 
-  // Fungsi untuk menangani drop variabel
-  const handleDrop = (e: React.DragEvent, area: "side" | "bottom" | "sub") => {
+  const handleDrop = (
+    e: React.DragEvent<HTMLDivElement>,
+    dropZone: "side" | "bottom"
+  ) => {
     e.preventDefault();
-    const droppedVariable = e.dataTransfer.getData("text");
+    const variableName = e.dataTransfer.getData("text/plain");
 
-    const config = chartVariableConfig[chartType];
-
-    if (!config) {
-      console.error("Chart type not supported:", chartType);
+    if (!variableName) {
+      console.warn("No variable detected in drag event");
       return;
     }
 
-    // Cek area dan update sesuai dengan area yang di-drop
-    if (area === "side") {
-      if (config.side.max === 1) {
-        setSideVariables([droppedVariable]);
+    const config = chartVariableConfig[chartType]; // Ambil konfigurasi chartType saat ini
+
+    if (dropZone === "side") {
+      if (sideVariables.length >= config.side.max) {
+        // Jika sudah mencapai maksimum, ganti variabel pertama
+        const updatedSideVariables = [variableName];
+        onDropSide(updatedSideVariables);
+        console.log(`Replacing side variables with: ${updatedSideVariables}`);
       } else {
-        setSideVariables((prev) => {
-          if (prev.length < config.side.max) {
-            return [...prev, droppedVariable];
-          } else {
-            // Misalnya, mengabaikan atau menimpa variabel pertama
-            return [...prev.slice(1), droppedVariable];
-          }
-        });
+        // Tambahkan variabel jika belum penuh
+        const updatedSideVariables = [...sideVariables, variableName];
+        onDropSide(updatedSideVariables);
+        console.log(`Added to side variables: ${updatedSideVariables}`);
       }
-    } else if (area === "bottom") {
-      if (config.bottom.max === 1) {
-        setBottomVariables([droppedVariable]);
+    } else if (dropZone === "bottom") {
+      if (bottomVariables.length >= config.bottom.max) {
+        // Jika sudah mencapai maksimum, ganti variabel pertama
+        const updatedBottomVariables = [variableName];
+        onDropBottom(updatedBottomVariables);
+        console.log(
+          `Replacing bottom variables with: ${updatedBottomVariables}`
+        );
       } else {
-        setBottomVariables((prev) => {
-          if (prev.length < config.bottom.max) {
-            return [...prev, droppedVariable];
-          } else {
-            // Misalnya, mengabaikan atau menimpa variabel pertama
-            return [...prev.slice(1), droppedVariable];
-          }
-        });
+        // Tambahkan variabel jika belum penuh
+        const updatedBottomVariables = [...bottomVariables, variableName];
+        onDropBottom(updatedBottomVariables);
+        console.log(`Added to bottom variables: ${updatedBottomVariables}`);
       }
-    } else if (area === "sub") {
-      setSubCategoryVariable(droppedVariable);
     }
   };
-
-  // Fungsi untuk menangani drag over untuk area drop
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
-  // Ambil data berdasarkan variabel yang dipilih
-  // const getDataForChart = () => {
-  //   const bottomIndex = variables.findIndex(
-  //     (variable) => variable.name === bottomVariables[0]
-  //   );
-  //   const sideIndex = variables.findIndex(
-  //     (variable) => variable.name === sideVariables[0]
-  //   );
-
-  //   // Jika kedua variabel kosong, kembali ke data default
-  //   if (sideIndex === -1 && bottomIndex === -1) {
-  //     return []; // Data tidak valid, jadi jangan tampilkan chart
-  //   }
-
-  //   // Jika hanya ada bottomVariables yang valid, ambil hanya data itu saja
-  //   if (bottomIndex !== -1 && sideIndex === -1) {
-  //     return data.map((row) => ({
-  //       category: row[bottomIndex],
-  //       value: 0, // Set nilai default jika sideVariables kosong
-  //     }));
-  //   }
-
-  //   // Jika hanya ada sideVariables yang valid, ambil hanya data itu saja
-  //   if (sideIndex !== -1 && bottomIndex === -1) {
-  //     return data.map((row) => ({
-  //       category: "Unknown", // Set kategori default jika bottomVariables kosong
-  //       value: parseFloat(row[sideIndex]),
-  //     }));
-  //   }
-
-  //   // Jika kedua variabel valid, ambil data berdasarkan kedua variabel
-  //   return data.map((row) => ({
-  //     category: row[bottomIndex], // Kategori dari bottomVariables
-  //     value: parseFloat(row[sideIndex]), // Nilai dari sideVariables
-  //   }));
-  // };
 
   // Fungsi untuk mengambil data chart
   const getDataForChart = (): ChartData[] => {
@@ -223,21 +123,20 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
     if (bottomIndex !== -1 && sideIndices.every((index) => index === -1)) {
       return data.map((row) => ({
         category: row[bottomIndex],
-        subcategory: "Unknown", // Atau nilai default lainnya
-        value: 0,
+        value: 0, // Set nilai default jika sideVariables kosong
       }));
     }
 
     // Jika ada variabel side yang valid tetapi tidak ada variabel bottom
     if (sideIndices.some((index) => index !== -1) && bottomIndex === -1) {
-      const results: ChartData[] = []; // Tipe secara eksplisit ditentukan
+      const results: ChartData[] = [];
 
       data.forEach((row) => {
         sideIndices.forEach((index, i) => {
           if (index !== -1) {
             results.push({
-              category: "unknown",
-              subcategory: sideVariables[i],
+              category: "Unknown",
+              subcategory: sideVariables[i] || "",
               value: parseFloat(row[index] || "0"),
             });
           }
@@ -257,7 +156,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
       const sideVariableName = sideVariables[sideIndices.indexOf(sideIndex)];
       return data.map((row) => ({
         category: row[bottomIndex],
-        subcategory: sideVariableName, // Atau bisa juga sideVariables[0] jika ingin menyimpan nama variabel side
+        subcategory: sideVariableName,
         value: parseFloat(row[sideIndex] || "0"),
       }));
     } else {
@@ -292,7 +191,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
       let chartNode = null;
 
       switch (chartType) {
-        case "bar2":
+        case "Vertical Bar Chart":
           chartNode =
             chartData.length === 0
               ? chartUtils.createVerticalBarChart2(
@@ -317,7 +216,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                 );
           break;
 
-        case "Bar3":
+        case "Horizontal Bar Chart":
           chartNode =
             chartData.length === 0
               ? chartUtils.createHorizontalBarChart(
@@ -342,8 +241,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                 );
           break;
 
-        case "Vertical Stacked Bar": {
-          // Bungkus dalam blok {}
+        case "Vertical Stacked Bar Chart": {
           const formattedData =
             chartData.length === 0
               ? [
@@ -354,7 +252,11 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                   { category: "female", subcategory: "white", value: 15 },
                   { category: "female", subcategory: "green", value: 10 },
                 ]
-              : chartData;
+              : chartData.map((d) => ({
+                  category: d.category,
+                  subcategory: d.subcategory || "",
+                  value: d.value,
+                }));
 
           chartNode = chartUtils.createVerticalStackedBarChart(
             formattedData,
@@ -365,8 +267,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           break;
         }
 
-        case "Horizontal Stacked Bar": {
-          // Bungkus dalam blok {}
+        case "Horizontal Stacked Bar Chart": {
           const formattedData =
             chartData.length === 0
               ? [
@@ -377,7 +278,11 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                   { category: "female", subcategory: "white", value: 15 },
                   { category: "female", subcategory: "green", value: 10 },
                 ]
-              : chartData;
+              : chartData.map((d) => ({
+                  category: d.category,
+                  subcategory: d.subcategory || "",
+                  value: d.value,
+                }));
 
           chartNode = chartUtils.createHorizontalStackedBarChart(
             formattedData,
@@ -388,8 +293,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           break;
         }
 
-        case "Grouped Bar": {
-          // Bungkus dalam blok {}
+        case "Grouped Bar Chart": {
           const formattedData =
             chartData.length === 0
               ? [
@@ -400,7 +304,11 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                   { category: "female", subcategory: "white", value: 15 },
                   { category: "female", subcategory: "green", value: 10 },
                 ]
-              : chartData;
+              : chartData.map((d) => ({
+                  category: d.category,
+                  subcategory: d.subcategory || "",
+                  value: d.value,
+                }));
 
           chartNode = chartUtils.createGroupedBarChart(
             formattedData,
@@ -411,7 +319,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           break;
         }
 
-        case "Line":
+        case "Line Chart":
           chartNode =
             chartData.length === 0
               ? chartUtils.createLineChart(
@@ -436,7 +344,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
               : chartUtils.createLineChart(chartData, width, height, useaxis);
           break;
 
-        case "Multi Line": {
+        case "Multiple Line Chart": {
           const formattedData =
             chartData.length === 0
               ? [
@@ -471,7 +379,11 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                     value: 10,
                   },
                 ]
-              : chartData;
+              : chartData.map((d) => ({
+                  category: d.category,
+                  subcategory: d.subcategory || "",
+                  value: d.value,
+                }));
 
           chartNode = chartUtils.createMultilineChart(
             formattedData,
@@ -482,7 +394,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           break;
         }
 
-        case "Pie": // Tambahkan case baru untuk Pie chart
+        case "Pie Chart":
           chartNode =
             chartData.length === 0
               ? chartUtils.createPieChart(
@@ -501,7 +413,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
               : chartUtils.createPieChart(chartData, width, height);
           break;
 
-        case "Area":
+        case "Area Chart":
           chartNode =
             chartData.length === 0
               ? chartUtils.createAreaChart(
@@ -541,7 +453,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           );
           break;
 
-        case "Scatter": // Menambahkan case baru untuk Scatter plot
+        case "Scatter Plot": // Menambahkan case baru untuk Scatter plot
           // Ambil data scatter jika tidak ada data default
           const scatterData =
             chartData.length === 0
@@ -573,7 +485,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           );
           break;
 
-        case "Scatter Fit Line": // Menambahkan case baru untuk Scatter plot dengan Fit Line
+        case "Scatter Plot With Fit Line": // Menambahkan case baru untuk Scatter plot dengan Fit Line
           // Ambil data scatter dengan fit line jika tidak ada data default
           const scatterWithFitLineData =
             chartData.length === 0
@@ -625,7 +537,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
                 }));
 
           // Memanggil fungsi untuk membuat BoxPlot
-          chartNode = chartUtils.createBoxPlot(
+          chartNode = chartUtils.createBoxplot(
             boxPlotData, // Data untuk Box Plot
             width,
             height,
@@ -633,29 +545,31 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
           );
           break;
 
-        case "Error Bar":
-          chartNode =
+        case "Error Bar Chart": // Menambahkan case baru untuk BoxPlot
+          // Ambil data box plot jika tidak ada data default
+          const errorBardata =
             chartData.length === 0
-              ? chartUtils.createErrorBarChart(
-                  [
-                    // Default data jika tidak ada variabel yang dipilih
-                    { category: "A", value: 30, error: 5 },
-                    { category: "B", value: 80, error: 10 },
-                    { category: "C", value: 45, error: 4 },
-                    { category: "D", value: 60, error: 6 },
-                    { category: "E", value: 20, error: 3 },
-                    { category: "F", value: 90, error: 7 },
-                  ],
-                  width,
-                  height,
-                  useaxis
-                )
-              : chartUtils.createVerticalBarChart2(
-                  chartData,
-                  width,
-                  height,
-                  useaxis
-                );
+              ? [
+                  { category: "A", value: 30, error: 5 },
+                  { category: "B", value: 80, error: 10 },
+                  { category: "C", value: 45, error: 4 },
+                  { category: "D", value: 60, error: 6 },
+                  { category: "E", value: 20, error: 3 },
+                  { category: "F", value: 90, error: 7 },
+                ]
+              : chartData.map((d) => ({
+                  category: d.category, // Gunakan category untuk mengganti x
+                  value: d.value, // Gunakan value untuk mengganti y
+                  error: 2,
+                }));
+
+          // Memanggil fungsi untuk membuat BoxPlot
+          chartNode = chartUtils.createErrorBarChart(
+            errorBardata, // Data untuk Box Plot
+            width,
+            height,
+            useaxis // Pilihan untuk menampilkan sumbu
+          );
           break;
 
         default:
@@ -668,20 +582,16 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
         svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
       }
     }
-  }, [chartType, sideVariables, bottomVariables, data, useaxis, width, height]);
-
-  // Menyesuaikan variabel saat chartType berubah
-  useEffect(() => {
-    const config = chartVariableConfig[chartType];
-
-    if (sideVariables.length > config.side.max) {
-      setSideVariables(sideVariables.slice(0, config.side.max));
-    }
-
-    if (bottomVariables.length > config.bottom.max) {
-      setBottomVariables(bottomVariables.slice(0, config.bottom.max));
-    }
-  }, [chartType]);
+  }, [
+    chartType,
+    sideVariables,
+    bottomVariables,
+    data,
+    useaxis,
+    width,
+    height,
+    variables,
+  ]);
 
   return (
     <div className="pl-6 flex justify-center items-center overflow-visible flex-col ">

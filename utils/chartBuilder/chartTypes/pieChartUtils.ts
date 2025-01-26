@@ -4,6 +4,7 @@ export const createPieChart = (
   data: { category: string; value: number }[], // Data dengan kategori dan nilai
   width: number = 928,
   height: number = Math.min(width, 500),
+  useAxis: boolean = true,
   colorRange: readonly string[] = d3.schemeBlues[9],
   labelThreshold: number = 0.25
 ) => {

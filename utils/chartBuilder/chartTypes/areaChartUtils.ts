@@ -25,18 +25,12 @@ export const createAreaChart = (
   const marginBottom = useAxis ? 30 : 0;
   const marginLeft = useAxis ? 40 : 0;
 
-  // Mengkonversi category menjadi Date (menggunakan d3.timeParse)
-  const parseDate = d3.timeParse("%Y-%m-%d");
-
-  console.log(validData.map((d) => parseDate(d.category)));
-
   // Menentukan skala untuk sumbu X dan Y
   const x = d3
-    .scaleUtc()
-    .domain(
-      d3.extent(validData, (d) => parseDate(d.category) as Date) as [Date, Date]
-    )
-    .range([marginLeft, width - marginRight]);
+    .scaleBand() // scaleBand untuk kategori
+    .domain(validData.map((d) => d.category))
+    .range([marginLeft, width - marginRight])
+    .padding(0.2);
 
   const y = d3
     .scaleLinear()
@@ -46,7 +40,7 @@ export const createAreaChart = (
   // Generator untuk area chart
   const area = d3
     .area<{ category: string; value: number }>()
-    .x((d) => x(parseDate(d.category) as Date))
+    .x((d) => x(d.category)! + x.bandwidth() / 2)
     .y0(y(0))
     .y1((d) => y(d.value));
 
@@ -64,11 +58,7 @@ export const createAreaChart = (
     .attr("style", "max-width: 100%; height: auto;");
 
   // Menambahkan path untuk area chart
-  svg
-    .append("path")
-    .datum(validData) //
-    .attr("fill", "steelblue")
-    .attr("d", area);
+  svg.append("path").datum(validData).attr("fill", "steelblue").attr("d", area);
 
   // Jika axis digunakan, tambahkan sumbu X dan Y
   if (useAxis) {

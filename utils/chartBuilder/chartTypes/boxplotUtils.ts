@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-export const createBoxPlot = (
+export const createBoxplot = (
   data: { category: string; value: number }[], // Data berupa array objek dengan properti category dan value
   width: number,
   height: number,
@@ -15,9 +15,17 @@ export const createBoxPlot = (
   const marginLeft = useAxis ? 60 : 0;
 
   // Filter data untuk menghilangkan nilai null, undefined, dan NaN
-  const validData = data.filter(
-    (d) => d.value !== null && d.value !== undefined && !Number.isNaN(d.value)
-  );
+  const validData = data
+    .filter(
+      (d) => d.value !== null && d.value !== undefined && !Number.isNaN(d.value)
+    )
+    .map((d) => ({
+      category:
+        d.category === null || d.category === undefined || d.category === ""
+          ? "unknown"
+          : d.category,
+      value: d.value,
+    }));
 
   console.log("Valid Data:", validData);
 
@@ -71,7 +79,11 @@ export const createBoxPlot = (
     .data(boxData)
     .join("g")
     .attr("transform", (d) => {
-      return `translate(${x(d.category)}, 0)`;
+      const xPos = x(d.category);
+      const bandwidth = x.bandwidth();
+      return xPos !== undefined && bandwidth !== undefined
+        ? `translate(${xPos + bandwidth / 2}, 0)`
+        : "";
     });
 
   // Menambahkan whiskers (garis vertikal untuk rentang IQR)

@@ -191,25 +191,25 @@ export const createHorizontalBarChart = (
   return svg.node(); // Mengembalikan node SVG untuk ditambahkan ke DOM
 };
 
-export const createVerticalBarChart = (
-  svg: any,
-  data: number[],
-  width: number,
-  height: number
-) => {
-  svg
-    .attr("width", width)
-    .attr("height", height)
-    .selectAll("rect")
-    .data(data)
-    .enter()
-    .append("rect")
-    .attr("x", (d: number, i: number) => i * (width / data.length))
-    .attr("y", (d: number) => height - d)
-    .attr("width", width / data.length - 5)
-    .attr("height", (d: number) => d)
-    .attr("fill", "#69b3a2");
-};
+// export const createVerticalBarChart = (
+//   svg: any,
+//   data: number[],
+//   width: number,
+//   height: number
+// ) => {
+//   svg
+//     .attr("width", width)
+//     .attr("height", height)
+//     .selectAll("rect")
+//     .data(data)
+//     .enter()
+//     .append("rect")
+//     .attr("x", (d: number, i: number) => i * (width / data.length))
+//     .attr("y", (d: number) => height - d)
+//     .attr("width", width / data.length - 5)
+//     .attr("height", (d: number) => d)
+//     .attr("fill", "#69b3a2");
+// };
 
 export const createVerticalStackedBarChart = (
   data: ChartData[],
@@ -276,17 +276,17 @@ export const createVerticalStackedBarChart = (
     .nice()
     .range([height - marginBottom, marginTop]);
 
-  // **Perbaikan pada Skala Warna**
+  // Warna
   let colorScheme: readonly string[];
   if (subcategories.length <= 3) {
-    // Gunakan skema minimum 3 warna jika subcategories <= 3
-    colorScheme = d3.schemeBlues[3];
+    // Gunakan skema minimum 3 warna jika subcategories <= 3 (dibalik)
+    colorScheme = d3.schemeBlues[3].slice().reverse();
   } else if (subcategories.length <= 9) {
-    // Gunakan skema yang sesuai dengan jumlah subcategories
-    colorScheme = d3.schemeBlues[subcategories.length];
+    // Gunakan skema yang sesuai dengan jumlah subcategories (dibalik)
+    colorScheme = d3.schemeBlues[subcategories.length].slice().reverse();
   } else {
-    // Jika lebih dari 9, ulangi skema
-    colorScheme = d3.schemeBlues[9];
+    // Jika lebih dari 9, gunakan skema maksimum dan dibalik
+    colorScheme = d3.schemeBlues[9].slice().reverse();
   }
 
   const color = d3
@@ -297,7 +297,14 @@ export const createVerticalStackedBarChart = (
   // Membuat elemen SVG
   const svg = d3
     .create("svg")
-    .attr("viewBox", [0, 0, width, height])
+    .attr("width", width + marginLeft + marginRight)
+    .attr("height", height + marginTop + marginBottom)
+    .attr("viewBox", [
+      0,
+      0,
+      width + marginLeft + marginRight,
+      height + marginTop + marginBottom,
+    ])
     .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
 
   svg
@@ -337,6 +344,25 @@ export const createVerticalStackedBarChart = (
       .call(d3.axisLeft(y).ticks(null, "s"))
       .call((g) => g.select(".domain").remove());
 
+    // Menambahkan label sumbu X (opsional)
+    svg
+      .append("text")
+      .attr("x", (width - marginLeft - marginRight) / 2 + marginLeft)
+      .attr("y", height - marginBottom + 40)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .text("Category");
+
+    // Menambahkan label sumbu Y (opsional)
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(marginTop + (height - marginBottom - marginTop) / 2))
+      .attr("y", marginLeft - 40)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .text("Value");
+
     // Menambahkan legenda secara horizontal di bawah chart
     const legendGroup = svg
       .append("g")
@@ -345,7 +371,7 @@ export const createVerticalStackedBarChart = (
       .attr("text-anchor", "start")
       .attr(
         "transform",
-        `translate(${marginLeft}, ${height - marginBottom + 50})`
+        `translate(${marginLeft}, ${height - marginBottom + 60})`
       );
     const legendItemWidth = 19;
     const legendItemHeight = 19;
@@ -378,25 +404,6 @@ export const createVerticalStackedBarChart = (
         .attr("dy", "0.35em")
         .text(subcategory);
     });
-
-    // Menambahkan label sumbu X (opsional)
-    svg
-      .append("text")
-      .attr("x", (width - marginLeft - marginRight) / 2 + marginLeft)
-      .attr("y", height - marginBottom + 40)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
-      .text("Category");
-
-    // Menambahkan label sumbu Y (opsional)
-    svg
-      .append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -(marginTop + (height - marginBottom - marginTop) / 2))
-      .attr("y", marginLeft - 40)
-      .attr("text-anchor", "middle")
-      .attr("font-size", "12px")
-      .text("Value");
   }
 
   return svg.node();
@@ -485,14 +492,14 @@ export const createHorizontalStackedBarChart = (
   // Skala warna dengan d3.schemeBlues
   let colorScheme: readonly string[];
   if (subcategories.length <= 3) {
-    // Gunakan skema minimum 3 warna jika subcategories <= 3
-    colorScheme = d3.schemeBlues[3];
+    // Gunakan skema minimum 3 warna jika subcategories <= 3 (dibalik)
+    colorScheme = d3.schemeBlues[3].slice().reverse();
   } else if (subcategories.length <= 9) {
-    // Gunakan skema yang sesuai dengan jumlah subcategories
-    colorScheme = d3.schemeBlues[subcategories.length];
+    // Gunakan skema yang sesuai dengan jumlah subcategories (dibalik)
+    colorScheme = d3.schemeBlues[subcategories.length].slice().reverse();
   } else {
-    // Jika lebih dari 9, ulangi skema atau gunakan skema lain
-    colorScheme = d3.schemeBlues[9];
+    // Jika lebih dari 9, gunakan skema maksimum dan dibalik
+    colorScheme = d3.schemeBlues[9].slice().reverse();
   }
 
   const color = d3
@@ -625,7 +632,7 @@ export const createGroupedBarChart = (
   // Definisi margin
   const marginTop = useAxis ? 20 : 0;
   const marginRight = useAxis ? 20 : 0;
-  const marginBottom = useAxis ? 40 : 0;
+  const marginBottom = useAxis ? 100 : 0;
   const marginLeft = useAxis ? 50 : 0;
 
   // Kategori utama dan subkategori
@@ -722,34 +729,67 @@ export const createGroupedBarChart = (
       .call(d3.axisLeft(y).ticks(null, "s"))
       .call((g) => g.selectAll(".domain").remove());
 
-    // Menambahkan legenda secara manual dengan swatches
-    const legend = svg
+    // Menambahkan label sumbu X (opsional)
+    svg
+      .append("text")
+      .attr("x", (width - marginLeft - marginRight) / 2 + marginLeft)
+      .attr("y", height - marginBottom + 30)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .text("Category");
+
+    // Menambahkan label sumbu Y (opsional)
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(marginTop + (height - marginBottom - marginTop) / 2))
+      .attr("y", marginLeft - 50)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "12px")
+      .text("Value");
+
+    // Menambahkan legenda secara horizontal di bawah chart dengan label di samping swatches
+    const legendGroup = svg
       .append("g")
       .attr("font-family", "sans-serif")
       .attr("font-size", 10)
       .attr("text-anchor", "start")
-      .selectAll("g")
-      .data(subcategories)
-      .join("g")
       .attr(
         "transform",
-        (d, i) => `translate(${width - marginRight - 50},${marginTop + i * 25})`
+        `translate(${marginLeft}, ${height - marginBottom + 50})`
       );
 
-    // Menambahkan swatches (rectangles)
-    legend
-      .append("rect")
-      .attr("width", 19)
-      .attr("height", 19)
-      .attr("fill", color);
+    const legendItemWidth = 19;
+    const legendItemHeight = 19;
+    const labelOffset = 5;
+    const legendSpacingX = 130;
+    const legendSpacingY = 25;
+    const legendMaxWidth = width - marginLeft - marginRight;
+    const itemsPerRow = Math.floor(legendMaxWidth / legendSpacingX);
 
-    // Menambahkan teks label
-    legend
-      .append("text")
-      .attr("x", 24)
-      .attr("y", 9.5)
-      .attr("dy", "0.32em")
-      .text((d) => d);
+    subcategories.forEach((subcategory, index) => {
+      const row = Math.floor(index / itemsPerRow);
+      const col = index % itemsPerRow;
+      const xOffset = col * legendSpacingX;
+      const yOffset = row * legendSpacingY;
+
+      // Menambahkan swatch
+      legendGroup
+        .append("rect")
+        .attr("x", xOffset)
+        .attr("y", yOffset)
+        .attr("width", legendItemWidth)
+        .attr("height", legendItemHeight)
+        .attr("fill", color(subcategory));
+
+      // Menambahkan label teks
+      legendGroup
+        .append("text")
+        .attr("x", xOffset + legendItemWidth + labelOffset)
+        .attr("y", yOffset + legendItemHeight / 2)
+        .attr("dy", "0.35em")
+        .text(subcategory);
+    });
   }
 
   // Mengembalikan elemen SVG
@@ -827,6 +867,47 @@ export const createErrorBarChart = (
     )
     .attr("cy", (d: { value: number }) => y(d.value))
     .attr("r", 5);
+
+  // Menambahkan garis horizontal di ujung atas dan bawah error bar
+  svg
+    .append("g")
+    .attr("stroke", "black")
+    .selectAll(".error-cap-top")
+    .data(data)
+    .join("line")
+    .attr(
+      "x1",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 - 5 // Panjang garis horizontal
+    )
+    .attr(
+      "x2",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 + 5
+    )
+    .attr("y1", (d: { value: number; error: number }) => y(d.value + d.error))
+    .attr("y2", (d: { value: number; error: number }) => y(d.value + d.error))
+    .attr("stroke-width", 2);
+
+  svg
+    .append("g")
+    .attr("stroke", "black")
+    .selectAll(".error-cap-bottom")
+    .data(data)
+    .join("line")
+    .attr(
+      "x1",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 - 5 // Panjang garis horizontal
+    )
+    .attr(
+      "x2",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 + 5
+    )
+    .attr("y1", (d: { value: number; error: number }) => y(d.value - d.error))
+    .attr("y2", (d: { value: number; error: number }) => y(d.value - d.error))
+    .attr("stroke-width", 2);
 
   // Jika axis digunakan, tambahkan sumbu X dan Y
   if (useAxis) {

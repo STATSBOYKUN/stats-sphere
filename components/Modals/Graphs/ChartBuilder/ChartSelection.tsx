@@ -86,15 +86,13 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         { category: "Product C", subcategory: "Division 2", value: 10 },
       ];
       const data8 = [
-        { category: "A", value: 30, error: 5 },
-        { category: "B", value: 80, error: 10 },
-        { category: "C", value: 45, error: 4 },
-        { category: "D", value: 60, error: 6 },
-        { category: "E", value: 20, error: 3 },
-        { category: "F", value: 90, error: 7 },
+        { category: "B", value: 80, error: 60 },
+        { category: "D", value: 60, error: 60 },
+        { category: "E", value: 20, error: 30 },
+        { category: "F", value: 90, error: 70 },
       ];
 
-      if (chartType === "bar2") {
+      if (chartType === "Vertical Bar Chart") {
         // Panggil createVerticalBarChart2 tanpa svg (SVG akan dibuat di dalam fungsi)
         const chartNode = chartUtils.createVerticalBarChart2(
           data1,
@@ -107,7 +105,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
         }
-      } else if (chartType === "Bar3") {
+      } else if (chartType === "Horizontal Bar Chart") {
         // Panggil createHorizontalBarChart untuk horizontal bar chart
         const chartNode = chartUtils.createHorizontalBarChart(
           data1, // Pastikan data sesuai dengan format { category, value }
@@ -122,7 +120,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
         }
-      } else if (chartType === "Line") {
+      } else if (chartType === "Line Chart") {
         // Panggil createLineChart untuk line chart
         const chartNode = chartUtils.createLineChart(
           data2, // Data dengan format { category, value }
@@ -135,7 +133,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
         }
-      } else if (chartType === "Pie") {
+      } else if (chartType === "Pie Chart") {
         const chartNode = chartUtils.createPieChart(
           data1, // Data dengan format { name, value }
           width,
@@ -144,7 +142,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
         }
-      } else if (chartType === "Area") {
+      } else if (chartType === "Area Chart") {
         const chartNode = chartUtils.createAreaChart(
           data2,
           width,
@@ -166,7 +164,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode); // Menambahkan node hasil dari fungsi ke dalam svgRef
         }
-      } else if (chartType === "Scatter") {
+      } else if (chartType === "Scatter Plot") {
         // Tambahkan pemanggilan fungsi createScatterPlot untuk scatter chart
         const chartNode = chartUtils.createScatterPlot(
           data4,
@@ -179,7 +177,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         }
       } else if (chartType === "Boxplot") {
         // Tambahkan pemanggilan fungsi createBoxPlot untuk box plot chart
-        const chartNode = chartUtils.createBoxPlot(
+        const chartNode = chartUtils.createBoxplot(
           data5,
           width,
           height,
@@ -188,7 +186,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "Scatter Fit Line") {
+      } else if (chartType === "Scatter Plot With Fit Line") {
         // Tambahkan pemanggilan fungsi createScatterPlotWithFitLine untuk scatter plot dengan fit line
         const chartNode = chartUtils.createScatterPlotWithFitLine(
           data4, // Pastikan data sesuai dengan format { category, value }
@@ -200,7 +198,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "Vertical Stacked Bar") {
+      } else if (chartType === "Vertical Stacked Bar Chart") {
         // Tambahkan pemanggilan fungsi untuk Vertical Stacked Bar Chart
         const chartNode = chartUtils.createVerticalStackedBarChart(
           data6,
@@ -211,7 +209,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "Horizontal Stacked Bar") {
+      } else if (chartType === "Horizontal Stacked Bar Chart") {
         // Tambahkan pemanggilan fungsi untuk Horizontal Stacked Bar Chart
         const chartNode = chartUtils.createHorizontalStackedBarChart(
           data6,
@@ -222,7 +220,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "Grouped Bar") {
+      } else if (chartType === "Grouped Bar Chart") {
         // Tambahkan pemanggilan fungsi untuk Horizontal Stacked Bar Chart
         const chartNode = chartUtils.createGroupedBarChart(
           data6,
@@ -233,7 +231,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "Multi Line") {
+      } else if (chartType === "Multiple Line Chart") {
         const chartNode = chartUtils.createMultilineChart(
           data7,
           width,
@@ -244,7 +242,7 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
-      } else if (chartType === "errorBarChart") {
+      } else if (chartType === "Error Bar Chart") {
         // Panggil fungsi error handling bar chart
         const chartNode = chartUtils.createErrorBarChart(
           data8,

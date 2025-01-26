@@ -163,6 +163,70 @@ export const createScatterPlot = (
   return svg.node();
 };
 
+// export const createScatterPlot = (
+//   data: { x: number; y: number }[], // Data berupa array objek { x: number, y: number }
+//   width: number,
+//   height: number,
+//   useAxis: boolean = true
+// ) => {
+//   console.log("Creating scatter plot with data:", data);
+
+//   const marginTop = useAxis ? 30 : 0;
+//   const marginRight = useAxis ? 30 : 0;
+//   const marginBottom = useAxis ? 30 : 0;
+//   const marginLeft = useAxis ? 30 : 0;
+
+//   // Skala X dan Y
+//   const x = d3
+//     .scaleLinear()
+//     .domain(d3.extent(data, (d) => d.x) as [number, number])
+//     .range([marginLeft, width - marginRight]);
+
+//   const y = d3
+//     .scaleLinear()
+//     .domain(d3.extent(data, (d) => d.y) as [number, number])
+//     .range([height - marginBottom, marginTop]);
+
+//   // Elemen SVG
+//   const svg = d3
+//     .create("svg")
+//     .attr("width", width + marginLeft + marginRight)
+//     .attr("height", height + marginTop + marginBottom)
+//     .attr("viewBox", [
+//       0,
+//       0,
+//       width + marginLeft + marginRight,
+//       height + marginTop + marginBottom,
+//     ])
+//     .attr("style", "max-width: 100%; height: auto;");
+
+//   // Menambahkan titik scatter
+//   svg
+//     .append("g")
+//     .attr("fill", "steelblue")
+//     .selectAll("circle")
+//     .data(data)
+//     .join("circle")
+//     .attr("cx", (d: { x: number; y: number }) => x(d.x))
+//     .attr("cy", (d: { x: number; y: number }) => y(d.y))
+//     .attr("r", 5);
+
+//   // Tambahkan axis jika diperlukan
+//   if (useAxis) {
+//     svg
+//       .append("g")
+//       .attr("transform", `translate(0, ${height - marginBottom})`)
+//       .call(d3.axisBottom(x));
+
+//     svg
+//       .append("g")
+//       .attr("transform", `translate(${marginLeft}, 0)`)
+//       .call(d3.axisLeft(y));
+//   }
+
+//   return svg.node();
+// };
+
 export const createScatterPlotWithFitLine = (
   data: { x: number; y: number }[], // Data berupa array objek dengan properti x dan y
   width: number,
