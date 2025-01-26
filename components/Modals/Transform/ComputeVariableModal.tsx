@@ -69,9 +69,12 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
     const allowedFunctions = ["mean", "stddev", "abs", "sqrt", "not"];
     const missingVars = exprVariables.filter(
       (varName) =>
-        varName &&
+        varName && // Pastikan varName tidak null atau undefined
         !variableNames.includes(varName) &&
-        !allowedFunctions.includes(varName.toLowerCase())
+        !(
+          typeof varName === "string" &&
+          allowedFunctions.includes(varName.toLowerCase())
+        )
     );
 
     if (missingVars.length > 0) {
@@ -83,12 +86,7 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
 
     try {
       // Inisialisasi worker
-      const worker = new Worker(
-        new URL(
-          "/public/workers/ComputeVariable/ComputeVariable.js",
-          import.meta.url
-        )
-      );
+      const worker = new Worker("/workers/ComputeVariable/ComputeVariable.js");
 
       worker.postMessage({
         data,
@@ -159,7 +157,13 @@ const ComputeVariable: React.FC<ComputeVariableProps> = ({ onClose }) => {
             await addStatistic({
               analytic_id: analyticId,
               title: "Log",
-              output_data: `COMPUTE VARIABLE ${targetVariable} WITH EXPRESSION "${numericExpression}". \n EXECUTED.`,
+              output_data: JSON.stringify({
+                log: [
+                  {
+                    text: `COMPUTE VARIABLE ${targetVariable} WITH EXPRESSION "${numericExpression}". \nEXECUTED.`,
+                  },
+                ],
+              }),
               components: "Log",
             });
 

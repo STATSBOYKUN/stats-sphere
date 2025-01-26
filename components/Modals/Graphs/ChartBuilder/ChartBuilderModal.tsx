@@ -30,7 +30,7 @@ interface ChartBuilderModalProps {
 }
 
 const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
-  const [chartType, setChartType] = useState<ChartType>("None");
+  const [chartType, setChartType] = useState<ChartType>("Vertical Bar Chart");
   const { variables, loadVariables } = useVariableStore();
   const [sideVariables, setSideVariables] = useState<string[]>([]);
   const [bottomVariables, setBottomVariables] = useState<string[]>([]);
@@ -95,12 +95,7 @@ const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
 
     try {
       // Inisialisasi worker
-      const worker = new Worker(
-        new URL(
-          "/public/workers/ChartBuilder/DefaultChartPrep.js",
-          import.meta.url
-        )
-      );
+      const worker = new Worker("/workers/ChartBuilder/DefaultChartPrep.js");
 
       const chartConfig = {
         width: 800,

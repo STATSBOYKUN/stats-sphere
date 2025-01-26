@@ -15,7 +15,6 @@ export const chartTypes = [
   "Grouped Bar Chart",
   "Multiple Line Chart",
   "Error Bar Chart",
-  "None",
 ] as const;
 
 export type ChartType = (typeof chartTypes)[number];

@@ -14,8 +14,7 @@ import { Dialog } from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
 import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
 import ImportCSV from "@/components/Modals/File/ImportCSV";
-import OpenData from "@/components/Modals/File/OpenData";
-import { Dialog } from "@/components/ui/dialog";
+// import OpenData from "@/components/Modals/File/OpenData";
 import ReadCSVFile from "@/components/Modals/File/ReadCSVFile";
 import ImportExcel from "@/components/Modals/File/ImportExcel";
 import ReadExcelFile from "@/components/Modals/File/ReadExcelFile";
@@ -33,6 +32,7 @@ import ModalTwoStageLeastSquares from "./Regression/TwoStageLeastSquares/ModalTw
 import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEstimation";
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
 import ModalOptimalScaling from "./Regression/OptimalScaling/ModalOptimalScaling";
+import ChartBuilderModal from "./Graphs/ChartBuilder/ChartBuilderModal";
 
 const ModalContainer: React.FC = () => {
   const { modals, closeModal } = useModal();
@@ -51,8 +51,8 @@ const ModalContainer: React.FC = () => {
         return <ImportExcel onClose={closeModal} {...currentModal.props} />;
       case ModalType.ReadExcelFile:
         return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
-      case ModalType.OpenData:
-        return <OpenData onClose={closeModal} {...currentModal.props} />;
+      // case ModalType.OpenData:
+      //   return <OpenData onClose={closeModal} {...currentModal.props} />;
       case ModalType.ComputeVariable:
         return (
           <ComputeVariableModal onClose={closeModal} {...currentModal.props} />
