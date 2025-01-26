@@ -17,30 +17,30 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-    return (
-        <html lang="en" className="h-full w-full">
-        <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
+  return (
+    <html lang="en" className="h-full w-full">
+      <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme=""
           enableSystem
           disableTransitionOnChange
         >
-            <header className="z-50">
-                <Header />
-            </header>
+          <header className="z-50">
+            <Header />
+          </header>
 
-            <main className="overflow-y-auto">
-                {/* Pastikan anak main memiliki tinggi agar konten muncul penuh */}
-                <div className="h-full w-full">
-                    {children}
-                    <ModalContainer />
-                </div>
-            </main>
+          <main className="overflow-y-auto">
+            {/* Pastikan anak main memiliki tinggi agar konten muncul penuh */}
+            <div className="h-full w-full">
+              {children}
+              <ModalContainer />
+            </div>
+          </main>
 
-            <footer>
-                <Footer />
-            </footer>
+          <footer>
+            <Footer />
+          </footer>
         </ThemeProvider>
       </body>
     </html>

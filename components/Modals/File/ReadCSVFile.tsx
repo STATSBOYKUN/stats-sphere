@@ -1,0 +1,201 @@
+// components/Modals/File/ReadCSVFile.tsx
+"use client";
+
+import React, { useState, FC } from "react";
+import {
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {useDataStore} from "@/stores/useDataStore";
+import {useVariableStore, VariableRow} from "@/stores/useVariableStore";
+
+interface ReadCSVFileProps {
+    onClose: () => void;
+    fileName: string;
+    fileContent: string;
+}
+
+const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) => {
+    const { updateCell } = useDataStore();
+    const [firstLineContains, setFirstLineContains] = useState<boolean>(false);
+    const [removeLeading, setRemoveLeading] = useState<boolean>(false);
+    const [removeTrailing, setRemoveTrailing] = useState<boolean>(false);
+
+    const [delimiter, setDelimiter] = useState<string>("comma");
+    const [decimal, setDecimal] = useState<string>("period");
+    const [textQualifier, setTextQualifier] = useState<string>("doubleQuote");
+
+    // Placeholder handlers
+    const handleOk = async () => {
+        let delim = ',';
+        if (delimiter === 'semicolon') delim = ';';
+        else if (delimiter === 'tab') delim = '\t';
+
+        // Memecah konten file menjadi baris dan kolom
+        let parsedRows = fileContent
+            .split('\n')
+            .map(line => line.split(delim));
+
+        let headerRow: string[] | undefined;
+        if (firstLineContains) {
+            // Pisahkan baris pertama sebagai header
+            headerRow = parsedRows.shift();
+        }
+
+        // Setelah selesai memasukkan data, analisis setiap kolom dan buat/ubah variabel
+        const store = useVariableStore.getState();
+        const { addVariable, getVariableByColumnIndex, updateVariable, variables } = store;
+        const numCols = parsedRows.length > 0 ? parsedRows[0].length : 0;
+
+        for (let colIndex = 0; colIndex < numCols; colIndex++) {
+            // Ambil semua nilai di kolom tertentu
+            const colData = parsedRows.map(row => row[colIndex] || '');
+
+            // Tentukan apakah semua nilai di kolom numerik
+            const isNumeric = colData.every(val => {
+                const num = parseFloat(val);
+                return !isNaN(num) && isFinite(num);
+            });
+
+            // Jika string, hitung lebar maksimum
+            const maxLength = isNumeric ? 8 : Math.max(...colData.map(val => val.length));
+
+            // Tentukan nama variabel berdasarkan keberadaan header
+            const variableName = firstLineContains && headerRow
+                ? headerRow[colIndex]
+                : `VAR${colIndex + 1}`;
+
+            // Buat objek variabel sesuai tipe data
+            const variable: VariableRow = {
+                columnIndex: colIndex,
+                name: variableName,
+                type: isNumeric ? 'Numeric' : 'String',
+                width: isNumeric ? 8 : maxLength,
+                decimals: isNumeric ? 2 : 0,
+                label: '',
+                values: 'None',
+                missing: 'None',
+                columns: 200,
+                align: 'Right',
+                measure: 'Nominal',
+            };
+
+            // Cek apakah variabel dengan columnIndex yang sama sudah ada
+            const existingVariable = getVariableByColumnIndex(colIndex);
+            if (existingVariable) {
+                // Jika sudah ada, temukan indeksnya di dalam store
+                const rowIndex = variables.findIndex(v => v.columnIndex === colIndex);
+                if (rowIndex !== -1) {
+                    // Perbarui setiap properti variabel yang ada
+                    const keys = Object.keys(variable) as (keyof VariableRow)[];
+                    for (const field of keys) {
+                        await updateVariable(rowIndex, field, variable[field]);
+                    }
+                }
+            } else {
+                // Jika belum ada, tambahkan variabel baru
+                await addVariable(variable);
+            }
+        }
+
+        // Memasukkan nilai ke dalam tabel terlebih dahulu
+        parsedRows.forEach((row, rowIndex) => {
+            row.forEach((value, colIndex) => {
+                updateCell(rowIndex, colIndex, value);
+            });
+        });
+
+        onClose();
+    };
+    const handleReset = () => { /* Proses Reset */ };
+    const handleCancel = () => { onClose(); };
+    const handleHelp = () => { /* Proses Help */ };
+
+    return (
+        <DialogContent className="sm:max-w-[700px]">
+            <DialogHeader>
+                <DialogTitle>Read CSV File</DialogTitle>
+            </DialogHeader>
+            <div className="mb-4">
+                <strong>File:</strong> {fileName}
+            </div>
+            <div className="border rounded-md p-2 mb-4 h-60 overflow-y-auto bg-gray-50">
+                <pre className="whitespace-pre-wrap text-sm">{fileContent}</pre>
+            </div>
+            <div className="space-y-2 mb-4">
+                <label className="flex items-center space-x-2">
+                    <input
+                        type="checkbox"
+                        checked={firstLineContains}
+                        onChange={(e) => setFirstLineContains(e.target.checked)}
+                    />
+                    <span>First line contains variable names</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                    <input
+                        type="checkbox"
+                        checked={removeLeading}
+                        onChange={(e) => setRemoveLeading(e.target.checked)}
+                    />
+                    <span>Remove leading spaces from string values</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                    <input
+                        type="checkbox"
+                        checked={removeTrailing}
+                        onChange={(e) => setRemoveTrailing(e.target.checked)}
+                    />
+                    <span>Remove trailing spaces from string values</span>
+                </label>
+            </div>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="flex flex-col">
+                    <label className="mb-1">Delimiter:</label>
+                    <select
+                        value={delimiter}
+                        onChange={(e) => setDelimiter(e.target.value)}
+                        className="border rounded-md p-2"
+                    >
+                        <option value="comma">Comma (,)</option>
+                        <option value="semicolon">Semicolon (;)</option>
+                        <option value="tab">Tab (↹)</option>
+                    </select>
+                </div>
+                <div className="flex flex-col">
+                    <label className="mb-1">Decimal:</label>
+                    <select
+                        value={decimal}
+                        onChange={(e) => setDecimal(e.target.value)}
+                        className="border rounded-md p-2"
+                    >
+                        <option value="period">Period (.)</option>
+                        <option value="comma">Comma (,)</option>
+                    </select>
+                </div>
+                <div className="flex flex-col">
+                    <label className="mb-1">Text Qualifier:</label>
+                    <select
+                        value={textQualifier}
+                        onChange={(e) => setTextQualifier(e.target.value)}
+                        className="border rounded-md p-2"
+                    >
+                        <option value="doubleQuote">Double Quote (")</option>
+                        <option value="singleQuote">Single Quote (')</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+            </div>
+            <DialogFooter className="space-x-2">
+                <Button onClick={handleOk}>OK</Button>
+                <Button variant="outline" onClick={handleReset}>Reset</Button>
+                <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                <Button variant="outline" onClick={handleHelp}>Help</Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+};
+
+export default ReadCSVFile;

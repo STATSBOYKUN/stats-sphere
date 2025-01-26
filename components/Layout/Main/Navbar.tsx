@@ -20,77 +20,138 @@ import "@/components/Modals/Graphs/ChartBuilder/ChartBuilderModal";
 const Navbar: React.FC = () => {
   const { openModal } = useModal();
 
+  const handleAction = ({ actionType }: { actionType: any }) => {
+    switch (actionType) {
+      case "Undo":
+        break;
+      case "Redo":
+        // Tambahkan logika untuk Redo
+        break;
+      case "Cut":
+        // Tambahkan logika untuk Cut
+        break;
+      case "Copy":
+        // Tambahkan logika untuk Copy
+        break;
+      case "CopyWithVariableNames":
+        // Tambahkan logika untuk Copy with Variable Names
+        break;
+      case "CopyWithVariableLabels":
+        // Tambahkan logika untuk Copy with Variable Labels
+        break;
+      case "Paste":
+        // Tambahkan logika untuk Paste
+        break;
+      case "PasteVariables":
+        // Tambahkan logika untuk Paste Variables
+        break;
+      case "PasteWithVariableNames":
+        // Tambahkan logika untuk Paste with Variable Names
+        break;
+      case "Clear":
+        // Tambahkan logika untuk Clear
+        break;
+      case "InsertVariable":
+        // Tambahkan logika untuk Insert Variable
+        break;
+      case "InsertCases":
+        // Tambahkan logika untuk Insert Cases
+        break;
+      default:
+        console.warn("Unknown action:", actionType);
+    }
+  };
+
   return (
     <nav>
       <div className="flex items-center justify-between w-full px-2 py-2">
-        <Menubar className="ml-0 hidden lg:flex">
+        <Menubar className="ml-0 lg:flex">
           <MenubarMenu>
             <MenubarTrigger>File</MenubarTrigger>
             <MenubarContent>
-              <MenubarItem>New</MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.NewFile)}>
+                New
+              </MenubarItem>
               <MenubarSub>
                 <MenubarSubTrigger>Open</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem onClick={() => openModal(ModalType.OpenFile)}>
+                  <MenubarItem onClick={() => openModal(ModalType.OpenData)}>
                     Data
                   </MenubarItem>
-                  <MenubarItem>Syntax</MenubarItem>
-                  <MenubarItem>Output</MenubarItem>
-                  <MenubarSub>
-                    <MenubarSubTrigger>Script</MenubarSubTrigger>
-                    <MenubarSubContent>
-                      <MenubarItem>Python2</MenubarItem>
-                      <MenubarItem>Python3</MenubarItem>
-                      <MenubarItem>Basic</MenubarItem>
-                    </MenubarSubContent>
-                  </MenubarSub>
+                  <MenubarItem onClick={() => openModal(ModalType.OpenOutput)}>
+                    Output
+                  </MenubarItem>
+                  {/*<MenubarSub>*/}
+                  {/*    <MenubarSubTrigger>Script</MenubarSubTrigger>*/}
+                  {/*    <MenubarSubContent>*/}
+                  {/*        <MenubarItem onClick={() => openModal(ModalType.OpenPython2)}>Python2</MenubarItem>*/}
+                  {/*        <MenubarItem onClick={() => openModal(ModalType.OpenPython3)}>Python3</MenubarItem>*/}
+                  {/*        <MenubarItem onClick={() => openModal(ModalType.OpenBasic)}>Basic</MenubarItem>*/}
+                  {/*    </MenubarSubContent>*/}
+                  {/*</MenubarSub>*/}
                 </MenubarSubContent>
               </MenubarSub>
               <MenubarSub>
                 <MenubarSubTrigger>Import Data</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem>Excel...</MenubarItem>
-                  <MenubarItem>CSV Data...</MenubarItem>
-                  <MenubarItem>Text Data...</MenubarItem>
-                  <MenubarItem>Sass...</MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ImportExcel)}>
+                    Excel...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ImportCSV)}>
+                    CSV Data...
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
               <MenubarSeparator />
-              <MenubarItem>Save All Data</MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.SaveAllData)}>Save All Data</MenubarItem>*/}
               <MenubarSub>
                 <MenubarSubTrigger>Export</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem>Database...</MenubarItem>
-                  <MenubarItem>Excel...</MenubarItem>
-                  <MenubarItem>CSV Data...</MenubarItem>
-                  <MenubarItem>Tab-delimited...</MenubarItem>
-                  <MenubarItem>Fixed Text...</MenubarItem>
-                  <MenubarItem>SAS...</MenubarItem>
-                  <MenubarItem>Stata...</MenubarItem>
-                  <MenubarItem>dBase...</MenubarItem>
-                  <MenubarItem>Lotus...</MenubarItem>
-                  <MenubarItem>Cognos TM1...</MenubarItem>
-                  <MenubarItem>SYLK...</MenubarItem>
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ExportDatabase)}
+                  >
+                    Database...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ExportExcel)}>
+                    Excel...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ExportCSV)}>
+                    CSV Data...
+                  </MenubarItem>
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportTabDelimited)}>Tab-delimited...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportFixedText)}>Fixed Text...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportSAS)}>SAS...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportStata)}>Stata...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportDBase)}>dBase...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportLotus)}>Lotus...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportCognos)}>Cognos TM1...</MenubarItem>*/}
+                  {/*<MenubarItem onClick={() => openModal(ModalType.ExportSYLK)}>SYLK...</MenubarItem>*/}
                 </MenubarSubContent>
               </MenubarSub>
               <MenubarSeparator />
-              <MenubarItem>Rename Dataset...</MenubarItem>
-              <MenubarItem>Display Data File Information</MenubarItem>
-              <MenubarItem>Cache Data...</MenubarItem>
-              <MenubarItem>Collect Variable Information</MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.RenameDataset)}>Rename Dataset...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.DisplayFileInfo)}>Display Data File Information</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.CacheData)}>Cache Data...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.CollectVariableInfo)}>Collect Variable Information</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.StopProcessor)}>Stop Processor</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.SwitchServer)}>Switch Server...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.Repository)}>Repository</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              <MenubarItem onClick={() => openModal(ModalType.PrintPreview)}>
+                Print Preview
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.Print)}>
+                Print...
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Stop Processor</MenubarItem>
-              <MenubarItem>Switch Server...</MenubarItem>
-              <MenubarItem>Repository</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Print Preview</MenubarItem>
-              <MenubarItem>Print...</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Welcome Dialog...</MenubarItem>
-              <MenubarItem>Recently Used Data</MenubarItem>
-              <MenubarItem>Recently Used Files</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Exit</MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.WelcomeDialog)}>Welcome Dialog...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.RecentlyUsedData)}>Recently Used Data</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.RecentlyUsedFiles)}>Recently Used Files</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              <MenubarItem onClick={() => openModal(ModalType.Exit)}>
+                Exit
+              </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
@@ -98,48 +159,86 @@ const Navbar: React.FC = () => {
           <MenubarMenu>
             <MenubarTrigger>Edit</MenubarTrigger>
             <MenubarContent>
-              <MenubarItem>Undo</MenubarItem>
-              <MenubarItem>Redo</MenubarItem>
-              <MenubarItem>Cut</MenubarItem>
-              <MenubarItem>Copy</MenubarItem>
-              <MenubarItem>Copy with Variable Names</MenubarItem>
-              <MenubarItem>Copy with Variable Labels</MenubarItem>
-              <MenubarItem>Paste</MenubarItem>
-              <MenubarItem>Paste Variables...</MenubarItem>
-              <MenubarItem>Paste with Variable Names</MenubarItem>
-              <MenubarItem>Clear</MenubarItem>
+              <MenubarItem onClick={() => handleAction({ actionType: "Undo" })}>
+                Undo
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction({ actionType: "Redo" })}>
+                Redo
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Insert Variable</MenubarItem>
-              <MenubarItem>Insert Cases</MenubarItem>
+              <MenubarItem onClick={() => handleAction({ actionType: "Cut" })}>
+                Cut
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction({ actionType: "Copy" })}>
+                Copy
+              </MenubarItem>
+              <MenubarItem
+                onClick={() =>
+                  handleAction({ actionType: "CopyWithVariableNames" })
+                }
+              >
+                Copy with Variable Names
+              </MenubarItem>
+              <MenubarItem
+                onClick={() =>
+                  handleAction({ actionType: "CopyWithVariableLabels" })
+                }
+              >
+                Copy with Variable Labels
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Search Data Files</MenubarItem>
-              <MenubarItem>Find...</MenubarItem>
-              <MenubarItem>Find Next</MenubarItem>
-              <MenubarItem>Replace...</MenubarItem>
-              <MenubarItem>Go to Case...</MenubarItem>
-              <MenubarItem>Go to Variable...</MenubarItem>
-              <MenubarItem>Go to Imputation...</MenubarItem>
+              <MenubarItem
+                onClick={() => handleAction({ actionType: "Paste" })}
+              >
+                Paste
+              </MenubarItem>
+              <MenubarItem
+                onClick={() => handleAction({ actionType: "PasteVariables" })}
+              >
+                Paste Variables...
+              </MenubarItem>
+              <MenubarItem
+                onClick={() =>
+                  handleAction({ actionType: "PasteWithVariableNames" })
+                }
+              >
+                Paste with Variable Names
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Options...</MenubarItem>
-            </MenubarContent>
-          </MenubarMenu>
-
-          {/* Menu View */}
-          <MenubarMenu>
-            <MenubarTrigger>View</MenubarTrigger>
-            <MenubarContent>
-              <MenubarItem>Status Bar</MenubarItem>
-              <MenubarItem>Toolbars</MenubarItem>
-              <MenubarItem>Menu Editor...</MenubarItem>
+              <MenubarItem
+                onClick={() => handleAction({ actionType: "Clear" })}
+              >
+                Clear
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Fonts...</MenubarItem>
-              <MenubarItem>Grid Lines</MenubarItem>
-              <MenubarItem>Value Labels</MenubarItem>
-              <MenubarItem>Mark Imputed Data</MenubarItem>
+              <MenubarItem
+                onClick={() => handleAction({ actionType: "InsertVariable" })}
+              >
+                Insert Variable
+              </MenubarItem>
+              <MenubarItem
+                onClick={() => handleAction({ actionType: "InsertCases" })}
+              >
+                Insert Cases
+              </MenubarItem>
               <MenubarSeparator />
-              <MenubarItem>Customize Variable View...</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Variables</MenubarItem>
+              {/*<MenubarItem>Search Data Files</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.Find)}>
+                Find...
+              </MenubarItem>
+              {/*<MenubarItem>Find Next</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.Replace)}>
+                Replace...
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.GoToCase)}>
+                Go to Case...
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.GoToVariable)}>
+                Go to Variable...
+              </MenubarItem>
+              {/*<MenubarItem>Go to Imputation...</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              {/*<MenubarItem>Options...</MenubarItem>*/}
             </MenubarContent>
           </MenubarMenu>
 
@@ -147,36 +246,60 @@ const Navbar: React.FC = () => {
           <MenubarMenu>
             <MenubarTrigger>Data</MenubarTrigger>
             <MenubarContent>
-              <MenubarItem>Define Variable Properties...</MenubarItem>
-              <MenubarItem>Set Measurement Level for Unknown...</MenubarItem>
-              <MenubarItem>Copy Data Properties...</MenubarItem>
-              <MenubarItem>New Custom Attribute...</MenubarItem>
-              <MenubarItem>Define date and time...</MenubarItem>
-              <MenubarItem>Define Multiple Response Sets...</MenubarItem>
+              <MenubarItem
+                onClick={() => openModal(ModalType.DefineVariableProperties)}
+              >
+                Define Variable Properties...
+              </MenubarItem>
+              <MenubarItem
+                onClick={() => openModal(ModalType.SetMeasurementLevel)}
+              >
+                Set Measurement Level for Unknown...
+              </MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.CopyDataProperties)}>Copy Data Properties...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.NewCustomAttribute)}>New Custom Attribute...</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.DefineDateTime)}>
+                Define date and time...
+              </MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.DefineMultipleResponseSets)}>Define Multiple Response Sets...</MenubarItem>*/}
               <MenubarSeparator />
-              <MenubarItem>Validation</MenubarItem>
-              <MenubarItem>Identify Duplicate Cases...</MenubarItem>
-              <MenubarItem>Identify Unusual Cases...</MenubarItem>
-              <MenubarItem>Compare Datasets...</MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.Validation)}>Validation</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.IdentifyDuplicateCases)}>Identify Duplicate Cases...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.IdentifyUnusualCases)}>Identify Unusual Cases...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.CompareDatasets)}>Compare Datasets...</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              <MenubarItem onClick={() => openModal(ModalType.SortCases)}>
+                Sort Cases...
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.SortVariables)}>
+                Sort Variables...
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.Transpose)}>
+                Transpose...
+              </MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.AdjustStringWidths)}>Adjust String Widths Across Files</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.MergeFiles)}>
+                Merge Files
+              </MenubarItem>
+              <MenubarItem onClick={() => openModal(ModalType.Restructure)}>
+                Restructure...
+              </MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.RakeWeights)}>Rake Weights...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.PropensityScoreMatching)}>Propensity Score Matching...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.CaseControlMatching)}>Case Control Matching...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.Aggregate)}>Aggregate...</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.OrthogonalDesign)}>Orthogonal Design</MenubarItem>*/}
               <MenubarSeparator />
-              <MenubarItem>Sort Cases...</MenubarItem>
-              <MenubarItem>Sort Variables...</MenubarItem>
-              <MenubarItem>Transpose...</MenubarItem>
-              <MenubarItem>Adjust String Widths Across Files</MenubarItem>
-              <MenubarItem>Merge Files</MenubarItem>
-              <MenubarItem>Restructure...</MenubarItem>
-              <MenubarItem>Rake Weights...</MenubarItem>
-              <MenubarItem>Propensity Score Matching...</MenubarItem>
-              <MenubarItem>Case Control Matching...</MenubarItem>
-              <MenubarItem>Aggregate...</MenubarItem>
-              <MenubarItem>Orthogonal Design</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Split into Files</MenubarItem>
-              <MenubarItem>Copy Dataset</MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem>Split File...</MenubarItem>
-              <MenubarItem>Select Cases...</MenubarItem>
-              <MenubarItem>Weight Cases...</MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.SplitIntoFiles)}>Split into Files</MenubarItem>*/}
+              {/*<MenubarItem onClick={() => openModal(ModalType.CopyDataset)}>Copy Dataset</MenubarItem>*/}
+              {/*<MenubarSeparator />*/}
+              <MenubarItem onClick={() => openModal(ModalType.SplitFile)}>
+                Split File...
+              </MenubarItem>
+              {/*<MenubarItem onClick={() => openModal(ModalType.SelectCases)}>Select Cases...</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.WeightCases)}>
+                Weight Cases...
+              </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
@@ -216,22 +339,26 @@ const Navbar: React.FC = () => {
               <MenubarSub>
                 <MenubarSubTrigger>Descriptive Statistics</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem
-                    onClick={() => openModal(ModalType.FrequenciesStatistic)}
-                  >
+                  <MenubarItem onClick={() => openModal(ModalType.Frequencies)}>
                     Frequencies
                   </MenubarItem>
-                  <MenubarItem
-                    onClick={() => openModal(ModalType.DescriptiveStatistic)}
-                  >
+                  <MenubarItem onClick={() => openModal(ModalType.Descriptive)}>
                     Descriptives
                   </MenubarItem>
-                  <MenubarItem>Explore...</MenubarItem>
-                  <MenubarItem>Crosstabs...</MenubarItem>
-                  <MenubarItem>TURF Analisys</MenubarItem>
-                  <MenubarItem>Ratio...</MenubarItem>
-                  <MenubarItem>P-P Plots...</MenubarItem>
-                  <MenubarItem>Q-Q Plots...</MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Explore)}>
+                    Explore...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Crosstabs)}>
+                    Crosstabs...
+                  </MenubarItem>
+                  {/*<MenubarItem onClick={() => openModal(ModalType.TurfAnalysis)}>TURF Analysis</MenubarItem>*/}
+                  <MenubarItem onClick={() => openModal(ModalType.Ratio)}>
+                    Ratio...
+                  </MenubarItem>
+                  {/*<MenubarItem onClick={() => openModal(ModalType.PPPlots)}>P-P Plots...</MenubarItem>*/}
+                  <MenubarItem onClick={() => openModal(ModalType.QQPlots)}>
+                    Q-Q Plots...
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
 
@@ -263,6 +390,85 @@ const Navbar: React.FC = () => {
                   <MenubarItem>Partial...</MenubarItem>
                   <MenubarItem>Distances...</MenubarItem>
                   <MenubarItem>Canonical Correlation...</MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+
+              <MenubarSub>
+                <MenubarSubTrigger>Regression</MenubarSubTrigger>
+                <MenubarSubContent>
+                  <MenubarItem
+                    onClick={() =>
+                      openModal(ModalType.ModalAutomaticLinearModeling)
+                    }
+                  >
+                    Automatic Linear Modeling...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ModalLinear)}>
+                    Linear...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalCurveEstimation)}
+                  >
+                    Curve Estimation...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      openModal(ModalType.ModalPartialLeastSquares)
+                    }
+                  >
+                    Partial Least Squares...
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalBinaryLogistic)}
+                  >
+                    Binary Logistic...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      openModal(ModalType.ModalMultinomialLogistic)
+                    }
+                  >
+                    Multinomial Logistic...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalOrdinal)}
+                  >
+                    Ordinal...
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ModalProbit)}>
+                    Probit...
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalNonlinear)}
+                  >
+                    Nonlinear...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalWeightEstimation)}
+                  >
+                    Weight Estimation...
+                  </MenubarItem>
+                  <MenubarItem
+                    onClick={() =>
+                      openModal(ModalType.ModalTwoStageLeastSquares)
+                    }
+                  >
+                    2-Stage Least Squares...
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalQuantiles)}
+                  >
+                    Quantiles...
+                  </MenubarItem>
+                  <MenubarSeparator />
+                  <MenubarItem
+                    onClick={() => openModal(ModalType.ModalOptimalScaling)}
+                  >
+                    Optimal Scaling (Catreg)...
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
 
@@ -352,10 +558,6 @@ const Navbar: React.FC = () => {
 
           <MenubarMenu>
             <MenubarTrigger>Extension</MenubarTrigger>
-          </MenubarMenu>
-
-          <MenubarMenu>
-            <MenubarTrigger>Window</MenubarTrigger>
           </MenubarMenu>
 
           <MenubarMenu>

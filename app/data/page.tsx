@@ -3,7 +3,7 @@
 "use client";
 
 import React from 'react';
-import DataTable from '../../components/DataTable/DataTable';
+import DataTable from './components/DataTable';
 
 export default function DataPage() {
     return (

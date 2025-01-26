@@ -1,0 +1,213 @@
+//Ordinal
+
+const data = [
+  { Outcome: 1, Age: 25, Gender: 'Male' },
+  { Outcome: 2, Age: 30, Gender: 'Female' },
+  { Outcome: 3, Age: 22, Gender: 'Female' },
+  { Outcome: 2, Age: 35, Gender: 'Male' },
+  { Outcome: 1, Age: 28, Gender: 'Female' },
+  { Outcome: 3, Age: 40, Gender: 'Male' }
+];
+
+// 2. Menghitung Frekuensi
+function calculateFrequencies(data) {
+  const freqOutcome = {};
+  const freqGender = {};
+
+  data.forEach(row => {
+    // Frekuensi Outcome
+    if (freqOutcome[row.Outcome]) {
+      freqOutcome[row.Outcome]++;
+    } else {
+      freqOutcome[row.Outcome] = 1;
+    }
+
+    // Frekuensi Gender
+    if (freqGender[row.Gender]) {
+      freqGender[row.Gender]++;
+    } else {
+      freqGender[row.Gender] = 1;
+    }
+  });
+
+  console.log("Case Processing Summary");
+  console.log("Outcome\tN\tMarginal Percentage");
+  const total = data.length;
+  for (let key in freqOutcome) {
+    const percentage = ((freqOutcome[key] / total) * 100).toFixed(1) + "%";
+    console.log(`${key}\t${freqOutcome[key]}\t${percentage}`);
+  }
+  console.log(`Valid\t\t${total}\t100.0%`);
+  console.log(`Missing\t\t0\t`);
+  console.log(`Total\t\t${total}\t`);
+
+  console.log("\nFrequencies Gender:");
+  console.log("Gender\tN\tMarginal Percentage");
+  for (let key in freqGender) {
+    const percentage = ((freqGender[key] / total) * 100).toFixed(1) + "%";
+    console.log(`${key}\t${freqGender[key]}\t${percentage}`);
+  }
+}
+
+calculateFrequencies(data);
+
+// 3. Mengkodekan Variabel Kategorikal (Gender) menjadi Numerik
+function encodeGender(data) {
+  return data.map(row => ({
+    Outcome: row.Outcome,
+    Age: row.Age,
+    Gender: row.Gender === 'Male' ? 1 : 0 // Male = 1, Female = 0
+  }));
+}
+
+const encodedData = encodeGender(data);
+
+// 4. Mengurutkan Kategori Outcome
+const sortedCategories = Array.from(new Set(encodedData.map(d => d.Outcome))).sort((a, b) => a - b);
+const numCategories = sortedCategories.length;
+
+// 5. Inisialisasi Parameter
+let thresholds = Array(numCategories - 1).fill(0.0); // Thresholds antara kategori
+let betaAge = 0.0;    // Koefisien untuk Age
+let betaGender = 0.0; // Koefisien untuk Gender
+
+// 6. Fungsi Sigmoid
+function sigmoid(x) {
+  return 1 / (1 + Math.exp(-x));
+}
+
+// 7. Fungsi Log-Likelihood
+function logLikelihood(data, thresholds, betaAge, betaGender) {
+  let ll = 0;
+  data.forEach(row => {
+    const y = sortedCategories.indexOf(row.Outcome) + 1; // Kategori dimulai dari 1
+    const xAge = row.Age;
+    const xGender = row.Gender;
+
+    // Menghitung prediksi kumulatif
+    let eta_lower = y === 1 ? -Infinity : thresholds[y - 2] - betaAge * xAge - betaGender * xGender;
+    let eta_upper = y === numCategories ? Infinity : thresholds[y - 1] - betaAge * xAge - betaGender * xGender;
+
+    let p_lower = y === 1 ? 0 : sigmoid(eta_lower);
+    let p_upper = y === numCategories ? 1 : sigmoid(eta_upper);
+    const p = p_upper - p_lower;
+
+    // Menghindari log(0)
+    const p_safe = Math.max(p, 1e-10);
+    ll += Math.log(p_safe);
+  });
+  return ll;
+}
+
+// 8. Fungsi Gradient dari Log-Likelihood
+function gradient(data, thresholds, betaAge, betaGender) {
+  let grad_betaAge = 0;
+  let grad_betaGender = 0;
+  let grad_thresholds = Array(thresholds.length).fill(0);
+
+  data.forEach(row => {
+    const y = sortedCategories.indexOf(row.Outcome) + 1;
+    const xAge = row.Age;
+    const xGender = row.Gender;
+
+    let eta_lower = y === 1 ? -Infinity : thresholds[y - 2] - betaAge * xAge - betaGender * xGender;
+    let eta_upper = y === numCategories ? Infinity : thresholds[y - 1] - betaAge * xAge - betaGender * xGender;
+
+    let p_lower = y === 1 ? 0 : sigmoid(eta_lower);
+    let p_upper = y === numCategories ? 1 : sigmoid(eta_upper);
+    let p = p_upper - p_lower;
+
+    // Gradien untuk betaAge dan betaGender
+    if (y < numCategories) {
+      grad_betaAge += (1 - p_upper) * xAge;
+      grad_betaGender += (1 - p_upper) * xGender;
+    }
+    if (y > 1) {
+      grad_betaAge -= p_lower * xAge;
+      grad_betaGender -= p_lower * xGender;
+    }
+
+    // Gradien untuk thresholds
+    if (y < numCategories) {
+      grad_thresholds[y - 1] += (1 - p_upper);
+    }
+    if (y > 1) {
+      grad_thresholds[y - 2] -= (1 - p_lower);
+    }
+  });
+
+  return { grad_betaAge, grad_betaGender, grad_thresholds };
+}
+
+// 9. Optimizer Gradient Ascent
+function optimize(data, thresholds, betaAge, betaGender, learningRate = 0.001, maxIter = 10000, tol = 1e-6) {
+  let ll_prev = logLikelihood(data, thresholds, betaAge, betaGender);
+
+  for (let i = 0; i < maxIter; i++) {
+    const grads = gradient(data, thresholds, betaAge, betaGender);
+    betaAge += learningRate * grads.grad_betaAge;
+    betaGender += learningRate * grads.grad_betaGender;
+    for (let j = 0; j < thresholds.length; j++) {
+      thresholds[j] += learningRate * grads.grad_thresholds[j];
+    }
+
+    const ll_new = logLikelihood(data, thresholds, betaAge, betaGender);
+    const change = Math.abs(ll_new - ll_prev);
+    if (change < tol) {
+      console.log(`Converged at iteration ${i + 1}`);
+      break;
+    }
+    ll_prev = ll_new;
+
+    // Optional: Cetak log setiap 1000 iterasi
+    if ((i + 1) % 1000 === 0) {
+      console.log(`Iteration ${i + 1}: Log-Likelihood = ${ll_new.toFixed(4)}`);
+    }
+  }
+
+  return { thresholds, betaAge, betaGender };
+}
+
+// 10. Melakukan Optimasi
+const result = optimize(encodedData, thresholds, betaAge, betaGender);
+console.log("\nOptimasi Selesai");
+console.log("Thresholds:", result.thresholds);
+console.log("Beta (Age):", result.betaAge);
+console.log("Beta (Gender):", result.betaGender);
+
+// 11. Menampilkan Ringkasan Hasil
+function displayResults(thresholds, betaAge, betaGender) {
+  console.log("\nModel Fitting Information");
+  console.log(`Log-Likelihood: ${logLikelihood(encodedData, thresholds, betaAge, betaGender).toFixed(3)}`);
+
+  console.log("\nParameter Estimates");
+  sortedCategories.slice(0, -1).forEach((cat, idx) => {
+    console.log(`Threshold ${idx + 1} [Outcome <= ${cat}]: ${thresholds[idx].toFixed(3)}`);
+  });
+  console.log(`Beta [Age]: ${betaAge.toFixed(3)}`);
+  console.log(`Beta [Gender]: ${betaGender.toFixed(3)}`);
+}
+
+displayResults(result.thresholds, result.betaAge, result.betaGender);
+
+// 12. Contoh Prediksi Probabilitas
+function predictProbabilities(thresholds, betaAge, betaGender, xAge, xGender) {
+  const eta = thresholds.map(t => t - betaAge * xAge - betaGender * xGender);
+  const probabilities = [];
+
+  for (let j = 1; j <= sortedCategories.length; j++) {
+    const p_lower = j === 1 ? 0 : sigmoid(eta[j - 2]);
+    const p_upper = j === sortedCategories.length ? 1 : sigmoid(eta[j - 1]);
+    probabilities.push(p_upper - p_lower);
+  }
+
+  return probabilities;
+}
+
+console.log("\nContoh Prediksi Probabilitas untuk Age = 30 dan Gender = Female (Gender = 0)");
+const xAge_example = 30;
+const xGender_example = 0; // Female
+const probs_example = predictProbabilities(result.thresholds, result.betaAge, result.betaGender, xAge_example, xGender_example);
+sortedCategories.forEach((cat, idx) => {
+  console.log(`P(Outcome = ${cat}) = ${(probs_example[idx] * 100).toFixed(2)}%`);
+});

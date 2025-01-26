@@ -44,3 +44,4 @@ next-env.d.ts
 /wasm-test/node_modules
 /wasm-test/.next
 /wasm-test
+package-lock.json
