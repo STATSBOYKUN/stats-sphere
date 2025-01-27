@@ -179,6 +179,14 @@ const GeneralChartContainer: React.FC<GeneralChartContainerProps> = ({
                 useAxis
               );
               break;
+            case "Stacked Area Chart":
+              chartNode = chartUtils.createStackedAreaChart(
+                chartDataPoints,
+                width,
+                height,
+                useAxis
+              );
+              break;
             default:
               console.warn(`Unsupported chart type: ${chartType}`);
           }

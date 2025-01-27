@@ -549,7 +549,7 @@ export const createHorizontalStackedBarChart = (
       .call(d3.axisLeft(y).tickSizeOuter(0))
       .call((g) => g.selectAll(".domain").remove());
 
-    // Menambahkan legenda secara horizontal di bawah chart dengan label di samping swatches
+    // Menambahkan legenda
     const legendGroup = svg
       .append("g")
       .attr("font-family", "sans-serif")

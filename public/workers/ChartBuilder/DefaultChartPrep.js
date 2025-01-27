@@ -903,6 +903,97 @@ self.onmessage = function (event) {
       };
 
       self.postMessage({ success: true, chartJSON });
+    } else if (chartType === "Stacked Area Chart") {
+      // Debugging output untuk memeriksa nama-nama variabel yang dicari
+      console.log(
+        "Variables in dataset:",
+        variables.map((v) => v.name)
+      );
+
+      const xVariable = xVariables[0];
+      const yVariablesList = yVariables;
+      console.log("Requested xVariable:", xVariable);
+      console.log("Requested yVariables:", yVariablesList);
+
+      // Temukan indeks dari variabel-variabel X dan Y
+      const xIndex = variables.findIndex((v) => v.name === xVariable);
+      const yIndexes = yVariablesList.map((v) =>
+        variables.findIndex((varObj) => varObj.name.trim() === v.trim())
+      );
+      console.log("yIndexes:", yIndexes);
+
+      // Periksa jika variabel tidak ditemukan
+      if (xIndex === -1) {
+        throw new Error(`Variabel X '${xVariable}' tidak ditemukan.`);
+      }
+
+      // Mengecek jika ada variabel Y yang tidak ditemukan
+      const missingYVariables = yVariablesList.filter(
+        (v, index) => yIndexes[index] === -1
+      );
+      if (missingYVariables.length > 0) {
+        throw new Error(
+          `Variabel Y '${missingYVariables.join(", ")}' tidak ditemukan.`
+        );
+      }
+
+      // Kelompokkan data berdasarkan kategori X dan jumlahkan nilai Y untuk setiap variabel Y
+      const frequencyMap = data.reduce((acc, row) => {
+        const xKey = row[xIndex]; // Ambil nilai X
+        yVariablesList.forEach((yVariable, i) => {
+          const yIndex = yIndexes[i];
+          const yValue = parseFloat(row[yIndex]);
+          if (!isNaN(yValue)) {
+            if (!acc[xKey]) {
+              acc[xKey] = [];
+            }
+            acc[xKey].push({
+              subcategory: yVariable,
+              value: yValue,
+            });
+          }
+        });
+        return acc;
+      }, {});
+
+      // Konversi ke format data yang bisa digunakan oleh chart
+      const chartJSON = {
+        charts: [
+          {
+            chartType: chartType,
+            chartMetadata: {
+              axisInfo: {
+                category: xVariable,
+                subcategory: yVariablesList,
+              },
+              description: `Total per ${xVariable} for each variable in ${yVariablesList.join(
+                ", "
+              )}.`,
+              notes: chartMetadata.note || null,
+            },
+            chartData: Object.keys(frequencyMap)
+              .map((key) => {
+                return frequencyMap[key].map((entry) => ({
+                  category: key,
+                  subcategory: entry.subcategory,
+                  value: entry.value,
+                }));
+              })
+              .flat(), // `flat()` untuk meratakan array yang berbentuk array of arrays
+            chartConfig: {
+              width: chartConfig.width || 600,
+              height: chartConfig.height || 400,
+              chartColor: chartConfig.chartColor || ["#4682B4"],
+              legend: chartConfig.legend ?? true,
+              title:
+                chartConfig.title ??
+                `Distribution of ${yVariablesList.join(", ")} by ${xVariable}`,
+            },
+          },
+        ],
+      };
+
+      self.postMessage({ success: true, chartJSON });
     } else {
       // Implementasi untuk jenis chart lain
       self.postMessage({ success: false, error: "Unsupported chart type." });

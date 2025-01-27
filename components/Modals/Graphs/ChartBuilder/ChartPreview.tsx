@@ -34,6 +34,8 @@ interface ChartData {
   subcategory?: string;
   value: number;
   error?: number;
+  x?: number;
+  y?: number;
 }
 
 const ChartPreview: React.FC<ChartPreviewProps> = ({
@@ -569,6 +571,97 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
             width,
             height,
             useaxis // Pilihan untuk menampilkan sumbu
+          );
+          break;
+
+        case "Stacked Area Chart":
+          const stackedAreaData =
+            chartData.length === 0
+              ? [
+                  { category: "Sun", subcategory: "Product 1", value: 30 },
+                  { category: "Sun", subcategory: "Product 2", value: 20 },
+                  { category: "Sun", subcategory: "Product 3", value: 25 },
+                  { category: "Mon", subcategory: "Product 1", value: 15 },
+                  { category: "Mon", subcategory: "Product 2", value: 40 },
+                  { category: "Mon", subcategory: "Product 3", value: 10 },
+                  { category: "Tue", subcategory: "Product 1", value: 20 },
+                  { category: "Tue", subcategory: "Product 2", value: 30 },
+                  { category: "Tue", subcategory: "Product 3", value: 15 },
+                  { category: "Wed", subcategory: "Product 1", value: 10 },
+                  { category: "Wed", subcategory: "Product 2", value: 25 },
+                  { category: "Wed", subcategory: "Product 3", value: 40 },
+                ]
+              : chartData.map((d) => ({
+                  category: d.category,
+                  subcategory: d.subcategory || "",
+                  value: d.value,
+                }));
+
+          chartNode = chartUtils.createStackedAreaChart(
+            stackedAreaData,
+            width,
+            height,
+            useaxis
+          );
+          break;
+
+        case "Grouped Scatter Plot": // Menambahkan case baru untuk Scatter plot
+          // Ambil data scatter jika tidak ada data default
+          const groupedScatterData =
+            chartData.length === 0
+              ? [
+                  { category: "A", x: 5.1, y: 3.5 },
+                  { category: "B", x: 4.9, y: 3.0 },
+                  { category: "A", x: 4.7, y: 3.2 },
+                  { category: "C", x: 4.6, y: 3.1 },
+                  { category: "B", x: 5.0, y: 3.6 },
+                  { category: "C", x: 5.4, y: 3.9 },
+                  { category: "A", x: 4.6, y: 3.4 },
+                  { category: "B", x: 5.0, y: 3.4 },
+                  { category: "C", x: 4.4, y: 2.9 },
+                  { category: "A", x: 4.9, y: 3.1 },
+                  { category: "B", x: 5.4, y: 3.7 },
+                  { category: "C", x: 4.8, y: 3.4 },
+                  { category: "A", x: 4.8, y: 3.0 },
+                  { category: "B", x: 4.3, y: 3.0 },
+                  { category: "C", x: 5.8, y: 4.0 },
+                  { category: "A", x: 5.7, y: 4.4 },
+                  { category: "B", x: 5.4, y: 3.9 },
+                  { category: "C", x: 5.1, y: 3.5 },
+                  { category: "A", x: 5.1, y: 3.8 },
+                  { category: "B", x: 5.0, y: 3.3 },
+                ]
+              : chartData.map((d) => ({
+                  x: Number(d.category), // Konversi category ke number
+                  y: d.value, // Tetap gunakan value sebagai y
+                }));
+
+          chartNode = chartUtils.createGroupedScatterPlot(
+            [
+              { category: "A", x: 5.1, y: 3.5 },
+              { category: "B", x: 4.9, y: 3.0 },
+              { category: "A", x: 4.7, y: 3.2 },
+              { category: "C", x: 4.6, y: 3.1 },
+              { category: "B", x: 5.0, y: 3.6 },
+              { category: "C", x: 5.4, y: 3.9 },
+              { category: "A", x: 4.6, y: 3.4 },
+              { category: "B", x: 5.0, y: 3.4 },
+              { category: "C", x: 4.4, y: 2.9 },
+              { category: "A", x: 4.9, y: 3.1 },
+              { category: "B", x: 5.4, y: 3.7 },
+              { category: "C", x: 4.8, y: 3.4 },
+              { category: "A", x: 4.8, y: 3.0 },
+              { category: "B", x: 4.3, y: 3.0 },
+              { category: "C", x: 5.8, y: 4.0 },
+              { category: "A", x: 5.7, y: 4.4 },
+              { category: "B", x: 5.4, y: 3.9 },
+              { category: "C", x: 5.1, y: 3.5 },
+              { category: "A", x: 5.1, y: 3.8 },
+              { category: "B", x: 5.0, y: 3.3 },
+            ], // Data untuk Scatter plot
+            width,
+            height,
+            useaxis
           );
           break;
 

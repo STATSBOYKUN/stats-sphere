@@ -254,15 +254,15 @@ const ChartBuilderModal: React.FC<ChartBuilderModalProps> = ({ onClose }) => {
                           <div className="flex justify-center items-center overflow-hidden mb-2">
                             <ChartSelection
                               chartType={type}
-                              width={50}
-                              height={50}
+                              width={80}
+                              height={80}
                               useaxis={false}
                             />
                           </div>
 
                           {/* Chart Name tanpa Line Clamp */}
                           <span className="font-semibold text-xs block">
-                            {type.charAt(0).toUpperCase() + type.slice(1)} Chart
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
                           </span>
                         </div>
                       </TooltipTrigger>

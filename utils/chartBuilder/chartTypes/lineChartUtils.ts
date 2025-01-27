@@ -50,7 +50,8 @@ export const createLineChart = (
   const line = d3
     .line<{ category: string; value: number }>()
     .x((d) => x(d.category)! + x.bandwidth() / 2)
-    .y((d) => y(d.value)!);
+    .y((d) => y(d.value)!)
+    .curve(d3.curveLinear);
 
   // Menambahkan path untuk garis
   svg

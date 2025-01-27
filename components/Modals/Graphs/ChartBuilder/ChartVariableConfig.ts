@@ -69,8 +69,12 @@ export const chartVariableConfig: Record<ChartType, ChartVariableRequirements> =
       side: { min: 1, max: 1 },
       bottom: { min: 1, max: 1 },
     },
-    None: {
-      side: { min: 0, max: 0 },
-      bottom: { min: 0, max: 0 },
+    "Stacked Area Chart": {
+      side: { min: 1, max: Infinity },
+      bottom: { min: 1, max: 1 },
+    },
+    "Grouped Scatter Plot": {
+      side: { min: 1, max: 1 },
+      bottom: { min: 1, max: 1 },
     },
   };

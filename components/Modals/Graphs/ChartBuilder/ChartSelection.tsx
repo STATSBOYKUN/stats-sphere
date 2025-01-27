@@ -91,6 +91,42 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
         { category: "E", value: 20, error: 30 },
         { category: "F", value: 90, error: 70 },
       ];
+      const data9 = [
+        { category: "Sun", subcategory: "Product 1", value: 30 },
+        { category: "Sun", subcategory: "Product 2", value: 20 },
+        { category: "Sun", subcategory: "Product 3", value: 25 },
+        { category: "Mon", subcategory: "Product 1", value: 15 },
+        { category: "Mon", subcategory: "Product 2", value: 40 },
+        { category: "Mon", subcategory: "Product 3", value: 10 },
+        { category: "Tue", subcategory: "Product 1", value: 20 },
+        { category: "Tue", subcategory: "Product 2", value: 30 },
+        { category: "Tue", subcategory: "Product 3", value: 15 },
+        { category: "Wed", subcategory: "Product 1", value: 10 },
+        { category: "Wed", subcategory: "Product 2", value: 25 },
+        { category: "Wed", subcategory: "Product 3", value: 40 },
+      ];
+      const data10 = [
+        { category: "A", x: 5.1, y: 3.5 },
+        { category: "B", x: 4.9, y: 3.0 },
+        { category: "A", x: 4.7, y: 3.2 },
+        { category: "C", x: 4.6, y: 3.1 },
+        { category: "B", x: 5.0, y: 3.6 },
+        { category: "C", x: 5.4, y: 3.9 },
+        { category: "A", x: 4.6, y: 3.4 },
+        { category: "B", x: 5.0, y: 3.4 },
+        { category: "C", x: 4.4, y: 2.9 },
+        { category: "A", x: 4.9, y: 3.1 },
+        { category: "B", x: 5.4, y: 3.7 },
+        { category: "C", x: 4.8, y: 3.4 },
+        { category: "A", x: 4.8, y: 3.0 },
+        { category: "B", x: 4.3, y: 3.0 },
+        { category: "C", x: 5.8, y: 4.0 },
+        { category: "A", x: 5.7, y: 4.4 },
+        { category: "B", x: 5.4, y: 3.9 },
+        { category: "C", x: 5.1, y: 3.5 },
+        { category: "A", x: 5.1, y: 3.8 },
+        { category: "B", x: 5.0, y: 3.3 },
+      ];
 
       if (chartType === "Vertical Bar Chart") {
         // Panggil createVerticalBarChart2 tanpa svg (SVG akan dibuat di dalam fungsi)
@@ -251,6 +287,28 @@ const ChartSelection: React.FC<ChartSelectionProps> = ({
           useaxis
         );
         if (chartNode) {
+          svgRef.current.appendChild(chartNode);
+        }
+      } else if (chartType === "Stacked Area Chart") {
+        const chartNode = chartUtils.createStackedAreaChart(
+          data9,
+          width,
+          height,
+          useaxis
+        );
+
+        if (svgRef.current && chartNode) {
+          svgRef.current.appendChild(chartNode);
+        }
+      } else if (chartType === "Grouped Scatter Plot") {
+        const chartNode = chartUtils.createGroupedScatterPlot(
+          data10,
+          width,
+          height,
+          useaxis
+        );
+
+        if (svgRef.current && chartNode) {
           svgRef.current.appendChild(chartNode);
         }
       }
