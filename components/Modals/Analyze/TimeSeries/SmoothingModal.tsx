@@ -11,7 +11,7 @@ import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTit
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputRow } from "./timeSeriesComponent/smoothingInput";
 import { handleSmoothing } from "./handleAnalyze/handleSmoothing";
-import { adjustRowLength } from "./handleAnalyze/adjustRowLength";
+
 interface VariableDef {
     name: string;
     columnIndex: number;
@@ -25,10 +25,10 @@ interface VariableDef {
     columns: number;
     align: string;
 }
+type RawData = string[][];
 interface SmoothingModalProps {
     onClose: () => void;
 }
-type RawData = string[][];
 
 const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
     const methods = [

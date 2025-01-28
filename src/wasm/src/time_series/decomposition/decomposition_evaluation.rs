@@ -6,7 +6,7 @@ use crate::time_series::evaluation::evaluation::*;
 
 #[wasm_bindgen]
 impl Decomposition {
-    pub fn decompose_evaluation(&self, forecast: Vec<f64>) -> JsValue {
+    pub fn decomposition_evaluation(&self, forecast: Vec<f64>) -> JsValue {
         let mse = mse(self.get_data(), forecast.clone()) as f64;
         let rmse = rmse(self.get_data(), forecast.clone()) as f64;
         let mae = mae(self.get_data(), forecast.clone()) as f64;

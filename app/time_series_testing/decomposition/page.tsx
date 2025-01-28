@@ -104,7 +104,7 @@ export default function Smoothing(){
                             ) : null
                         }
                         <div className="flex flex-row gap-2">
-                            <label className="max-w-sm p-2 mt-4 rounded-lg" htmlFor="detrended_method">Periodic :</label>
+                            <label className="max-w-sm p-2 mt-4 rounded-lg" htmlFor="detrended_method">Detrended Method :</label>
                             <select
                                 id="detrended_method"  value={selectedMethod} onChange={(event) => handleChangeMethod(event)}
                                 className="max-w-sm p-2 mt-4 border-2 border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
