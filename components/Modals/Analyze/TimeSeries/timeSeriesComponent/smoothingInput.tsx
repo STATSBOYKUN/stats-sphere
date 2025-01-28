@@ -10,12 +10,12 @@ type InputRowProps = {
 
 const InputRow: React.FC<InputRowProps> = ({ label, id, value, min, max, step, onChange }) => {
     return (
-        <div className="flex flex-row gap-2">
-            <label className="max-w-sm pl-2 rounded-lg" htmlFor={id}>
+        <div className="flex flex-row">
+            <label className="w-[65px] text-sm font-semibold" htmlFor={id}>
                 {label} :
             </label>
             <input
-                className="w-12 pl-2 rounded-lg"
+                className="w-[40px]  text-sm font-semibold rounded-lg pl-1"
                 type="number"
                 id={id}
                 value={value}

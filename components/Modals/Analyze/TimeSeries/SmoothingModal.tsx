@@ -303,7 +303,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                 );
             case 'holt':
                 return (
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-row gap-2">
                         <InputRow label="alpha" id="par1" value={parameters[0]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(0, value)} />
                         <InputRow label="beta" id="par2" value={parameters[1]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(1, value)} />
                     </div>
@@ -311,14 +311,14 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             case 'winter':
                 return (
                     <div className="flex flex-col gap-2">
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-row gap-2 pl-2">
                             <InputRow label="alpha" id="par1" value={parameters[0]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(0, value)} />
                             <InputRow label="beta" id="par2" value={parameters[1]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(1, value)} />
                             <InputRow label="gamma" id="par3" value={parameters[2]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(2, value)} />
                         </div>
                         
                         <div className="flex flex-row mt-2">
-                            <div className="flex items-center"><label className="w-20 p-2 rounded-lg" htmlFor="par4">period :</label></div>
+                            <div className="flex items-center"><label className="w-[120px] text-sm font-semibold pl-2" htmlFor="par4">periodicity : {selectedPeriod[0]}</label></div>
                             <Select onValueChange={(value) => handleSelectedPeriod(value)} defaultValue={selectedPeriod[1]}>
                                 <SelectTrigger className="mr-2">
                                     <SelectValue>{selectedPeriod[1]}</SelectValue>
@@ -461,7 +461,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     {/* Awal Kolom Tiga */}
                     <div className="flex flex-col gap-4">
                         {/* Awal Baris Satu Kolom Tiga */}
-                        <div className="border-2 rounded-md w-[420px]">
+                        <div className="border-2 rounded-md w-[420px] pb-2">
                             <div className="w-full p-2 border-0 rounded-t-md flex flex-row gap-4 mt-2">
                                 <div className="flex items-center ml-2">
                                     <Label className="font-semibold">Methods:</Label>
