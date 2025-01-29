@@ -1,0 +1,169 @@
+//Multinomial
+
+// 1. Define the data
+const data = [
+  { Y: 1, X: 4 },
+  { Y: 2, X: 3 },
+  { Y: 3, X: 2 },
+  { Y: 4, X: 1 },
+  { Y: 1, X: 1 },
+  { Y: 2, X: 2 },
+  { Y: 2, X: 3 },
+  { Y: 7, X: 4 },
+];
+
+// 2. Define categories and reference category
+const categories = Array.from(new Set(data.map(d => d.Y))).sort((a, b) => a - b); // [1,2,3,4,7]
+const referenceCategory = 7;
+const nonRefCategories = categories.filter(c => c !== referenceCategory); // [1,2,3,4]
+const K = nonRefCategories.length; // 4
+
+// 3. Encode data: assign 0 to reference category, 1 to K categories
+const encodedData = data.map(d => {
+  const y = d.Y === referenceCategory ? 0 : nonRefCategories.indexOf(d.Y) + 1; // 1 to K, 0 for reference
+  return {
+    y: y,
+    x: [d.X],
+  };
+});
+
+// 4. Softmax function with numerical stability
+function softmax(z) {
+  const max = Math.max(...z);
+  const exp = z.map(val => Math.exp(val - max));
+  const sumExp = exp.reduce((a, b) => a + b, 0);
+  return exp.map(val => val / sumExp);
+}
+
+// 5. Initialize coefficients: for each non-reference category, [beta0, beta1]
+let coefficients = [];
+for (let k = 0; k < K; k++) {
+  coefficients.push([0, 0]); // [beta0, beta1]
+}
+
+// 6. Training parameters
+const learningRate = 0.01;
+const maxIterations = 1000;
+const tolerance = 1e-6;
+
+// 7. Function to calculate log-likelihood
+function calculateLogLikelihood(data, coefficients) {
+  let ll = 0;
+  for (let i = 0; i < data.length; i++) {
+    const y = data[i].y;
+    const x = data[i].x;
+    // Calculate linear predictors
+    let logits = [];
+    for (let k = 0; k < K; k++) {
+      const beta = coefficients[k];
+      logits.push(beta[0] + beta[1] * x[0]);
+    }
+    const probs = softmax(logits);
+    if (y === 0) { // Reference category
+      const sumExp = probs.reduce((a, b) => a + b, 0);
+      const prob = 1 / (1 + sumExp);
+      ll += Math.log(prob);
+    } else { // Non-reference category
+      const prob = probs[y - 1];
+      ll += Math.log(prob);
+    }
+  }
+  return ll;
+}
+
+// 8. Function to perform gradient ascent
+function trainMultinomialLogisticRegression(data, coefficients, learningRate, maxIterations, tolerance) {
+  let iteration = 0;
+  let prevLL = -Infinity;
+  let currLL = calculateLogLikelihood(data, coefficients);
+
+  while (iteration < maxIterations && Math.abs(currLL - prevLL) > tolerance) {
+    // Initialize gradients for each category
+    let gradients = Array(K).fill(0).map(() => [0, 0]); // [dL/dbeta0, dL/dbeta1]
+
+    // Iterate over each data point
+    for (let i = 0; i < data.length; i++) {
+      const y = data[i].y;
+      const x = data[i].x;
+
+      // Compute linear predictors
+      let logits = [];
+      for (let k = 0; k < K; k++) {
+        const beta = coefficients[k];
+        logits.push(beta[0] + beta[1] * x[0]);
+      }
+
+      // Compute probabilities
+      const probs = softmax(logits);
+
+      // Update gradients
+      for (let k = 0; k < K; k++) {
+        const indicator = (y === (k + 1)) ? 1 : 0;
+        gradients[k][0] += (indicator - probs[k]); // dL/dbeta0
+        gradients[k][1] += (indicator - probs[k]) * x[0]; // dL/dbeta1
+      }
+    }
+
+    // Update coefficients
+    for (let k = 0; k < K; k++) {
+      coefficients[k][0] += learningRate * gradients[k][0];
+      coefficients[k][1] += learningRate * gradients[k][1];
+    }
+
+    // Update log-likelihood
+    prevLL = currLL;
+    currLL = calculateLogLikelihood(data, coefficients);
+
+    iteration++;
+  }
+
+  return {
+    coefficients: coefficients,
+    iterations: iteration,
+    logLikelihood: currLL,
+  };
+}
+
+// 9. Run the training
+const result = trainMultinomialLogisticRegression(encodedData, coefficients, learningRate, maxIterations, tolerance);
+
+// 10. Display the results
+console.log("Multinomial Logistic Regression Results");
+console.log("Reference Category:", referenceCategory);
+console.log("Non-Reference Categories:", nonRefCategories);
+console.log("Iterations:", result.iterations);
+console.log("Final Log-Likelihood:", result.logLikelihood.toFixed(4));
+console.log("Coefficients:");
+for (let k = 0; k < K; k++) {
+  console.log(`Category ${nonRefCategories[k]}: Intercept (B0) = ${result.coefficients[k][0].toFixed(4)}, VAR00002 (B1) = ${result.coefficients[k][1].toFixed(4)}`);
+}
+
+// 11. Optionally, display predicted probabilities for each data point
+function predictProbabilities(data, coefficients) {
+  const predictions = data.map(d => {
+    const x = d.x;
+    let logits = [];
+    for (let k = 0; k < K; k++) {
+      const beta = coefficients[k];
+      logits.push(beta[0] + beta[1] * x[0]);
+    }
+    const probs = softmax(logits);
+    const sumProbs = probs.reduce((a, b) => a + b, 0);
+    const probRef = 1 / (1 + sumProbs);
+    return {
+      Y: d.y === 0 ? referenceCategory : nonRefCategories[d.y - 1],
+      X: x[0],
+      Probabilities: [...probs, probRef],
+    };
+  });
+  return predictions;
+}
+
+const predictions = predictProbabilities(encodedData, result.coefficients);
+
+console.log("\nPredicted Probabilities:");
+console.log("Case | VAR00002 | P(Y=1) | P(Y=2) | P(Y=3) | P(Y=4) | P(Y=7)");
+predictions.forEach((pred, index) => {
+  const probs = pred.Probabilities.map(p => p.toFixed(4));
+  console.log(`${index + 1} | ${pred.X} | ${probs.join(" | ")}`);
+});

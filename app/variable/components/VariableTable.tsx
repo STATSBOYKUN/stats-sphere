@@ -6,7 +6,7 @@ import { HotTable, HotTableClass } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
 import { useVariableTable } from '@/hooks/useVariableTable';
-import { colHeaders, columns } from "@/components/VariableTable/variableTableConfig";
+import { colHeaders, columns } from "@/app/variable/components/variableTableConfig";
 
 registerAllModules();
 

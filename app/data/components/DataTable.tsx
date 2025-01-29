@@ -42,7 +42,7 @@ export default function DataTable() {
                 filters={true}
                 manualRowMove={true}
                 customBorders={true}
-                contextMenu={true}
+                contextMenu= {['row_above', 'row_below', 'remove_row', 'clear_column', 'alignment']}
                 licenseKey="non-commercial-and-evaluation"
                 afterChange={handleAfterChange}
                 afterValidate={handleAfterValidate}

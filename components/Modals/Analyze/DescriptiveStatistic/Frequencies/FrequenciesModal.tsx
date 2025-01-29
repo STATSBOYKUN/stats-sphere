@@ -30,7 +30,7 @@ interface FrequenciesModalProps {
 type RawData = string[][];
 
 const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
-    const [leftVariables, setLeftVariables] = useState<string[]>([]);
+    const [availableVariables, setLeftVariables] = useState<string[]>([]);
     const [selectedVariables, setSelectedVariables] = useState<string[]>([]);
     const [highlightedVariable, setHighlightedVariable] = useState<string | null>(
         null
@@ -68,7 +68,7 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
 
     const handleMoveVariable = () => {
         if (highlightedVariable) {
-            if (leftVariables.includes(highlightedVariable)) {
+            if (availableVariables.includes(highlightedVariable)) {
                 setSelectedVariables((prev) => [...prev, highlightedVariable]);
                 setLeftVariables((prev) =>
                     prev.filter((item) => item !== highlightedVariable)
@@ -213,7 +213,7 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
                 <div className="col-span-3 flex flex-col border p-4 rounded-md max-h-[300px] overflow-y-auto">
                     <label className="font-semibold">Available Variables</label>
                     <div className="space-y-2">
-                        {leftVariables.map((variable) => (
+                        {availableVariables.map((variable) => (
                             <div
                                 key={variable}
                                 className={`p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
@@ -234,7 +234,7 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
                         onClick={handleMoveVariable}
                         disabled={!highlightedVariable}
                     >
-                        {highlightedVariable && leftVariables.includes(highlightedVariable) ? (
+                        {highlightedVariable && availableVariables.includes(highlightedVariable) ? (
                             <CornerDownRight size={24} />
                         ) : highlightedVariable &&
                         selectedVariables.includes(highlightedVariable) ? (
