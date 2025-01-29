@@ -149,10 +149,6 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             setErrorMsg("Please select at least one time variable.");
             return;
         }
-        if(dataVariable.length != timeVariable.length){
-            setErrorMsg("Data and Time length is not equal");
-            return;
-        }
         if (!selectedMethod[0]) {
             setErrorMsg("Please select a method.");
             return;
@@ -208,6 +204,35 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
 
             const dataValues = slicedData.map(rowObj => rowObj[varDefs[0].name]).filter(value => value !== null).map(value => parseFloat(value as string));
             const timeValues = slicedData.map(rowObj => rowObj[varDefs[1].name]).filter(value => value != null).map(value => String(value));
+
+            if (dataValues.length === 0) {
+                setErrorMsg("No data available for the selected variables.");
+                setIsCalculating(false);
+                return;
+            }
+            if (timeValues.length === 0) {
+                setErrorMsg("No data available for the selected time variables.");
+                setIsCalculating(false);
+                return;
+            }
+            if(dataValues.length != timeValues.length){
+                setErrorMsg("Data and Time length is not equal");
+                setIsCalculating(false);
+                return;
+            }
+            if (selectedMethod[0] === 'winter') {
+                if (dataValues.length < 4 * Number(selectedPeriod[0])) {
+                    setErrorMsg("Data length is less than 4 times the periodicity.");
+                    setIsCalculating(false);
+                    return;
+                }
+                if (dataValues.length % Number(selectedPeriod[0]) !== 0) {
+                    setErrorMsg("Data length is not a multiple of the periodicity.");
+                    setIsCalculating(false);
+                    return;
+                }
+            }
+
             let [smoothingResult, smoothingEvaluation]: [any[], any] = await handleSmoothing(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, parameters, selectedMethod[0]);
             
             // Membuat Log

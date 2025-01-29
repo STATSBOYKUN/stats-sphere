@@ -3,24 +3,25 @@ import init, {Smoothing} from '../../../../../src/wasm/pkg/wasm.js';
 export async function handleSmoothing(data: (number)[], dataHeader: (string), time: (string)[], timeHeader: (string), pars: (number)[], method: string): Promise<[number[], string]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) && Array.isArray(time) ? data : null;
+    
     if (!inputData) {
         throw new Error("Invalid input data");
     }
+
     try {
         if(data.length != time.length){
             throw new Error("Data and Time length is not equal");
         }
-
-        let smoothing;
-        let smoothingValue;
-        let nameMethod;
-
         if (!data.every((val) => typeof val === 'number')) {
             throw new Error("dataValues contains non-numeric values");
         }
         if (!(time as string[]).every((val) => typeof val === 'string')) {
             throw new Error("timeValues contains non-string values");
         }
+
+        let smoothing;
+        let smoothingValue;
+        let nameMethod;
         
         smoothing = new Smoothing(dataHeader, new Float64Array(data), timeHeader as string, time as string[]);
         console.log("Smoothing initialized:", smoothing);

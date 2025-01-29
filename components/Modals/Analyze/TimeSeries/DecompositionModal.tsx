@@ -4,12 +4,12 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"; 
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { handleDecomposition } from "./handleAnalyze/handleDecomposition";
 
 interface VariableDef {
     name: string;
@@ -53,9 +53,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
 
     const [selectedDecompositionMethod, setSelectedDecompositionMethod] = useState<string[]>(['additive','Additive']);
     const [selectedTrendedMethod, setSelectedTrendedMethod] = useState<string[]>(['linear','Linear']);
-    const [parameters, setParameters] = useState<number[]>([]);
     const [selectedPeriod, setSelectedPeriod] = useState<string[]>(['7','Daily in Week']);
-    const [containSeasonal, setContainSeasonal] = useState<boolean>(false);
     const [saveDecomposition, setSaveDecomposition] = useState<boolean>(false);
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
     const [dataVariable, setDataVariable] = useState<string[]>([]);
@@ -126,10 +124,6 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
             setErrorMsg("Please select at least one time variable.");
             return;
         }
-        if(dataVariable.length != timeVariable.length){
-            setErrorMsg("Data and Time length is not equal");
-            return;
-        }
         if (!selectedTrendedMethod[0]) {
             setErrorMsg("Please select a method.");
             return;
@@ -186,10 +180,85 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
             const dataValues = slicedData.map(rowObj => rowObj[varDefs[0].name]).filter(value => value !== null).map(value => parseFloat(value as string));
             const timeValues = slicedData.map(rowObj => rowObj[varDefs[1].name]).filter(value => value != null).map(value => String(value));
 
-            // Jika Menyimpan Decomposition Dicentang
-            if (saveDecomposition) {
-                
+            if (dataValues.length === 0) {
+                setErrorMsg("No data available for the selected variables.");
+                setIsCalculating(false);
+                return;
             }
+            if (timeValues.length === 0) {
+                setErrorMsg("No data available for the selected time variables.");
+                setIsCalculating(false);
+                return;
+            }
+            if(dataValues.length != timeValues.length){
+                setErrorMsg("Data and Time length is not equal");
+                setIsCalculating(false);
+                return;
+            }
+            if (dataValues.length < 4 * Number(selectedPeriod[0])) {
+                setErrorMsg(`Data length is less than 4 times the periodicity.`);
+                setIsCalculating(false);
+                return;
+            }
+            if (dataValues.length % Number(selectedPeriod[0]) !== 0) {
+                setErrorMsg("Data length is not a multiple of the periodicity.");
+                setIsCalculating(false);
+                return;
+            }
+
+            let [seasonal, trend, irrengular, forecasting, evaluation, seasonIndices, equation]:
+                [any[], any[], any[], any[], any, any, any] = 
+                await handleDecomposition(
+                    dataValues as number[],
+                    varDefs[0].name,
+                    timeValues as string[],
+                    varDefs[1].name,
+                    selectedDecompositionMethod[0],
+                    selectedTrendedMethod[0],
+                    Number(selectedPeriod[0]),
+                    selectedPeriod[1],
+                )
+            ;
+
+            // Membuat Log
+            const logMsg = `DECOMPOSITION: ${varDefs[0].label? varDefs[0].label + ' Using' : varDefs[0].name + ' Using'} ${selectedDecompositionMethod[1]}.`;
+            const logId = await addLog({ log: logMsg });
+
+            // Membuat Judul Log
+            const analyticId = await addAnalytic({
+                log_id: logId,
+                title: `Decomposition ${selectedDecompositionMethod[1]}`,
+                note: "",
+            });
+
+            // Membuat Tabel Seasonal Index pada Log
+            const seasonIndicesTable = await addStatistic({
+                analytic_id: analyticId,
+                title: "Seasonal Indices",
+                output_data: seasonIndices,
+                components: "Seasonal Indices",
+            });
+
+            // Membuat Tabel Persamaan Trend pada Log
+            const equationTrendTable = await addStatistic({
+                analytic_id: analyticId,
+                title: "Equation",
+                output_data: equation,
+                components: "Equation Trend",
+            });
+
+            // Membuat Tabel Evaluasi pada Log
+            const evalTable = await addStatistic({
+                analytic_id: analyticId,
+                title: "Evalution",
+                output_data: evaluation,
+                components: "Forecasting Evaluation",
+            });
+
+            // Jika Menyimpan Decomposition Dicentang
+            // if (saveDecomposition) {
+                
+            // }
 
             setIsCalculating(false);
             onClose();
@@ -323,10 +392,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                             id={method.value}
                                             className="w-4 h-4"
                                         />
-                                        <label
-                                            htmlFor={method.value}
-                                            className="text-sm font-medium text-gray-700"
-                                        >
+                                        <label htmlFor={method.value} className="text-sm font-medium text-gray-700">
                                             {method.label}
                                         </label>
                                     </div>
@@ -344,10 +410,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {trendedMethods.map((method) => (
-                                                <SelectItem
-                                                    key={method.value}
-                                                    value={method.value}
-                                                >
+                                                <SelectItem key={method.value} value={method.value}>
                                                     {method.label}
                                                 </SelectItem>
                                             ))}
