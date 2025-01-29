@@ -183,8 +183,8 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     const varDef = variables.find((v) => v.name === varName);
                     if (!varDef) return;
                     const rawValue = row[varDef.columnIndex];
-                    const num = parseFloat(rawValue);
-                    rowObj[varName] = isNaN(num) ? (rawValue === "" ? null : rawValue) : num;
+                    const num = rawValue;
+                    rowObj[varName] = num;
                 });
                 slicedData.push(rowObj);
             }
@@ -233,8 +233,8 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                 }
             }
 
-            let [smoothingResult, smoothingEvaluation]: [any[], any] = await handleSmoothing(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, parameters, selectedMethod[0]);
-            
+            let [smoothingResult, smoothingGraphic, smoothingEvaluation]: [any[], any, any] = await handleSmoothing(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, parameters, selectedMethod[0]);
+            console.log(slicedData);
             // Membuat Log
             const logMsg = `SMOOTHING: ${varDefs[0].label? varDefs[0].label + ' Using' : varDefs[0].name + ' Using'} ${selectedMethod[1]} method with parameters ${parameters.join(", ")}.`;
             const logId = await addLog({ log: logMsg });
@@ -244,6 +244,14 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                 log_id: logId,
                 title: `Smoothing ${selectedMethod[1]}`,
                 note: "",
+            });
+
+            // Membuat Tabel Evaluasi pada Log
+            const graphic = await addStatistic({
+                analytic_id: analyticId,
+                title: `Smoothing ${selectedMethod[1]}`,
+                output_data: smoothingGraphic,
+                components: "Smoothing Graphic",
             });
 
             // Membuat Tabel Evaluasi pada Log

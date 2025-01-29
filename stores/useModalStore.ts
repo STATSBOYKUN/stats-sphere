@@ -24,9 +24,6 @@ export enum ModalType {
   ModalQuantiles = "modalQuantiles",
   ModalOptimalScaling = "modalOptimalScaling",
 
-    // Descriptive Statistic
-    Frequencies = 'frequencies',
-
   // Time Series
   Smoothing = "smoothing", //Time Series Smoothing
   Decomposition = "decomposition", //Time Series Decomposition

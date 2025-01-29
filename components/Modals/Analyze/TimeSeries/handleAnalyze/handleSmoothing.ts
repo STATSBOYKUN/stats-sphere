@@ -1,6 +1,13 @@
 import init, {Smoothing} from '../../../../../src/wasm/pkg/wasm.js';
 
-export async function handleSmoothing(data: (number)[], dataHeader: (string), time: (string)[], timeHeader: (string), pars: (number)[], method: string): Promise<[number[], string]> {
+export async function handleSmoothing(
+    data: (number)[], 
+    dataHeader: (string), 
+    time: (string)[], 
+    timeHeader: (string), 
+    pars: (number)[], 
+    method: string): 
+Promise<[number[], string, string]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) && Array.isArray(time) ? data : null;
     
@@ -58,13 +65,55 @@ export async function handleSmoothing(data: (number)[], dataHeader: (string), ti
                 throw new Error(`Unknown method: ${method}`);
         }
 
-        let evalValue = await smoothing.smoothing_evaluation(smoothingValue) as Record<string, number>;
+        let smoothingArray = Array.from(smoothingValue);
+        let structuredSmoothing: any[] = [];
+        // Validasi panjang array
+        if (time.length === data.length && data.length === smoothingArray.length) {
+            for (let i = 0; i < time.length; i++) {
+                structuredSmoothing.push({
+                    category: time[i],
+                    subcategory: `${dataHeader}`,
+                    value: data[i],
+                });
+                structuredSmoothing.push({
+                    category: time[i],
+                    subcategory: `${nameMethod}`,
+                    value: smoothingArray[i] === 0? null : smoothingArray[i],
+                });
+            }
+        } else {
+            throw new Error("Panjang array tidak sama!");
+        }
+        let graphicJSON = JSON.stringify({
+            charts: [
+                {
+                    chartType: "Multiple Line Chart",
+                    chartMetaData: {
+                        axisInfo: {
+                            category: `${timeHeader}`,
+                            subCategory: [`${dataHeader}`, `$(nameMethod) Smoothing`],
+                        },
+                        description: `Smoothing ${dataHeader} using ${nameMethod}`,
+                        notes: `Smoothing ${dataHeader}`,
+                    },
+                    chartData: structuredSmoothing,
+                    chartConfig: {
+                        "width": 800,
+                        "height": 600,
+                        "chartColor": ["#4682B4"],
+                        "useLegend": true,
+                        "useAxis": true,
+                    }
+                }
+            ]
+        });
 
+        let evalValue = await smoothing.smoothing_evaluation(smoothingValue) as Record<string, number>;
         let evalJSON = JSON.stringify({
             tables: [
                 {
                     title: `Smoothing Evaluation Results`,
-                    columns: ['value'], 
+                    columnHeaders: [{header:""},{header: 'value'}], 
                     rows: Object.entries(evalValue).map(([key, value]) => ({
                         rowHeader: [key], 
                         value: value,     
@@ -72,9 +121,9 @@ export async function handleSmoothing(data: (number)[], dataHeader: (string), ti
                 },
             ],
         });
-        return [Array.from(smoothingValue), evalJSON];
+        return [Array.from(smoothingValue), graphicJSON, evalJSON];
     } catch (error) {
         let errorMessage = error as Error;
-        return [[0],JSON.stringify({ error: errorMessage.message })];
+        return [[0],"" ,JSON.stringify({ error: errorMessage.message })];
     }
 }

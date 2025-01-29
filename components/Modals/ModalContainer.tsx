@@ -5,11 +5,13 @@
 import React from "react";
 import { useModal, ModalType } from "@/hooks/useModal";
 
+// Time Series Tolong Jangan Dihapus
 import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
 import DecompositionModal from "@/components/Modals/Analyze/TimeSeries/DecompositionModal";
 import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
-import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';;
-import CreateModelModal from "@/components/Modals/Analyze/TimeSeries/CreateModelModal";
+import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
+import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
+
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import { Dialog } from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
@@ -19,7 +21,6 @@ import ImportCSV from "@/components/Modals/File/ImportCSV";
 import ReadCSVFile from "@/components/Modals/File/ReadCSVFile";
 import ImportExcel from "@/components/Modals/File/ImportExcel";
 import ReadExcelFile from "@/components/Modals/File/ReadExcelFile";
-import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
 import ModalAutomaticLinearModeling from "@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling";
 import ModalLinear from "./Regression/Linear/ModalLinear";
 import ModalCurveEstimation from "./Regression/CurveEstimation/ModalCurveEstimation";
@@ -123,16 +124,20 @@ const ModalContainer: React.FC = () => {
         return (
           <DecompositionModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.StationaryTest:
+      case ModalType.Autocorrelation:
         return (
-          <StationaryTestModal onClose={closeModal} {...currentModal.props} />
+          <AutocorrelationModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.CreateModel:
+      case ModalType.UnitRootTest:
+          return (
+            <UnitRootTestModal onClose={closeModal} {...currentModal.props} />
+          );
+      case ModalType.BoxJenkinsModel:
         return (
-          <CreateModelModal onClose={closeModal} {...currentModal.props} />
+          <BoxJenkinsModelModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.Frequencies:
 
+      case ModalType.Frequencies:
       case ModalType.FrequenciesStatistic:
         return (
           <FrequenciesModal onClose={closeModal} {...currentModal.props} />

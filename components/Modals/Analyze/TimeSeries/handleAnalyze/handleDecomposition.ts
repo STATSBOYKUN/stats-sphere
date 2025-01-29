@@ -74,7 +74,7 @@ export async function handleDecomposition(
             tables: [
                 {
                     title: `Decompostion Forecasting Evaluation Results`,
-                    columns: ['value'], 
+                    columnHeaders: [{header:""},{header: 'value'}], 
                     rows: Object.entries(evalValue).map(([key, value]) => ({
                         rowHeader: [key], 
                         value: value,     
@@ -92,7 +92,7 @@ export async function handleDecomposition(
             tables: [
                 {
                     title: `Seasonal Indices ${periodLable}`,
-                    columns: ['value'], 
+                    columnHeaders: [{header:""},{header: 'value'}],
                     rows: Object.entries(seasonValue).map(([key, value]) => ({
                         rowHeader: [key], 
                         value: value,     
@@ -106,11 +106,11 @@ export async function handleDecomposition(
             "tables": [
                 {
                 "title": `${nameTrendMethod}`,
-                "columns": ["trend"], 
+                "columnHeaders": [{"header": `${equation}`}], 
                 "rows": [
                     {
                     "rowHeader": [`The Equation`],
-                    "trend": `${equation}` // Isi nilai kosong biar nggak kehapus
+                    "trend": `${equation}` // Isi nilai biar nggak error
                     }
                 ]
                 }
