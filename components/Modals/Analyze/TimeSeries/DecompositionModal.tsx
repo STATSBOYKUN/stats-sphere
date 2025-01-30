@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleDecomposition } from "./handleAnalyze/handleDecomposition";
+import db from "@/lib/db"; // Adjust the import path according to your project structure
+import { AnyARecord } from "dns";
 
 interface VariableDef {
     name: string;
@@ -256,9 +258,193 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
             });
 
             // Jika Menyimpan Decomposition Dicentang
-            // if (saveDecomposition) {
-                
-            // }
+            if (saveDecomposition) {
+                // Index Variabel
+                let length = variables.length;
+
+                // Menyimpan Seasonal Component
+                // Jika panjang lebih pendek, tambahkan nilai kosong
+                if (seasonal.length < data.length) {
+                    const missingRows = data.length - seasonal.length;
+                    const filler = new Array(missingRows).fill("");
+                    seasonal = [...seasonal, ...filler];
+                }
+                // Tambahkan nilai smoothingResult ke kolom pertama yang kosong di setiap baris
+                const updateSeasonal = data.map((row, index) => {
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = seasonal[index].toString();
+                            break;
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updateSeasonal);
+                // Definisi Metadata
+                const seasonalMetadata = {
+                    name: `${varDefs[0].name} Seasonal Component`,
+                    columnIndex: length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 2,
+                    columns: 200,
+                    align: 'left',
+                };
+                addVariable(seasonalMetadata);
+                // Perbarui state variables di store
+                const updatedSeasonal = [...variables, seasonalMetadata];
+                useVariableStore.setState({ variables: updatedSeasonal });
+                // Simpan hasil smoothing ke IndexDB
+                const seasonalCells = seasonal.map((value, index) => ({
+                    x: seasonalMetadata.columnIndex,
+                    y: index,
+                    value: value.toString(),
+                }));
+                db.cells.bulkPut(seasonalCells);
+                length++;
+
+                // Menyimpan Trend Component
+                // Jika panjang lebih pendek, tambahkan nilai kosong
+                if (trend.length < data.length) {
+                    const missingRows = data.length - trend.length;
+                    const filler = new Array(missingRows).fill("");
+                    trend = [...trend, ...filler];
+                }
+                // Tambahkan nilai smoothingResult ke kolom pertama yang kosong di setiap baris
+                const updateTrend = updateSeasonal.map((row, index) => {
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = trend[index].toString();
+                            break;
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updateTrend);
+                // Definisi Metadata
+                const trendMetadata = {
+                    name: `${varDefs[0].name} Trend Component`,
+                    columnIndex: length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 2,
+                    columns: 200,
+                    align: 'left',
+                };
+                addVariable(trendMetadata);
+                // Perbarui state variables di store
+                const updatedTrend = [...variables, seasonalMetadata, trendMetadata];
+                useVariableStore.setState({ variables: updatedTrend });
+                // Simpan hasil smoothing ke IndexDB
+                const trendCells = trend.map((value, index) => ({
+                    x: trendMetadata.columnIndex,
+                    y: index,
+                    value: value.toString(),
+                }));
+                db.cells.bulkPut(trendCells);
+                length++;
+
+                // // Menyimpan Irregular Component
+                // Jika panjang lebih pendek, tambahkan nilai kosong
+                if (irrengular.length < data.length) {
+                    const missingRows = data.length - irrengular.length;
+                    const filler = new Array(missingRows).fill("");
+                    irrengular = [...irrengular, ...filler];
+                }
+                // Tambahkan nilai smoothingResult ke kolom pertama yang kosong di setiap baris
+                const updateIrrengular = updateTrend.map((row, index) => {
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = irrengular[index].toString();
+                            break;
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updateIrrengular);
+                // Definisi Metadata
+                const irrengularMetadata = {
+                    name: `${varDefs[0].name} Irrengular Component`,
+                    columnIndex: length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 2,
+                    columns: 200,
+                    align: 'left',
+                };
+                addVariable(irrengularMetadata);
+                // Perbarui state variables di store
+                const updatedIrrengular = [...variables, seasonalMetadata, trendMetadata, irrengularMetadata];
+                useVariableStore.setState({ variables: updatedIrrengular });
+                // Simpan hasil smoothing ke IndexDB
+                const irrengularCells = irrengular.map((value, index) => ({
+                    x: irrengularMetadata.columnIndex,
+                    y: index,
+                    value: value.toString(),
+                }));
+                db.cells.bulkPut(irrengularCells);
+                length++;
+
+                // // Menyimpan Forecasting Component
+                // Jika panjang lebih pendek, tambahkan nilai kosong
+                if (forecasting.length < data.length) {
+                    const missingRows = data.length - forecasting.length;
+                    const filler = new Array(missingRows).fill("");
+                    forecasting = [...forecasting, ...filler];
+                }
+                // Tambahkan nilai smoothingResult ke kolom pertama yang kosong di setiap baris
+                const updateForecasting = updateIrrengular.map((row, index) => {
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = forecasting[index].toString();
+                            break;
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updateForecasting);
+                // Definisi Metadata
+                const forecastingMetadata = {
+                    name: `${varDefs[0].name} Forecasting Component`,
+                    columnIndex: length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 2,
+                    columns: 200,
+                    align: 'left',
+                };
+                addVariable(forecastingMetadata);
+                // Perbarui state variables di store
+                const updatedForecasting = [...variables, seasonalMetadata, trendMetadata, irrengularMetadata, forecastingMetadata];
+                useVariableStore.setState({ variables: updatedForecasting });
+                // Simpan hasil smoothing ke IndexDB
+                const forecastingCells = forecasting.map((value, index) => ({
+                    x: forecastingMetadata.columnIndex,
+                    y: index,
+                    value: value.toString(),
+                }));
+                db.cells.bulkPut(forecastingCells);
+            }
 
             setIsCalculating(false);
             onClose();

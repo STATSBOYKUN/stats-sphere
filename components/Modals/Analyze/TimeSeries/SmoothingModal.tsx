@@ -4,13 +4,13 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
-import db from "@/lib/db"; // Adjust the import path according to your project structure
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";  
 import { Label } from "@/components/ui/label";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputRow } from "./timeSeriesComponent/smoothingInput";
 import { handleSmoothing } from "./handleAnalyze/handleSmoothing";
+import db from "@/lib/db"; // Adjust the import path according to your project structure
 
 interface VariableDef {
     name: string;
@@ -139,7 +139,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
         setTimeVariable([]);
         setHighlightedVariable(null);
     }
-
+    
     const handleAnalyzes = async () => {
         if (!dataVariable.length) {
             setErrorMsg("Please select at least one used variable.");
@@ -249,7 +249,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             // Membuat Tabel Evaluasi pada Log
             const graphic = await addStatistic({
                 analytic_id: analyticId,
-                title: `Smoothing ${selectedMethod[1]}`,
+                title: `Smoothing Graphic`,
                 output_data: smoothingGraphic,
                 components: "Smoothing Graphic",
             });
@@ -257,7 +257,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             // Membuat Tabel Evaluasi pada Log
             const evaluation = await addStatistic({
                     analytic_id: analyticId,
-                    title: "Evalution",
+                    title: "Smoothing Evalution",
                     output_data: smoothingEvaluation,
                     components: "Smoothing Evaluation",
             });

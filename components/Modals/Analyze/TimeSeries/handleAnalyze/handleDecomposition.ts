@@ -84,7 +84,7 @@ export async function handleDecomposition(
         });
 
         let seasonalIndices = Array.from(decomposition.get_seasonal_indices());
-        let namePeriodLable = seasonalIndices.map((_, i) => `${periodLable} in period ${i + 1}`);
+        let namePeriodLable = seasonalIndices.map((_, i) => `period ${i + 1} of ${periodValue}`);
         let seasonValue: Record<string, number> = Object.fromEntries(
             namePeriodLable.map((label, i) => [label, seasonalIndices[i]])
         );
