@@ -29,6 +29,7 @@ const ImportExcel: FC<ImportExcelProps> = ({ onClose }) => {
             const reader = new FileReader();
             reader.onload = () => {
                 const content = reader.result as string;
+                closeModal();
                 openModal(ModalType.ReadExcelFile, { fileName: file.name, fileContent: content });
             };
             reader.readAsBinaryString(file);

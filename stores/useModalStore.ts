@@ -94,6 +94,7 @@ export const useModalStore = create<ModalStoreState>()(
         zukeper((set, get) => ({
             modals: [],
             openModal: (type, props) => {
+                console.log('openModal', type, props);
                 set((state) => ({ modals: [...state.modals, { type, props }] }));
             },
             closeModal: () => {

@@ -12,7 +12,6 @@ import CreateModelModal from '@/components/Modals/Analyze/TimeSeries/CreateModel
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
 import ImportCSV from "@/components/Modals/File/ImportCSV";
-import OpenData from "@/components/Modals/File/OpenData";
 import { Dialog } from '@/components/ui/dialog';
 import ReadCSVFile from "@/components/Modals/File/ReadCSVFile";
 import ImportExcel from "@/components/Modals/File/ImportExcel";
@@ -31,6 +30,8 @@ import ModalTwoStageLeastSquares from './Regression/TwoStageLeastSquares/ModalTw
 import ModalWeightEstimation from './Regression/WeightEstimation/ModalWeightEstimation';
 import ModalQuantiles from './Regression/Quantiles/ModalQuantiles';
 import ModalOptimalScaling from './Regression/OptimalScaling/ModalOptimalScaling';
+import OpenData from "@/components/Modals/File/OpenData";
+import PrintModal from "@/components/Modals/File/Print";
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -42,6 +43,7 @@ const ModalContainer: React.FC = () => {
     const renderModal = () => {
         switch (currentModal.type) {
             case ModalType.ImportCSV:
+                console.log('ImportCSV');
                 return <ImportCSV onClose={closeModal} {...currentModal.props} />;
             case ModalType.ReadCSVFile:
                 return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
@@ -50,9 +52,12 @@ const ModalContainer: React.FC = () => {
             case ModalType.ReadExcelFile:
                 return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
             case ModalType.OpenData:
+                console.log('OpenData');
                 return <OpenData onClose={closeModal} {...currentModal.props} />;
             case ModalType.ComputeVariable:
                 return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Print:
+                return <PrintModal onClose={closeModal} {...currentModal.props} />;
 
             // Regression Nopal
             case ModalType.ModalAutomaticLinearModeling:
