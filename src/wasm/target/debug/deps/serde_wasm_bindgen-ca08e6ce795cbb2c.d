@@ -1,9 +1,0 @@
-E:\Kumpulan File Kuliah Guswana\Kuliah Guswana Semester 7\Proposal 2 (digunakan)\stats-sphere\src\wasm\target\debug\deps\libserde_wasm_bindgen-ca08e6ce795cbb2c.rmeta: C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\lib.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\de.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\error.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\ser.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\../README.md
-
-E:\Kumpulan File Kuliah Guswana\Kuliah Guswana Semester 7\Proposal 2 (digunakan)\stats-sphere\src\wasm\target\debug\deps\serde_wasm_bindgen-ca08e6ce795cbb2c.d: C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\lib.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\de.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\error.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\ser.rs C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\../README.md
-
-C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\lib.rs:
-C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\de.rs:
-C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\error.rs:
-C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\ser.rs:
-C:\Users\Guswana\.cargo\registry\src\index.crates.io-6f17d22bba15001f\serde-wasm-bindgen-0.6.5\src\../README.md:
