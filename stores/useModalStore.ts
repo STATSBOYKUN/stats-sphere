@@ -94,18 +94,19 @@ interface ModalStoreState {
 }
 
 export const useModalStore = create<ModalStoreState>()(
-  devtools(
-    zukeper((set, get) => ({
-      modals: [],
-      openModal: (type, props) => {
-        set((state) => ({ modals: [...state.modals, { type, props }] }));
-      },
-      closeModal: () => {
-        set((state) => ({ modals: state.modals.slice(0, -1) }));
-      },
-      closeAllModals: () => {
-        set({ modals: [] });
-      },
-    }))
-  )
+    devtools(
+        zukeper((set, get) => ({
+            modals: [],
+            openModal: (type, props) => {
+                console.log('openModal', type, props);
+                set((state) => ({ modals: [...state.modals, { type, props }] }));
+            },
+            closeModal: () => {
+                set((state) => ({ modals: state.modals.slice(0, -1) }));
+            },
+            closeAllModals: () => {
+                set({ modals: [] });
+            },
+        }))
+    )
 );

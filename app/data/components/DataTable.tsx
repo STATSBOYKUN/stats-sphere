@@ -2,7 +2,7 @@
 import React, { useRef, useMemo } from 'react';
 import { HotTable } from '@handsontable/react';
 import 'handsontable/dist/handsontable.full.min.css';
-import { useDataTable } from '@/hooks/useDataTable';
+import { useDataTable } from '@/app/data/hooks/useDataTable';
 import { useDataTableEvents } from '@/hooks/useDataTableEvents';
 import { generateColumnConfig } from './ColumnConfig';
 import { registerAllModules } from 'handsontable/registry';

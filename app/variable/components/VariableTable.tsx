@@ -5,14 +5,16 @@ import React, { useRef, useMemo } from 'react';
 import { HotTable, HotTableClass } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
-import { useVariableTable } from '@/hooks/useVariableTable';
+import { useVariableTable } from '../hooks/useVariableTable';
+import { useVariableStore } from '@/stores/useVariableStore';
 import { colHeaders, columns } from "@/app/variable/components/variableTableConfig";
 
 registerAllModules();
 
 export default function VariableTable() {
     const hotTableRef = useRef<HotTableClass | null>(null);
-    const totalColumns = 45;
+
+    const totalColumns = useVariableStore(state => state.totalColumns);
 
     const { data, handleAfterChange } = useVariableTable(totalColumns);
 
@@ -30,7 +32,7 @@ export default function VariableTable() {
             contextMenu: true,
             afterChange: handleAfterChange,
         }),
-        [data]
+        [data, colHeaders, columns, handleAfterChange]
     );
 
     return (

@@ -20,7 +20,8 @@ interface ReadExcelFileProps {
 }
 
 const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent }) => {
-    const { updateCell } = useDataStore();
+    const { updateCell, resetData } = useDataStore();
+    const { resetVariables } = useVariableStore();
     const [removeLeading, setRemoveLeading] = useState<boolean>(false);
     const [removeTrailing, setRemoveTrailing] = useState<boolean>(false);
     const [ignoreHidden, setIgnoreHidden] = useState<boolean>(false);
@@ -34,6 +35,9 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
     const [workbook, setWorkbook] = useState<any>(null);
 
     const handleOk = async () => {
+        await resetData();
+        await resetVariables();
+
         const sheet = workbook.Sheets[worksheet!];
         const dataRange = range.split(":");
 
@@ -46,9 +50,15 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
             defval: "",
         });
 
-        const headerRow: string[] | undefined = firstLineContains ? sheetData.shift() as string[] : undefined;
+        let headerRow: string[] | undefined = undefined;
+        let previewData: any[] = [];
 
-        const previewData = firstLineContains ? sheetData.slice(1) : sheetData;
+        if (firstLineContains) {
+            headerRow = sheetData.shift() as string[];
+            previewData = sheetData;
+        } else {
+            previewData = sheetData;
+        }
 
         setData(previewData);
 
@@ -100,6 +110,7 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
 
         onClose();
     };
+
 
     const handleReset = () => {
         setWorksheet("");
