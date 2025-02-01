@@ -28,7 +28,7 @@ interface VariableDef {
 }
 type RawData = string[][];
 interface DecompositionModalProps {
-  onClose: () => void;
+    onClose: () => void;
 }
 
 const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
