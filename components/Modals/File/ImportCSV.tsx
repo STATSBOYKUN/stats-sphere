@@ -31,7 +31,7 @@ const ImportCSV: FC<ImportCSVProps> = ({ onClose }) => {
             const reader = new FileReader();
             reader.onload = () => {
                 const content = reader.result as string;
-                // closeModal();
+                closeModal();
                 openModal(ModalType.ReadCSVFile, { fileName: file.name, fileContent: content });
             };
             reader.readAsText(file);

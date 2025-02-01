@@ -31,6 +31,8 @@ import ModalOrdinal from "./Regression/Ordinal/ModalOrdinal";
 import ModalProbit from "./Regression/Probit/ModalProbit";
 import ModalNonlinear from "./Regression/Nonlinear/ModalNonlinear";
 
+import OpenData from "@/components/Modals/File/OpenData";
+import PrintModal from "@/components/Modals/File/Print";
 import ModalTwoStageLeastSquares from "./Regression/TwoStageLeastSquares/ModalTwoStageLeastSquares";
 import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEstimation";
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
@@ -46,6 +48,23 @@ const ModalContainer: React.FC = () => {
 
   const renderModal = () => {
     switch (currentModal.type) {
+      case ModalType.ImportCSV:
+          console.log('ImportCSV');
+          return <ImportCSV onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ReadCSVFile:
+          return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ImportExcel:
+          return <ImportExcel onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ReadExcelFile:
+          return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
+      case ModalType.OpenData:
+          console.log('OpenData');
+          return <OpenData onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ComputeVariable:
+          return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Print:
+          return <PrintModal onClose={closeModal} {...currentModal.props} />;
+
       case ModalType.ImportCSV:
         return <ImportCSV onClose={closeModal} {...currentModal.props} />;
       case ModalType.ReadCSVFile:

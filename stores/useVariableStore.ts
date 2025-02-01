@@ -20,28 +20,32 @@ export interface VariableRow {
 
 interface VariableStoreState {
     variables: VariableRow[];
+    totalColumns: number;
+    setTotalColumns: (total: number) => void;
     setVariables: (variables: VariableRow[]) => void;
-    updateVariable: (rowIndex: number, field: keyof VariableRow, value: any) => void;
+    updateVariable: (rowIndex: number, field: keyof VariableRow, value: any) => Promise<void>;
     addVariable: (variable: VariableRow) => Promise<void>;
     getVariableByColumnIndex: (columnIndex: number) => VariableRow | undefined;
     loadVariables: (totalVariables: number) => Promise<void>;
     createNextVariable: (overrides?: Partial<VariableRow>) => Promise<void>;
+    resetVariables: () => Promise<void>;
 }
 
-const totalVariables = 45;
+const initialTotalColumns = 45;
 
 export const useVariableStore = create<VariableStoreState>()(
     devtools((set, get) => ({
         variables: [],
+        totalColumns: initialTotalColumns,
+        setTotalColumns: (total) => set({ totalColumns: total }),
         setVariables: (variables) => set({ variables }),
         updateVariable: async (rowIndex, field, value) => {
-            const variables = get().variables.map((variable) => ({ ...variable }));
+            const variables = [...get().variables];
             variables[rowIndex][field] = value;
             set({ variables });
 
             try {
-                const variableToUpdate = variables[rowIndex];
-                await db.variables.put(variableToUpdate);
+                await db.variables.put(variables[rowIndex]);
             } catch (error) {
                 console.error('Failed to update variable in Dexie:', error);
             }
@@ -86,8 +90,7 @@ export const useVariableStore = create<VariableStoreState>()(
             }
         },
         createNextVariable: async (overrides = {}) => {
-            const { variables } = get();
-
+            const { variables, totalColumns } = get();
             const varNumbers = variables
                 .map(v => {
                     const match = v.name.match(/^VAR(\d+)$/);
@@ -97,12 +100,11 @@ export const useVariableStore = create<VariableStoreState>()(
             const maxNumber = varNumbers.length ? Math.max(...varNumbers) : 0;
 
             const currentMaxIndex = variables.length ? Math.max(...variables.map(v => v.columnIndex)) : -1;
-
             const requestedIndex = overrides.columnIndex !== undefined ? overrides.columnIndex : currentMaxIndex + 1;
 
             if (requestedIndex > currentMaxIndex + 1) {
                 for (let fillIndex = currentMaxIndex + 1; fillIndex < requestedIndex; fillIndex++) {
-                    const fillName = `VAR${maxNumber + 1 + (fillIndex - (currentMaxIndex + 1))}`;
+                    const fillName = `VAR${String(maxNumber + 1 + (fillIndex - (currentMaxIndex + 1))).padStart(3, '0')}`;
                     const fillVariable: VariableRow = {
                         columnIndex: fillIndex,
                         name: fillName,
@@ -117,7 +119,6 @@ export const useVariableStore = create<VariableStoreState>()(
                         measure: 'Nominal',
                     };
                     await get().addVariable(fillVariable);
-                    variables.push(fillVariable);
                 }
             }
 
@@ -127,7 +128,7 @@ export const useVariableStore = create<VariableStoreState>()(
                 modifiedOverrides.align = 'Left';
             }
 
-            const newName = `VAR${maxNumber + 1 + (requestedIndex - (currentMaxIndex + 1))}`;
+            const newName = `VAR${String(maxNumber + 1 + (requestedIndex - (currentMaxIndex + 1))).padStart(3, '0')}`;
             const defaultVariable: VariableRow = {
                 columnIndex: requestedIndex,
                 name: newName,
@@ -144,6 +145,14 @@ export const useVariableStore = create<VariableStoreState>()(
 
             const newVariable: VariableRow = { ...defaultVariable, ...modifiedOverrides };
             await get().addVariable(newVariable);
+        },
+        resetVariables: async () => {
+            try {
+                await db.variables.clear();
+                set({ variables: [] });
+            } catch (error) {
+                console.error('Failed to reset variables in Dexie:', error);
+            }
         },
     }))
 );

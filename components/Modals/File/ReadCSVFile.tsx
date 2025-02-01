@@ -19,7 +19,8 @@ interface ReadCSVFileProps {
 }
 
 const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) => {
-    const { updateCell } = useDataStore();
+    const { updateCell, resetData } = useDataStore();
+    const { resetVariables } = useVariableStore();
     const [firstLineContains, setFirstLineContains] = useState<boolean>(false);
     const [removeLeading, setRemoveLeading] = useState<boolean>(false);
     const [removeTrailing, setRemoveTrailing] = useState<boolean>(false);
@@ -28,47 +29,41 @@ const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) =
     const [decimal, setDecimal] = useState<string>("period");
     const [textQualifier, setTextQualifier] = useState<string>("doubleQuote");
 
-    // Placeholder handlers
     const handleOk = async () => {
+        await resetData();
+        await resetVariables();
+
         let delim = ',';
         if (delimiter === 'semicolon') delim = ';';
         else if (delimiter === 'tab') delim = '\t';
 
-        // Memecah konten file menjadi baris dan kolom
         let parsedRows = fileContent
             .split('\n')
             .map(line => line.split(delim));
 
         let headerRow: string[] | undefined;
         if (firstLineContains) {
-            // Pisahkan baris pertama sebagai header
             headerRow = parsedRows.shift();
         }
 
-        // Setelah selesai memasukkan data, analisis setiap kolom dan buat/ubah variabel
         const store = useVariableStore.getState();
         const { addVariable, getVariableByColumnIndex, updateVariable, variables } = store;
         const numCols = parsedRows.length > 0 ? parsedRows[0].length : 0;
 
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
-            // Ambil semua nilai di kolom tertentu
             const colData = parsedRows.map(row => row[colIndex] || '');
 
-            // Tentukan apakah semua nilai di kolom numerik
             const isNumeric = colData.every(val => {
                 const num = parseFloat(val);
                 return !isNaN(num) && isFinite(num);
             });
 
-            // Jika string, hitung lebar maksimum
             const maxLength = isNumeric ? 8 : Math.max(...colData.map(val => val.length));
 
-            // Tentukan nama variabel berdasarkan keberadaan header
             const variableName = firstLineContains && headerRow
                 ? headerRow[colIndex]
                 : `VAR${colIndex + 1}`;
 
-            // Buat objek variabel sesuai tipe data
             const variable: VariableRow = {
                 columnIndex: colIndex,
                 name: variableName,
@@ -83,25 +78,20 @@ const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) =
                 measure: 'Nominal',
             };
 
-            // Cek apakah variabel dengan columnIndex yang sama sudah ada
             const existingVariable = getVariableByColumnIndex(colIndex);
             if (existingVariable) {
-                // Jika sudah ada, temukan indeksnya di dalam store
                 const rowIndex = variables.findIndex(v => v.columnIndex === colIndex);
                 if (rowIndex !== -1) {
-                    // Perbarui setiap properti variabel yang ada
                     const keys = Object.keys(variable) as (keyof VariableRow)[];
                     for (const field of keys) {
                         await updateVariable(rowIndex, field, variable[field]);
                     }
                 }
             } else {
-                // Jika belum ada, tambahkan variabel baru
                 await addVariable(variable);
             }
         }
 
-        // Memasukkan nilai ke dalam tabel terlebih dahulu
         parsedRows.forEach((row, rowIndex) => {
             row.forEach((value, colIndex) => {
                 updateCell(rowIndex, colIndex, value);
