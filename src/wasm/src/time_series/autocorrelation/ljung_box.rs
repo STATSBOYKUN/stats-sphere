@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use crate::Autocorrelation;
+use statrs::distribution::{ChiSquared, ContinuousCDF};
 
 
 #[wasm_bindgen]
@@ -15,5 +16,22 @@ impl Autocorrelation{
             ljung_box.push(q);
         }
         ljung_box
+    }
+
+    pub fn pvalue_ljung_box(&self, ljung_box: Vec<f64>) -> Vec<f64>{
+        let mut pvalue = Vec::new();
+        for i in 0..ljung_box.len(){
+            let chi_sq = ChiSquared::new(i as f64).unwrap();
+            pvalue.push(1.0 - chi_sq.cdf(ljung_box[i]));
+        }
+        pvalue
+    }
+
+    pub fn df_ljung_box(&self) -> Vec<f64>{
+        let mut df = Vec::new();
+        for i in 0..self.get_lag(){
+            df.push(i as f64);
+        }
+        df
     }
 }

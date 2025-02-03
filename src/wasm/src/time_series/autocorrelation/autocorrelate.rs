@@ -24,7 +24,7 @@ impl Autocorrelation{
         autocorrelation
     }
 
-    pub fn calculate_autocorrelatione_se(&self, autocorelate: Vec<f64>) -> Vec<f64>{
+    pub fn calculate_autocorrelation_se(&self, autocorelate: Vec<f64>) -> Vec<f64>{
         let mut autocorrelation_se: Vec<f64> = Vec::new();
         for i in 0..autocorelate.len(){
             let total = autocorelate[0..i].iter().sum::<f64>();
