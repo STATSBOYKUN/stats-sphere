@@ -1,36 +1,59 @@
 use wasm_bindgen::prelude::*;
-use js_sys::Math::sqrt;
 use crate::Autocorrelation;
+use crate::time_series::difference::difference::*;
 
 #[wasm_bindgen]
 impl Autocorrelation{
-    pub fn calculate_autocorrelation(&self) -> Vec<f64>{
+    pub fn autocorelate(&mut self, difference: String, seasonally: i32){
         let data = self.get_data();
-        let lag = self.get_lag();
-        let mut autocorrelation = Vec::new();
-        let n = data.len();
-        let mean = data.iter().sum::<f64>() / n as f64;
-        let mut numerator = 0.0;
-        let mut denominator = 0.0;
-        for i in 0..lag{
-            for j in 0..n-i as usize{
-                numerator += (data[j] - mean) * (data[j + i as usize] - mean);
-                denominator += (data[j] - mean).powi(2);
+        let fix_diff: Vec<f64>;
+        if seasonally != 0{
+            let season_diff = seasonal_difference(data, seasonally);
+            match difference.as_str(){
+                "level" => {
+                    fix_diff = season_diff;
+                },
+                "first-difference" => {
+                    fix_diff = first_difference(season_diff);
+                },
+                "second-difference" => {
+                    fix_diff = second_difference(season_diff);
+                },
+                _ => {
+                    fix_diff = vec![];
+                }
             }
-            autocorrelation.push(numerator / denominator);
-            numerator = 0.0;
-            denominator = 0.0;
+        } else {
+            match difference.as_str(){
+                "level" => {
+                    fix_diff = data;
+                },
+                "first-difference" => {
+                    fix_diff = first_difference(data);
+                },
+                "second-difference" => {
+                    fix_diff = second_difference(data);
+                },
+                _ => {
+                    fix_diff = vec![];
+                }
+            }
         }
-        autocorrelation
-    }
 
-    pub fn calculate_autocorrelation_se(&self, autocorelate: Vec<f64>) -> Vec<f64>{
-        let mut autocorrelation_se: Vec<f64> = Vec::new();
-        for i in 0..autocorelate.len(){
-            let total = autocorelate[0..i].iter().sum::<f64>();
-            let se = sqrt((1.0 - (2.0 * total)) / self.get_data().len() as f64) as f64;
-            autocorrelation_se.push(se);
-        }
-        autocorrelation_se
+        let acf: Vec<f64> = self.calculate_acf(fix_diff.clone());
+        let acf_se: Vec<f64> = self.calculate_acf_se(acf.clone());
+        let pacf: Vec<f64> = self.calculate_pacf(acf.clone());
+        let pacf_se: Vec<f64> = self.calculate_pacf_se(pacf.clone());
+        let lb: Vec<f64> = self.calculate_ljung_box(acf.clone());
+        let df_lb: Vec<usize> = self.df_ljung_box();
+        let pvalue_lb: Vec<f64> = self.pvalue_ljung_box(lb.clone());
+
+        self.set_acf(acf);
+        self.set_acf_se(acf_se);
+        self.set_pacf(pacf);
+        self.set_pacf_se(pacf_se);
+        self.set_lb(lb);
+        self.set_df_lb(df_lb);
+        self.set_pvalue_lb(pvalue_lb);
     }
 }

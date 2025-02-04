@@ -11,7 +11,6 @@ import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTit
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleDecomposition } from "./handleAnalyze/handleDecomposition";
 import db from "@/lib/db"; // Adjust the import path according to your project structure
-import { AnyARecord } from "dns";
 
 interface VariableDef {
     name: string;
@@ -33,8 +32,8 @@ interface DecompositionModalProps {
 
 const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
     const decompositionMethods = [
-        { value: 'additive', label: 'Additive' },
-        { value: 'multiplicative', label: 'Multiplicative' },
+        { value: 'additive', label: 'additive' },
+        { value: 'multiplicative', label: 'multiplicative' },
     ];
 
     const trendedMethods = [
@@ -115,6 +114,14 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
     };
 
     const handleReset = () => {
+        setSelectedDecompositionMethod(['additive','Additive']);
+        setSelectedTrendedMethod(['linear','Linear']);
+        setSelectedPeriod(['7','Daily in Week']);
+        setSaveDecomposition(false);
+        setAvailableVariables(variables.map((v) => v.name));
+        setDataVariable([]);
+        setTimeVariable([]);
+        setHighlightedVariable(null);
     };
 
     const handleAnalyzes = async () => {
@@ -283,7 +290,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateSeasonal);
                 // Definisi Metadata
                 const seasonalMetadata = {
-                    name: `${varDefs[0].name} Seasonal Component`,
+                    name: `${varDefs[0].name}-SC-${length}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -329,7 +336,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateTrend);
                 // Definisi Metadata
                 const trendMetadata = {
-                    name: `${varDefs[0].name} Trend Component`,
+                    name: `${varDefs[0].name}-TC-${length-1}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -375,7 +382,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateIrrengular);
                 // Definisi Metadata
                 const irrengularMetadata = {
-                    name: `${varDefs[0].name} Irrengular Component`,
+                    name: `${varDefs[0].name}-IC-${length-2}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -421,7 +428,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateForecasting);
                 // Definisi Metadata
                 const forecastingMetadata = {
-                    name: `${varDefs[0].name} Forecasting Component`,
+                    name: `${varDefs[0].name}-Forecasting-${length-3}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -586,7 +593,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                             </RadioGroup>
                             {selectedDecompositionMethod[0] === 'multiplicative' && (
                                 <div className="flex flex-row gap-2 items-center">
-                                    <label className="text-sm w-[150px] font-semibold">Trend Method</label>
+                                    <label className="text-sm w-[150px] font-semibold">trend method:</label>
                                     <Select value={selectedTrendedMethod[0]}
                                         onValueChange={(value) => setSelectedTrendedMethod([value,trendedMethods.find((method) => method.value === value)!.label])}>
                                         <SelectTrigger>
@@ -605,7 +612,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                 </div>
                             )}
                             <div className="flex flex-row gap-2 items-center">
-                                <label className="text-sm w-[150px] font-semibold">Periodicity: {selectedPeriod[0]}</label>
+                                <label className="text-sm w-[150px] font-semibold">periodicity: {selectedPeriod[0]}</label>
                                 <Select
                                     onValueChange={(value) => {
                                         const selected = periods.find((period) => period.id === value);

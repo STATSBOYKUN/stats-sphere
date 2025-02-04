@@ -1,4 +1,5 @@
 pub mod autocorrelation;
-pub mod autocorrelate;
-pub mod partial_autocorrelate;
+pub mod acf;
+pub mod pacf;
 pub mod ljung_box;
+pub mod autocorrelate;
