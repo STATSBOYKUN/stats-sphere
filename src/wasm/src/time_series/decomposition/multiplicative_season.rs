@@ -27,8 +27,8 @@ impl Decomposition{
             let mut count = 0;
             for j in 0..self.get_data().len(){
                 if index[j] == i as usize{
-                    sum += centered_ma_values[j];
                     if centered_ma_values[j] != 0.0{
+                        sum += self.get_data()[j]/centered_ma_values[j];
                         count += 1;
                     }
                 }
@@ -39,7 +39,7 @@ impl Decomposition{
         // Calculate seasonal indices correction
         let seasonal_indices_total: f64 = seasonal_indices.iter().sum();
         let seasonal_indices_correction: f64 = self.get_period() as f64;
-        for i in 0..seasonal_indices.len(){
+        for i in 0..self.get_period() as usize{
             seasonal_indices[i] = seasonal_indices[i] * seasonal_indices_correction / seasonal_indices_total;
         }
 

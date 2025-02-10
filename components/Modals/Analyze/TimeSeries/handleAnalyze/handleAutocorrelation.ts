@@ -22,6 +22,7 @@ export async function handleAutocorrelation(
         const autocorrelation = new Autocorrelation(new Float64Array(data), dataHeader, lag as number);
         await autocorrelation.autocorelate(difference, seasonal);
 
+        // Untuk testing hasil di console
         const test1 = Array.from(autocorrelation.calculate_acf(new Float64Array(data)));
         const test2 = Array.from(autocorrelation.calculate_acf_se(new Float64Array(test1)));
         const test3 = Array.from(autocorrelation.calculate_pacf(new Float64Array(test1)));
@@ -30,6 +31,7 @@ export async function handleAutocorrelation(
         const test6 = Array.from(autocorrelation.df_ljung_box());
         const test7 = Array.from(autocorrelation.pvalue_ljung_box(new Float64Array(test5)));
 
+        // Nilai yang sebenarnya
         const acf = Array.from(autocorrelation.get_acf());
         const acf_se = Array.from(autocorrelation.get_acf_se());
         const pacf = Array.from(autocorrelation.get_pacf());

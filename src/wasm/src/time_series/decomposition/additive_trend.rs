@@ -10,23 +10,33 @@ impl Decomposition{
         let mut centered_ma_values: Vec<f64> = centered_ma.clone();
         let position = ((self.get_period() - (self.get_period() % 2)) / 2) as usize;
 
-        // Calculate parameter a and b
-        let par_a: f64 = centered_ma_values[position-1..centered_ma_values.len()-position].iter().sum::<f64>() / (centered_ma_values.len() - position * 2) as f64;
-        let mut b_numerator:Vec<f64> = Vec::new();
-        let mut b_denumerator: Vec<f64> = Vec::new();
-        for i in position-1..centered_ma_values.len()-position{
-            b_numerator.push(centered_ma_values[i] * ((i as f64) + 1.0));
-            b_denumerator.push((i as f64).powi(2));
-        }
-        let par_b: f64 = b_numerator.iter().sum::<f64>() / b_denumerator.iter().sum::<f64>();
-
         // Calculate trend values
         for i in 0..centered_ma_values.len(){
-            trend_prediction.push(par_a + par_b * (i as f64));
+            // Given zero values for the first and last values
+            if i == 0 || i == centered_ma_values.len() - 1{
+                trend_prediction.push(0.0);
+            }
+            // Calculate Reducing Window Average
+            else if i < position{
+                trend_prediction.push(self.get_data()[0..i + 1].iter().sum::<f64>() / (i as f64 + 1.0));
+            }
+            // Calculate Reducing Window Average
+            else if i >= centered_ma_values.len() - position{
+                trend_prediction.push(self.get_data()[i..].iter().sum::<f64>() / ((centered_ma_values.len() - i) as f64));
+            }
+            // Write the Moving Average Values
+            else {
+                trend_prediction.push(centered_ma_values[i]);
+            }
         }
 
+        // Calculate extrapolation for the first and last values with equal weights
+        let len = trend_prediction.len();
+        trend_prediction[0] = trend_prediction[1] - 0.5 * (trend_prediction[1] - trend_prediction[2]);
+        trend_prediction[len - 1] = trend_prediction[len - 3] - 0.5 * (trend_prediction[len - 3] - trend_prediction[len - 2]);
+
         // Write the trend equation
-        let equation: String = format!("y = {} + {}t", par_a, par_b);
+        let equation: String = format!("-");
         self.set_trend_equation(equation);
 
         // Fill the first and last values with prediction

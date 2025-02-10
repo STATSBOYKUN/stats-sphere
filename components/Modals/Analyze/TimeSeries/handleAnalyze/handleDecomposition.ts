@@ -9,7 +9,7 @@ export async function handleDecomposition(
     trendMethod: string,
     periodValue: number,
     periodLable: string,
-): Promise<[number[], number[], number[], number[], string, string, string]> {
+): Promise<[number[], number[], number[], number[], number[], string, string, string]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) && Array.isArray(time) ? data : null;
 
@@ -48,6 +48,9 @@ export async function handleDecomposition(
             default:
                 throw new Error(`Unknown method: ${decompostionMethod}`);
         }
+
+        // Testing
+        let centered = Array.from(decomposition.calculate_centered_moving_average());
 
         let nameTrendMethod;
         switch (trendMethod) {
@@ -117,9 +120,9 @@ export async function handleDecomposition(
             ]
         });
 
-        return [seasonalComponent,trendComponent,irregularComponent,forecastingValue,evalJSON,seasonJSON,equationJSON];
+        return [centered,seasonalComponent,trendComponent,irregularComponent,forecastingValue,evalJSON,seasonJSON,equationJSON];
     } catch (error) {
         let errorMessage = error as Error;
-        return [[0],[0],[0],[0],JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message })];
+        return [[0],[0],[0],[0],[0],JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message })];
     }
 }

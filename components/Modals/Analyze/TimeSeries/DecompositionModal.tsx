@@ -38,7 +38,6 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
 
     const trendedMethods = [
         { value: 'linear', label: 'Linear' },
-        { value: 'quadratic', label: 'Quadratic' },
         { value: 'exponential', label: 'Exponential' },
     ];
 
@@ -215,8 +214,8 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 return;
             }
 
-            let [seasonal, trend, irrengular, forecasting, evaluation, seasonIndices, equation]:
-                [any[], any[], any[], any[], any, any, any] = 
+            let [testing, seasonal, trend, irrengular, forecasting, evaluation, seasonIndices, equation]:
+                [any[],any[], any[], any[], any[], any, any, any] = 
                 await handleDecomposition(
                     dataValues as number[],
                     varDefs[0].name,
@@ -228,6 +227,9 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     selectedPeriod[1],
                 )
             ;
+
+            // Testing
+            console.log(testing);
 
             // Membuat Log
             const logMsg = `DECOMPOSITION: ${varDefs[0].label? varDefs[0].label + ' Using' : varDefs[0].name + ' Using'} ${selectedDecompositionMethod[1]}.`;
@@ -248,13 +250,15 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 components: "Seasonal Indices",
             });
 
-            // Membuat Tabel Persamaan Trend pada Log
-            const equationTrendTable = await addStatistic({
-                analytic_id: analyticId,
-                title: "Equation",
-                output_data: equation,
-                components: "Equation Trend",
-            });
+            if(selectedDecompositionMethod[0]==='multiplicative'){
+                // Membuat Tabel Persamaan Trend pada Log
+                const equationTrendTable = await addStatistic({
+                    analytic_id: analyticId,
+                    title: "Equation",
+                    output_data: equation,
+                    components: "Equation Trend",
+                });
+            }
 
             // Membuat Tabel Evaluasi pada Log
             const evalTable = await addStatistic({
