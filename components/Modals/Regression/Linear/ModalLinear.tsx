@@ -18,6 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Pencil, ArrowRight } from 'lucide-react';
 import { useLinear } from '@/hooks/useLinear';
 import { Statistics } from '@/components/Modals/Regression/Linear/Statistics';
+import {ModalType} from "@/stores/useModalStore";
+import {useModal} from "@/hooks/useModal";
 
 interface Variable {
   name: string;
@@ -38,6 +40,7 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   const [selectedWLSWeightVariable, setSelectedWLSWeightVariable] = useState<Variable | null>(null);
   const [highlightedVariable, setHighlightedVariable] = useState<Variable | null>(null);
   const [method, setMethod] = useState<string>('Enter');
+  const { openModal } = useModal();
 
   const [showStatistics, setShowStatistics] = useState<boolean>(false);
 
@@ -633,7 +636,7 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
           <Button variant="outline" className="w-full">
             Plots...
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button onClick={() => openModal(ModalType.SaveLinear)} variant="outline" className="w-full">
             Save...
           </Button>
           <Button variant="outline" className="w-full">
