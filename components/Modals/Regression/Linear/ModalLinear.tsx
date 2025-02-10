@@ -17,6 +17,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Pencil, ArrowRight } from 'lucide-react';
 import { useLinear } from '@/hooks/useLinear';
+import { Statistics } from '@/components/Modals/Regression/Linear/Statistics';
 
 interface Variable {
   name: string;
@@ -37,6 +38,8 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   const [selectedWLSWeightVariable, setSelectedWLSWeightVariable] = useState<Variable | null>(null);
   const [highlightedVariable, setHighlightedVariable] = useState<Variable | null>(null);
   const [method, setMethod] = useState<string>('Enter');
+
+  const [showStatistics, setShowStatistics] = useState<boolean>(false);
 
   const variables = useVariableStore((state) => state.variables);
   const data = useDataStore((state) => state.data);
@@ -120,18 +123,20 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
     onClose();
   };
 
-  // Fungsi handleAnalyze untuk melakukan regresi linier
+  
+
+  //Fungsi handleAnalyze untuk melakukan regresi linier
   const handleAnalyze = async () => {
     try {
       const dependentVarName = selectedDependentVariable?.name;
       const independentVarNames = selectedIndependentVariables.map(v => v.name);
-
+  
       if (!dependentVarName || independentVarNames.length === 0) {
         alert('Please select a dependent variable and at least one independent variable.');
         return;
       }
-
-      // 1. Buat log command
+  
+      // 1. Create log command
       const logMessage = `REGRESSION 
   /MISSING LISTWISE 
   /STATISTICS COEFF OUTS R ANOVA 
@@ -139,41 +144,41 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   /NOORIGIN 
   /DEPENDENT ${dependentVarName} 
   /METHOD=${method.toUpperCase()} ${independentVarNames.join(' ')}.`;
-
+  
       const log = { log: logMessage };
       const logId = await addLog(log);
-
-      // 2. Tambahkan Analytic dengan judul "Regression"
+  
+      // 2. Add Analytic with title "Regression"
       const analytic = {
-        title: "Regression",
+        title: "Linear Regression",
         log_id: logId,
         note: "",
       };
       const analyticId = await addAnalytic(analytic);
-
-      // 3. Lakukan regresi linier
+  
+      // 3. Perform linear regression
       const allVariables = variables;
-      const dataRows = data; // data adalah array dari baris, setiap baris adalah array string
-
-      // Dapatkan indeks kolom
+      const dataRows = data; // data is an array of rows, each row is an array of strings
+  
+      // Get column indices
       const dependentVar = allVariables.find(v => v.name === dependentVarName);
       const independentVars = independentVarNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as VariableRow[];
-
+  
       const dependentVarIndex = dependentVar?.columnIndex;
       const independentVarIndices = independentVars.map(v => v.columnIndex);
-
+  
       if (dependentVarIndex === undefined || independentVarIndices.includes(undefined)) {
         throw new Error('Variable indices not found.');
       }
-
-      // Pastikan TypeScript mengetahui bahwa indeks tidak undefined
+  
+      // Ensure TypeScript knows indices are not undefined
       const depVarIndex = dependentVarIndex as number;
       const indepVarIndices = independentVarIndices as number[];
-
-      // Dapatkan data untuk variabel
+  
+      // Extract data for variables
       const dependentData = dataRows.map(row => parseFloat(row[depVarIndex]));
       const independentData = indepVarIndices.map(index => dataRows.map(row => parseFloat(row[index])));
-
+  
       // Handle missing data
       const validIndices = dependentData.map((value, idx) => {
         if (isNaN(value) || independentData.some(indepData => isNaN(indepData[idx]))) {
@@ -181,35 +186,42 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         }
         return true;
       });
-
-      // Filter data yang valid
+  
+      // Filter valid data
       const filteredDependentData = dependentData.filter((_, idx) => validIndices[idx]);
       const filteredIndependentData = independentData.map(indepData => indepData.filter((_, idx) => validIndices[idx]));
-
+  
       // Transpose independentData
       const independentDataTransposed = filteredIndependentData[0].map((_, idx) => filteredIndependentData.map(indepData => indepData[idx]));
-
-      // Lakukan regresi linier
+  
+      // Perform linear regression
       const regressionResults = calculateLinearRegression(filteredDependentData, independentDataTransposed);
-
-      // 4. Masukkan hasil ke dalam Statistic
+  
+      // 4. Insert results into Statistics
+  
       // Variables Entered/Removed
       const variablesEnteredRemoved = {
-        title: "Variables Entered/Removed",
-        data: [
+        tables: [
           {
-            "Model": 1,
-            "Variables Entered": independentVarNames.join(', '),
-            "Variables Removed": ".",
-            "Method": method,
+            title: "Variables Entered/Removed",
+            columnHeaders: [
+              { header: "Model" },
+              { header: "Variables Entered" },
+              { header: "Variables Removed" },
+              { header: "Method" }
+            ],
+            rows: [
+              {
+                rowHeader: ["1"],
+                "Variables Entered": independentVarNames.join(', '),
+                "Variables Removed": "",
+                "Method": method,
+              }
+            ]
           }
-        ],
-        footnotes: [
-          `a Dependent Variable: ${dependentVarName}`,
-          "b All requested variables entered.",
-        ],
+        ]
       };
-
+  
       const variablesEnteredRemovedStat = {
         analytic_id: analyticId,
         title: "Variables Entered/Removed",
@@ -217,26 +229,58 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         output_type: "table",
         components: "VariablesEnteredRemoved",
       };
-
+  
       await addStatistic(variablesEnteredRemovedStat);
-
+  
       // Model Summary
       const modelSummary = {
-        title: "Model Summary",
-        data: [
+        tables: [
           {
-            "Model": 1,
-            "R": regressionResults.R.toFixed(3),
-            "R Square": regressionResults.RSquare.toFixed(3),
-            "Adjusted R Square": regressionResults.adjustedRSquare.toFixed(3),
-            "Std. Error of the Estimate": regressionResults.stdErrorEstimate.toFixed(3),
+            title: "Model Summary",
+            columnHeaders: [
+              { header: "Model" },
+              { header: "" },
+              { header: "Sum of Squares" },
+              { header: "df" },
+              { header: "Mean Square" },
+              { header: "F" },
+              { header: "Sig" }
+            ],
+            rows: [
+              {
+                rowHeader: ["1"],
+                children: [
+                  {
+                    rowHeader: [null, "Regression"],
+                    "Sum of Squares": regressionResults.regressionSS.toFixed(3),
+                    "df": regressionResults.regressionDF,
+                    "Mean Square": regressionResults.regressionMS.toFixed(3),
+                    "F": regressionResults.F.toFixed(3),
+                    "Sig": regressionResults.pValue.toFixed(3)
+                  },
+                  {
+                    rowHeader: [null, "Residual"],
+                    "Sum of Squares": regressionResults.residualSS.toFixed(3),
+                    "df": regressionResults.residualDF,
+                    "Mean Square": regressionResults.residualMS.toFixed(3),
+                    "F": "",
+                    "Sig": ""
+                  },
+                  {
+                    rowHeader: [null, "Total"],
+                    "Sum of Squares": regressionResults.totalSS.toFixed(3),
+                    "df": regressionResults.totalDF,
+                    "Mean Square": "",
+                    "F": "",
+                    "Sig": ""
+                  }
+                ]
+              }
+            ]
           }
-        ],
-        footnotes: [
-          `a Predictors: (Constant), ${independentVarNames.join(', ')}`,
-        ],
+        ]
       };
-
+  
       const modelSummaryStat = {
         analytic_id: analyticId,
         title: "Model Summary",
@@ -244,39 +288,52 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         output_type: "table",
         components: "ModelSummary",
       };
-
+  
       await addStatistic(modelSummaryStat);
-
+  
       // ANOVA
       const anovaTable = {
-        title: "ANOVA",
-        data: [
+        tables: [
           {
-            "Model": "Regression",
-            "Sum of Squares": regressionResults.regressionSS.toFixed(3),
-            "df": regressionResults.regressionDF,
-            "Mean Square": regressionResults.regressionMS.toFixed(3),
-            "F": regressionResults.F.toFixed(3),
-            "Sig.": regressionResults.pValue.toFixed(3),
-          },
-          {
-            "Model": "Residual",
-            "Sum of Squares": regressionResults.residualSS.toFixed(3),
-            "df": regressionResults.residualDF,
-            "Mean Square": regressionResults.residualMS.toFixed(3),
-          },
-          {
-            "Model": "Total",
-            "Sum of Squares": regressionResults.totalSS.toFixed(3),
-            "df": regressionResults.totalDF,
-          },
-        ],
-        footnotes: [
-          `a Dependent Variable: ${dependentVarName}`,
-          `b Predictors: (Constant), ${independentVarNames.join(', ')}`,
-        ],
+            title: "ANOVA",
+            columnHeaders: [
+              { header: "Model" },
+              { header: "Sum of Squares" },
+              { header: "df" },
+              { header: "Mean Square" },
+              { header: "F" },
+              { header: "Sig." }
+            ],
+            rows: [
+              {
+                rowHeader: ["Regression"],
+                "Sum of Squares": regressionResults.regressionSS.toFixed(3),
+                "df": regressionResults.regressionDF,
+                "Mean Square": regressionResults.regressionMS.toFixed(3),
+                "F": regressionResults.F.toFixed(3),
+                "Sig.": regressionResults.pValue.toFixed(3),
+              },
+              {
+                rowHeader: ["Residual"],
+                "Sum of Squares": regressionResults.residualSS.toFixed(3),
+                "df": regressionResults.residualDF,
+                "Mean Square": regressionResults.residualMS.toFixed(3),
+                "F": "",
+                "Sig.": "",
+              },
+              {
+                rowHeader: ["Total"],
+                "Sum of Squares": regressionResults.totalSS.toFixed(3),
+                "df": regressionResults.totalDF,
+                "Mean Square": "",
+                "F": "",
+                "Sig.": "",
+              }
+            ]
+          }
+        ]
       };
-
+  
       const anovaStat = {
         analytic_id: analyticId,
         title: "ANOVA",
@@ -284,30 +341,54 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         output_type: "table",
         components: "ANOVA",
       };
-
+  
       await addStatistic(anovaStat);
-
+  
       // Coefficients
       const coefficientsData = regressionResults.coefficients.map((coef, idx) => {
         return {
-          "Model": 1,
-          "Unstandardized Coefficients B": coef.coefficient.toFixed(3),
-          "Std. Error": coef.stdError.toFixed(3),
-          "Standardized Coefficients Beta": coef.standardizedCoefficient !== null ? coef.standardizedCoefficient.toFixed(3) : "",
-          "t": coef.tValue.toFixed(3),
-          "Sig.": coef.pValue.toFixed(3),
-          "Variable": idx === 0 ? "(Constant)" : independentVarNames[idx - 1],
+          rowHeader: [idx === 0 ? "1" : null],
+          children: [
+            {
+              rowHeader: [null, idx === 0 ? "(Constant)" : independentVarNames[idx - 1]],
+              "B": coef.coefficient.toFixed(3),
+              "stdError": coef.stdError.toFixed(3),
+              "Beta": coef.standardizedCoefficient !== null ? coef.standardizedCoefficient.toFixed(3) : "",
+              "t": coef.tValue.toFixed(3),
+              "Sig.": coef.pValue.toFixed(3)
+            }
+          ]
         };
       });
-
+  
       const coefficientsTable = {
-        title: "Coefficients",
-        data: coefficientsData,
-        footnotes: [
-          `a Dependent Variable: ${dependentVarName}`,
-        ],
+        tables: [
+          {
+            title: "Coefficients",
+            columnHeaders: [
+              { header: "Model" },
+              { header: "" },
+              {
+                header: "Unstandardized Coefficients",
+                children: [
+                  { header: "B", key: "B" },
+                  { header: "Std. Error", key: "stdError" }
+                ]
+              },
+              {
+                header: "Standardized Coefficients",
+                children: [
+                  { header: "Beta", key: "Beta" }
+                ]
+              },
+              { header: "t" },
+              { header: "Sig." }
+            ],
+            rows: coefficientsData
+          }
+        ]
       };
-
+  
       const coefficientsStat = {
         analytic_id: analyticId,
         title: "Coefficients",
@@ -315,17 +396,115 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         output_type: "table",
         components: "Coefficients",
       };
-
+  
       await addStatistic(coefficientsStat);
-
-      // Tutup modal
+  
+      // Close modal
       onClose();
-
+  
     } catch (error) {
       console.error('Failed to perform linear regression:', error);
       alert('Failed to perform linear regression. Please check your data and try again.');
     }
   };
+
+//   const handleAnalyze = () => {
+//     const dependentVarName = selectedDependentVariable?.name;
+//     const independentVarNames = selectedIndependentVariables.map(v => v.name);
+
+//     if (!dependentVarName || independentVarNames.length === 0) {
+//       alert('Please select a dependent variable and at least one independent variable.');
+//       return;
+//     }
+
+//     // Ekstrak columnIndex untuk variabel yang dipilih
+//     const dependentIndex = selectedDependentVariable.columnIndex;
+//     const independentIndices = selectedIndependentVariables.map(v => v.columnIndex);
+
+//     // Siapkan data untuk dikirim ke Web Worker
+//     const regressionData = data
+//       .map(row => {
+//         const yValue = parseFloat(row[dependentIndex]);
+//         const xValues = independentIndices.map(idx => parseFloat(row[idx]));
+//         // Pastikan semua nilai adalah angka
+//         if (isNaN(yValue) || xValues.some(x => isNaN(x))) {
+//           return null; // Exclude baris dengan data tidak valid
+//         }
+//         const record = { y: yValue };
+//         independentVarNames.forEach((name, i) => {
+//           record[name] = xValues[i];
+//         });
+//         return record;
+//       })
+//       .filter(record => record !== null);
+
+//     if (regressionData.length === 0) {
+//       alert('No valid data available for regression.');
+//       return;
+//     }
+
+//     // Inisialisasi Web Worker
+//     const worker = new Worker('/workers/Regression/modal_summary.js');
+
+//     worker.postMessage(regressionData);
+
+//     worker.onmessage = async function(e) {
+//       const { success, result, error } = e.data;
+
+//       if (success) {
+//         const regressionResult = result;
+
+//         // Buat log command
+//         const logMessage = `REGRESSION 
+// /MISSING LISTWISE 
+// /STATISTICS COEFF OUTS R ANOVA 
+// /CRITERIA=PIN(.05) POUT(.10) 
+// /NOORIGIN 
+// /DEPENDENT ${dependentVarName} 
+// /METHOD=ENTER ${independentVarNames.join(' ')}.`;
+
+//         const log = { log: logMessage };
+//         const logId = await addLog(log);
+
+//         // Tambahkan Analytic dengan judul "Regression"
+//         const analytic = {
+//           title: "Regression",
+//           log_id: logId,
+//           note: "",
+//         };
+//         const analyticId = await addAnalytic(analytic);
+
+//         // Susun objek modelSummaryStat
+//         const modelSummaryStat = {
+//           analytic_id: analyticId,
+//           title: "Model Summary",
+//           output_data: JSON.stringify(regressionResult),
+//           output_type: "table",
+//           components: "ModelSummary",
+//         };
+
+//         await addStatistic(modelSummaryStat);
+
+//         // Opsional: Anda bisa mengupdate state atau memberikan feedback kepada pengguna
+//         alert('Regression analysis completed successfully.');
+
+//         // Tutup Web Worker
+//         worker.terminate();
+//       } else {
+//         alert(`Error: ${error}`);
+//         // Tutup Web Worker
+//         worker.terminate();
+//       }
+//     };
+
+//     worker.onerror = function(e) {
+//       alert(`Worker error: ${e.message}`);
+//       // Tutup Web Worker
+//       worker.terminate();
+//     };
+//   };
+
+  
 
   return (
     <DialogContent className="sm:max-w-[900px]">
@@ -443,9 +622,14 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
 
         {/* Kolom Ketiga: Tombol Tambahan */}
         <div className="col-span-3 space-y-4">
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowStatistics(true)}
+          >
             Statistics...
           </Button>
+
           <Button variant="outline" className="w-full">
             Plots...
           </Button>

@@ -12,6 +12,9 @@ export enum ModalType {
     // Punya Nopal
     ModalAutomaticLinearModeling = 'modalAutomaticLinearModeling',
     ModalLinear = 'modalLinear',
+        Statistics = 'Statistics',
+        SaveLinear = 'SaveLinear',
+        OptionsLinear = 'OptionsLinear',
     ModalCurveEstimation = 'modalCurveEstimation',
     ModalPartialLeastSquares = 'modalPartialLeastSquares',
     ModalBinaryLogistic = 'modalBinaryLogistic',

@@ -29,6 +29,9 @@ import ModalTwoStageLeastSquares from './Regression/TwoStageLeastSquares/ModalTw
 import ModalWeightEstimation from './Regression/WeightEstimation/ModalWeightEstimation';
 import ModalQuantiles from './Regression/Quantiles/ModalQuantiles';
 import ModalOptimalScaling from './Regression/OptimalScaling/ModalOptimalScaling';
+import Statistics from './Regression/Linear/Statistics';
+import SaveLinear from './Regression/Linear/SaveLinear';
+import OptionsLinear from './Regression/Linear/OptionsLinear';
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -53,6 +56,12 @@ const ModalContainer: React.FC = () => {
                 return <ModalAutomaticLinearModeling onClose={closeModal} {...currentModal.props}/>;
             case ModalType.ModalLinear:
                 return <ModalLinear onClose={closeModal} {...currentModal.props}/>;
+                    case ModalType.Statistics:
+                        return <Statistics onClose={closeModal} {...currentModal.props}/>;
+                    case ModalType.SaveLinear:
+                        return <SaveLinear onClose={closeModal} {...currentModal.props}/>;
+                    case ModalType.OptionsLinear:
+                        return <OptionsLinear onClose={closeModal} {...currentModal.props}/>;
             case ModalType.ModalCurveEstimation:
                 return <ModalCurveEstimation onClose={closeModal} {...currentModal.props}/>;
             case ModalType.ModalPartialLeastSquares:

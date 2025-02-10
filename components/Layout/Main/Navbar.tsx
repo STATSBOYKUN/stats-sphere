@@ -270,7 +270,7 @@ const Navbar: React.FC = () => {
                                     <MenubarItem onClick={() => openModal(ModalType.ModalWeightEstimation)}>Weight Estimation...</MenubarItem>
                                     <MenubarItem onClick={() => openModal(ModalType.ModalTwoStageLeastSquares)}>2-Stage Least Squares...</MenubarItem>
                                     <MenubarSeparator />
-                                    <MenubarItem onClick={() => openModal(ModalType.ModalQuantiles)}>Quantiles...</MenubarItem>
+                                    <MenubarItem onClick={() => openModal(ModalType.OptionsLinear)}>Quantiles...</MenubarItem>
                                     <MenubarSeparator />
                                     <MenubarItem onClick={() => openModal(ModalType.ModalOptimalScaling)}>Optimal Scaling (Catreg)...</MenubarItem>
                                 </MenubarSubContent>
