@@ -11,11 +11,40 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
-interface SaveLinearProps {
-  onClose: () => void;
+export interface SaveLinearParams {
+  predictedUnstandardized: boolean;
+  predictedStandardized: boolean;
+  predictedAdjusted: boolean;
+  predictedSE: boolean;
+  residualUnstandardized: boolean;
+  residualStandardized: boolean;
+  residualStudentized: boolean;
+  residualDeleted: boolean;
+  residualStudentizedDeleted: boolean;
+  distanceMahalanobis: boolean;
+  distanceCooks: boolean;
+  distanceLeverage: boolean;
+  influenceDfBetas: boolean;
+  influenceStandardizedDfBetas: boolean;
+  influenceDfFits: boolean;
+  influenceStandardizedDfFits: boolean;
+  influenceCovarianceRatios: boolean;
+  predictionMean: boolean;
+  predictionIndividual: boolean;
+  confidenceInterval: string;
+  createCoefficientStats: boolean;
+  coefficientOption: 'newDataset' | 'newDataFile';
+  datasetName: string;
+  xmlFilePath: string;
+  includeCovarianceMatrixXml: boolean;
 }
 
-const SaveLinear: React.FC<SaveLinearProps> = ({ onClose }) => {
+interface SaveLinearProps {
+  onClose: () => void;
+  onSave: (params: SaveLinearParams) => void;
+}
+
+const SaveLinear: React.FC<SaveLinearProps> = ({ onClose, onSave }) => {
   /* --- State untuk grup Predicted Values --- */
   const [predictedUnstandardized, setPredictedUnstandardized] = useState(false);
   const [predictedStandardized, setPredictedStandardized] = useState(false);
@@ -406,9 +435,39 @@ const SaveLinear: React.FC<SaveLinearProps> = ({ onClose }) => {
       {/* --- Tombol Aksi --- */}
       <DialogFooter className="flex justify-end space-x-3 mt-4">
         <Button
-          variant="default"
-          className="bg-blue-500 text-white hover:bg-blue-600"
-          onClick={() => alert('Continue')}
+            variant="default"
+            className="bg-blue-500 text-white hover:bg-blue-600"
+            onClick={() => {
+              const params: SaveLinearParams = {
+                predictedUnstandardized,
+                predictedStandardized,
+                predictedAdjusted,
+                predictedSE,
+                residualUnstandardized,
+                residualStandardized,
+                residualStudentized,
+                residualDeleted,
+                residualStudentizedDeleted,
+                distanceMahalanobis,
+                distanceCooks,
+                distanceLeverage,
+                influenceDfBetas,
+                influenceStandardizedDfBetas,
+                influenceDfFits,
+                influenceStandardizedDfFits,
+                influenceCovarianceRatios,
+                predictionMean,
+                predictionIndividual,
+                confidenceInterval,
+                createCoefficientStats,
+                coefficientOption,
+                datasetName,
+                xmlFilePath,
+                includeCovarianceMatrixXml,
+              };
+              onSave(params);
+              onClose();
+            }}
         >
           Continue
         </Button>

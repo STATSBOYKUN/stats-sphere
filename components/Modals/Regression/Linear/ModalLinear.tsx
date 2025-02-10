@@ -21,6 +21,34 @@ import { Statistics } from '@/components/Modals/Regression/Linear/Statistics';
 import {ModalType} from "@/stores/useModalStore";
 import {useModal} from "@/hooks/useModal";
 
+export interface SaveLinearParams {
+  predictedUnstandardized: boolean;
+  predictedStandardized: boolean;
+  predictedAdjusted: boolean;
+  predictedSE: boolean;
+  residualUnstandardized: boolean;
+  residualStandardized: boolean;
+  residualStudentized: boolean;
+  residualDeleted: boolean;
+  residualStudentizedDeleted: boolean;
+  distanceMahalanobis: boolean;
+  distanceCooks: boolean;
+  distanceLeverage: boolean;
+  influenceDfBetas: boolean;
+  influenceStandardizedDfBetas: boolean;
+  influenceDfFits: boolean;
+  influenceStandardizedDfFits: boolean;
+  influenceCovarianceRatios: boolean;
+  predictionMean: boolean;
+  predictionIndividual: boolean;
+  confidenceInterval: string;
+  createCoefficientStats: boolean;
+  coefficientOption: 'newDataset' | 'newDataFile';
+  datasetName: string;
+  xmlFilePath: string;
+  includeCovarianceMatrixXml: boolean;
+}
+
 interface Variable {
   name: string;
   type: 'numeric' | 'categorical';
@@ -40,6 +68,7 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   const [selectedWLSWeightVariable, setSelectedWLSWeightVariable] = useState<Variable | null>(null);
   const [highlightedVariable, setHighlightedVariable] = useState<Variable | null>(null);
   const [method, setMethod] = useState<string>('Enter');
+  const [saveParams, setSaveParams] = useState<SaveLinearParams | null>(null);
   const { openModal } = useModal();
 
   const [showStatistics, setShowStatistics] = useState<boolean>(false);
@@ -636,7 +665,18 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
           <Button variant="outline" className="w-full">
             Plots...
           </Button>
-          <Button onClick={() => openModal(ModalType.SaveLinear)} variant="outline" className="w-full">
+          <Button
+              variant="outline"
+              className="w-full"
+              onClick={() =>
+                  openModal(ModalType.SaveLinear, {
+                    onSave: (params: SaveLinearParams) => {
+                      setSaveParams(params);
+                      console.log(params);
+                    },
+                  })
+              }
+          >
             Save...
           </Button>
           <Button variant="outline" className="w-full">
