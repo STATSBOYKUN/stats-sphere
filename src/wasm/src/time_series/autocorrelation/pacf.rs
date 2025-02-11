@@ -3,12 +3,12 @@ use js_sys::Math::sqrt;
 use crate::Autocorrelation;
 
 #[wasm_bindgen]
-pub fn partial_kj(k: i32, j: i32, autocorrelate: Vec<f64>) -> f64{
+pub fn partial_kj(k: i32, j: i32, partial_autocorrelate: Vec<f64>) -> f64{
     if k == j {
-        return autocorrelate[k as usize];
+        return partial_autocorrelate[k as usize];
     }
     else {
-        let part_kj = partial_kj(k - 1, j, autocorrelate.clone()) - partial_kj(k, k, autocorrelate.clone()) * partial_kj(k - 1, k - j - 1, autocorrelate.clone());
+        let part_kj = partial_kj(k - 1, j, partial_autocorrelate.clone()) - partial_kj(k, k, partial_autocorrelate.clone()) * partial_kj(k - 1, k - j - 1, partial_autocorrelate.clone());
         return part_kj;
     }
 }
@@ -27,8 +27,8 @@ impl Autocorrelation{
                 let mut total_numerator = 0.0;
                 let mut total_denumerator = 0.0;
                 for j in 0..k{
-                    total_numerator += partial_kj(k - 1, j, autocorrelate.clone()) * autocorrelate[k as usize - j as usize - 1];
-                    total_denumerator += partial_kj(k - 1, j, autocorrelate.clone()) * autocorrelate[j as usize];
+                    total_numerator += partial_kj(k - 1, j, partial_autocorrelate.clone()) * autocorrelate[k as usize - j as usize - 1];
+                    total_denumerator += partial_kj(k - 1, j, partial_autocorrelate.clone()) * autocorrelate[j as usize];
                 }
                 let pac = (autocorrelate[k as usize] - total_numerator) / (1.0 - total_denumerator);
                 partial_autocorrelate.push(pac);

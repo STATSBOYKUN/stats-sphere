@@ -40,6 +40,8 @@ impl Autocorrelation{
             }
         }
 
+        self.set_data(fix_diff.clone());
+
         let acf: Vec<f64> = self.calculate_acf(fix_diff.clone());
         let acf_se: Vec<f64> = self.calculate_acf_se(acf.clone());
         let pacf: Vec<f64> = self.calculate_pacf(acf.clone());
@@ -48,12 +50,20 @@ impl Autocorrelation{
         let df_lb: Vec<usize> = self.df_ljung_box();
         let pvalue_lb: Vec<f64> = self.pvalue_ljung_box(lb.clone());
 
-        self.set_acf(acf);
-        self.set_acf_se(acf_se);
-        self.set_pacf(pacf);
-        self.set_pacf_se(pacf_se);
-        self.set_lb(lb);
-        self.set_df_lb(df_lb);
-        self.set_pvalue_lb(pvalue_lb);
+        // Round all values
+        let acf_round = acf.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+        let pacf_round = pacf.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+        let acf_se_round = acf_se.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+        let pacf_se_round = pacf_se.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+        let lb_round = lb.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+        let pvalue_lb_round = pvalue_lb.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>();
+
+        self.set_acf(acf_round.clone());
+        self.set_acf_se(acf_se_round.clone());
+        self.set_pacf(pacf_round.clone());
+        self.set_pacf_se(pacf_se_round.clone());
+        self.set_lb(lb_round.clone());
+        self.set_df_lb(df_lb.clone());
+        self.set_pvalue_lb(pvalue_lb_round.clone());  
     }
 }

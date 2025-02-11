@@ -7,12 +7,13 @@ use statrs::distribution::{ChiSquared, ContinuousCDF};
 impl Autocorrelation{
     pub fn calculate_ljung_box(&self, autocorrelate: Vec<f64>) -> Vec<f64>{
         let mut ljung_box = Vec::new();
-        for i in 0..self.get_lag(){
+        let n = self.get_data().len() as f64;
+        for i in 1..self.get_lag() + 1{
             let mut var_corr = 0.0;
-            for j in 0..i+1{
-                var_corr += autocorrelate[j as usize].powi(2) / (self.get_data().len() as f64 - j as f64 - 1.0);
+            for j in 0..i{
+                var_corr += autocorrelate[j as usize].powi(2) / (n - j as f64 - 1.0);
             }
-            let q = self.get_data().len() as f64 * (self.get_data().len() as f64 + 2.0) * var_corr;
+            let q = n * (n + 2.0) * var_corr;
             ljung_box.push(q);
         }
         ljung_box
@@ -22,7 +23,8 @@ impl Autocorrelation{
         let mut pvalue = Vec::new();
         for i in 0..ljung_box.len(){
             let chi_sq = ChiSquared::new(i as f64 + 1.0).unwrap();
-            pvalue.push(1.0 - chi_sq.cdf(ljung_box[i]));
+            let p = 1.0 - chi_sq.cdf(ljung_box[i]);
+            pvalue.push(p);
         }
         pvalue
     }

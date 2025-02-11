@@ -60,7 +60,7 @@ export async function handleAutocorrelation(
                 title: "Autocorrelation Function (ACF)",
                 columnHeaders: [{header: ""}, {header: "ACF"}, {header: "SE"}, {header: "Ljung-Box"}, {header: "df"}, {header: "p-value"}],
                 rows: Object.entries(acfStruct).map(([key, value]) => ({
-                    "rowHeader": [key],
+                    "rowHeader": [parseInt(key) + 1],
                     "ACF": value.acf,
                     "SE": value.acf_se,
                     "Ljung-Box": value.lb,
@@ -87,7 +87,7 @@ export async function handleAutocorrelation(
                 title: "Partial Autocorrelation Function (PACF)",
                 columnHeaders: [{header: ""}, {header: "PACF"}, {header: "SE"}],
                 rows: Object.entries(pacfStruct).map(([key, value]) => ({
-                    "rowHeader": [key],
+                    "rowHeader": [parseInt(key) + 1],
                     "PACF": value.pacf,
                     "SE": value.pacf_se,
                 })),

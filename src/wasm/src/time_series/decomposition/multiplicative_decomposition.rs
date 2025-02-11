@@ -27,7 +27,7 @@ impl Decomposition{
 
         // Calculate irregular component
         for i in 0..data.len(){
-            irregular_component.push(deseasonalizing[i] - trend_component[i]);
+            irregular_component.push(deseasonalizing[i] / trend_component[i]);
         }
         self.set_irregular_component(irregular_component.clone());
 
