@@ -1,0 +1,21 @@
+{
+  "name": "wasm",
+  "type": "module",
+  "description": "Project Rust-WASM untuk analisis statistik menggunakan statrs dan wasm-bindgen.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/wasm-project"
+  },
+  "files": [
+    "wasm_bg.wasm",
+    "wasm.js",
+    "wasm.d.ts"
+  ],
+  "main": "wasm.js",
+  "types": "wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
