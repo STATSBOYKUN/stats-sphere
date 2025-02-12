@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use crate::Decomposition;
+use crate::SimpleLinearRegression;
 
 #[wasm_bindgen]
 impl Decomposition{
@@ -16,29 +17,20 @@ impl Decomposition{
     // Calculate linear trend
     pub fn linear_trend(&mut self, deseasonalizing: Vec<f64>)->Vec<f64>{
         // Initialize the variables
-        let mut trend_prediction: Vec<f64> = Vec::new();
+        let trend_prediction: Vec<f64>;
+        let par_a: f64;
+        let par_b: f64;
         let deseasonalizing_values = deseasonalizing.clone();
-
-        // Calculate parameter a and b
-        let mut t_deseasonalizing_values: Vec<f64> = Vec::new();
         let mut t: Vec<f64> = Vec::new();
-        let mut t_pow_2: Vec<f64> = Vec::new();
         for i in 0..deseasonalizing_values.len(){
-            t_deseasonalizing_values.push((i as f64 + 1.0) * deseasonalizing_values[i]);
             t.push(i as f64 + 1.0);
-            t_pow_2.push((i as f64 + 1.0).powi(2));
         }
-        let t_deseasonalizing_values_sum:f64 = t_deseasonalizing_values.iter().sum::<f64>();
-        let t_sum:f64 = t.iter().sum::<f64>();
-        let t_pow_2_sum:f64 = t_pow_2.iter().sum::<f64>();
-        let deseasonalizing_values_sum:f64 = deseasonalizing_values.iter().sum::<f64>();
-        let par_b: f64 = (deseasonalizing_values.len() as f64 * t_deseasonalizing_values_sum - t_sum * deseasonalizing_values_sum) / (deseasonalizing_values.len() as f64 * t_pow_2_sum - t_sum.powi(2));
-        let par_a: f64 = (deseasonalizing_values_sum - par_b * t_sum) / (deseasonalizing_values.len() as f64);
 
-        // Calculate trend values
-        for i in 0..deseasonalizing_values.len(){
-            trend_prediction.push(par_a + par_b * (i as f64 + 1.0));
-        }
+        let mut regression = SimpleLinearRegression::new(t.clone(), deseasonalizing_values.clone());
+        regression.calculate_regression();
+        par_a = regression.get_b0();
+        par_b = regression.get_b1();
+        trend_prediction = regression.get_y_prediction();
         
         // Write the trend equation
         let equation: String;
@@ -47,9 +39,9 @@ impl Decomposition{
         } else {
             equation = format!("y = {} + {}t", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
         }
+        
+        // Set 
         self.set_trend_equation(equation);
-
-        // Set the trend component
         self.set_trend_component(trend_prediction.clone());
 
         trend_prediction

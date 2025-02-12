@@ -5,6 +5,7 @@ import useResultStore from "@/stores/useResultStore";
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";  
 import { Label } from "@/components/ui/label";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,10 +32,10 @@ interface AutocorrelationModalProps {
 }
 
 const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) => {
-    const difference =[
-        {value: 'level', label: 'Level'},
-        {value: 'first-difference', label: 'First Difference'},
-        {value: 'second-difference', label: 'Second Difference'},
+    const differences =[
+        {value: 'level', label: 'level'},
+        {value: 'first-difference', label: 'first difference'},
+        {value: 'second-difference', label: 'second difference'},
     ]
     const periods = [
         { value: '7', label: 'Daily in Week', id: 'diw'},
@@ -264,8 +265,8 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
             <div className="flex items-center justify-center">
                 <div className="flex md:flex-row flex-col gap-4">
                     {/* Awal Kolom Satu */}
-                    <div className="col-span-3 flex flex-col border-2 p-4 rounded-md max-h-[300px] overflow-y-auto w-[200px]">
-                        <label className="font-semibold">Available Variables</label>
+                    <div className="col-span-3 flex flex-col border-2 gap-4 p-4 rounded-md max-h-[300px] overflow-y-auto w-[200px]">
+                        <label className="font-semibold text-center">Available Variables</label>
                         <div className="space-y-2">
                             {availableVariables.map((variable) => (
                                 <div
@@ -300,8 +301,8 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                                     )}
                                 </Button>
                             </div>
-                            <div className="flex flex-col border-2 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
-                                <label className="font-semibold">Used Variable</label>
+                            <div className="flex flex-col border-2 gap-4 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
+                                <label className="font-semibold text-center">Used Variable</label>
                                 <div className="space-y-2">
                                     {dataVariable.map((variable) => (
                                         <div key={variable} className={`p-2 border cursor-pointer rounded-md hover:bg-blue-100 ${
@@ -334,8 +335,8 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                                     )}
                                 </Button>
                             </div>
-                            <div className="flex flex-col border-2 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
-                                <label className="font-semibold">Time Variable</label>
+                            <div className="flex flex-col border-2 gap-4 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
+                                <label className="font-semibold text-center">Time Variable</label>
                                 <div className="space-y-2">
                                     {timeVariable.map((variable) => (
                                         <div key={variable} className={`p-2 border cursor-pointer rounded-md hover:bg-blue-100 ${
@@ -397,23 +398,26 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                                     </Select>
                                 </div>
                             )}
-                            <div className="w-full pl-4 pr-4 border-0 rounded-t-md flex flex-row items-center gap-4 mt-4">
+                            <div className="w-full pl-4 pr-4 border-0 rounded-t-md flex flex-col gap-4 mt-5">
                                 <Label className="w-[200px]">autocorrelate on:</Label>
-                                <Select
-                                    onValueChange={(value) => {
-                                        const selected = difference.find((differ) => differ.value === value);
-                                        if (selected) {setSelectedDifference([selected.value, selected.label]);}
-                                    }}
-                                    defaultValue={selectedDifference[1]}>
-                                    <SelectTrigger>
-                                        <SelectValue>{selectedDifference[1]}</SelectValue>
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {difference.map((differ) => (
-                                            <SelectItem key={differ.value} value={differ.value}>{differ.label}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <RadioGroup
+                                    value={selectedDifference[0]}
+                                    onValueChange={(value) => setSelectedDifference([value,differences.find((difference) => difference.value === value)!.label])}
+                                    className="flex flex-row gap-4"
+                                >
+                                    {differences.map((difference) => (
+                                        <div key={difference.value} className="flex flex-row items-center space-x-2">
+                                            <RadioGroupItem
+                                                value={difference.value}
+                                                id={difference.value}
+                                                className="w-4 h-4"
+                                            />
+                                            <label htmlFor={difference.value} className="text-sm font-medium text-gray-700">
+                                                {difference.label}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </RadioGroup>
                             </div>
                         </div>
                     </div>

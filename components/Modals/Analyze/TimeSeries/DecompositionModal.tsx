@@ -484,8 +484,8 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
             <div className="flex items-center justify-center">
                 <div className="flex md:flex-row flex-col gap-4">
                     {/* Awal Kolom Satu */}
-                    <div className="col-span-3 flex flex-col border-2 p-4 rounded-md max-h-[300px] overflow-y-auto w-[200px]">
-                        <label className="font-semibold">Available Variables</label>
+                    <div className="col-span-3 flex flex-col border-2 gap-4 p-4 rounded-md max-h-[300px] overflow-y-auto w-[200px]">
+                        <label className="font-semibold text-center">Available Variables</label>
                         <div className="space-y-2">
                             {availableVariables.map((variable) => (
                                 <div
@@ -520,8 +520,8 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                     )}
                                 </Button>
                             </div>
-                            <div className="flex flex-col border-2 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
-                                <label className="font-semibold">Used Variable</label>
+                            <div className="flex flex-col border-2 gap-4 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
+                                <label className="font-semibold text-center">Used Variable</label>
                                 <div className="space-y-2">
                                     {dataVariable.map((variable) => (
                                         <div key={variable} className={`p-2 border cursor-pointer rounded-md hover:bg-blue-100 ${
@@ -554,8 +554,8 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                     )}
                                 </Button>
                             </div>
-                            <div className="flex flex-col border-2 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
-                                <label className="font-semibold">Time Variable</label>
+                            <div className="flex flex-col border-2 gap-4 p-4 rounded-md h-[120px] overflow-y-auto w-[200px]">
+                                <label className="font-semibold text-center">Time Variable</label>
                                 <div className="space-y-2">
                                     {timeVariable.map((variable) => (
                                         <div key={variable} className={`p-2 border cursor-pointer rounded-md hover:bg-blue-100 ${
