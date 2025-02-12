@@ -30,7 +30,9 @@ const OptionsLinear: React.FC<OptionsLinearProps> = ({ onClose }) => {
   const [missingValue, setMissingValue] = useState<'listwise' | 'pairwise' | 'replace'>('listwise');
 
   return (
-    <DialogContent className="sm:max-w-[800px] relative">
+    // Perbaikan: Hapus properti positioning tambahan dan gunakan max-h serta overflow-y-auto agar modal OptionsLinear tampil
+    // secara terpusat seperti modal Statistics dan SaveLinear.
+    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
       {/* Header */}
       <DialogHeader>
         <DialogTitle className="text-lg">Linear Regression: Options</DialogTitle>
@@ -208,20 +210,13 @@ const OptionsLinear: React.FC<OptionsLinearProps> = ({ onClose }) => {
         >
           Continue
         </Button>
-        <Button variant="outline" onClick={() => alert('Cancel')}>
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button variant="outline" onClick={() => alert('Help')}>
           Help
         </Button>
       </DialogFooter>
-
-      {/* Tombol Close (X) */}
-      <div className="absolute top-2 right-2">
-        <Button variant="ghost" onClick={onClose}>
-          X
-        </Button>
-      </div>
     </DialogContent>
   );
 };

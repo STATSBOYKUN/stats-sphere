@@ -32,6 +32,8 @@ import ModalOptimalScaling from './Regression/OptimalScaling/ModalOptimalScaling
 import Statistics from './Regression/Linear/Statistics';
 import SaveLinear from './Regression/Linear/SaveLinear';
 import OptionsLinear from './Regression/Linear/OptionsLinear';
+import BootstrapLinear from './Regression/Linear/BootstrapLinear';
+import PlotsLinear from './Regression/Linear/PlotsLinear';
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -62,6 +64,10 @@ const ModalContainer: React.FC = () => {
                         return <SaveLinear onClose={closeModal} {...currentModal.props}/>;
                     case ModalType.OptionsLinear:
                         return <OptionsLinear onClose={closeModal} {...currentModal.props}/>;
+                    case ModalType.BootstrapLinear:
+                        return <BootstrapLinear onClose={closeModal} {...currentModal.props}/>;
+                    case ModalType.PlotsLinear:
+                        return <PlotsLinear onClose={closeModal} {...currentModal.props}/>;
             case ModalType.ModalCurveEstimation:
                 return <ModalCurveEstimation onClose={closeModal} {...currentModal.props}/>;
             case ModalType.ModalPartialLeastSquares:

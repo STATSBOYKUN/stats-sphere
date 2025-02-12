@@ -15,6 +15,8 @@ export enum ModalType {
         Statistics = 'Statistics',
         SaveLinear = 'SaveLinear',
         OptionsLinear = 'OptionsLinear',
+        BootstrapLinear = 'BootstrapLinear',
+        PlotsLinear = 'PlotsLinear',
     ModalCurveEstimation = 'modalCurveEstimation',
     ModalPartialLeastSquares = 'modalPartialLeastSquares',
     ModalBinaryLogistic = 'modalBinaryLogistic',

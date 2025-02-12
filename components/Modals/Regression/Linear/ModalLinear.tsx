@@ -122,6 +122,41 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
     }
   };
 
+  // --- Tambahan fungsi untuk field baru ---
+  const handleMoveToSelectionVariable = () => {
+    if (highlightedVariable && availableVariables.includes(highlightedVariable)) {
+      if (selectedSelectionVariable) {
+        setAvailableVariables((prev) => [...prev, selectedSelectionVariable]);
+      }
+      setSelectedSelectionVariable(highlightedVariable);
+      setAvailableVariables((prev) => prev.filter((item) => item !== highlightedVariable));
+      setHighlightedVariable(null);
+    }
+  };
+
+  const handleMoveToCaseLabelsVariable = () => {
+    if (highlightedVariable && availableVariables.includes(highlightedVariable)) {
+      if (selectedCaseLabelsVariable) {
+        setAvailableVariables((prev) => [...prev, selectedCaseLabelsVariable]);
+      }
+      setSelectedCaseLabelsVariable(highlightedVariable);
+      setAvailableVariables((prev) => prev.filter((item) => item !== highlightedVariable));
+      setHighlightedVariable(null);
+    }
+  };
+
+  const handleMoveToWLSWeightVariable = () => {
+    if (highlightedVariable && availableVariables.includes(highlightedVariable)) {
+      if (selectedWLSWeightVariable) {
+        setAvailableVariables((prev) => [...prev, selectedWLSWeightVariable]);
+      }
+      setSelectedWLSWeightVariable(highlightedVariable);
+      setAvailableVariables((prev) => prev.filter((item) => item !== highlightedVariable));
+      setHighlightedVariable(null);
+    }
+  };
+  // --- Akhir tambahan fungsi untuk field baru ---
+
   const handleClose = () => {
     onClose();
   };
@@ -619,33 +654,110 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Variabel lainnya... */}
+          {/* --- Field Baru --- */}
+
+          {/* Selection Variable */}
+          <div className="flex items-center">
+            <Button
+              variant="outline"
+              onClick={handleMoveToSelectionVariable}
+              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+              className="mr-2 mt-6"
+            >
+              <ArrowRight />
+            </Button>
+            <div className="flex-1">
+              <label className="font-semibold">Selection Variable</label>
+              <div
+                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                onClick={handleRemoveFromSelectionVariable}
+              >
+                {selectedSelectionVariable ? (
+                  <div className="flex items-center">
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {selectedSelectionVariable.name}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">[None]</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Case Labels */}
+          <div className="flex items-center">
+            <Button
+              variant="outline"
+              onClick={handleMoveToCaseLabelsVariable}
+              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+              className="mr-2 mt-6"
+            >
+              <ArrowRight />
+            </Button>
+            <div className="flex-1">
+              <label className="font-semibold">Case Labels</label>
+              <div
+                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                onClick={handleRemoveFromCaseLabelsVariable}
+              >
+                {selectedCaseLabelsVariable ? (
+                  <div className="flex items-center">
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {selectedCaseLabelsVariable.name}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">[None]</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* WLS Weight */}
+          <div className="flex items-center">
+            <Button
+              variant="outline"
+              onClick={handleMoveToWLSWeightVariable}
+              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+              className="mr-2 mt-6"
+            >
+              <ArrowRight />
+            </Button>
+            <div className="flex-1">
+              <label className="font-semibold">WLS Weight</label>
+              <div
+                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                onClick={handleRemoveFromWLSWeightVariable}
+              >
+                {selectedWLSWeightVariable ? (
+                  <div className="flex items-center">
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {selectedWLSWeightVariable.name}
+                  </div>
+                ) : (
+                  <span className="text-gray-500">[None]</span>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* --- Akhir Field Baru --- */}
 
         </div>
 
         {/* Kolom Ketiga: Tombol Tambahan */}
         <div className="col-span-3 space-y-4">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setShowStatistics(true)}
-          >
+          <Button onClick={() => openModal(ModalType.Statistics)} variant="outline" className="w-full">
             Statistics...
           </Button>
-
-          <Button variant="outline" className="w-full">
+          <Button onClick={() => openModal(ModalType.PlotsLinear)} variant="outline" className="w-full">
             Plots...
           </Button>
           <Button onClick={() => openModal(ModalType.SaveLinear)} variant="outline" className="w-full">
             Save...
           </Button>
-          <Button variant="outline" className="w-full">
+          <Button onClick={() => openModal(ModalType.OptionsLinear)} variant="outline" className="w-full">
             Options...
           </Button>
-          <Button variant="outline" className="w-full">
-            Style...
-          </Button>
-          <Button variant="outline" className="w-full">
+          <Button onClick={() => openModal(ModalType.BootstrapLinear)} variant="outline" className="w-full">
             Bootstrap...
           </Button>
         </div>

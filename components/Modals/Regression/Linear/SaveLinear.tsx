@@ -56,7 +56,9 @@ const SaveLinear: React.FC<SaveLinearProps> = ({ onClose }) => {
   const [includeCovarianceMatrixXml, setIncludeCovarianceMatrixXml] = useState(false);
 
   return (
-    <DialogContent className="sm:max-w-[800px] relative">
+    // Perbaikan: Menghilangkan properti positioning fixed dan transform,
+    // sehingga modal anak akan muncul secara normal (terpusat) seperti modal Statistics.
+    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-lg">Linear Regression: Save</DialogTitle>
       </DialogHeader>
@@ -412,20 +414,13 @@ const SaveLinear: React.FC<SaveLinearProps> = ({ onClose }) => {
         >
           Continue
         </Button>
-        <Button variant="outline" onClick={() => alert('Cancel')}>
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
         <Button variant="outline" onClick={() => alert('Help')}>
           Help
         </Button>
       </DialogFooter>
-
-      {/* Tombol Close (X) di pojok kanan atas */}
-      <div className="absolute top-2 right-2">
-        <Button variant="ghost" onClick={onClose}>
-          X
-        </Button>
-      </div>
     </DialogContent>
   );
 };

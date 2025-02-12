@@ -206,15 +206,10 @@ const Statistics: React.FC<StatisticsProps> = ({ onClose }) => {
         <Button variant="default" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => alert('Continue')}>
           Continue
         </Button>
-        <Button variant="outline" onClick={() => alert('Cancel')}>
+        <Button variant="outline" onClick={onClose}>
           Cancel
         </Button>
       </DialogFooter>
-
-      {/* Tombol untuk menutup modal */}
-      <div className="absolute top-2 right-2">
-        <Button variant="ghost" onClick={onClose}>X</Button>
-      </div>
     </DialogContent>
   );
 };
