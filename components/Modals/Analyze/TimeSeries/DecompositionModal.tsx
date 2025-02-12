@@ -302,7 +302,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -348,7 +348,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -394,7 +394,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -440,7 +440,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };

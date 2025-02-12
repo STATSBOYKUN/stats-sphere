@@ -293,7 +293,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };

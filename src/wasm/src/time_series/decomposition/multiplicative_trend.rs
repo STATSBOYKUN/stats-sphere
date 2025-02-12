@@ -43,9 +43,9 @@ impl Decomposition{
         // Write the trend equation
         let equation: String;
         if par_b < 0 as f64 {
-            equation = format!("y = {} - {}t", par_a, par_b.abs());
+            equation = format!("y = {} - {}t", (par_a * 1000.0).round() / 1000.0, (par_b.abs()* 1000.0).round() / 1000.0);
         } else {
-            equation = format!("y = {} + {}t", par_a, par_b);
+            equation = format!("y = {} + {}t", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
         }
         self.set_trend_equation(equation);
 
@@ -88,9 +88,9 @@ impl Decomposition{
         // Write the trend equation
         let equation: String;
         if par_b < 0 as f64 {
-            equation = format!("y = {} * ({})^t", par_a, par_b);
+            equation = format!("y = {} * e^(({}) * t)", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
         } else {
-            equation = format!("y = {} * {}^t", par_a, par_b);
+            equation = format!("y = {} * e^({} * t)", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
         }
         self.set_trend_equation(equation);
 

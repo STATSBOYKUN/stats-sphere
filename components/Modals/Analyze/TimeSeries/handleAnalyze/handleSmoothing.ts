@@ -66,6 +66,7 @@ Promise<[number[], string, string]> {
         }
 
         let smoothingArray = Array.from(smoothingValue);
+        let smoothingRound = smoothingArray.map(value => Number(parseFloat(value.toString()).toFixed(3)));
         let structuredSmoothing: any[] = [];
         // Validasi panjang array
         if (time.length === data.length && data.length === smoothingArray.length) {
@@ -116,12 +117,12 @@ Promise<[number[], string, string]> {
                     columnHeaders: [{header:""},{header: 'value'}], 
                     rows: Object.entries(evalValue).map(([key, value]) => ({
                         rowHeader: [key], 
-                        value: value,     
+                        value: value.toFixed(3),     
                     })),
                 },
             ],
         });
-        return [Array.from(smoothingValue), graphicJSON, evalJSON];
+        return [smoothingRound, graphicJSON, evalJSON];
     } catch (error) {
         let errorMessage = error as Error;
         return [[0],"" ,JSON.stringify({ error: errorMessage.message })];

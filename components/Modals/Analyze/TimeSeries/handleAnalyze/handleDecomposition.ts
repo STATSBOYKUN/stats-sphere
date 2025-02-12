@@ -36,14 +36,17 @@ export async function handleDecomposition(
 
         let decomposition;
         let forecastingValue;
+        let forecastingRound;
         switch (decompostionMethod) {
             case 'additive':
                 decomposition = new Decomposition(new Float64Array(data), dataHeader as string, time as string[], timeHeader as string, periodValue);
                 forecastingValue = Array.from(decomposition.additive_decomposition());
+                forecastingRound = forecastingValue.map(value => Number(parseFloat(value.toString()).toFixed(3)));
                 break;
             case 'multiplicative':
                 decomposition = new Decomposition(new Float64Array(data), dataHeader as string, time as string[], timeHeader as string, periodValue);
                 forecastingValue = Array.from(decomposition.multiplicative_decomposition(trendMethod));
+                forecastingRound = forecastingValue.map(value => Number(parseFloat(value.toString()).toFixed(3)));
                 break;
             default:
                 throw new Error(`Unknown method: ${decompostionMethod}`);
@@ -57,9 +60,6 @@ export async function handleDecomposition(
             case 'linear':
                 nameTrendMethod = "Linear Trend Equation";
                 break;
-            case 'quadratic':
-                nameTrendMethod = "Quadratic Trend Equation";
-                break;
             case 'exponential':
                 nameTrendMethod = "Exponential Trend Equation";
                 break;
@@ -72,6 +72,11 @@ export async function handleDecomposition(
         let trendComponent = Array.from(decomposition.get_trend_component());
         let irregularComponent = Array.from(decomposition.get_irregular_component());
 
+        // round component
+        let seasonalRound = seasonalComponent.map(value => Number(parseFloat(value.toString()).toFixed(3)));
+        let trendRound = trendComponent.map(value => Number(parseFloat(value.toString()).toFixed(3)));
+        let irregularRound = irregularComponent.map(value => Number(parseFloat(value.toString()).toFixed(3)));
+
         let evalValue = await decomposition.decomposition_evaluation(new Float64Array(forecastingValue)) as Record<string, number>;
         let evalJSON = JSON.stringify({
             tables: [
@@ -80,7 +85,7 @@ export async function handleDecomposition(
                     columnHeaders: [{header:""},{header: 'value'}], 
                     rows: Object.entries(evalValue).map(([key, value]) => ({
                         rowHeader: [key], 
-                        value: value,     
+                        value: value.toFixed(3),     
                     })),
                 },
             ],
@@ -98,7 +103,7 @@ export async function handleDecomposition(
                     columnHeaders: [{header:""},{header: 'value'}],
                     rows: Object.entries(seasonValue).map(([key, value]) => ({
                         rowHeader: [key], 
-                        value: value,     
+                        value: value.toFixed(3),     
                     })),
                 },
             ],
@@ -120,7 +125,7 @@ export async function handleDecomposition(
             ]
         });
 
-        return [centered,seasonalComponent,trendComponent,irregularComponent,forecastingValue,evalJSON,seasonJSON,equationJSON];
+        return [centered,seasonalRound,trendRound,irregularRound,forecastingRound,evalJSON,seasonJSON,equationJSON];
     } catch (error) {
         let errorMessage = error as Error;
         return [[0],[0],[0],[0],[0],JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message }),JSON.stringify({ error: errorMessage.message })];
