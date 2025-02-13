@@ -20,34 +20,8 @@ import { useLinear } from '@/hooks/useLinear';
 import { Statistics } from '@/components/Modals/Regression/Linear/Statistics';
 import {ModalType} from "@/stores/useModalStore";
 import {useModal} from "@/hooks/useModal";
-
-export interface SaveLinearParams {
-  predictedUnstandardized: boolean;
-  predictedStandardized: boolean;
-  predictedAdjusted: boolean;
-  predictedSE: boolean;
-  residualUnstandardized: boolean;
-  residualStandardized: boolean;
-  residualStudentized: boolean;
-  residualDeleted: boolean;
-  residualStudentizedDeleted: boolean;
-  distanceMahalanobis: boolean;
-  distanceCooks: boolean;
-  distanceLeverage: boolean;
-  influenceDfBetas: boolean;
-  influenceStandardizedDfBetas: boolean;
-  influenceDfFits: boolean;
-  influenceStandardizedDfFits: boolean;
-  influenceCovarianceRatios: boolean;
-  predictionMean: boolean;
-  predictionIndividual: boolean;
-  confidenceInterval: string;
-  createCoefficientStats: boolean;
-  coefficientOption: 'newDataset' | 'newDataFile';
-  datasetName: string;
-  xmlFilePath: string;
-  includeCovarianceMatrixXml: boolean;
-}
+import { SaveLinearParams } from './SaveLinear';
+import { StatisticsParams } from './Statistics';
 
 interface Variable {
   name: string;
@@ -60,6 +34,8 @@ interface ModalLinearProps {
 }
 
 const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
+  // Tambahkan state untuk menyimpan statistics parameters
+  const [statsParams, setStatsParams] = useState<StatisticsParams | null>(null);
   const [availableVariables, setAvailableVariables] = useState<Variable[]>([]);
   const [selectedDependentVariable, setSelectedDependentVariable] = useState<Variable | null>(null);
   const [selectedIndependentVariables, setSelectedIndependentVariables] = useState<Variable[]>([]);
@@ -72,7 +48,10 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   const { openModal } = useModal();
 
   const [showStatistics, setShowStatistics] = useState<boolean>(false);
-
+  const handleStatisticsSubmit = (params: StatisticsParams) => {
+    setStatsParams(params);
+    console.log("Statistics parameters received:", params);
+  };
   const variables = useVariableStore((state) => state.variables);
   const data = useDataStore((state) => state.data);
 
@@ -202,7 +181,7 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         alert('Please select a dependent variable and at least one independent variable.');
         return;
       }
-  
+      
       // 1. Create log command
       const logMessage = `REGRESSION 
   /MISSING LISTWISE 
@@ -263,7 +242,33 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   
       // Perform linear regression
       const regressionResults = calculateLinearRegression(filteredDependentData, independentDataTransposed);
-  
+
+      if (statsParams?.rSquaredChange) {
+        // Jika rSquaredChange bernilai true, gunakan Web Worker untuk menghitung regresi
+        const worker = new Worker('/workers/Regression/modal_summary.js');
+        
+        // Misalnya, jika worker dirancang untuk satu variabel independen, gunakan kolom pertama:
+        worker.postMessage({
+          dependent: filteredDependentData,
+          independent: filteredIndependentData[0]
+        });
+      
+        worker.onmessage = async (e) => {
+          const regressionResults = e.data;
+          // Lakukan proses penyimpanan/integrasi statistik hasil worker (misalnya, addStatistic)
+          // ... (kode Anda untuk memproses regressionResults dari worker)
+          
+          worker.terminate();
+        };
+      
+        worker.onerror = (error) => {
+          console.error("Worker error:", error);
+          worker.terminate();
+        };
+        console.log("Using Web Worker for regression calculation...");
+        console.log("Regression results:", regressionResults);
+      }
+
       // 4. Insert results into Statistics
   
       // Variables Entered/Removed
@@ -774,9 +779,13 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
 
         {/* Kolom Ketiga: Tombol Tambahan */}
         <div className="col-span-3 space-y-4">
-          <Button onClick={() => openModal(ModalType.Statistics)} variant="outline" className="w-full">
-            Statistics...
-          </Button>
+        <Button
+          onClick={() => openModal(ModalType.Statistics, { onSubmit: handleStatisticsSubmit })}
+          variant="outline"
+          className="w-full"
+        >
+          Statistics...
+        </Button>
           <Button onClick={() => openModal(ModalType.PlotsLinear)} variant="outline" className="w-full">
             Plots...
           </Button>

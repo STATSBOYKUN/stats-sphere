@@ -59,8 +59,8 @@ const ResultOutput: React.FC = () => {
                                                         id={`output-${analytic.id}-${stat.id}`}
                                                         className="mb-4"
                                                     >
-                                                        {/* <DataTableRenderer data={stat.output_data} /> */}
-                                                        <DataTableRenderer data='
+                                                        <DataTableRenderer data={stat.output_data} />
+                                                        {/* <DataTableRenderer data='
                                                         {
   "tables": [
     {
@@ -252,7 +252,7 @@ const ResultOutput: React.FC = () => {
     }
   ]
 }
-                                                        '/>
+                                                        '/> */}
 
                                                     </div>
                                                 </div>

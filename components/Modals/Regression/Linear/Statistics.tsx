@@ -9,9 +9,26 @@ import { TrendingUp } from 'lucide-react';
 
 interface StatisticsProps {
   onClose: () => void;
+  onSubmit: (params: StatisticsParams) => void;
 }
 
-const Statistics: React.FC<StatisticsProps> = ({ onClose }) => {
+
+export interface StatisticsParams {
+  estimates: boolean;
+  confidenceIntervals: boolean;
+  covarianceMatrix: boolean;
+  modelFit: boolean;
+  rSquaredChange: boolean;
+  descriptives: boolean;
+  partAndPartial: boolean;
+  collinearityDiagnostics: boolean;
+  durbinWatson: boolean;
+  casewiseDiagnostics: boolean;
+  selectedResidualOption: string;
+  outlierThreshold: string;
+}
+
+const Statistics: React.FC<StatisticsProps> = ({ onClose, onSubmit }) => {
   // State untuk Regression Coefficients
   const [estimates, setEstimates] = useState<boolean>(true);
   const [confidenceIntervals, setConfidenceIntervals] = useState<boolean>(false);
@@ -29,6 +46,25 @@ const Statistics: React.FC<StatisticsProps> = ({ onClose }) => {
   const [selectedResidualOption, setSelectedResidualOption] = useState<string>('');
   // State untuk threshold input (misal untuk nilai default 3)
   const [outlierThreshold, setOutlierThreshold] = useState<string>('3');
+
+  const params: StatisticsParams = {
+    estimates,
+    confidenceIntervals,
+    covarianceMatrix,
+    modelFit,
+    rSquaredChange,
+    descriptives,
+    partAndPartial,
+    collinearityDiagnostics,
+    durbinWatson,
+    casewiseDiagnostics,
+    selectedResidualOption,
+    outlierThreshold,
+  };
+  const handleContinue = () => {
+    onSubmit(params);
+    onClose();
+  };
 
   return (
     <DialogContent className="sm:max-w-[800px]">
@@ -203,7 +239,11 @@ const Statistics: React.FC<StatisticsProps> = ({ onClose }) => {
 
       {/* Bagian Tombol Navigasi */}
       <DialogFooter className="flex justify-start space-x-3 mt-4">
-        <Button variant="default" className="bg-blue-500 text-white hover:bg-blue-600" onClick={() => alert('Continue')}>
+      <Button
+          variant="default"
+          className="bg-blue-500 text-white hover:bg-blue-600"
+          onClick={handleContinue}
+        >
           Continue
         </Button>
         <Button variant="outline" onClick={onClose}>
