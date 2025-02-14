@@ -596,23 +596,26 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                 ))}
                             </RadioGroup>
                             {selectedDecompositionMethod[0] === 'multiplicative' && (
-                                <div className="flex flex-row gap-2 items-center">
-                                    <label className="text-sm w-[150px] font-semibold">trend method:</label>
-                                    <Select value={selectedTrendedMethod[0]}
-                                        onValueChange={(value) => setSelectedTrendedMethod([value,trendedMethods.find((method) => method.value === value)!.label])}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Choose Your Method">
-                                                {selectedTrendedMethod[1] || "Choose Your Method"}
-                                            </SelectValue>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {trendedMethods.map((method) => (
-                                                <SelectItem key={method.value} value={method.value}>
-                                                    {method.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                <div className="flex flex-col gap-4">
+                                    <Label className="w-[120px]">trend: </Label>
+                                    <RadioGroup
+                                        value={selectedTrendedMethod[0]}
+                                        onValueChange={(value) => setSelectedTrendedMethod([value,trendedMethods.find((trendedMethod) => trendedMethod.value === value)!.label])}
+                                        className="flex flex-row gap-4"
+                                    >
+                                        {trendedMethods.map((trendedMethod) => (
+                                            <div key={trendedMethod.value} className="flex flex-row items-center space-x-2">
+                                                <RadioGroupItem
+                                                    value={trendedMethod.value}
+                                                    id={trendedMethod.value}
+                                                    className="w-4 h-4"
+                                                />
+                                                <label htmlFor={trendedMethod.value} className="text-sm font-medium text-gray-700">
+                                                    {trendedMethod.label}
+                                                </label>
+                                            </div>
+                                        ))}
+                                    </RadioGroup>
                                 </div>
                             )}
                             <div className="flex flex-row gap-2 items-center">
