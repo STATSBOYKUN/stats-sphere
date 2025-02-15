@@ -42,9 +42,9 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
     ]
 
     const equations =[
-        {value: 'none', label: 'none'},
-        {value: 'intercept', label: 'intercept'},
-        {value: 'trend-and-intercept', label: 'trend and intercept'},
+        {value: 'no_constant', label: 'none'},
+        {value: 'no_trend', label: 'intercept'},
+        {value: 'with_trend', label: 'trend and intercept'},
     ]
 
     const [selectedMethod, setSelectedMethod] = useState<string[]>(['dickey-fuller','Dickey Fuller']);

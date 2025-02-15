@@ -38,6 +38,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
 
     const trendedMethods = [
         { value: 'linear', label: 'Linear' },
+        { value: 'quadratic', label: 'Quadratic' },
         { value: 'exponential', label: 'Exponential' },
     ];
 
