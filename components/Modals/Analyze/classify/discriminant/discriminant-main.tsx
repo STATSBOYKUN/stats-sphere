@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {DiscriminantDialog} from "@/components/Modals/Analyze/classify/discriminant/dialog";
 import {DiscriminantDefineRange} from "@/components/Modals/Analyze/classify/discriminant/define-range";
 import {DiscriminantSetValue} from "@/components/Modals/Analyze/classify/discriminant/set-value";
@@ -7,12 +7,24 @@ import {DiscriminantMethod} from "@/components/Modals/Analyze/classify/discrimin
 import {DiscriminantClassify} from "@/components/Modals/Analyze/classify/discriminant/classify";
 import {DiscriminantSave} from "@/components/Modals/Analyze/classify/discriminant/save";
 import {DiscriminantBootstrap} from "@/components/Modals/Analyze/classify/discriminant/bootstrap";
-import {DiscriminantContainerProps, DiscriminantType} from "@/models/classify/discriminant/discriminant";
+import {
+    DiscriminantContainerProps,
+    DiscriminantMainType,
+    DiscriminantType
+} from "@/models/classify/discriminant/discriminant";
 import {DiscriminantDefault} from "@/constants/classify/discriminant/discriminant-default";
 import {Dialog, DialogContent, DialogTitle} from "@/components/ui/dialog";
 import {useModal} from "@/hooks/useModal";
+import {useVariableStore} from "@/stores/useVariableStore";
+import {RawData, VariableDef} from "@/lib/db";
+import {useDataStore} from "@/stores/useDataStore";
+import {getSlicedData, getVarDefs} from "@/hooks/useVariable";
 
 export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => {
+    const variables = useVariableStore((state) => state.variables) as VariableDef[];
+    const dataVariables = useDataStore((state) => state.data) as RawData;
+    const tempVariables = variables.map((variables) => variables.name);
+
     const [formData, setFormData] = useState<DiscriminantType>({...DiscriminantDefault});
     const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
@@ -22,6 +34,7 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
     const [isClassifyOpen, setIsClassifyOpen] = useState(false);
     const [isSaveOpen, setIsSaveOpen] = useState(false);
     const [isBootstrapOpen, setIsBootstrapOpen] = useState(false);
+
     const {closeModal} = useModal();
 
     const updateFormData = <T extends keyof typeof formData>(
@@ -38,8 +51,43 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
         }));
     };
 
-    const executeDiscriminant = async () => {
-        console.log("Processed Data from Worker:");
+    const executeDiscriminant = async (mainData: DiscriminantMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            const selectedVariables = [
+                mainData.GroupingVariable,
+                ...(mainData.IndependentVariables || []),
+                mainData.SelectionVariable
+            ].filter((varName): varName is string => varName !== null);
+
+            const GroupingVariable = mainData.GroupingVariable ? [mainData.GroupingVariable] : [];
+            const IndependentVariables = mainData.IndependentVariables || [];
+            const SelectionVariable = mainData.SelectionVariable ? [mainData.SelectionVariable] : [];
+
+            // Gunakan custom hook untuk mendapatkan slicedData
+            const slicedDataForGrouping = getSlicedData(dataVariables, variables, GroupingVariable);
+            const slicedDataForIndependent = getSlicedData(dataVariables, variables, IndependentVariables);
+            const slicedDataForSelection = getSlicedData(dataVariables, variables, SelectionVariable);
+
+            // Gunakan custom hook untuk mendapatkan varDefs
+            const varDefsForGrouping = getVarDefs(variables, GroupingVariable);
+            const varDefsForIndependent = getVarDefs(variables, IndependentVariables);
+            const varDefsForSelection = getVarDefs(variables, SelectionVariable);
+
+            console.log("slicedDataForGrouping", slicedDataForGrouping);
+            console.log("slicedDataForIndependent", slicedDataForIndependent);
+            console.log("slicedDataForSelection", slicedDataForSelection);
+            console.log("varDefsForGrouping", varDefsForGrouping);
+            console.log("varDefsForIndependent", varDefsForIndependent);
+            console.log("varDefsForSelection", varDefsForSelection);
+
+        } catch (error) {
+            console.error(error);
+        }
 
         closeModal();
         onClose();
@@ -71,7 +119,8 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                     setIsBootstrapOpen={setIsBootstrapOpen}
                     updateFormData={(field, value) => updateFormData("main", field, value)}
                     data={formData.main}
-                    onContinue={executeDiscriminant}
+                    globalVariables={tempVariables}
+                    onContinue={(mainData) => executeDiscriminant(mainData)}
                     onReset={resetFormData}
                 />
 

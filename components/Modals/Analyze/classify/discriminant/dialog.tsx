@@ -35,35 +35,19 @@ export const DiscriminantDialog = ({
                                        setIsBootstrapOpen,
                                        updateFormData,
                                        data,
+                                       globalVariables,
                                        onContinue,
-                                       onReset
+                                       onReset,
                                    }: DiscriminantDialogProps) => {
-    // Default Data Table and Variables
-    const variables = useVariableStore((state) => state.variables) as VariableDef[];
-    const dataVariables = useDataStore((state) => state.data) as RawData;
-    const setDataVariables = useDataStore((state) => state.setData);
-    const addVariable = useVariableStore((state) => state.addVariable);
-
-    // Main State
     const [mainState, setMainState] = useState<DiscriminantMainType>({...data});
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
-    const {addLog, addAnalytic, addStatistic} = useResultStore();
     const {closeModal} = useModal();
-
-    const tempVariables = variables
-    .map((variable) => variable.name)
-    .filter(
-        (name) =>
-            name !== mainState.GroupingVariable &&
-            !mainState.IndependentVariables?.includes(name) &&
-            name !== mainState.SelectionVariable
-    );
 
     useEffect(() => {
         setMainState({...data});
-        setAvailableVariables(tempVariables);
-    }, [data, variables]);
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
 
     useEffect(() => {
         const usedVariables = [
@@ -72,11 +56,11 @@ export const DiscriminantDialog = ({
             mainState.SelectionVariable,
         ].filter(Boolean);
 
-        const updatedVariables = tempVariables.filter(
+        const updatedVariables = globalVariables.filter(
             (variable) => !usedVariables.includes(variable)
         );
         setAvailableVariables(updatedVariables);
-    }, [mainState, variables]);
+    }, [mainState]);
 
     const handleDrop = (target: string, variable: string) => {
         setMainState((prev) => {
@@ -126,7 +110,7 @@ export const DiscriminantDialog = ({
 
         setIsMainOpen(false);
 
-        onContinue();
+        onContinue(mainState);
     };
 
     const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {

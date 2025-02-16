@@ -20,7 +20,8 @@ export type DiscriminantDialogProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (field: keyof DiscriminantMainType, value: string | string[] | boolean | null) => void;
     data: DiscriminantMainType;
-    onContinue: () => void;
+    globalVariables: string[];
+    onContinue: (mainState : DiscriminantMainType) => void;
     onReset: () => void;
 };
 
