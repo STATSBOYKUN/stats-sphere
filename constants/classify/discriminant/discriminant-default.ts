@@ -8,7 +8,7 @@ import {
 export const DiscriminantMainDefault : DiscriminantMainType = {
     GroupingVariable: null,
     IndependentVariables: null,
-    Together: false,
+    Together: true,
     Stepwise: false,
     SelectionVariable: null,
 }
@@ -35,14 +35,14 @@ export const DiscriminantStatisticsDefault : DiscriminantStatisticsType = {
 }
 
 export const DiscriminantMethodDefault : DiscriminantMethodType = {
-    Wilks: false,
+    Wilks: true,
     Unexplained: false,
     Mahalonobis: false,
     FRatio: false,
     Raos: false,
     FValue: false,
     FProbability: false,
-    Summary: false,
+    Summary: true,
     Pairwise: false,
     VEnter: null,
     FEntry: null,
@@ -52,9 +52,9 @@ export const DiscriminantMethodDefault : DiscriminantMethodType = {
 }
 
 export const DiscriminantClassifyDefault : DiscriminantClassifyType = {
-    AllGroupEqual: false,
+    AllGroupEqual: true,
     GroupSize: false,
-    WithinGroup: false,
+    WithinGroup: true,
     SepGroup: false,
     Case: false,
     Limit: false,

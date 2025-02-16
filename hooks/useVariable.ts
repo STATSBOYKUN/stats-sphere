@@ -36,7 +36,11 @@ export function getSlicedData({dataVariables, variables, selectedVariables}: Var
     if (!selectedVariables) return [];
 
     const names = Array.isArray(selectedVariables) ? selectedVariables : [selectedVariables];
-    const maxIndex = getMaxIndex({dataVariables, variables, selectedVariables: names});
+    const maxIndex = getMaxIndex({
+        dataVariables : dataVariables,
+        variables : variables,
+        selectedVariables: names
+    });
     const newSlicedData: Record<string, string | number | null>[][] = [];
 
     names.forEach((varName) => {

@@ -19,6 +19,7 @@ import {useVariableStore} from "@/stores/useVariableStore";
 import {RawData, VariableDef} from "@/lib/db";
 import {useDataStore} from "@/stores/useDataStore";
 import {analyzeDiscriminant} from "@/services/analyze/classify/discriminant-analysis";
+import useResultStore from "@/stores/useResultStore";
 
 export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => {
     const variables = useVariableStore((state) => state.variables) as VariableDef[];
@@ -36,6 +37,7 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
     const [isBootstrapOpen, setIsBootstrapOpen] = useState(false);
 
     const {closeModal} = useModal();
+    const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
@@ -58,10 +60,13 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 main: mainData,
             };
 
-            const analyze = analyzeDiscriminant({
+            await analyzeDiscriminant({
                 tempData: newFormData,
-                dataVariables : dataVariables,
-                variables : variables
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic
             });
 
         } catch (error) {
