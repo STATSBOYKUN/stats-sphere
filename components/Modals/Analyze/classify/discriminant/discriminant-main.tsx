@@ -18,7 +18,7 @@ import {useModal} from "@/hooks/useModal";
 import {useVariableStore} from "@/stores/useVariableStore";
 import {RawData, VariableDef} from "@/lib/db";
 import {useDataStore} from "@/stores/useDataStore";
-import {getSlicedData, getVarDefs} from "@/hooks/useVariable";
+import {analyzeDiscriminant} from "@/services/analyze/classify/discriminant-analysis";
 
 export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => {
     const variables = useVariableStore((state) => state.variables) as VariableDef[];
@@ -58,32 +58,11 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 main: mainData,
             };
 
-            const selectedVariables = [
-                mainData.GroupingVariable,
-                ...(mainData.IndependentVariables || []),
-                mainData.SelectionVariable
-            ].filter((varName): varName is string => varName !== null);
-
-            const GroupingVariable = mainData.GroupingVariable ? [mainData.GroupingVariable] : [];
-            const IndependentVariables = mainData.IndependentVariables || [];
-            const SelectionVariable = mainData.SelectionVariable ? [mainData.SelectionVariable] : [];
-
-            // Gunakan custom hook untuk mendapatkan slicedData
-            const slicedDataForGrouping = getSlicedData(dataVariables, variables, GroupingVariable);
-            const slicedDataForIndependent = getSlicedData(dataVariables, variables, IndependentVariables);
-            const slicedDataForSelection = getSlicedData(dataVariables, variables, SelectionVariable);
-
-            // Gunakan custom hook untuk mendapatkan varDefs
-            const varDefsForGrouping = getVarDefs(variables, GroupingVariable);
-            const varDefsForIndependent = getVarDefs(variables, IndependentVariables);
-            const varDefsForSelection = getVarDefs(variables, SelectionVariable);
-
-            console.log("slicedDataForGrouping", slicedDataForGrouping);
-            console.log("slicedDataForIndependent", slicedDataForIndependent);
-            console.log("slicedDataForSelection", slicedDataForSelection);
-            console.log("varDefsForGrouping", varDefsForGrouping);
-            console.log("varDefsForIndependent", varDefsForIndependent);
-            console.log("varDefsForSelection", varDefsForSelection);
+            const analyze = analyzeDiscriminant({
+                tempData: newFormData,
+                dataVariables : dataVariables,
+                variables : variables
+            });
 
         } catch (error) {
             console.error(error);
