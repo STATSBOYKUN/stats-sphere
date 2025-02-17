@@ -18,7 +18,7 @@ import {useModal} from "@/hooks/useModal";
 import {useVariableStore} from "@/stores/useVariableStore";
 import {RawData, VariableDef} from "@/lib/db";
 import {useDataStore} from "@/stores/useDataStore";
-import {analyzeDiscriminant} from "@/services/analyze/classify/discriminant-analysis";
+import {analyzeDiscriminant} from "@/services/analyze/classify/discriminant/discriminant-analysis";
 import useResultStore from "@/stores/useResultStore";
 
 export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => {
