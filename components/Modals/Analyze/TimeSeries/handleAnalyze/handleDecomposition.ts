@@ -60,6 +60,9 @@ export async function handleDecomposition(
             case 'linear':
                 nameTrendMethod = "Linear Trend Equation";
                 break;
+            case 'quadratic':
+                nameTrendMethod = "Linear Trend Equation";
+                break;
             case 'exponential':
                 nameTrendMethod = "Exponential Trend Equation";
                 break;

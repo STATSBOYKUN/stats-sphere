@@ -60,8 +60,6 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
 
     const variables = useVariableStore((state) => state.variables) as VariableDef[];
     const data = useDataStore((state) => state.data) as RawData;
-    const setData = useDataStore((state) => state.setData);
-    const addVariable = useVariableStore((state) => state.addVariable);
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     useEffect(() => {

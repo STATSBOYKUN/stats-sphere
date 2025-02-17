@@ -6,9 +6,9 @@ import { CornerDownLeft, CornerDownRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";  
 import { Label } from "@/components/ui/label";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { handleUnitRootTest } from "./handleAnalyze/handleUnitRootTest";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface VariableDef {
@@ -47,10 +47,10 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
         {value: 'with_trend', label: 'trend and intercept'},
     ]
 
-    const [selectedMethod, setSelectedMethod] = useState<string[]>(['dickey-fuller','Dickey Fuller']);
-    const [selectedDifference, setSelectedDifference] = useState<string[]>(['level','Level']);
-    const [selectedEquation, setSelectedEquation] = useState<string[]>(['none','None']);
-    const [lengthLag, setLengthLag] = useState<number>(0);
+    const [selectedMethod, setSelectedMethod] = useState<string[]>(['dickey-fuller','dickey-fuller']);
+    const [selectedDifference, setSelectedDifference] = useState<string[]>(['level','level']);
+    const [selectedEquation, setSelectedEquation] = useState<string[]>(['no_constant','none']);
+    const [lengthLag, setLengthLag] = useState<number>(1);
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
     const [dataVariable, setDataVariable] = useState<string[]>([]);
     const [timeVariable, setTimeVariable] = useState<string[]>([]);
@@ -60,8 +60,6 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
     
     const variables = useVariableStore((state) => state.variables) as VariableDef[];
     const data = useDataStore((state) => state.data) as RawData;
-    const setData = useDataStore((state) => state.setData);
-    const addVariable = useVariableStore((state) => state.addVariable);
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     useEffect(() => {
@@ -70,12 +68,11 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
 
     const handleReset = () => {
         setDataVariable([]);
-        setTimeVariable([]);
         setAvailableVariables(variables.map((v) => v.name));
         setHighlightedVariable(null);
-        setSelectedMethod(['dickey-fuller','Dickey Fuller']);
-        setSelectedDifference(['level','Level']);
-        setSelectedEquation(['none','None']);
+        setSelectedMethod(['dickey-fuller','dickey-fuller']);
+        setSelectedDifference(['level','level']);
+        setSelectedEquation(['no_constant','none']);
         setLengthLag(0);
     };
 
@@ -89,30 +86,10 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
         }
     };
 
-    const handleSelectTimeVariable = (variable: string) => {
-        if (highlightedVariable === variable && timeVariable.length === 0) {
-            setTimeVariable((prev) => [...prev, variable]);
-            setAvailableVariables((prev) => prev.filter((item) => item !== variable));
-            setHighlightedVariable(null);
-        } else {
-            alert("A variable can only belong to one group, and Time Variable can only contain one variable.");
-        }
-    };
-
     const handleDeselectDataVariable = (variable: string) => {
         if (highlightedVariable === variable) {
             setAvailableVariables((prev) => [...prev, variable]);
             setDataVariable((prev) => prev.filter((item) => item !== variable));
-            setHighlightedVariable(null);
-        } else {
-            setHighlightedVariable(variable);
-        }
-    };
-
-    const handleDeselectTimeVariable = (variable: string) => {
-        if (highlightedVariable === variable) {
-            setAvailableVariables((prev) => [...prev, variable]);
-            setTimeVariable((prev) => prev.filter((item) => item !== variable));
             setHighlightedVariable(null);
         } else {
             setHighlightedVariable(variable);
@@ -124,9 +101,9 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
             setErrorMsg("Please select at least one used variable.");
             return;
         }
-        if (!timeVariable.length) {
-            setErrorMsg("Please select at least one time variable.");
-            return;
+        if (lengthLag < 1 || lengthLag > 5) {
+            setErrorMsg("Lag length must be between 1 and 5.");
+            return
         }
         setErrorMsg(null);
         setIsCalculating(true);
@@ -178,45 +155,45 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
             });
 
             const dataValues = slicedData.map(rowObj => rowObj[varDefs[0].name]).filter(value => value !== null).map(value => parseFloat(value as string));
-            const timeValues = slicedData.map(rowObj => rowObj[varDefs[1].name]).filter(value => value != null).map(value => String(value));
 
             if (dataValues.length === 0) {
                 setErrorMsg("No data available for the selected variables.");
                 setIsCalculating(false);
                 return;
             }
-            if (timeValues.length === 0) {
-                setErrorMsg("No data available for the selected time variables.");
-                setIsCalculating(false);
-                return;
-            }
-            if(dataValues.length != timeValues.length){
-                setErrorMsg("Data and Time length is not equal");
-                setIsCalculating(false);
-                return;
-            }
 
-            // let [acfValue, acf, pacf]: [any[],any,any] = await handleAutocorrelation(dataValues as number[], varDefs[0].name, maximumLag, selectedDifference[0], seasonally ? Number(selectedPeriod[0]) : 0);
+            let [testing, t_stat, crit_value, methodName]: [any,any,any,any] = await handleUnitRootTest(dataValues as number[], varDefs[0].name, selectedMethod[0], lengthLag, selectedEquation[0], selectedDifference[0]);
             
-            // console.log(acfValue);
+            console.log(testing);
+            console.log(t_stat);
+            console.log(crit_value);
+
             // Membuat Log
-            const logMsg = `AUTOCORRELATION: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]}`;
+            const logMsg = `UNIT ROOT TEST: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]}`;
             const logId = await addLog({ log: logMsg });
 
             // Membuat Judul Log
             const analyticId = await addAnalytic({
                 log_id: logId,
-                title: `Autocorrelation`,
+                title: `Unit Root Test: ${methodName}`,
                 note: "",
             });
 
-            // Membuat Tabel ACF
-            // const acfTable = await addStatistic({
-            //     analytic_id: analyticId,
-            //     title: "Autocorrelation Table",
-            //     output_data: ,
-            //     components: "Autocorrelation Table",
-            // });
+            // Membuat Tabel T-Statistic
+            const t_statTable = await addStatistic({
+                analytic_id: analyticId,
+                title: "T Statistic Table",
+                output_data: t_stat,
+                components: "T Statistic Table",
+            });
+
+            // Membuat Tabel Critical Value
+            const crit_valueTable = await addStatistic({
+                analytic_id: analyticId,
+                title: "Critical Value Table",
+                output_data: crit_value,
+                components: "Critical Value Table",
+            });
 
             setIsCalculating(false);
             onClose();
@@ -377,7 +354,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                         <Label>lag length:</Label>
                                     </div>
                                     <Input type="number" className="w-[60px]" 
-                                        placeholder="0" min="0" max="20" step="1"
+                                        placeholder="1" min="1" max="5" step="1"
                                         value={lengthLag}
                                         onChange={(e) => setLengthLag(Number(e.target.value))}
                                     /> 
@@ -390,11 +367,12 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
             </div>
             {/* Akhir Fitur Content */}
 
+            {errorMsg && <div className="text-red-600 mb-2 flex justify-center">{errorMsg}</div>}
             <div className="flex justify-center pt-4">
                 <DialogFooter>
                     <Button variant="outline" disabled={isCalculating} onClick={onClose}> Cancel </Button>
-                                        <Button variant="outline" disabled={isCalculating} onClick={handleReset}> Reset </Button>
-                                        <Button variant="outline" disabled={isCalculating} onClick={handleAnalyzes}> {isCalculating ? "Calculating..." : "OK"} </Button>
+                    <Button variant="outline" disabled={isCalculating} onClick={handleReset}> Reset </Button>
+                    <Button variant="outline" disabled={isCalculating} onClick={handleAnalyzes}> {isCalculating ? "Calculating..." : "OK"} </Button>
                 </DialogFooter>
             </div>
             
