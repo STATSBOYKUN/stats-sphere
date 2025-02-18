@@ -6,11 +6,11 @@ import React from "react";
 import { useModal, ModalType } from "@/hooks/useModal";
 
 // Time Series Tolong Jangan Dihapus
-import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
-import DecompositionModal from "@/components/Modals/Analyze/TimeSeries/DecompositionModal";
-import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
-import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
-import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
+// import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
+// import DecompositionModal from "@/components/Modals/Analyze/TimeSeries/DecompositionModal";
+// import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
+// import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
+// import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
 
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import { Dialog } from "@/components/ui/dialog";
