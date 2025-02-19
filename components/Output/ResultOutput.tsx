@@ -64,195 +64,33 @@ const ResultOutput: React.FC = () => {
                                                         {
   "tables": [
     {
-      "title": "Model Summary and Parameter Estimates",
+      "title": "Descriptive Statistics",
       "columnHeaders": [
-        {
-          "header": "Equation"
-        },
-        {
-          "header": "Model Summary",
-          "children": [
-            {
-              "header": "R Square"
-            },
-            {
-              "header": "F"
-            },
-            {
-              "header": "df1"
-            },
-            {
-              "header": "df2"
-            },
-            {
-              "header": "Sig."
-            }
-          ]
-        },
-        {
-          "header": "Parameter Estimates",
-          "children": [
-            {
-              "header": "Constant"
-            },
-            {
-              "header": "b1"
-            },
-            {
-              "header": "b2"
-            },
-            {
-              "header": "b3"
-            }
-          ]
-        }
+        { "header": "Variable" },
+        { "header": "Mean" },
+        { "header": "Std. Deviation" },
+        { "header": "N" }
       ],
       "rows": [
         {
-          "rowHeader": [
-            "Linear"
-          ],
-          "R Square": 0.931,
-          "F": 174.946,
-          "df1": 1,
-          "df2": 13,
-          "Sig.": "<0.001",
-          "Constant": -2.883,
-          "b1": 1.34,
-          "b2": "",
-          "b3": ""
+          "rowHeader": ["VAR00001"],
+          "Mean": 2.75,
+          "Std. Deviation": 1.98206,
+          "N": 8
         },
         {
-          "rowHeader": [
-            "Logarithmic"
-          ],
-          "R Square": 0.928,
-          "F": 166.347,
-          "df1": 1,
-          "df2": 13,
-          "Sig.": "<0.001",
-          "Constant": -13.547,
-          "b1": 10.327,
-          "b2": "",
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Inverse"
-          ],
-          "R Square": 0.916,
-          "F": 141.845,
-          "df1": 1,
-          "df2": 13,
-          "Sig.": "<0.001",
-          "Constant": 17.747,
-          "b1": -77.903,
-          "b2": "",
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Quadratic"
-          ],
-          "R Square": 0.931,
-          "F": 80.778,
-          "df1": 2,
-          "df2": 12,
-          "Sig.": "<0.001",
-          "Constant": -3.315,
-          "b1": 1.453,
-          "b2": -0.007,
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Cubic"
-          ],
-          "R Square": 0.931,
-          "F": 49.369,
-          "df1": 3,
-          "df2": 11,
-          "Sig.": "<0.001",
-          "Constant": -4.914,
-          "b1": 2.084,
-          "b2": -0.089,
-          "b3": 0.004
-        },
-        {
-          "rowHeader": [
-            "Compound"
-          ],
-          "R Square": 0.931,
-          "F": 80.847,
-          "df1": 2,
-          "df2": 12,
-          "Sig.": "<0.001",
-          "Constant": -3.067,
-          "b1": 1.368,
-          "b2": 0,
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Power"
-          ],
-          "R Square": 0.931,
-          "F": 80.789,
-          "df1": 2,
-          "df2": 12,
-          "Sig.": "<0.001",
-          "Constant": -3.889,
-          "b1": 1.215,
-          "b2": 0.97,
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "S"
-          ],
-          "R Square": 0.931,
-          "F": 80.895,
-          "df1": 2,
-          "df2": 12,
-          "Sig.": "<0.001",
-          "Constant": -56.828,
-          "b1": 1.31,
-          "b2": 54.219,
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Growth"
-          ],
-          "R Square": 0.931,
-          "F": 80.847,
-          "df1": 2,
-          "df2": 12,
-          "Sig.": "<0.001",
-          "Constant": -3.067,
-          "b1": 1.368,
-          "b2": 0,
-          "b3": ""
-        },
-        {
-          "rowHeader": [
-            "Exponential"
-          ],
-          "R Square": 0.764,
-          "F": 42.186,
-          "df1": 1,
-          "df2": 13,
-          "Sig.": "<0.001",
-          "Constant": 6.334,
-          "b1": 0,
-          "b2": "",
-          "b3": ""
+          "rowHeader": ["VAR00002"],
+          "Mean": 2.50,
+          "Std. Deviation": 1.19523,
+          "N": 8
         }
       ]
     }
   ]
 }
-                                                        '/> */}
+
+
+'/> */}
 
                                                     </div>
                                                 </div>

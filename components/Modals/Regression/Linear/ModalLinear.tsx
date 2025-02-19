@@ -171,314 +171,373 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
 
   
 
-  //Fungsi handleAnalyze untuk melakukan regresi linier
-  const handleAnalyze = async () => {
-    try {
-      const dependentVarName = selectedDependentVariable?.name;
-      const independentVarNames = selectedIndependentVariables.map(v => v.name);
-  
-      if (!dependentVarName || independentVarNames.length === 0) {
-        alert('Please select a dependent variable and at least one independent variable.');
-        return;
-      }
-      
-      // 1. Create log command
-      const logMessage = `REGRESSION 
-  /MISSING LISTWISE 
-  /STATISTICS COEFF OUTS R ANOVA 
-  /CRITERIA=PIN(.05) POUT(.10) 
-  /NOORIGIN 
-  /DEPENDENT ${dependentVarName} 
-  /METHOD=${method.toUpperCase()} ${independentVarNames.join(' ')}.`;
-  
-      const log = { log: logMessage };
-      const logId = await addLog(log);
-  
-      // 2. Add Analytic with title "Regression"
-      const analytic = {
-        title: "Linear Regression",
-        log_id: logId,
-        note: "",
-      };
-      const analyticId = await addAnalytic(analytic);
-  
-      // 3. Perform linear regression
-      const allVariables = variables;
-      const dataRows = data; // data is an array of rows, each row is an array of strings
-  
-      // Get column indices
-      const dependentVar = allVariables.find(v => v.name === dependentVarName);
-      const independentVars = independentVarNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as VariableRow[];
-  
-      const dependentVarIndex = dependentVar?.columnIndex;
-      const independentVarIndices = independentVars.map(v => v.columnIndex);
-  
-      if (dependentVarIndex === undefined || independentVarIndices.includes(undefined)) {
-        throw new Error('Variable indices not found.');
-      }
-  
-      // Ensure TypeScript knows indices are not undefined
-      const depVarIndex = dependentVarIndex as number;
-      const indepVarIndices = independentVarIndices as number[];
-  
-      // Extract data for variables
-      const dependentData = dataRows.map(row => parseFloat(row[depVarIndex]));
-      const independentData = indepVarIndices.map(index => dataRows.map(row => parseFloat(row[index])));
-  
-      // Handle missing data
-      const validIndices = dependentData.map((value, idx) => {
-        if (isNaN(value) || independentData.some(indepData => isNaN(indepData[idx]))) {
-          return false;
-        }
-        return true;
-      });
-  
-      // Filter valid data
-      const filteredDependentData = dependentData.filter((_, idx) => validIndices[idx]);
-      const filteredIndependentData = independentData.map(indepData => indepData.filter((_, idx) => validIndices[idx]));
-  
-      // Transpose independentData
-      const independentDataTransposed = filteredIndependentData[0].map((_, idx) => filteredIndependentData.map(indepData => indepData[idx]));
-  
-      // Perform linear regression
-      const regressionResults = calculateLinearRegression(filteredDependentData, independentDataTransposed);
+//INI AWAL HANDLE ANALYZE
+const handleAnalyze = async () => {
+  try {
+    const dependentVarName = selectedDependentVariable?.name;
+    const independentVarNames = selectedIndependentVariables.map(v => v.name);
 
-      if (statsParams?.rSquaredChange) {
-        // Jika rSquaredChange bernilai true, gunakan Web Worker untuk menghitung regresi
-        const worker = new Worker('/workers/Regression/modal_summary.js');
-        
-        // Misalnya, jika worker dirancang untuk satu variabel independen, gunakan kolom pertama:
-        worker.postMessage({
-          dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
-        });
-      
-        worker.onmessage = async (e) => {
-          const regressionResults = e.data;
-          // Lakukan proses penyimpanan/integrasi statistik hasil worker (misalnya, addStatistic)
-          // ... (kode Anda untuk memproses regressionResults dari worker)
-          
-          worker.terminate();
-        };
-      
-        worker.onerror = (error) => {
-          console.error("Worker error:", error);
-          worker.terminate();
-        };
-        console.log("Using Web Worker for regression calculation...");
-        console.log("Regression results:", regressionResults);
-      }
+    if (!dependentVarName || independentVarNames.length === 0) {
+      alert('Please select a dependent variable and at least one independent variable.');
+      return;
+    }
 
-      // 4. Insert results into Statistics
-  
-      // Variables Entered/Removed
-      const variablesEnteredRemoved = {
-        tables: [
-          {
-            title: "Variables Entered/Removed",
-            columnHeaders: [
-              { header: "Model" },
-              { header: "Variables Entered" },
-              { header: "Variables Removed" },
-              { header: "Method" }
-            ],
-            rows: [
-              {
-                rowHeader: ["1"],
-                "Variables Entered": independentVarNames.join(', '),
-                "Variables Removed": "",
-                "Method": method,
-              }
-            ]
-          }
-        ]
-      };
-  
-      const variablesEnteredRemovedStat = {
+    // 1. Create log command
+    const logMessage = `REGRESSION 
+    /MISSING LISTWISE 
+    /STATISTICS COEFF OUTS R ANOVA 
+    /CRITERIA=PIN(.05) POUT(.10) 
+    /NOORIGIN 
+    /DEPENDENT ${dependentVarName} 
+    /METHOD=${method.toUpperCase()} ${independentVarNames.join(' ')}.`;
+    console.log("[Analyze] Log message:", logMessage);
+    const log = { log: logMessage };
+    const logId = await addLog(log);
+
+    // 2. Add Analytic with title "Regression"
+    const analytic = {
+      title: "Linear Regression",
+      log_id: logId,
+      note: "",
+    };
+    const analyticId = await addAnalytic(analytic);
+    console.log("[Analyze] Analytic ID:", analyticId);
+
+    // 3. Perform linear regression
+    const allVariables = variables;
+    const dataRows = data; // data adalah array dari baris, tiap baris adalah array string
+
+    // Dapatkan kolom indeks
+    const dependentVar = allVariables.find(v => v.name === dependentVarName);
+    const independentVars = independentVarNames
+      .map(name => allVariables.find(v => v.name === name))
+      .filter(v => v);
+
+    const dependentVarIndex = dependentVar?.columnIndex;
+    const independentVarIndices = independentVars.map(v => v.columnIndex);
+
+    if (dependentVarIndex === undefined || independentVarIndices.includes(undefined)) {
+      throw new Error('Variable indices not found.');
+    }
+
+    const depVarIndex = dependentVarIndex;
+    const indepVarIndices = independentVarIndices;
+
+    // Ekstrak data untuk variabel
+    const dependentData = dataRows.map(row => parseFloat(row[depVarIndex]));
+    const independentData = indepVarIndices.map(index => dataRows.map(row => parseFloat(row[index])));
+    console.log("[Analyze] Data awal - Dependent:", dependentData);
+    console.log("[Analyze] Data awal - Independent (per variable):", independentData);
+
+    // Tangani missing data
+    const validIndices = dependentData.map((value, idx) => {
+      if (isNaN(value) || independentData.some(indepData => isNaN(indepData[idx]))) {
+        return false;
+      }
+      return true;
+    });
+
+    // Filter data valid
+    const filteredDependentData = dependentData.filter((_, idx) => validIndices[idx]);
+    const filteredIndependentData = independentData.map(indepData => indepData.filter((_, idx) => validIndices[idx]));
+    console.log("[Analyze] Data valid - Dependent:", filteredDependentData);
+    console.log("[Analyze] Data valid - Independent (per variable):", filteredIndependentData);
+
+    // Transpose data independent jika diperlukan (untuk multiple regression)
+    const independentDataTransposed = filteredIndependentData[0].map((_, idx) =>
+      filteredIndependentData.map(indepData => indepData[idx])
+    );
+
+    // Lakukan perhitungan regresi linear (fungsi ini harus mengembalikan detail squared changes)
+    const regressionResults = calculateLinearRegression(filteredDependentData, independentDataTransposed);
+    console.log("[Analyze] Hasil regresi (calculateLinearRegression):", regressionResults);
+
+    //AWAL RSQUARE CHANGE
+    const worker = new Worker('/workers/Regression/rsquare.js');
+    console.log("[Analyze] Mengirim data ke Worker untuk perhitungan regresi (squared changes)...");
+    worker.postMessage({
+      dependent: filteredDependentData,
+      independent: filteredIndependentData[0]
+    });
+
+    // Ketika worker mengembalikan hasil, simpan hasil tersebut ke dalam statistik
+    worker.onmessage = async (e) => {
+      const workerResults = e.data;
+      console.log("[Analyze] Hasil dari Worker:", workerResults);
+      const rSquareStat = {
         analytic_id: analyticId,
-        title: "Variables Entered/Removed",
-        output_data: JSON.stringify(variablesEnteredRemoved),
+        title: "Model Summary (R Square Change)",
+        output_data: JSON.stringify(workerResults),
         output_type: "table",
-        components: "VariablesEnteredRemoved",
+        components: "RSquareChange",
       };
-  
-      await addStatistic(variablesEnteredRemovedStat);
-  
-      // Model Summary
-      const modelSummary = {
-        tables: [
-          {
-            title: "Model Summary",
-            columnHeaders: [
-              { header: "Model" },
-              { header: "" },
-              { header: "Sum of Squares" },
-              { header: "df" },
-              { header: "Mean Square" },
-              { header: "F" },
-              { header: "Sig" }
-            ],
-            rows: [
-              {
-                rowHeader: ["1"],
-                children: [
-                  {
-                    rowHeader: [null, "Regression"],
-                    "Sum of Squares": regressionResults.regressionSS.toFixed(3),
-                    "df": regressionResults.regressionDF,
-                    "Mean Square": regressionResults.regressionMS.toFixed(3),
-                    "F": regressionResults.F.toFixed(3),
-                    "Sig": regressionResults.pValue.toFixed(3)
-                  },
-                  {
-                    rowHeader: [null, "Residual"],
-                    "Sum of Squares": regressionResults.residualSS.toFixed(3),
-                    "df": regressionResults.residualDF,
-                    "Mean Square": regressionResults.residualMS.toFixed(3),
-                    "F": "",
-                    "Sig": ""
-                  },
-                  {
-                    rowHeader: [null, "Total"],
-                    "Sum of Squares": regressionResults.totalSS.toFixed(3),
-                    "df": regressionResults.totalDF,
-                    "Mean Square": "",
-                    "F": "",
-                    "Sig": ""
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      };
-  
-      const modelSummaryStat = {
-        analytic_id: analyticId,
-        title: "Model Summary",
-        output_data: JSON.stringify(modelSummary),
-        output_type: "table",
-        components: "ModelSummary",
-      };
-  
-      await addStatistic(modelSummaryStat);
-  
-      // ANOVA
-      const anovaTable = {
-        tables: [
-          {
-            title: "ANOVA",
-            columnHeaders: [
-              { header: "Model" },
-              { header: "Sum of Squares" },
-              { header: "df" },
-              { header: "Mean Square" },
-              { header: "F" },
-              { header: "Sig." }
-            ],
-            rows: [
-              {
-                rowHeader: ["Regression"],
-                "Sum of Squares": regressionResults.regressionSS.toFixed(3),
-                "df": regressionResults.regressionDF,
-                "Mean Square": regressionResults.regressionMS.toFixed(3),
-                "F": regressionResults.F.toFixed(3),
-                "Sig.": regressionResults.pValue.toFixed(3),
-              },
-              {
-                rowHeader: ["Residual"],
-                "Sum of Squares": regressionResults.residualSS.toFixed(3),
-                "df": regressionResults.residualDF,
-                "Mean Square": regressionResults.residualMS.toFixed(3),
-                "F": "",
-                "Sig.": "",
-              },
-              {
-                rowHeader: ["Total"],
-                "Sum of Squares": regressionResults.totalSS.toFixed(3),
-                "df": regressionResults.totalDF,
-                "Mean Square": "",
-                "F": "",
-                "Sig.": "",
-              }
-            ]
-          }
-        ]
-      };
-  
-      const anovaStat = {
-        analytic_id: analyticId,
-        title: "ANOVA",
-        output_data: JSON.stringify(anovaTable),
-        output_type: "table",
-        components: "ANOVA",
-      };
-  
-      await addStatistic(anovaStat);
-  
-      // Coefficients
-      const coefficientsData = regressionResults.coefficients.map((coef, idx) => {
-        return {
-          rowHeader: [idx === 0 ? "1" : null],
-          children: [
+      await addStatistic(rSquareStat);
+      console.log("[Analyze] Statistik R Square Change disimpan.");
+      
+      worker.terminate();
+    };
+
+    worker.onerror = (error) => {
+      console.error("[Analyze] Worker error:", error);
+      worker.terminate();
+    };
+    //AKHIR RSQUARE CHANGE
+
+    // ... di dalam fungsi handleAnalyze pada ModalLinear.tsx
+
+// AWAL DESCRIPTIVE STATISTICS
+const descriptiveWorker = new Worker('/workers/Regression/descriptive_statistics.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Descriptive Statistics...");
+
+// Karena worker mengharapkan data independent sebagai array 1 dimensi,
+// gunakan filteredDependentData dan filteredIndependentData[0]
+descriptiveWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+// Menangani hasil dari Worker dan memasukkannya ke dalam addStatistic
+descriptiveWorker.onmessage = async (e) => {
+  const descriptiveResults = e.data;
+  console.log("[Analyze] Hasil Descriptive Statistics dari Worker:", descriptiveResults);
+
+  const descriptiveStat = {
+    analytic_id: analyticId,
+    title: "Descriptive Statistics",
+    output_data: JSON.stringify(descriptiveResults),
+    output_type: "table",
+    components: "DescriptiveStatistics",
+  };
+  await addStatistic(descriptiveStat);
+  console.log("[Analyze] Statistik Descriptive Statistics disimpan.");
+
+  descriptiveWorker.terminate();
+};
+
+descriptiveWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Descriptive Statistics error:", error);
+  descriptiveWorker.terminate();
+};
+// AKHIR DESCRIPTIVE STATISTICS
+
+
+
+
+    // 4. Insert statistik lainnya
+    // Variables Entered/Removed
+    const variablesEnteredRemoved = {
+      tables: [
+        {
+          title: "Variables Entered/Removed",
+          columnHeaders: [
+            { header: "Model" },
+            { header: "Variables Entered" },
+            { header: "Variables Removed" },
+            { header: "Method" }
+          ],
+          rows: [
             {
-              rowHeader: [null, idx === 0 ? "(Constant)" : independentVarNames[idx - 1]],
-              "B": coef.coefficient.toFixed(3),
-              "stdError": coef.stdError.toFixed(3),
-              "Beta": coef.standardizedCoefficient !== null ? coef.standardizedCoefficient.toFixed(3) : "",
-              "t": coef.tValue.toFixed(3),
-              "Sig.": coef.pValue.toFixed(3)
+              rowHeader: ["1"],
+              "Variables Entered": independentVarNames.join(', '),
+              "Variables Removed": "",
+              "Method": method,
             }
           ]
-        };
-      });
-  
-      const coefficientsTable = {
-        tables: [
+        }
+      ]
+    };
+
+    const variablesEnteredRemovedStat = {
+      analytic_id: analyticId,
+      title: "Variables Entered/Removed",
+      output_data: JSON.stringify(variablesEnteredRemoved),
+      output_type: "table",
+      components: "VariablesEnteredRemoved",
+    };
+
+    await addStatistic(variablesEnteredRemovedStat);
+    console.log("[Analyze] Statistik Variables Entered/Removed disimpan.");
+
+    // Model Summary (dari regressionResults)
+    const modelSummary = {
+      tables: [
+        {
+          title: "Model Summary",
+          columnHeaders: [
+            { header: "Model" },
+            { header: "" },
+            { header: "Sum of Squares" },
+            { header: "df" },
+            { header: "Mean Square" },
+            { header: "F" },
+            { header: "Sig" }
+          ],
+          rows: [
+            {
+              rowHeader: ["1"],
+              children: [
+                {
+                  rowHeader: [null, "Regression"],
+                  "Sum of Squares": regressionResults.regressionSS.toFixed(3),
+                  "df": regressionResults.regressionDF,
+                  "Mean Square": regressionResults.regressionMS.toFixed(3),
+                  "F": regressionResults.F.toFixed(3),
+                  "Sig": regressionResults.pValue.toFixed(3)
+                },
+                {
+                  rowHeader: [null, "Residual"],
+                  "Sum of Squares": regressionResults.residualSS.toFixed(3),
+                  "df": regressionResults.residualDF,
+                  "Mean Square": regressionResults.residualMS.toFixed(3),
+                  "F": "",
+                  "Sig": ""
+                },
+                {
+                  rowHeader: [null, "Total"],
+                  "Sum of Squares": regressionResults.totalSS.toFixed(3),
+                  "df": regressionResults.totalDF,
+                  "Mean Square": "",
+                  "F": "",
+                  "Sig": ""
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+
+    const modelSummaryStat = {
+      analytic_id: analyticId,
+      title: "Model Summary",
+      output_data: JSON.stringify(modelSummary),
+      output_type: "table",
+      components: "ModelSummary",
+    };
+
+    await addStatistic(modelSummaryStat);
+    console.log("[Analyze] Statistik Model Summary disimpan.");
+
+    // ANOVA
+    const anovaTable = {
+      tables: [
+        {
+          title: "ANOVA",
+          columnHeaders: [
+            { header: "Model" },
+            { header: "Sum of Squares" },
+            { header: "df" },
+            { header: "Mean Square" },
+            { header: "F" },
+            { header: "Sig." }
+          ],
+          rows: [
+            {
+              rowHeader: ["Regression"],
+              "Sum of Squares": regressionResults.regressionSS.toFixed(3),
+              "df": regressionResults.regressionDF,
+              "Mean Square": regressionResults.regressionMS.toFixed(3),
+              "F": regressionResults.F.toFixed(3),
+              "Sig.": regressionResults.pValue.toFixed(3),
+            },
+            {
+              rowHeader: ["Residual"],
+              "Sum of Squares": regressionResults.residualSS.toFixed(3),
+              "df": regressionResults.residualDF,
+              "Mean Square": regressionResults.residualMS.toFixed(3),
+              "F": "",
+              "Sig.": "",
+            },
+            {
+              rowHeader: ["Total"],
+              "Sum of Squares": regressionResults.totalSS.toFixed(3),
+              "df": regressionResults.totalDF,
+              "Mean Square": "",
+              "F": "",
+              "Sig.": "",
+            }
+          ]
+        }
+      ]
+    };
+
+    const anovaStat = {
+      analytic_id: analyticId,
+      title: "ANOVA",
+      output_data: JSON.stringify(anovaTable),
+      output_type: "table",
+      components: "ANOVA",
+    };
+
+    await addStatistic(anovaStat);
+    console.log("[Analyze] Statistik ANOVA disimpan.");
+
+    // Coefficients
+    const coefficientsData = regressionResults.coefficients.map((coef, idx) => {
+      return {
+        rowHeader: [idx === 0 ? "1" : null],
+        children: [
           {
-            title: "Coefficients",
-            columnHeaders: [
-              { header: "Model" },
-              { header: "" },
-              {
-                header: "Unstandardized Coefficients",
-                children: [
-                  { header: "B", key: "B" },
-                  { header: "Std. Error", key: "stdError" }
-                ]
-              },
-              {
-                header: "Standardized Coefficients",
-                children: [
-                  { header: "Beta", key: "Beta" }
-                ]
-              },
-              { header: "t" },
-              { header: "Sig." }
-            ],
-            rows: coefficientsData
+            rowHeader: [null, idx === 0 ? "(Constant)" : independentVarNames[idx - 1]],
+            "B": coef.coefficient.toFixed(3),
+            "stdError": coef.stdError.toFixed(3),
+            "Beta": coef.standardizedCoefficient !== null ? coef.standardizedCoefficient.toFixed(3) : "",
+            "t": coef.tValue.toFixed(3),
+            "Sig.": coef.pValue.toFixed(3)
           }
         ]
       };
+    });
+
+    const coefficientsTable = {
+      tables: [
+        {
+          title: "Coefficients",
+          columnHeaders: [
+            { header: "Model" },
+            { header: "" },
+            {
+              header: "Unstandardized Coefficients",
+              children: [
+                { header: "B", key: "B" },
+                { header: "Std. Error", key: "stdError" }
+              ]
+            },
+            {
+              header: "Standardized Coefficients",
+              children: [
+                { header: "Beta", key: "Beta" }
+              ]
+            },
+            { header: "t" },
+            { header: "Sig." }
+          ],
+          rows: coefficientsData
+        }
+      ]
+    };
+
+    const coefficientsStat = {
+      analytic_id: analyticId,
+      title: "Coefficients",
+      output_data: JSON.stringify(coefficientsTable),
+      output_type: "table",
+      components: "Coefficients",
+    };
+
+    await addStatistic(coefficientsStat);
+    console.log("[Analyze] Statistik Coefficients disimpan.");
+
+    // Tutup modal setelah semua proses selesai
+    onClose();
+
+  } catch (error) {
+    console.error('[Analyze] Failed to perform linear regression:', error);
+    alert('Failed to perform linear regression. Please check your data and try again.');
+  }
+};
+// INI AKHIR HANDLE ANALYZE
   
-      const coefficientsStat = {
-        analytic_id: analyticId,
-        title: "Coefficients",
-        output_data: JSON.stringify(coefficientsTable),
-        output_type: "table",
-        components: "Coefficients",
-      };
-  
-      await addStatistic(coefficientsStat);
-  
-      // Close modal
-      onClose();
-  
-    } catch (error) {
-      console.error('Failed to perform linear regression:', error);
-      alert('Failed to perform linear regression. Please check your data and try again.');
-    }
-  };
 
 //   const handleAnalyze = () => {
 //     const dependentVarName = selectedDependentVariable?.name;
