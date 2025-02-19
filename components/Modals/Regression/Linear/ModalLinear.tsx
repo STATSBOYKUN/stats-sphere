@@ -296,7 +296,7 @@ descriptiveWorker.postMessage({
   independent: filteredIndependentData[0]
 });
 
-// Menangani hasil dari Worker dan memasukkannya ke dalam addStatistic
+// Tangani respon dari worker
 descriptiveWorker.onmessage = async (e) => {
   const descriptiveResults = e.data;
   console.log("[Analyze] Hasil Descriptive Statistics dari Worker:", descriptiveResults);
@@ -308,6 +308,7 @@ descriptiveWorker.onmessage = async (e) => {
     output_type: "table",
     components: "DescriptiveStatistics",
   };
+
   await addStatistic(descriptiveStat);
   console.log("[Analyze] Statistik Descriptive Statistics disimpan.");
 
@@ -319,6 +320,7 @@ descriptiveWorker.onerror = (error) => {
   descriptiveWorker.terminate();
 };
 // AKHIR DESCRIPTIVE STATISTICS
+
 
 
 

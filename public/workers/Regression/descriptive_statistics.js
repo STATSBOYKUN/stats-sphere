@@ -1,76 +1,39 @@
 // descriptive_statistics.js
 
-// Fungsi untuk menghitung mean
-function calculateMean(arr) {
-  const sum = arr.reduce((acc, val) => acc + val, 0);
-  return sum / arr.length;
-}
+// Menerima pesan dari main thread
+self.onmessage = function(e) {
+  // Pastikan data yang diterima memiliki properti 'dependent' dan 'independent'
+  const { dependent, independent } = e.data;
 
-// Fungsi untuk menghitung standar deviasi sample
-function calculateSampleStdDev(arr, mean) {
-  const squaredDiffs = arr.map(val => Math.pow(val - mean, 2));
-  // Bagi dengan n-1 untuk sample standard deviation
-  const variance = squaredDiffs.reduce((acc, val) => acc + val, 0) / (arr.length - 1);
-  return Math.sqrt(variance);
-}
-
-// Web Worker menerima pesan dari thread utama
-self.onmessage = function (event) {
-  console.log("[Worker] Data diterima:", event.data);
-  const { dependent, independent } = event.data;
-
-  // Validasi input
-  if (!Array.isArray(dependent) || !Array.isArray(independent)) {
-    const errorMsg = "Parameter 'dependent' dan 'independent' harus berupa array.";
-    console.error("[Worker] Error:", errorMsg);
-    postMessage({ error: errorMsg });
-    return;
+  // Fungsi untuk menghitung rata-rata
+  function mean(arr) {
+    return arr.reduce((sum, val) => sum + val, 0) / arr.length;
   }
 
-  // Jika salah satu array kosong, kembalikan tabel dengan rows kosong
-  if (dependent.length === 0 || independent.length === 0) {
-    const output = {
-      tables: [
-        {
-          title: "Descriptive Statistics",
-          columnHeaders: [
-            { header: "Variable", key: "variable" },
-            { header: "Mean", key: "mean" },
-            { header: "Std. Deviation", key: "stdDeviation" },
-            { header: "N", key: "n" }
-          ],
-          rows: []
-        }
-      ]
-    };
-    postMessage(output);
-    return;
+  // Fungsi untuk menghitung standar deviasi sampel
+  function sampleStdDev(arr) {
+    const m = mean(arr);
+    const sumSq = arr.reduce((sum, val) => sum + Math.pow(val - m, 2), 0);
+    return Math.sqrt(sumSq / (arr.length - 1));
   }
 
-  // Hitung statistik untuk data dependen
-  const meanDependent = calculateMean(dependent);
-  const stdDependent = parseFloat(calculateSampleStdDev(dependent, meanDependent).toFixed(5));
+  // Menghitung nilai statistik untuk masing-masing variabel
   const statsDependent = {
     variable: "VAR00001",
-    mean: meanDependent,
-    stdDeviation: stdDependent,
-    n: dependent.length,
-    children: [] // tambahkan children kosong untuk menghindari error
+    mean: parseFloat(mean(dependent).toFixed(2)),
+    stdDeviation: parseFloat(sampleStdDev(dependent).toFixed(5)),
+    n: dependent.length
   };
 
-  // Hitung statistik untuk data independen
-  const meanIndependent = calculateMean(independent);
-  const stdIndependent = parseFloat(calculateSampleStdDev(independent, meanIndependent).toFixed(5));
   const statsIndependent = {
     variable: "VAR00002",
-    mean: meanIndependent,
-    stdDeviation: stdIndependent,
-    n: independent.length,
-    children: [] // tambahkan children kosong
+    mean: parseFloat(mean(independent).toFixed(2)),
+    stdDeviation: parseFloat(sampleStdDev(independent).toFixed(5)),
+    n: independent.length
   };
 
-  // Susun output JSON sesuai dengan spesifikasi
-  const output = {
+  // Menyusun format output JSON
+  const result = {
     tables: [
       {
         title: "Descriptive Statistics",
@@ -88,7 +51,6 @@ self.onmessage = function (event) {
     ]
   };
 
-  console.log("[Worker] Hasil perhitungan:", output);
-  // Kirim hasil perhitungan kembali ke thread utama
-  postMessage(output);
+  // Mengirim hasil kembali ke main thread
+  self.postMessage(result);
 };
