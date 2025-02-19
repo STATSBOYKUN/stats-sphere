@@ -69,11 +69,7 @@ impl DickeyFuller{
                 let b_vector = reg.get_beta();
                 let se_vector = reg.calculate_standard_error();
                 // Pastikan indeks 2 ada dan standard error tidak nol
-                if b_vector.len() < 3 || se_vector.len() < 3 || se_vector[2] == 0.0 {
-                    (0.0, 0.0)
-                } else {
-                    (b_vector[2], se_vector[2])
-                }
+                (b_vector[2] as f64, se_vector[2] as f64)
             },
             _ => (0.0, 0.0),
         };

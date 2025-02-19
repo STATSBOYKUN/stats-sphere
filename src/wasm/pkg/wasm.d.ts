@@ -1,8 +1,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export function get_gamma_0_tab1(): Float64Array;
-export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
 export function get_beta_inf(): Float64Array;
+export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
 export class AugmentedDickeyFuller {
   free(): void;
   constructor(data: Float64Array, equation: string, level: string, lag: number);
@@ -57,11 +57,6 @@ export class Autocorrelation {
 }
 export class Decomposition {
   free(): void;
-  calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
-  linear_trend(deseasonalizing: Float64Array): Float64Array;
-  quadratic_trend(deseasonalizing: Float64Array): Float64Array;
-  exponential_trend(deseasonalizing: Float64Array): Float64Array;
-  calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
   constructor(data: Float64Array, data_header: string, time: string[], time_header: string, period: number);
   get_data(): Float64Array;
   get_data_header(): string;
@@ -79,11 +74,16 @@ export class Decomposition {
   set_seasonal_indices(seasonal_indices: Float64Array): void;
   set_trend_equation(trend_equation: string): void;
   calculate_centered_moving_average(): Float64Array;
-  calculate_multiplicative_seasonal_component(centered_ma: Float64Array): Float64Array;
-  calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
-  decomposition_evaluation(forecast: Float64Array): any;
   multiplicative_decomposition(trend: string): Float64Array;
+  calculate_multiplicative_seasonal_component(centered_ma: Float64Array): Float64Array;
+  calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
+  linear_trend(deseasonalizing: Float64Array): Float64Array;
+  quadratic_trend(deseasonalizing: Float64Array): Float64Array;
+  exponential_trend(deseasonalizing: Float64Array): Float64Array;
   additive_decomposition(): Float64Array;
+  calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
+  calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
+  decomposition_evaluation(forecast: Float64Array): any;
 }
 export class DickeyFuller {
   free(): void;
@@ -106,14 +106,14 @@ export class DickeyFuller {
 }
 export class MultipleLinearRegression {
   free(): void;
+  calculate_regression(): void;
+  calculate_standard_error(): Float64Array;
   constructor(x: any, y: Float64Array);
   get_y(): Float64Array;
   get_y_prediction(): Float64Array;
   get_beta(): Float64Array;
   set_y_prediction(y_prediction: Float64Array): void;
   set_beta(beta: Float64Array): void;
-  calculate_regression(): void;
-  calculate_standard_error(): Float64Array;
   readonly get_x: any;
 }
 export class NoInterceptLinearRegression {
@@ -191,15 +191,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_quadraticregression_free: (a: number, b: number) => void;
-  readonly quadraticregression_new: (a: number, b: number, c: number, d: number) => number;
-  readonly quadraticregression_get_x: (a: number) => [number, number];
-  readonly quadraticregression_get_y: (a: number) => [number, number];
-  readonly quadraticregression_get_y_prediction: (a: number) => [number, number];
-  readonly quadraticregression_get_beta: (a: number) => [number, number];
-  readonly quadraticregression_set_y_prediction: (a: number, b: number, c: number) => void;
-  readonly quadraticregression_set_beta: (a: number, b: number, c: number) => void;
-  readonly quadraticregression_calculate_regression: (a: number) => void;
+  readonly get_gamma_0_tab1: () => [number, number];
   readonly __wbg_smoothing_free: (a: number, b: number) => void;
   readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly smoothing_get_data_header: (a: number) => [number, number];
@@ -236,18 +228,37 @@ export interface InitOutput {
   readonly augmenteddickeyfuller_calculate_pvalue: (a: number) => number;
   readonly augmenteddickeyfuller_calculate_critical_value: (a: number) => [number, number];
   readonly augmenteddickeyfuller_calculate_test_stat: (a: number) => number;
-  readonly get_gamma_0_tab1: () => [number, number];
-  readonly __wbg_simpleexponentialregression_free: (a: number, b: number) => void;
-  readonly simpleexponentialregression_new: (a: number, b: number, c: number, d: number) => number;
-  readonly simpleexponentialregression_get_x: (a: number) => [number, number];
-  readonly simpleexponentialregression_get_y: (a: number) => [number, number];
-  readonly simpleexponentialregression_get_y_prediction: (a: number) => [number, number];
-  readonly simpleexponentialregression_get_b0: (a: number) => number;
-  readonly simpleexponentialregression_get_b1: (a: number) => number;
-  readonly simpleexponentialregression_set_y_prediction: (a: number, b: number, c: number) => void;
-  readonly simpleexponentialregression_set_b0: (a: number, b: number) => void;
-  readonly simpleexponentialregression_set_b1: (a: number, b: number) => void;
-  readonly simpleexponentialregression_calculate_regression: (a: number) => void;
+  readonly get_beta_inf: () => [number, number];
+  readonly __wbg_decomposition_free: (a: number, b: number) => void;
+  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly decomposition_get_data: (a: number) => [number, number];
+  readonly decomposition_get_data_header: (a: number) => [number, number];
+  readonly decomposition_get_time: (a: number) => [number, number];
+  readonly decomposition_get_time_header: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
+  readonly decomposition_get_trend_component: (a: number) => [number, number];
+  readonly decomposition_get_irregular_component: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
+  readonly decomposition_get_period: (a: number) => number;
+  readonly decomposition_get_trend_equation: (a: number) => [number, number];
+  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
+  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_quadratic_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
+  readonly multiplelinearregression_calculate_regression: (a: number) => void;
+  readonly multiplelinearregression_calculate_standard_error: (a: number) => [number, number];
   readonly __wbg_autocorrelation_free: (a: number, b: number) => void;
   readonly autocorrelation_new: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly autocorrelation_get_data: (a: number) => [number, number];
@@ -307,39 +318,17 @@ export interface InitOutput {
   readonly multiplelinearregression_get_beta: (a: number) => [number, number];
   readonly multiplelinearregression_set_y_prediction: (a: number, b: number, c: number) => void;
   readonly multiplelinearregression_set_beta: (a: number, b: number, c: number) => void;
-  readonly multiplelinearregression_calculate_regression: (a: number) => void;
   readonly simplelinearregression_get_b0: (a: number) => number;
   readonly simplelinearregression_set_b0: (a: number, b: number) => void;
-  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_quadratic_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
-  readonly __wbg_decomposition_free: (a: number, b: number) => void;
-  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
-  readonly decomposition_get_data: (a: number) => [number, number];
-  readonly decomposition_get_data_header: (a: number) => [number, number];
-  readonly decomposition_get_time: (a: number) => [number, number];
-  readonly decomposition_get_time_header: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
-  readonly decomposition_get_trend_component: (a: number) => [number, number];
-  readonly decomposition_get_irregular_component: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
-  readonly decomposition_get_period: (a: number) => number;
-  readonly decomposition_get_trend_equation: (a: number) => [number, number];
-  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
-  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
-  readonly get_beta_inf: () => [number, number];
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
-  readonly multiplelinearregression_calculate_standard_error: (a: number) => [number, number];
+  readonly __wbg_quadraticregression_free: (a: number, b: number) => void;
+  readonly quadraticregression_new: (a: number, b: number, c: number, d: number) => number;
+  readonly quadraticregression_get_x: (a: number) => [number, number];
+  readonly quadraticregression_get_y: (a: number) => [number, number];
+  readonly quadraticregression_get_y_prediction: (a: number) => [number, number];
+  readonly quadraticregression_get_beta: (a: number) => [number, number];
+  readonly quadraticregression_set_y_prediction: (a: number, b: number, c: number) => void;
+  readonly quadraticregression_set_beta: (a: number, b: number, c: number) => void;
+  readonly quadraticregression_calculate_regression: (a: number) => void;
   readonly __wbg_dickeyfuller_free: (a: number, b: number) => void;
   readonly dickeyfuller_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly dickeyfuller_get_data: (a: number) => [number, number];
@@ -357,6 +346,17 @@ export interface InitOutput {
   readonly dickeyfuller_calculate_pvalue: (a: number) => number;
   readonly dickeyfuller_calculate_critical_value: (a: number) => [number, number];
   readonly dickeyfuller_calculate_test_stat: (a: number) => number;
+  readonly __wbg_simpleexponentialregression_free: (a: number, b: number) => void;
+  readonly simpleexponentialregression_new: (a: number, b: number, c: number, d: number) => number;
+  readonly simpleexponentialregression_get_x: (a: number) => [number, number];
+  readonly simpleexponentialregression_get_y: (a: number) => [number, number];
+  readonly simpleexponentialregression_get_y_prediction: (a: number) => [number, number];
+  readonly simpleexponentialregression_set_y_prediction: (a: number, b: number, c: number) => void;
+  readonly simpleexponentialregression_calculate_regression: (a: number) => void;
+  readonly simpleexponentialregression_get_b0: (a: number) => number;
+  readonly simpleexponentialregression_get_b1: (a: number) => number;
+  readonly simpleexponentialregression_set_b0: (a: number, b: number) => void;
+  readonly simpleexponentialregression_set_b1: (a: number, b: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_2: WebAssembly.Table;

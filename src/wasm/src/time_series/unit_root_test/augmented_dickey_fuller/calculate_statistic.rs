@@ -13,7 +13,7 @@ impl AugmentedDickeyFuller {
     pub fn calculate_critical_value(&self) -> Vec<f64> {
         let mut critical_values: Vec<f64> = Vec::new();
         for level in ["1%", "5%", "10%"].iter() {
-            let c_hat = calculate_critical_values(1 + self.get_lag(), &self.get_equation(), level, self.get_data().len() as f64);
+            let c_hat = calculate_critical_values(1 + self.get_lag() as u8, &self.get_equation(), level, self.get_data().len() as f64);
             critical_values.push(c_hat);
         }
         critical_values
@@ -53,23 +53,21 @@ impl AugmentedDickeyFuller {
             y.push(difference[i]);
         }
     
+        if lag_values[0].len() as usize != x.len() as usize {
+            return lag_values[0].len() as f64 / x.len() as f64;
+        }
         let (b, se) = match self.get_equation().as_str() {
             "no_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
                 x_matriks.push(x.clone());
-                
+    
                 // Konversi ke nilai JS; jika gagal, panik dengan pesan jelas
                 let x_matriks_js = serde_wasm_bindgen::to_value(&x_matriks).expect("Gagal mengkonversi x_matriks ke JS value");
                 let mut reg = MultipleLinearRegression::new(x_matriks_js, y.clone());
                 reg.calculate_regression();
                 let b_vector = reg.get_beta();
                 let se_vector = reg.calculate_standard_error();
-                // Pastikan indeks 2 ada dan standard error tidak nol
-                if b_vector.len() < x_matriks.len() + 1 || se_vector.len() < x_matriks.len() + 1 || se_vector[x_matriks.len()] == 0.0 {
-                    (0.0, 0.0)
-                } else {
-                    (b_vector[1], se_vector[1])
-                }
+                (b_vector[x_matriks.len()], se_vector[x_matriks.len()])
             },
             "with_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
@@ -82,12 +80,7 @@ impl AugmentedDickeyFuller {
                 reg.calculate_regression();
                 let b_vector = reg.get_beta();
                 let se_vector = reg.calculate_standard_error();
-                // Pastikan indeks 2 ada dan standard error tidak nol
-                if b_vector.len() < x_matriks.len() + 1 || se_vector.len() < x_matriks.len() + 1 || se_vector[x_matriks.len()] == 0.0 {
-                    (0.0, 0.0)
-                } else {
-                    (b_vector[x_matriks.len()], se_vector[x_matriks.len()])
-                }
+                (b_vector[x_matriks.len()], se_vector[x_matriks.len()])
             }
             _ => {(0.0, 0.0)}
         };
