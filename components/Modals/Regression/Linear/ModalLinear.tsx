@@ -301,6 +301,7 @@ descriptiveWorker.onmessage = async (e) => {
   const descriptiveResults = e.data;
   console.log("[Analyze] Hasil Descriptive Statistics dari Worker:", descriptiveResults);
 
+  // Membuat object statistik untuk Descriptive Statistics
   const descriptiveStat = {
     analytic_id: analyticId,
     title: "Descriptive Statistics",
@@ -309,6 +310,7 @@ descriptiveWorker.onmessage = async (e) => {
     components: "DescriptiveStatistics",
   };
 
+  // Simpan statistik menggunakan addStatistic seperti statistik lainnya
   await addStatistic(descriptiveStat);
   console.log("[Analyze] Statistik Descriptive Statistics disimpan.");
 
@@ -320,10 +322,6 @@ descriptiveWorker.onerror = (error) => {
   descriptiveWorker.terminate();
 };
 // AKHIR DESCRIPTIVE STATISTICS
-
-
-
-
 
     // 4. Insert statistik lainnya
     // Variables Entered/Removed
