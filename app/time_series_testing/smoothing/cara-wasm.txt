@@ -1,7 +1,0 @@
-*untuk membuild library di rust ke wasm
-wasm-pack build --target web
-
-*hapus cache
-rm -rf .next
-
-npm install xlsx
