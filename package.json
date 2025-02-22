@@ -49,15 +49,15 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.3.0",
     "react-modal": "^3.16.1",
-    "shadcn": "^2.1.6",
     "sav-reader": "^2.0.8",
     "sav-writer": "^1.0.0",
+    "shadcn": "^2.1.6",
     "simple-statistics": "^7.8.7",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
+    "wasm-pack": "^0.13.1",
     "xlsx": "^0.18.5",
     "zukeeper": "^1.0.2",
-    "wasm-pack": "^0.13.1",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

@@ -109,6 +109,32 @@ const OpenData: FC<OpenDataProps> = ({ onClose }) => {
         }
     };
 
+    // Fungsi untuk memanggil dummy sav writer melalui endpoint /generate dan mengunduh file dummy.sav
+    const handleGenerateDummy = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch("http://localhost:5000/generate");
+            if (!response.ok) {
+                throw new Error("Gagal menghasilkan dummy sav file");
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "dummy.sav";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error generating dummy file:", error);
+            setError("Error generating dummy file");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -150,6 +176,9 @@ const OpenData: FC<OpenDataProps> = ({ onClose }) => {
                 </Button>
                 <Button onClick={handleSubmit} disabled={loading}>
                     {loading ? "Processing..." : "Upload"}
+                </Button>
+                <Button onClick={handleGenerateDummy} disabled={loading}>
+                    {loading ? "Processing..." : "Generate Dummy SAV"}
                 </Button>
             </DialogFooter>
         </DialogContent>

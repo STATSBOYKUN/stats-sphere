@@ -107,11 +107,11 @@ const Navbar: React.FC = () => {
               <MenubarSub>
                 <MenubarSubTrigger>Export</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem
-                    onClick={() => openModal(ModalType.ExportDatabase)}
-                  >
-                    Database...
-                  </MenubarItem>
+                  {/*<MenubarItem*/}
+                  {/*  onClick={() => openModal(ModalType.ExportDatabase)}*/}
+                  {/*>*/}
+                  {/*  Database...*/}
+                  {/*</MenubarItem>*/}
                   <MenubarItem onClick={() => openModal(ModalType.ExportExcel)}>
                     Excel...
                   </MenubarItem>
@@ -251,11 +251,11 @@ const Navbar: React.FC = () => {
               >
                 Define Variable Properties...
               </MenubarItem>
-              <MenubarItem
-                onClick={() => openModal(ModalType.SetMeasurementLevel)}
-              >
-                Set Measurement Level for Unknown...
-              </MenubarItem>
+              {/*<MenubarItem*/}
+              {/*  onClick={() => openModal(ModalType.SetMeasurementLevel)}*/}
+              {/*>*/}
+              {/*  Set Measurement Level for Unknown...*/}
+              {/*</MenubarItem>*/}
               {/*<MenubarItem onClick={() => openModal(ModalType.CopyDataProperties)}>Copy Data Properties...</MenubarItem>*/}
               {/*<MenubarItem onClick={() => openModal(ModalType.NewCustomAttribute)}>New Custom Attribute...</MenubarItem>*/}
               <MenubarItem onClick={() => openModal(ModalType.DefineDateTime)}>

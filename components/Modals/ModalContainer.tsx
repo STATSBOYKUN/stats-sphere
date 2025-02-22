@@ -3,7 +3,7 @@
 "use client";
 
 import React from "react";
-import { useModal, ModalType } from "@/hooks/useModal";
+import {ModalType, useModal} from "@/hooks/useModal";
 
 // Time Series Tolong Jangan Dihapus
 // import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
@@ -11,9 +11,8 @@ import { useModal, ModalType } from "@/hooks/useModal";
 // import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
 // import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
 // import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
-
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
-import { Dialog } from "@/components/ui/dialog";
+import {Dialog} from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
 import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
 import ImportCSV from "@/components/Modals/File/ImportCSV";
@@ -21,7 +20,8 @@ import ImportCSV from "@/components/Modals/File/ImportCSV";
 import ReadCSVFile from "@/components/Modals/File/ReadCSVFile";
 import ImportExcel from "@/components/Modals/File/ImportExcel";
 import ReadExcelFile from "@/components/Modals/File/ReadExcelFile";
-import ModalAutomaticLinearModeling from "@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling";
+import ModalAutomaticLinearModeling
+    from "@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling";
 import ModalLinear from "./Regression/Linear/ModalLinear";
 import ModalCurveEstimation from "./Regression/CurveEstimation/ModalCurveEstimation";
 import ModalPartialLeastSquares from "./Regression/PartialLeastSquares/ModalPartialLeastSquares";
@@ -38,148 +38,177 @@ import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEsti
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
 import ModalOptimalScaling from "./Regression/OptimalScaling/ModalOptimalScaling";
 import ChartBuilderModal from "./Graphs/ChartBuilder/ChartBuilderModal";
+import DefineVariableProperties from "@/components/Modals/Data/DefineVariableProperties";
+import DefineDateTime from "@/components/Modals/Data/DefineDateTime";
+import SortCases from "@/components/Modals/Data/SortCases";
+import SortVariables from "@/components/Modals/Data/SortVariables";
+import Transpose from "@/components/Modals/Data/Transpose";
+import MergeFiles from "@/components/Modals/Data/MergeFiles";
+import Restructure from "@/components/Modals/Data/Restructure";
+import SplitFile from "@/components/Modals/Data/SplitFile";
+import WeightCases from "@/components/Modals/Data/WeightCases";
+import {FindAndReplaceModal, FindReplaceMode} from "@/components/Modals/Edit/FindReplace";
+import GoToModal, {GoToMode} from "@/components/Modals/Edit/GoTo";
 
 const ModalContainer: React.FC = () => {
-  const { modals, closeModal } = useModal();
+    const {modals, closeModal} = useModal();
 
-  if (modals.length === 0) return null;
+    if (modals.length === 0) return null;
 
-  const currentModal = modals[modals.length - 1];
+    const currentModal = modals[modals.length - 1];
 
-  const renderModal = () => {
-    switch (currentModal.type) {
-      case ModalType.ImportCSV:
-          console.log('ImportCSV');
-          return <ImportCSV onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ReadCSVFile:
-          return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ImportExcel:
-          return <ImportExcel onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ReadExcelFile:
-          return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
-      case ModalType.OpenData:
-          console.log('OpenData');
-          return <OpenData onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ComputeVariable:
-          return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
-      case ModalType.Print:
-          return <PrintModal onClose={closeModal} {...currentModal.props} />;
+    const renderModal = () => {
+        switch (currentModal.type) {
+            // FILE
+            case ModalType.ImportCSV:
+                console.log('ImportCSV');
+                return <ImportCSV onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ReadCSVFile:
+                return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ImportExcel:
+                return <ImportExcel onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ReadExcelFile:
+                return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
+            case ModalType.OpenData:
+                console.log('OpenData');
+                return <OpenData onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ComputeVariable:
+                return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Print:
+                return <PrintModal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ImportCSV:
+                return <ImportCSV onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ReadCSVFile:
+                return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ImportExcel:
+                return <ImportExcel onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ReadExcelFile:
+                return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
 
-      case ModalType.ImportCSV:
-        return <ImportCSV onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ReadCSVFile:
-        return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ImportExcel:
-        return <ImportExcel onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ReadExcelFile:
-        return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
-      // case ModalType.OpenData:
-      //   return <OpenData onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ComputeVariable:
-        return (
-          <ComputeVariableModal onClose={closeModal} {...currentModal.props} />
-        );
+            // EDIT
+            case ModalType.Find:
+                return (<FindAndReplaceModal
+                        onClose={closeModal}
+                        defaultTab={FindReplaceMode.FIND}
+                        {...currentModal.props}
+                    />);
 
-      // Regression Nopal
-      case ModalType.ModalAutomaticLinearModeling:
-        return (
-          <ModalAutomaticLinearModeling
-            onClose={closeModal}
-            {...currentModal.props}
-          />
-        );
-      case ModalType.ModalLinear:
-        return <ModalLinear onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ModalCurveEstimation:
-        return (
-          <ModalCurveEstimation onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.ModalPartialLeastSquares:
-        return (
-          <ModalPartialLeastSquares
-            onClose={closeModal}
-            {...currentModal.props}
-          />
-        );
-      case ModalType.ModalBinaryLogistic:
-        return (
-          <ModalBinaryLogistic onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.ModalMultinomialLogistic:
-        return (
-          <ModalMultinomialLogistic
-            onClose={closeModal}
-            {...currentModal.props}
-          />
-        );
-      case ModalType.ModalOrdinal:
-        return <ModalOrdinal onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ModalProbit:
-        return <ModalProbit onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ModalNonlinear:
-        return <ModalNonlinear onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ModalWeightEstimation:
-        return (
-          <ModalWeightEstimation onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.ModalTwoStageLeastSquares:
-        return (
-          <ModalTwoStageLeastSquares
-            onClose={closeModal}
-            {...currentModal.props}
-          />
-        );
-      case ModalType.ModalQuantiles:
-        return <ModalQuantiles onClose={closeModal} {...currentModal.props} />;
-      case ModalType.ModalOptimalScaling:
-        return (
-          <ModalOptimalScaling onClose={closeModal} {...currentModal.props} />
-        );
+            case ModalType.Replace:
+                return (<FindAndReplaceModal
+                        onClose={closeModal}
+                        defaultTab={FindReplaceMode.REPLACE}
+                        {...currentModal.props}
+                    />);
 
-      // Time Series
-      case ModalType.Smoothing:
-        return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
-      case ModalType.Decomposition:
-        return (
-          <DecompositionModal onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.Autocorrelation:
-        return (
-          <AutocorrelationModal onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.UnitRootTest:
-          return (
-            <UnitRootTestModal onClose={closeModal} {...currentModal.props} />
-          );
-      case ModalType.BoxJenkinsModel:
-        return (
-          <BoxJenkinsModelModal onClose={closeModal} {...currentModal.props} />
-        );
+            case ModalType.GoToCase:
+                return (<GoToModal
+                        onClose={closeModal}
+                        defaultMode={GoToMode.CASE}
+                        {...currentModal.props}
+                    />);
 
-      case ModalType.Frequencies:
-      case ModalType.FrequenciesStatistic:
-        return (
-          <FrequenciesModal onClose={closeModal} {...currentModal.props} />
-        );
+            case ModalType.GoToVariable:
+                return (<GoToModal
+                        onClose={closeModal}
+                        defaultMode={GoToMode.VARIABLE}
+                        {...currentModal.props}
+                    />);
 
-      // Chart Builder
-      case ModalType.ChartBuilderModal:
-        return (
-          <ChartBuilderModal onClose={closeModal} {...currentModal.props} />
-        );
-      case ModalType.SimpleBarModal:
-        return <SimpleBarModal onClose={closeModal} {...currentModal.props} />;
+            // DATA
+            case ModalType.DefineVariableProperties:
+                return <DefineVariableProperties onClose={closeModal} {...currentModal.props} />;
+            case ModalType.DefineDateTime:
+                return <DefineDateTime onClose={closeModal} {...currentModal.props} />;
+            case ModalType.SortCases:
+                return <SortCases onClose={closeModal} {...currentModal.props} />;
+            case ModalType.SortVariables:
+                return <SortVariables onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Transpose:
+                return <Transpose onClose={closeModal} {...currentModal.props} />;
+            case ModalType.MergeFiles:
+                return <MergeFiles onClose={closeModal} {...currentModal.props} />;
+            case ModalType.Restructure:
+                return <Restructure onClose={closeModal} {...currentModal.props} />;
+            case ModalType.SplitFile:
+                return <SplitFile onClose={closeModal} {...currentModal.props} />;
+            case ModalType.WeightCases:
+                return <WeightCases onClose={closeModal} {...currentModal.props} />;
 
-      default:
-        return null;
-    }
-  };
+            // case ModalType.OpenData:
+            //   return <OpenData onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ComputeVariable:
+                return (<ComputeVariableModal onClose={closeModal} {...currentModal.props} />);
 
-  return (
-    <Dialog open={true} onOpenChange={(open) => !open && closeModal()}>
-      {renderModal()}
-    </Dialog>
-  );
+            // Regression Nopal
+            case ModalType.ModalAutomaticLinearModeling:
+                return (<ModalAutomaticLinearModeling
+                    onClose={closeModal}
+                    {...currentModal.props}
+                />);
+            case ModalType.ModalLinear:
+                return <ModalLinear onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalCurveEstimation:
+                return (<ModalCurveEstimation onClose={closeModal} {...currentModal.props} />);
+            case ModalType.ModalPartialLeastSquares:
+                return (<ModalPartialLeastSquares
+                    onClose={closeModal}
+                    {...currentModal.props}
+                />);
+            case ModalType.ModalBinaryLogistic:
+                return (<ModalBinaryLogistic onClose={closeModal} {...currentModal.props} />);
+            case ModalType.ModalMultinomialLogistic:
+                return (<ModalMultinomialLogistic
+                    onClose={closeModal}
+                    {...currentModal.props}
+                />);
+            case ModalType.ModalOrdinal:
+                return <ModalOrdinal onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalProbit:
+                return <ModalProbit onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalNonlinear:
+                return <ModalNonlinear onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalWeightEstimation:
+                return (<ModalWeightEstimation onClose={closeModal} {...currentModal.props} />);
+            case ModalType.ModalTwoStageLeastSquares:
+                return (<ModalTwoStageLeastSquares
+                    onClose={closeModal}
+                    {...currentModal.props}
+                />);
+            case ModalType.ModalQuantiles:
+                return <ModalQuantiles onClose={closeModal} {...currentModal.props} />;
+            case ModalType.ModalOptimalScaling:
+                return (<ModalOptimalScaling onClose={closeModal} {...currentModal.props} />);
+
+            // Time Series
+            // case ModalType.Smoothing:
+            //     return <SmoothingModal onClose={closeModal} {...currentModal.props} />;
+            // case ModalType.Decomposition:
+            //     return (<DecompositionModal onClose={closeModal} {...currentModal.props} />);
+            // case ModalType.Autocorrelation:
+            //     return (<AutocorrelationModal onClose={closeModal} {...currentModal.props} />);
+            // case ModalType.UnitRootTest:
+            //     return (<UnitRootTestModal onClose={closeModal} {...currentModal.props} />);
+            // case ModalType.BoxJenkinsModel:
+            //     return (<BoxJenkinsModelModal onClose={closeModal} {...currentModal.props} />);
+
+            case ModalType.Frequencies:
+            case ModalType.FrequenciesStatistic:
+                return (<FrequenciesModal onClose={closeModal} {...currentModal.props} />);
+
+            // Chart Builder
+            case ModalType.ChartBuilderModal:
+                return (<ChartBuilderModal onClose={closeModal} {...currentModal.props} />);
+            case ModalType.SimpleBarModal:
+                return <SimpleBarModal onClose={closeModal} {...currentModal.props} />;
+
+            default:
+                return null;
+        }
+    };
+
+    return (<Dialog open={true} onOpenChange={(open) => !open && closeModal()}>
+        {renderModal()}
+    </Dialog>);
 };
 
 export default ModalContainer;
