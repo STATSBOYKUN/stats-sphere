@@ -4,7 +4,7 @@ import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
 
 export const useDataTable = () => {
-    const { data, updateCell, loadData } = useDataStore();
+    const { data, nCases, nVars, updateCell, loadData } = useDataStore();
     const { variables, addVariable, loadVariables, getVariableByColumnIndex } = useVariableStore();
 
     useEffect(() => {
@@ -12,5 +12,5 @@ export const useDataTable = () => {
         loadVariables();
     }, [loadData, loadVariables]);
 
-    return { data, variables, updateCell, addVariable, getVariableByColumnIndex };
+    return { data, nCases, nVars, variables, updateCell, addVariable, getVariableByColumnIndex };
 };

@@ -1,3 +1,7 @@
+// config/tableConfig.ts
+import Handsontable from 'handsontable';
+import 'handsontable/dist/handsontable.full.min.css';
+
 export const colHeaders = [
     'Name',
     'Type',
@@ -11,7 +15,7 @@ export const colHeaders = [
     'Measure',
 ];
 
-export const columns = [
+export const columns: Handsontable.GridSettings['columns'] = [
     {
         data: 0,
         type: 'text',
@@ -21,15 +25,26 @@ export const columns = [
         data: 1,
         type: 'dropdown',
         source: [
-            'Numeric',
-            'Comma',
-            'Dot',
-            'Scientific notation',
-            'Date',
-            'Dollar',
-            'Custom currency',
-            'String',
-            'Restricted Numeric (integer with leading zeros)',
+            'NUMERIC',
+            'COMMA',
+            'SCIENTIFIC',
+            'DATE',
+            'ADATE',
+            'EDATE',
+            'SDATE',
+            'JDATE',
+            'QYR',
+            'MOYR',
+            'WKYR',
+            'DATETIME',
+            'TIME',
+            'DTIME',
+            'WKDAY',
+            'MONTH',
+            'DOLLAR',
+            'CUSTOM_CURRENCY',
+            'STRING',
+            'RESTRICTED_NUMERIC',
         ],
         strict: true,
         allowInvalid: false,
@@ -38,17 +53,13 @@ export const columns = [
     {
         data: 2,
         type: 'numeric',
-        numericFormat: {
-            pattern: '0',
-        },
+        numericFormat: { pattern: '0' },
         width: 150,
     },
     {
         data: 3,
         type: 'numeric',
-        numericFormat: {
-            pattern: '0',
-        },
+        numericFormat: { pattern: '0' },
         width: 150,
     },
     {
@@ -69,9 +80,7 @@ export const columns = [
     {
         data: 7,
         type: 'numeric',
-        numericFormat: {
-            pattern: '0',
-        },
+        numericFormat: { pattern: '0' },
         width: 150,
     },
     {

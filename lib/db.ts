@@ -1,5 +1,4 @@
-// lib/db.ts
-
+// lib/db
 import Dexie, { Table } from 'dexie';
 
 export interface Cell {
@@ -13,15 +12,42 @@ export interface Variable {
     id?: number;
     columnIndex: number;
     name: string;
-    type: string;
+    type:
+        | "NUMERIC"
+        | "COMMA"
+        | "SCIENTIFIC"
+        | "DATE"
+        | "ADATE"
+        | "EDATE"
+        | "SDATE"
+        | "JDATE"
+        | "QYR"
+        | "MOYR"
+        | "WKYR"
+        | "DATETIME"
+        | "TIME"
+        | "DTIME"
+        | "WKDAY"
+        | "MONTH"
+        | "DOLLAR"
+        | "CUSTOM_CURRENCY"
+        | "STRING"
+        | "RESTRICTED_NUMERIC";
     width: number;
     decimals: number;
     label?: string;
-    values: string;
-    missing: string;
-    columns: string;
+    values: ValueLabel[];
+    missing: (number | string)[];
+    columns: number;
     align: string;
     measure: string;
+}
+
+export interface ValueLabel {
+    id?: number;
+    variableName: string;
+    value: number | string;
+    label: string;
 }
 
 export interface Log {
@@ -45,9 +71,9 @@ export interface Statistic {
 }
 
 class MyDatabase extends Dexie {
-    cells!: Table<Cell, [number, number]>;
+    cells!: Table<Cell, number>;
     variables!: Table<Variable, number>;
-
+    valueLabels!: Table<ValueLabel, number>;
     logs!: Table<Log, number>;
     analytics!: Table<Analytic, number>;
     statistics!: Table<Statistic, number>;
@@ -57,22 +83,21 @@ class MyDatabase extends Dexie {
 
         this.version(2).stores({
             cells: '[x+y], x, y, value',
-            variables: '++id, columnIndex, name, type, width, decimals, label, values, missing, columns, align, measure',
-
+            variables: '++id, columnIndex, name, type, width, decimals, label, missing, columns, align, measure',
+            valueLabels: '++id, variableName, value, label',
             logs: '++id, log',
             analytics: '++id, log_id, title, note',
-            statistics: '++id, analytic_id, title, output_data, components',
+            statistics: '++id, analytic_id, title, output_data, components'
         });
 
         this.cells = this.table('cells');
-
         this.variables = this.table('variables');
-
+        this.valueLabels = this.table('valueLabels');
         this.logs = this.table('logs');
         this.analytics = this.table('analytics');
         this.statistics = this.table('statistics');
 
-        // Event listener for unhandled promise rejections
+        // Menangani unhandled promise rejection
         if (typeof window !== "undefined") {
             window.addEventListener('unhandledrejection', (event) => {
                 console.error('Unhandled promise rejection:', event.reason);
@@ -80,12 +105,12 @@ class MyDatabase extends Dexie {
         }
     }
 
-    // Optional: Adding a method to handle the output_data serialization
+    // Metode untuk serialisasi data
     serializeData(obj: any): string {
         return JSON.stringify(obj);
     }
 
-    // Optional: Adding a method to deserialize output_data
+    // Metode untuk deserialisasi data
     deserializeData(json: string): any {
         try {
             return JSON.parse(json);

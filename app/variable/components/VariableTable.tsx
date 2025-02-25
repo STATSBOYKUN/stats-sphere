@@ -1,47 +1,61 @@
 // components/VariableTable.tsx
 "use client";
 
-import React, { useRef, useMemo } from 'react';
-import { HotTable, HotTableClass } from '@handsontable/react';
+import React, { useRef, useEffect, useMemo } from 'react';
+import Handsontable from 'handsontable';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
-import { useVariableTable } from '../hooks/useVariableTable';
-import { useVariableStore } from '@/stores/useVariableStore';
-import { colHeaders, columns } from "@/app/variable/components/variableTableConfig";
+import { colHeaders, columns } from './tableConfig';
+import { useVariableTableData } from '../hooks/useVariableTableData';
 
 registerAllModules();
 
 export default function VariableTable() {
-    const hotTableRef = useRef<HotTableClass | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const hotInstance = useRef<Handsontable | null>(null);
 
-    const totalColumns = useVariableStore(state => state.totalColumns);
-
-    const { data, handleAfterChange } = useVariableTable(totalColumns);
+    const { tableData, handleAfterChange } = useVariableTableData();
 
     const settings = useMemo(
         () => ({
-            licenseKey: 'non-commercial-and-evaluation',
-            data: data,
-            colHeaders: colHeaders,
-            columns: columns,
+            data: tableData,
+            colHeaders,
+            columns,
             rowHeaders: true,
             width: '100%',
             height: '100%',
             autoWrapRow: true,
             autoWrapCol: true,
             contextMenu: true,
+            licenseKey: 'non-commercial-and-evaluation',
             afterChange: handleAfterChange,
+            minSpareRows: 1,
         }),
-        [data, colHeaders, columns, handleAfterChange]
+        [tableData, handleAfterChange]
     );
+
+    useEffect(() => {
+        if (containerRef.current) {
+            if (!hotInstance.current) {
+                hotInstance.current = new Handsontable(containerRef.current, settings);
+            } else if (!hotInstance.current.isDestroyed) {
+                hotInstance.current.updateSettings(settings);
+            }
+        }
+    }, [settings]);
+
+    useEffect(() => {
+        return () => {
+            if (hotInstance.current) {
+                hotInstance.current.destroy();
+                hotInstance.current = null;
+            }
+        };
+    }, []);
 
     return (
         <div className="h-full w-full">
-            <HotTable
-                ref={hotTableRef}
-                settings={settings}
-                className="h-full w-full z-0"
-            />
+            <div ref={containerRef} className="h-full w-full z-0" />
         </div>
     );
 }
