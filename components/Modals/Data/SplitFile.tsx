@@ -9,6 +9,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { CornerDownRight, CornerDownLeft } from "lucide-react";
 
 enum SplitFileMethod {
     ALL_CASES = "all_cases",
@@ -112,7 +113,7 @@ const SplitFileModal: React.FC<SplitFileModalProps> = ({ onClose }) => {
                     </ul>
                 </div>
 
-                {/* Tombol Panah (tengah) - opsional */}
+                {/* Tombol Panah (tengah) */}
                 <div className="flex flex-col items-center justify-center gap-2">
                     <Button
                         variant="outline"
@@ -122,7 +123,7 @@ const SplitFileModal: React.FC<SplitFileModalProps> = ({ onClose }) => {
                             setAvailableVariables([]);
                         }}
                     >
-                        ➡
+                        <CornerDownRight size={24} />
                     </Button>
                     <Button
                         variant="outline"
@@ -132,7 +133,7 @@ const SplitFileModal: React.FC<SplitFileModalProps> = ({ onClose }) => {
                             setGroupVariables([]);
                         }}
                     >
-                        ⬅
+                        <CornerDownLeft size={24} />
                     </Button>
                 </div>
 

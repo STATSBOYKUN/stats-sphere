@@ -1,100 +1,160 @@
-// stores/useDataStore.ts
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
+import db from "@/lib/db";
 
-import {create} from 'zustand';
-import {devtools} from 'zustand/middleware';
-import db from '@/lib/db';
+export type DataRow = (string | number)[];
 
-type DataRow = string[];
-
-interface DataStoreState {
+export interface DataStoreState {
     data: DataRow[];
-    setData: (data: DataRow[]) => void;
-    updateCell: (row: number, col: number, value: string) => void;
-    loadData: () => Promise<void>;
-    resetData: () => void;
-}
+    isLoading: boolean;
+    error: string | null;
 
-const defaultRows = 100;
-const defaultCols = 45;
+    setData: (data: DataRow[]) => void;
+    updateCell: (row: number, col: number, value: string | number) => Promise<void>;
+    loadData: () => Promise<void>;
+    resetData: () => Promise<void>;
+    getAvailableData: (selectedColumns?: number[]) => Promise<DataRow[]>;
+    getMaxCol: () => Promise<number>;
+    getMaxRow: () => Promise<number>;
+}
 
 export const useDataStore = create<DataStoreState>()(
-    devtools((set, get) => ({
-        // Inisialisasi data matrix dengan ukuran default
-        data: Array.from({ length: defaultRows }, () =>
-            Array(defaultCols).fill('')
-        ),
-        setData: (data) => set({ data }),
-        updateCell: async (row, col, value) => {
-            let currentData = get().data;
-            // Jika koordinat melebihi ukuran matrix saat ini, perpanjang matrix-nya
-            if (row >= currentData.length || col >= currentData[0].length) {
-                const newRows = Math.max(currentData.length, row + 1);
-                const newCols = Math.max(currentData[0].length, col + 1);
-                currentData = Array.from({length: newRows}, (_, i) => {
-                    if (i < currentData.length) {
-                        const currentRow = currentData[i];
-                        // Jika baris yang ada kurang kolom, tambahkan nilai default ('')
-                        if (currentRow.length < newCols) {
-                            return [...currentRow, ...Array(newCols - currentRow.length).fill('')];
-                        }
-                        return currentRow;
-                    } else {
-                        return Array(newCols).fill('');
+    devtools(
+        immer((set, get) => ({
+            data: [],
+            isLoading: false,
+            error: null,
+
+            setData: (data: DataRow[]) =>
+                set((state) => {
+                    state.data = data;
+                }),
+
+            updateCell: async (row, col, value) => {
+                set((state) => {
+                    if (
+                        row >= state.data.length ||
+                        (state.data.length > 0 && col >= state.data[0].length)
+                    ) {
+                        const newRows = Math.max(state.data.length, row + 1);
+                        const newCols =
+                            state.data.length > 0
+                                ? Math.max(state.data[0].length, col + 1)
+                                : col + 1;
+                        const newData = Array.from({ length: newRows }, (_, i) => {
+                            if (i < state.data.length) {
+                                const currentRow = state.data[i];
+                                if (currentRow.length < newCols) {
+                                    return [
+                                        ...currentRow,
+                                        ...Array(newCols - currentRow.length).fill(""),
+                                    ];
+                                }
+                                return [...currentRow];
+                            } else {
+                                return Array(newCols).fill("");
+                            }
+                        });
+                        state.data = newData;
                     }
+                    state.data[row][col] = value;
                 });
-            }
+                try {
+                    await db.cells.put({ row, col, value });
+                } catch (error: any) {
+                    console.error("Failed to update cell:", error);
+                    await get().loadData();
+                }
+            },
 
-            // Buat salinan data dan perbarui cell yang diubah
-            const newData = currentData.map((rowData) => [...rowData]);
-            newData[row][col] = value;
-            set({ data: newData });
+            loadData: async () => {
+                set((state) => {
+                    state.isLoading = true;
+                    state.error = null;
+                });
+                try {
+                    const lastRowCell = await db.cells.orderBy("row").last();
+                    const lastColCell = await db.cells.orderBy("col").last();
+                    const maxRow = lastRowCell ? lastRowCell.row + 1 : 0;
+                    const maxCol = lastColCell ? lastColCell.col + 1 : 0;
+                    if (maxRow === 0 || maxCol === 0) {
+                        set((state) => {
+                            state.data = [];
+                        });
+                        return;
+                    }
+                    const availableMatrix = Array.from({ length: maxRow }, () =>
+                        Array(maxCol).fill("")
+                    );
+                    const cells = await db.cells.toArray();
+                    cells.forEach((cell) => {
+                        availableMatrix[cell.row][cell.col] = cell.value;
+                    });
+                    set((state) => {
+                        state.data = availableMatrix;
+                    });
+                } catch (error: any) {
+                    console.error("Failed to load data:", error);
+                    set((state) => {
+                        state.error = error.message || "Error loading data";
+                    });
+                } finally {
+                    set((state) => {
+                        state.isLoading = false;
+                    });
+                }
+            },
 
-            try {
-                await db.cells.put({ x: col, y: row, value });
-            } catch (error) {
-                console.error('Failed to update cell in Dexie:', error);
-            }
-        },
-        loadData: async () => {
-            try {
-                const cells = await db.cells.toArray();
-                // Hitung ukuran matrix berdasarkan default dan data yang ada di database
-                let maxRow = defaultRows;
-                let maxCol = defaultCols;
-                cells.forEach((cell) => {
-                    if (cell.y + 1 > maxRow) maxRow = cell.y + 1;
-                    if (cell.x + 1 > maxCol) maxCol = cell.x + 1;
-                });
-                // Buat matrix dengan ukuran dinamis
-                const dataMatrix = Array.from({ length: maxRow }, () =>
-                    Array(maxCol).fill('')
-                );
-                cells.forEach((cell) => {
-                    dataMatrix[cell.y][cell.x] = cell.value;
-                });
-                set({ data: dataMatrix });
-            } catch (error) {
-                console.error('Failed to fetch data from Dexie:', error);
-            }
-        },
-        resetData: async () => {
-            try {
-                await db.cells.clear();
-                set({
-                    data: Array.from({ length: defaultRows }, () =>
-                        Array(defaultCols).fill('')
-                    ),
-                });
-            } catch (error) {
-                console.error('Failed to reset data in Dexie:', error);
-            }
-        },
-    }))
+            resetData: async () => {
+                try {
+                    await db.cells.clear();
+                    set((state) => {
+                        state.data = [];
+                    });
+                } catch (error: any) {
+                    console.error("Failed to reset data:", error);
+                    set((state) => {
+                        state.error = error.message || "Error resetting data";
+                    });
+                }
+            },
+
+            getAvailableData: async (selectedColumns?: number[]) => {
+                if (get().data.length === 0) {
+                    await get().loadData();
+                }
+                const storedData = get().data;
+                if (!selectedColumns || selectedColumns.length === 0) {
+                    return storedData;
+                } else {
+                    return storedData.map((row) =>
+                        selectedColumns.map((col) => (row[col] !== undefined ? row[col] : ""))
+                    );
+                }
+            },
+
+            getMaxCol: async () => {
+                try {
+                    const cell = await db.cells.orderBy("col").last();
+                    return cell ? cell.col + 1 : 0;
+                } catch (error: any) {
+                    console.error("Failed to get max col:", error);
+                    return 0;
+                }
+            },
+
+            getMaxRow: async () => {
+                try {
+                    const cell = await db.cells.orderBy("row").last();
+                    return cell ? cell.row + 1 : 0;
+                } catch (error: any) {
+                    console.error("Failed to get max row:", error);
+                    return 0;
+                }
+            },
+
+
+        }))
+    )
 );
-
-export interface Cell {
-    id?: number;
-    x: number;
-    y: number;
-    value: string;
-}

@@ -13,54 +13,13 @@ import {
   MenubarSubTrigger,
   MenubarSubContent,
 } from "@/components/ui/menubar";
-
+import { useActionHandler } from "@/hooks/useActionHandler";
 import { ModalType, useModal } from "@/hooks/useModal";
 import "@/components/Modals/Graphs/ChartBuilder/ChartBuilderModal";
 
 const Navbar: React.FC = () => {
   const { openModal } = useModal();
-
-  const handleAction = ({ actionType }: { actionType: any }) => {
-    switch (actionType) {
-      case "Undo":
-        break;
-      case "Redo":
-        // Tambahkan logika untuk Redo
-        break;
-      case "Cut":
-        // Tambahkan logika untuk Cut
-        break;
-      case "Copy":
-        // Tambahkan logika untuk Copy
-        break;
-      case "CopyWithVariableNames":
-        // Tambahkan logika untuk Copy with Variable Names
-        break;
-      case "CopyWithVariableLabels":
-        // Tambahkan logika untuk Copy with Variable Labels
-        break;
-      case "Paste":
-        // Tambahkan logika untuk Paste
-        break;
-      case "PasteVariables":
-        // Tambahkan logika untuk Paste Variables
-        break;
-      case "PasteWithVariableNames":
-        // Tambahkan logika untuk Paste with Variable Names
-        break;
-      case "Clear":
-        // Tambahkan logika untuk Clear
-        break;
-      case "InsertVariable":
-        // Tambahkan logika untuk Insert Variable
-        break;
-      case "InsertCases":
-        // Tambahkan logika untuk Insert Cases
-        break;
-      default:
-        console.warn("Unknown action:", actionType);
-    }
-  };
+  const { handleAction } = useActionHandler();
 
   return (
     <nav>
@@ -69,8 +28,11 @@ const Navbar: React.FC = () => {
           <MenubarMenu>
             <MenubarTrigger>File</MenubarTrigger>
             <MenubarContent>
-              <MenubarItem onClick={() => openModal(ModalType.NewFile)}>
+              <MenubarItem onClick={() => handleAction({ actionType: "New" })}>
                 New
+              </MenubarItem>
+              <MenubarItem onClick={() => handleAction({ actionType: "Save" })}>
+                Save
               </MenubarItem>
               <MenubarSub>
                 <MenubarSubTrigger>Open</MenubarSubTrigger>

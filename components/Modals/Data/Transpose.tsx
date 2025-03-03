@@ -8,6 +8,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { CornerDownRight, CornerDownLeft } from "lucide-react";
 
 interface TransposeModalProps {
     onClose: () => void;
@@ -44,7 +45,7 @@ const TransposeModal: React.FC<TransposeModalProps> = ({ onClose }) => {
     // Handler tombol OK
     const handleOk = () => {
         // Di sini Anda bisa menambahkan logika transpose
-        // ...
+        // Contoh: console.log(selectedVariables, nameVariable);
         onClose();
     };
 
@@ -85,31 +86,31 @@ const TransposeModal: React.FC<TransposeModalProps> = ({ onClose }) => {
                     </ul>
                 </div>
 
-                {/* Tombol Panah (tengah) - Opsional, jika ingin meniru persis */}
+                {/* Tombol Panah (tengah) */}
                 <div className="flex flex-col items-center justify-center gap-2">
                     <Button
                         variant="outline"
                         onClick={() => {
-                            // Misal, memindahkan semua ke selected
+                            // Memindahkan semua variabel ke selected
                             setSelectedVariables([...selectedVariables, ...availableVariables]);
                             setAvailableVariables([]);
                         }}
                     >
-                        ➡
+                        <CornerDownRight size={24} />
                     </Button>
                     <Button
                         variant="outline"
                         onClick={() => {
-                            // Misal, memindahkan semua ke available
+                            // Memindahkan semua variabel ke available
                             setAvailableVariables([...availableVariables, ...selectedVariables]);
                             setSelectedVariables([]);
                         }}
                     >
-                        ⬅
+                        <CornerDownLeft size={24} />
                     </Button>
                 </div>
 
-                {/* Variable(s) (kanan) */}
+                {/* Daftar Variabel yang dipilih (kanan) */}
                 <div className="flex-1">
                     <p className="font-semibold mb-2">Variable(s):</p>
                     <ul className="border p-2 h-40 overflow-auto">

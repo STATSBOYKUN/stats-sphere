@@ -3,7 +3,7 @@
 "use client";
 
 import React from 'react';
-import Sidebar from '../../components/Layout/Main/Sidebar';
+import Sidebar from '@/components/Sidebar/Sidebar';
 import ResultOutput from "@/components/Output/ResultOutput";
 
 export default function ResultPage() { // Ganti nama fungsi menjadi ResultPage untuk menghindari duplikasi

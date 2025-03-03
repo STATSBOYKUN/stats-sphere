@@ -11,7 +11,7 @@ import {
 import { CornerDownLeft, CornerDownRight } from "lucide-react";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
-import useResultStore from "@/stores/useResultStore";
+import {useResultStore} from "@/stores/useResultStore";
 
 interface VariableDef {
     name: string;
@@ -37,14 +37,25 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
     );
     const [isCalculating, setIsCalculating] = useState<boolean>(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [availableData, setAvailableData] = useState<RawData>([]);
 
     const variables = useVariableStore((state) => state.variables) as VariableDef[];
     const data = useDataStore((state) => state.data) as RawData;
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     useEffect(() => {
-        setLeftVariables(variables.map((v) => v.name));
-    }, [variables]);
+        (async () => {
+            const vars = await useVariableStore.getState().getAvailableVariables();
+            setLeftVariables(vars.map((v) => v.name));
+        })();
+    }, []);
+
+    useEffect(() => {
+        (async () => {
+            const d = await useDataStore.getState().getAvailableData();
+            setAvailableData(d);
+        })();
+    }, []);
 
     const handleSelectLeft = (variable: string) => {
         if (highlightedVariable === variable) {
@@ -94,7 +105,7 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
         try {
             // Cari baris data terakhir yang masih berisi
             let maxIndex = -1;
-            data.forEach((row, rowIndex) => {
+            availableData.forEach((row, rowIndex) => {  // gunakan availableData di sini
                 let hasData = false;
                 for (const varName of selectedVariables) {
                     const varDef = variables.find((v) => v.name === varName);
@@ -112,7 +123,7 @@ const FrequenciesModal: FC<FrequenciesModalProps> = ({ onClose }) => {
             // Potong data sampai maxIndex
             const slicedData: Record<string, string | number | null>[] = [];
             for (let i = 0; i <= maxIndex; i++) {
-                const row = data[i];
+                const row = availableData[i]; // gunakan availableData di sini
                 const rowObj: Record<string, string | number | null> = {};
                 selectedVariables.forEach((varName) => {
                     const varDef = variables.find((v) => v.name === varName);

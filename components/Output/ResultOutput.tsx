@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect } from "react";
-import DataTableRenderer from "@/components/ui/data-table";
+import DataTableRenderer from "@/components/Output/Table/data-table";
 import { Card } from "@/components/ui/card";
-import useResultStore from "@/stores/useResultStore";
+import {useResultStore} from "@/stores/useResultStore";
 import GeneralChartContainer from "./Chart/GeneralChartContainer";
 
 const ResultOutput: React.FC = () => {

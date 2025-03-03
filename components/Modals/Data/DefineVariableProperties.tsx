@@ -9,6 +9,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import VariablePropertiesModal from "./VariablePropertiesModalProps";
 
 interface DefineVariableProps {
     onClose: () => void;
@@ -29,6 +30,9 @@ const DefineVariableModal: React.FC<DefineVariableProps> = ({ onClose }) => {
     const [limitCases, setLimitCases] = useState<number>(0);
     const [limitValues, setLimitValues] = useState<number>(200);
 
+    // State untuk mengontrol tampilan modal Variable Properties
+    const [showVariableProperties, setShowVariableProperties] = useState(false);
+
     // Fungsi untuk memindahkan variabel ke daftar “Variables to Scan”
     const moveToSelected = (variable: string) => {
         setAvailableVariables((prev) => prev.filter((item) => item !== variable));
@@ -42,10 +46,14 @@ const DefineVariableModal: React.FC<DefineVariableProps> = ({ onClose }) => {
     };
 
     const handleContinue = () => {
-        // Logika ketika user menekan tombol Continue
-        // Misalnya, simpan data atau lanjutkan ke step berikutnya
-        onClose();
+        // Alih-alih langsung memanggil onClose(), buka modal VariablePropertiesModal
+        setShowVariableProperties(true);
     };
+
+    // Jika showVariableProperties true, tampilkan VariablePropertiesModal
+    if (showVariableProperties) {
+        return <VariablePropertiesModal onClose={onClose} />;
+    }
 
     return (
         <DialogContent className="max-w-lg">

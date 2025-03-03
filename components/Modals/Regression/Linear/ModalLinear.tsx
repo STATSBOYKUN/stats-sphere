@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
 import { useDataStore } from '@/stores/useDataStore';
-import useResultStore from '@/stores/useResultStore';
+import {useResultStore} from '@/stores/useResultStore';
 import {
   Select,
   SelectTrigger,

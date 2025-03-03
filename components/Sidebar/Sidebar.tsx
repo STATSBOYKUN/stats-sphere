@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronRight, ChevronDown, BarChart2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import useResultStore from "@/stores/useResultStore";
+import {useResultStore} from "@/stores/useResultStore";
 
 interface SidebarItem {
     title: string;

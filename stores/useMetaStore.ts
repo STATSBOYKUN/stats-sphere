@@ -5,8 +5,6 @@ interface Meta {
     name: string
     location: string
     created: Date
-    n_vars: number
-    n_case: number
     weight: number
 }
 

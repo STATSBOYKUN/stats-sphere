@@ -3,9 +3,9 @@ import Dexie, { Table } from 'dexie';
 
 export interface Cell {
     id?: number;
-    x: number;
-    y: number;
-    value: string;
+    col: number;
+    row: number;
+    value: string | number;
 }
 
 export interface Variable {
@@ -39,8 +39,9 @@ export interface Variable {
     values: ValueLabel[];
     missing: (number | string)[];
     columns: number;
-    align: string;
-    measure: string;
+    align: "right" | "left" | "center";
+    measure: "scale" | "ordinal" | "nominal";
+    role: "input" | "target" | "both" | "none" | "partition" | "split";
 }
 
 export interface ValueLabel {
@@ -82,8 +83,9 @@ class MyDatabase extends Dexie {
         super('Statify');
 
         this.version(2).stores({
-            cells: '[x+y], x, y, value',
-            variables: '++id, columnIndex, name, type, width, decimals, label, missing, columns, align, measure',
+            // Updated index keys: changed x and y to col and row.
+            cells: '[col+row], col, row, value',
+            variables: '++id, columnIndex, name, type, width, decimals, label, missing, columns, align, measure, role',
             valueLabels: '++id, variableName, value, label',
             logs: '++id, log',
             analytics: '++id, log_id, title, note',
@@ -97,7 +99,7 @@ class MyDatabase extends Dexie {
         this.analytics = this.table('analytics');
         this.statistics = this.table('statistics');
 
-        // Menangani unhandled promise rejection
+        // Handling unhandled promise rejections.
         if (typeof window !== "undefined") {
             window.addEventListener('unhandledrejection', (event) => {
                 console.error('Unhandled promise rejection:', event.reason);
@@ -105,12 +107,12 @@ class MyDatabase extends Dexie {
         }
     }
 
-    // Metode untuk serialisasi data
+    // Method for serializing data.
     serializeData(obj: any): string {
         return JSON.stringify(obj);
     }
 
-    // Metode untuk deserialisasi data
+    // Method for deserializing data.
     deserializeData(json: string): any {
         try {
             return JSON.parse(json);

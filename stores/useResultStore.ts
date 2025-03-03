@@ -1,32 +1,32 @@
-import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
-import db, { Log, Analytic, Statistic } from '@/lib/db';
-import { devtools } from 'zustand/middleware';
+import { create } from "zustand";
+import { immer } from "zustand/middleware/immer";
+import { devtools } from "zustand/middleware";
+import db, { Log, Analytic, Statistic } from "@/lib/db";
 
-interface ResultState {
+export interface ResultState {
     logs: Log[];
     analytics: Analytic[];
     statistics: Statistic[];
 
     fetchLogs: () => Promise<void>;
     getLogById: (id: number) => Promise<Log | undefined>;
-    addLog: (log: Omit<Log, 'id'>) => Promise<number>;
+    addLog: (log: Omit<Log, "id">) => Promise<number>;
     deleteLog: (log_id: number) => Promise<void>;
 
     fetchAnalytics: () => Promise<void>;
     getAnalyticById: (id: number) => Promise<Analytic | undefined>;
-    addAnalytic: (analytic: Omit<Analytic, 'id'>) => Promise<number>;
+    addAnalytic: (analytic: Omit<Analytic, "id">) => Promise<number>;
     deleteAnalytic: (analytic_id: number) => Promise<void>;
 
     fetchStatistics: () => Promise<void>;
     getStatisticById: (id: number) => Promise<Statistic | undefined>;
-    addStatistic: (stat: Omit<Statistic, 'id'>) => Promise<number>;
+    addStatistic: (stat: Omit<Statistic, "id">) => Promise<number>;
     deleteStatistic: (stat_id: number) => Promise<void>;
 
     clearAll: () => Promise<void>;
 }
 
-const useResultStore = create<ResultState>()(
+export const useResultStore = create<ResultState>()(
     devtools(
         immer((set) => ({
             logs: [] as Log[],
@@ -40,7 +40,7 @@ const useResultStore = create<ResultState>()(
                         state.logs = logs;
                     });
                 } catch (error) {
-                    console.error('Failed to fetch logs:', error);
+                    console.error("Failed to fetch logs:", error);
                 }
             },
 
@@ -49,7 +49,7 @@ const useResultStore = create<ResultState>()(
                     const log = await db.logs.get(id);
                     return log;
                 } catch (error) {
-                    console.error('Failed to fetch log by id:', error);
+                    console.error("Failed to fetch log by id:", error);
                     return undefined;
                 }
             },
@@ -62,7 +62,7 @@ const useResultStore = create<ResultState>()(
                     });
                     return id;
                 } catch (error) {
-                    console.error('Failed to add log:', error);
+                    console.error("Failed to add log:", error);
                     throw error;
                 }
             },
@@ -71,10 +71,10 @@ const useResultStore = create<ResultState>()(
                 try {
                     await db.logs.delete(log_id);
                     set((state) => {
-                        state.logs = state.logs.filter(log => log.id !== log_id);
+                        state.logs = state.logs.filter((log) => log.id !== log_id);
                     });
                 } catch (error) {
-                    console.error('Failed to delete log:', error);
+                    console.error("Failed to delete log:", error);
                 }
             },
 
@@ -85,7 +85,7 @@ const useResultStore = create<ResultState>()(
                         state.analytics = analytics;
                     });
                 } catch (error) {
-                    console.error('Failed to fetch analytics:', error);
+                    console.error("Failed to fetch analytics:", error);
                 }
             },
 
@@ -94,7 +94,7 @@ const useResultStore = create<ResultState>()(
                     const analytic = await db.analytics.get(id);
                     return analytic;
                 } catch (error) {
-                    console.error('Failed to fetch analytic by id:', error);
+                    console.error("Failed to fetch analytic by id:", error);
                     return undefined;
                 }
             },
@@ -107,7 +107,7 @@ const useResultStore = create<ResultState>()(
                     });
                     return id;
                 } catch (error) {
-                    console.error('Failed to add analytic:', error);
+                    console.error("Failed to add analytic:", error);
                     throw error;
                 }
             },
@@ -116,10 +116,12 @@ const useResultStore = create<ResultState>()(
                 try {
                     await db.analytics.delete(analytic_id);
                     set((state) => {
-                        state.analytics = state.analytics.filter(analytic => analytic.id !== analytic_id);
+                        state.analytics = state.analytics.filter(
+                            (analytic) => analytic.id !== analytic_id
+                        );
                     });
                 } catch (error) {
-                    console.error('Failed to delete analytic:', error);
+                    console.error("Failed to delete analytic:", error);
                 }
             },
 
@@ -130,7 +132,7 @@ const useResultStore = create<ResultState>()(
                         state.statistics = statistics;
                     });
                 } catch (error) {
-                    console.error('Failed to fetch statistics:', error);
+                    console.error("Failed to fetch statistics:", error);
                 }
             },
 
@@ -139,7 +141,7 @@ const useResultStore = create<ResultState>()(
                     const statistic = await db.statistics.get(id);
                     return statistic;
                 } catch (error) {
-                    console.error('Failed to fetch statistic by id:', error);
+                    console.error("Failed to fetch statistic by id:", error);
                     return undefined;
                 }
             },
@@ -152,7 +154,7 @@ const useResultStore = create<ResultState>()(
                     });
                     return id;
                 } catch (error) {
-                    console.error('Failed to add statistic:', error);
+                    console.error("Failed to add statistic:", error);
                     throw error;
                 }
             },
@@ -161,10 +163,12 @@ const useResultStore = create<ResultState>()(
                 try {
                     await db.statistics.delete(stat_id);
                     set((state) => {
-                        state.statistics = state.statistics.filter(stat => stat.id !== stat_id);
+                        state.statistics = state.statistics.filter(
+                            (stat) => stat.id !== stat_id
+                        );
                     });
                 } catch (error) {
-                    console.error('Failed to delete statistic:', error);
+                    console.error("Failed to delete statistic:", error);
                 }
             },
 
@@ -179,12 +183,10 @@ const useResultStore = create<ResultState>()(
                         state.statistics = [];
                     });
                 } catch (error) {
-                    console.error('Failed to clear all data:', error);
+                    console.error("Failed to clear all data:", error);
                 }
             },
         })),
-        { name: 'StatifyStore' }
+        { name: "StatifyStore" }
     )
 );
-
-export default useResultStore;

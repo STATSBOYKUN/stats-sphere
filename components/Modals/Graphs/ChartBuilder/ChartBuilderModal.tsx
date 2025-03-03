@@ -16,7 +16,7 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useVariableStore } from "@/stores/useVariableStore";
-import useResultStore from "@/stores/useResultStore";
+import {useResultStore} from "@/stores/useResultStore";
 import { useDataStore } from "@/stores/useDataStore"; // Import useDataStore
 import ChartPreview from "./ChartPreview";
 import VariableSelection from "./VariableSelection";

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
-import useResultStore from "@/stores/useResultStore";
+import {useResultStore} from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";

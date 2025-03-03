@@ -13,6 +13,7 @@ export const colHeaders = [
     'Columns',
     'Align',
     'Measure',
+    'role'
 ];
 
 export const columns: Handsontable.GridSettings['columns'] = [
@@ -93,6 +94,14 @@ export const columns: Handsontable.GridSettings['columns'] = [
         data: 9,
         type: 'dropdown',
         source: ['Scale', 'Ordinal', 'Nominal'],
+        strict: true,
+        allowInvalid: false,
+        width: 150,
+    },
+    {
+        data: 10,
+        type: 'dropdown',
+        source: ['Input', 'Target', 'Both', 'None', 'Partition', 'Split'],
         strict: true,
         allowInvalid: false,
         width: 150,

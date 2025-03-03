@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Pencil, ArrowRight } from 'lucide-react';
 import { useVariableStore } from '@/stores/useVariableStore';
 import { useDataStore } from '@/stores/useDataStore';
-import useResultStore from '@/stores/useResultStore';
+import {useResultStore} from '@/stores/useResultStore';
 
 interface Variable {
   name: string;
