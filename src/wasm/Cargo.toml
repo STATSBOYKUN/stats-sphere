@@ -2,6 +2,9 @@
 name = "wasm"
 version = "0.1.0"
 edition = "2021"
+description = "Project Rust-WASM untuk analisis statistik menggunakan statrs dan wasm-bindgen."
+repository = "https://github.com/username/wasm-project"
+license = "MIT"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -12,3 +15,10 @@ js-sys = "0.3"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
 serde_json = "1.0"
+statrs = "0.18.0"
+nalgebra = "0.32"
+csv = "1.1"
+
+[dependencies.getrandom]
+version = "0.2"
+features = ["js"]
