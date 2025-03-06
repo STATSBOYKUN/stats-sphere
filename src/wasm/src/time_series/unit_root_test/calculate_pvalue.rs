@@ -13,7 +13,7 @@ pub fn mackinnon_get_gamma(n: u8,variant: &str,t_stat: f64) -> (String, Vec<f64>
         |v| 
         v.get_n() == n && 
         v.get_variant() == variant) {
-            if record.get_tau_center() <= t_stat {
+            if t_stat <= record.get_tau_center() {
                 return ("table1".to_string(),vec![record.get_gamma_0_tab1(), record.get_gamma_1_tab1(), record.get_gamma_2_tab1(), 0.0]);
             } else {
                 return ("table2".to_string(),vec![record.get_gamma_0_tab2(), record.get_gamma_1_tab2(), record.get_gamma_2_tab2(), record.get_gamma_3_tab2()]);
