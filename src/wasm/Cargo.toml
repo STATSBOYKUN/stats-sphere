@@ -20,6 +20,11 @@ nalgebra = "0.32"
 csv = "1.1"
 ndarray = { version = "0.15.4", features = ["serde"] }
 arima = "0.3.0"
+anyhow = "1.0"         
+num = "0.4"           
+finitediff = "0.1"   
+rand = "0.8"
+rand_distr = "0.4" 
 
 [dependencies.getrandom]
 version = "0.2"

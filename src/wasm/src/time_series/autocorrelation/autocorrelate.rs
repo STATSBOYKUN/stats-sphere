@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use crate::Autocorrelation;
-use crate::time_series::difference::difference::*;
+use crate::{first_difference, second_difference, seasonal_difference};
 
 #[wasm_bindgen]
 impl Autocorrelation{

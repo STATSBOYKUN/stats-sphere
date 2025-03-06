@@ -558,12 +558,17 @@ checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 name = "wasm"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "arima",
  "csv",
+ "finitediff",
  "getrandom",
  "js-sys",
  "nalgebra 0.32.6",
  "ndarray",
+ "num",
+ "rand",
+ "rand_distr",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 use crate::DickeyFuller;
 use crate::{calculate_p_value, calculate_critical_values, MultipleLinearRegression, NoInterceptLinearRegression, SimpleLinearRegression};
-use crate::time_series::difference::difference::{first_difference, second_difference};
+use crate::{first_difference, second_difference};
 
 #[wasm_bindgen]
 impl DickeyFuller{

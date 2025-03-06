@@ -1,6 +1,7 @@
 pub mod time_series;
 pub use time_series::smoothing::smoothing::Smoothing;
 pub use time_series::decomposition::decomposition::Decomposition;
+pub use time_series::difference::difference::*;
 pub use time_series::autocorrelation::autocorrelation::Autocorrelation;
 pub use time_series::unit_root_test::calculate_critical_values::*;
 pub use time_series::unit_root_test::calculate_pvalue::*;
@@ -11,7 +12,6 @@ pub use time_series::unit_root_test::read_pvalue::*;
 pub use time_series::unit_root_test::dickey_fuller::dickey_fuller::DickeyFuller;
 pub use time_series::unit_root_test::augmented_dickey_fuller::augmented_dickey_fuller::AugmentedDickeyFuller;
 pub use time_series::arima::arima::Arima;
-// pub use time_series::arima::ma_initiate_process::ma_newton_rapson;
 
 pub mod regression;
 pub use regression::simple_linear_regression::simple_linear_regression::SimpleLinearRegression;

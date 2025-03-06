@@ -1,11 +1,17 @@
 use wasm_bindgen::prelude::*;
-use crate::Arima;
+use crate::{Arima, first_difference};
 use arima::estimate;
 
 #[wasm_bindgen]
 impl Arima{
     pub fn estimate_residual(&self)-> Vec<f64>{
-        let data = self.get_data();
+        let mut data = self.get_data();
+        let d = self.get_i_order();
+        if d > 0 {
+            for _ in 0..d{
+                data = first_difference(data);
+            }
+        }
         let constanta = self.get_constant();
         let ma_coef = self.get_ma_coef();
         let ar_coef = self.get_ar_coef();
@@ -21,11 +27,11 @@ impl Arima{
 
     pub fn res_variance(&self)-> f64{
         let sum_of_square = self.res_sum_of_square();
-        let c = if self.get_constant() == 0.0 { 0 as usize } else { 1 as usize };
         let p = self.get_ar_order() as usize;
         let q = self.get_ma_order() as usize;
+        let d = self.get_i_order() as usize;
         let n = self.get_data().len();
-        let res_variance = sum_of_square / (n - c - p - q) as f64;
+        let res_variance = sum_of_square / (n - p - q - d - 1) as f64;
         res_variance
     }
 }
