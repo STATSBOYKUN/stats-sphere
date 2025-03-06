@@ -19,7 +19,6 @@ statrs = "0.18.0"
 nalgebra = "0.32"
 csv = "1.1"
 ndarray = { version = "0.15.4", features = ["serde"] }
-ndarray-linalg = "0.16.0"
 arima = "0.3.0"
 
 [dependencies.getrandom]
