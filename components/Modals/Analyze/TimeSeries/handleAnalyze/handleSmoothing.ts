@@ -1,4 +1,4 @@
-import init, {Smoothing} from '../../../../../src/wasm/pkg/wasm.js';
+import init, {Smoothing} from '../../../../../src/pkg/wasm.js';
 
 export async function handleSmoothing(
     data: (number)[], 
