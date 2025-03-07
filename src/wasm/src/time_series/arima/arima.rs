@@ -14,6 +14,7 @@ pub struct Arima {
 
 #[wasm_bindgen]
 impl Arima{
+    #[wasm_bindgen(constructor)]
     pub fn new(data: Vec<f64>, ar_order: i32, i_order: i32, ma_order: i32) -> Arima{
         Arima{
             data,

@@ -33,7 +33,7 @@ impl Arima{
             css
         };
 
-        let coef = [[self.get_constant()].to_vec(), self.get_ar_coef(), self.get_ma_coef()].concat();
+        let coef = self.estimate_coef();
         let hessian: Vec<Vec<f64>> = coef.forward_hessian_nograd(&f);
         let inv_hessian = invert_matrix(&hessian).unwrap();
         let var_res = self.res_variance();
