@@ -4,6 +4,32 @@ import { devtools } from "zustand/middleware";
 import db from "@/lib/db";
 import { Variable } from "@/lib/db";
 
+const createDefaultVariable = (index: number, existingVariables: Variable[] = []): Variable => {
+    const regex = /^var(\d+)$/;
+    let maxNum = 0;
+    existingVariables.forEach(v => {
+        const match = v.name.match(regex);
+        if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxNum) maxNum = num;
+        }
+    });
+    return {
+        columnIndex: index,
+        name: `var${maxNum + 1}`,
+        type: "NUMERIC",
+        width: 8,
+        decimals: 2,
+        label: "",
+        values: [],
+        missing: [],
+        columns: 64,
+        align: "right",
+        measure: "scale",
+        role: "input",
+    };
+};
+
 interface VariableStoreState {
     variables: Variable[];
     isLoading: boolean;
@@ -21,22 +47,9 @@ interface VariableStoreState {
     resetVariables: () => Promise<void>;
     getAvailableVariables: () => Promise<Variable[]>;
     getTotalVariable: () => Promise<number>;
+    createVariable: (columnIndex: number, data: (string | number)[]) => Promise<void>;
+    overwriteVariables: (variables: Variable[]) => Promise<void>;
 }
-
-const createDefaultVariable = (index: number): Variable => ({
-    columnIndex: index,
-    name: "",
-    type: "NUMERIC",
-    width: 8,
-    decimals: 2,
-    label: "",
-    values: [],
-    missing: [],
-    columns: 200,
-    align: "right",
-    measure: "scale",
-    role: "input",
-});
 
 export const useVariableStore = create<VariableStoreState>()(
     devtools(
@@ -60,7 +73,7 @@ export const useVariableStore = create<VariableStoreState>()(
                     if (rowIndex >= draft.variables.length) {
                         const currentLength = draft.variables.length;
                         for (let i = currentLength; i <= rowIndex; i++) {
-                            draft.variables.push(createDefaultVariable(i));
+                            draft.variables.push(createDefaultVariable(i, draft.variables));
                         }
                     }
                     draft.variables[rowIndex][field] = value;
@@ -79,7 +92,7 @@ export const useVariableStore = create<VariableStoreState>()(
                     if (variable.columnIndex >= draft.variables.length) {
                         const currentLength = draft.variables.length;
                         for (let i = currentLength; i <= variable.columnIndex; i++) {
-                            draft.variables.push(createDefaultVariable(i));
+                            draft.variables.push(createDefaultVariable(i, draft.variables));
                         }
                     }
                     const existingIndex = draft.variables.findIndex(
@@ -119,7 +132,7 @@ export const useVariableStore = create<VariableStoreState>()(
                     const maxColumn = lastVariable ? lastVariable.columnIndex + 1 : 0;
                     const newVariables: Variable[] = Array.from({ length: maxColumn }, (_, i) => {
                         const found = variablesFromDb.find((v) => v.columnIndex === i);
-                        return found ? found : createDefaultVariable(i);
+                        return found ? found : createDefaultVariable(i, variablesFromDb);
                     });
                     set((draft) => {
                         draft.variables = newVariables;
@@ -158,11 +171,56 @@ export const useVariableStore = create<VariableStoreState>()(
             },
 
             getTotalVariable: async () => {
+                return get().variables.length;
+            },
+
+            createVariable: async (columnIndex, data) => {
+                set((draft) => {
+                    if (columnIndex >= draft.variables.length) {
+                        const currentLength = draft.variables.length;
+                        for (let i = currentLength; i <= columnIndex; i++) {
+                            draft.variables.push(createDefaultVariable(i, draft.variables));
+                        }
+                    }
+                    const nonEmptyData = data.filter(d => d !== "");
+                    const allNumeric = nonEmptyData.every(
+                        d => typeof d === "number" || (!isNaN(Number(d)) && d !== "")
+                    );
+                    let variable = createDefaultVariable(columnIndex, draft.variables);
+                    if (!allNumeric) {
+                        const maxWidth = nonEmptyData.reduce<number>(
+                            (max: number, d: string | number): number => {
+                                const str = String(d);
+                                return Math.max(max, str.length);
+                            },
+                            0
+                        );
+                        variable = { ...variable, type: "STRING", width: maxWidth || variable.width };
+                    }
+                    draft.variables[columnIndex] = variable;
+                });
                 try {
-                    const variable = await db.variables.orderBy("columnIndex").last();
-                    return variable ? variable.columnIndex + 1 : 0;
+                    const newVariable = get().variables[columnIndex];
+                    await db.variables.put(newVariable);
                 } catch (error: any) {
-                    return 0;
+                    set((draft) => {
+                        draft.error = error.message || "Error creating variable";
+                    });
+                }
+            },
+
+
+            overwriteVariables: async (newVariables) => {
+                set((draft) => {
+                    draft.variables = newVariables;
+                });
+                try {
+                    await db.variables.clear();
+                    await Promise.all(newVariables.map((variable) => db.variables.put(variable)));
+                } catch (error: any) {
+                    set((draft) => {
+                        draft.error = error.message || "Error overwriting variables";
+                    });
                 }
             },
         }))

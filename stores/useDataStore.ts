@@ -17,6 +17,8 @@ export interface DataStoreState {
     getAvailableData: (selectedColumns?: number[]) => Promise<DataRow[]>;
     getMaxCol: () => Promise<number>;
     getMaxRow: () => Promise<number>;
+    updateBulkCells: (updates: { row: number; col: number; value: string | number }[]) => Promise<void>;
+    setDataAndSync: (newData: DataRow[]) => Promise<void>;
 }
 
 export const useDataStore = create<DataStoreState>()(
@@ -154,7 +156,60 @@ export const useDataStore = create<DataStoreState>()(
                 }
             },
 
+            updateBulkCells: async (updates) => {
+                set((state) => {
+                    updates.forEach(({ row, col, value }) => {
+                        if (row >= state.data.length || (state.data.length > 0 && col >= state.data[0].length)) {
+                            const newRows = Math.max(state.data.length, row + 1);
+                            const newCols =
+                                state.data.length > 0
+                                    ? Math.max(state.data[0].length, col + 1)
+                                    : col + 1;
+                            const newData = Array.from({ length: newRows }, (_, i) => {
+                                if (i < state.data.length) {
+                                    const currentRow = state.data[i];
+                                    if (currentRow.length < newCols) {
+                                        return [...currentRow, ...Array(newCols - currentRow.length).fill("")];
+                                    }
+                                    return [...currentRow];
+                                } else {
+                                    return Array(newCols).fill("");
+                                }
+                            });
+                            state.data = newData;
+                        }
+                        state.data[row][col] = value;
+                    });
+                });
+                try {
+                    await Promise.all(
+                        updates.map(({ row, col, value }) => db.cells.put({ row, col, value }))
+                    );
+                } catch (error: any) {
+                    console.error("Bulk update failed:", error);
+                    await get().loadData();
+                }
+            },
 
+            setDataAndSync: async (newData) => {
+                set((state) => {
+                    state.data = newData;
+                });
+                try {
+                    await db.cells.clear();
+                    const cells = [];
+                    for (let row = 0; row < newData.length; row++) {
+                        for (let col = 0; col < newData[row].length; col++) {
+                            if (newData[row][col] === "") continue;
+                            cells.push({ row, col, value: newData[row][col] });
+                        }
+                    }
+                    await Promise.all(cells.map((cell) => db.cells.put(cell)));
+                } catch (error: any) {
+                    console.error("Failed to sync data:", error);
+                    await get().loadData();
+                }
+            },
         }))
     )
 );

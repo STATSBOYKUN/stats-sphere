@@ -73,7 +73,7 @@ const OpenData: FC<OpenDataProps> = ({ onClose }) => {
                     const variable = {
                         columnIndex: colIndex,
                         name: variableName,
-                        type: isNumeric ? "Numeric" : "String",
+                        type: isNumeric ? "NUMERIC" : "STRING",
                         width: maxLength,
                         decimals: isNumeric ? 2 : 0,
                         label: varInfo.label || "",
@@ -82,6 +82,7 @@ const OpenData: FC<OpenDataProps> = ({ onClose }) => {
                         columns: 200,
                         align: "Right",
                         measure: "Nominal",
+                        role: "Input"
                     };
 
                     // Tambahkan variabel ke store
@@ -176,9 +177,6 @@ const OpenData: FC<OpenDataProps> = ({ onClose }) => {
                 </Button>
                 <Button onClick={handleSubmit} disabled={loading}>
                     {loading ? "Processing..." : "Upload"}
-                </Button>
-                <Button onClick={handleGenerateDummy} disabled={loading}>
-                    {loading ? "Processing..." : "Generate Dummy SAV"}
                 </Button>
             </DialogFooter>
         </DialogContent>

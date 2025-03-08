@@ -38,10 +38,10 @@ import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEsti
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
 import ModalOptimalScaling from "./Regression/OptimalScaling/ModalOptimalScaling";
 import ChartBuilderModal from "./Graphs/ChartBuilder/ChartBuilderModal";
-import DefineVariableProperties from "@/components/Modals/Data/DefineVariableProperties";
+import DefineVariableProperties from "@/components/Modals/Data/DefineVarProps";
 import DefineDateTime from "@/components/Modals/Data/DefineDateTime";
 import SortCases from "@/components/Modals/Data/SortCases";
-import SortVariables from "@/components/Modals/Data/SortVariables";
+import SortVariables from "@/components/Modals/Data/SortVars";
 import Transpose from "@/components/Modals/Data/Transpose";
 import MergeFiles from "@/components/Modals/Data/MergeFiles";
 import Restructure from "@/components/Modals/Data/Restructure";
@@ -49,6 +49,10 @@ import SplitFile from "@/components/Modals/Data/SplitFile";
 import WeightCases from "@/components/Modals/Data/WeightCases";
 import {FindAndReplaceModal, FindReplaceMode} from "@/components/Modals/Edit/FindReplace";
 import GoToModal, {GoToMode} from "@/components/Modals/Edit/GoTo";
+import AggregateData from "@/components/Modals/Data/Aggregate";
+import VariablePropertiesEditor from "@/components/Modals/Data/DefineVarProps/VariablePropertiesEditor";
+import WeightCasesModal from "@/components/Modals/Data/WeightCases";
+import DefineDatesModal from "@/components/Modals/Data/DefineDateTime";
 
 const ModalContainer: React.FC = () => {
     const {modals, closeModal} = useModal();
@@ -115,13 +119,19 @@ const ModalContainer: React.FC = () => {
                     />);
 
             // DATA
-            case ModalType.DefineVariableProperties:
+            case ModalType.Aggregate:
+                return <AggregateData onClose={closeModal} {...currentModal.props} />;
+
+            case ModalType.DefineVarProps:
                 return <DefineVariableProperties onClose={closeModal} {...currentModal.props} />;
+            case ModalType.VarPropsEditor:
+                return <VariablePropertiesEditor onClose={closeModal} {...currentModal.props} />;
+
             case ModalType.DefineDateTime:
-                return <DefineDateTime onClose={closeModal} {...currentModal.props} />;
+                return <DefineDatesModal onClose={closeModal} {...currentModal.props} />;
             case ModalType.SortCases:
                 return <SortCases onClose={closeModal} {...currentModal.props} />;
-            case ModalType.SortVariables:
+            case ModalType.SortVars:
                 return <SortVariables onClose={closeModal} {...currentModal.props} />;
             case ModalType.Transpose:
                 return <Transpose onClose={closeModal} {...currentModal.props} />;
@@ -132,7 +142,7 @@ const ModalContainer: React.FC = () => {
             case ModalType.SplitFile:
                 return <SplitFile onClose={closeModal} {...currentModal.props} />;
             case ModalType.WeightCases:
-                return <WeightCases onClose={closeModal} {...currentModal.props} />;
+                return <WeightCasesModal onClose={closeModal} {...currentModal.props} />;
 
             // case ModalType.OpenData:
             //   return <OpenData onClose={closeModal} {...currentModal.props} />;

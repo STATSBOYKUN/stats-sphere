@@ -5,12 +5,14 @@ interface Meta {
     name: string
     location: string
     created: Date
-    weight: number
+    weight: string
+    dates: string // Stores formatted date string like Day(1)Hour(2;24)Minute(5;60)
 }
 
 interface MetaStore {
     meta: Meta
     setMeta: (newMeta: Partial<Meta>) => void
+    clearDates: () => void
 }
 
 export const useMetaStore = create<MetaStore>()(
@@ -20,13 +22,16 @@ export const useMetaStore = create<MetaStore>()(
                 name: '',
                 location: '',
                 created: new Date(),
-                n_vars: 0,
-                n_case: 0,
-                weight: 0,
+                weight: '',
+                dates: '',
             },
             setMeta: (newMeta) =>
                 set((state) => ({
                     meta: { ...state.meta, ...newMeta },
+                })),
+            clearDates: () =>
+                set((state) => ({
+                    meta: { ...state.meta, dates: '' },
                 })),
         }),
         {

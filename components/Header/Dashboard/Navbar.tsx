@@ -209,7 +209,7 @@ const Navbar: React.FC = () => {
             <MenubarTrigger>Data</MenubarTrigger>
             <MenubarContent>
               <MenubarItem
-                onClick={() => openModal(ModalType.DefineVariableProperties)}
+                onClick={() => openModal(ModalType.DefineVarProps)}
               >
                 Define Variable Properties...
               </MenubarItem>
@@ -233,7 +233,7 @@ const Navbar: React.FC = () => {
               <MenubarItem onClick={() => openModal(ModalType.SortCases)}>
                 Sort Cases...
               </MenubarItem>
-              <MenubarItem onClick={() => openModal(ModalType.SortVariables)}>
+              <MenubarItem onClick={() => openModal(ModalType.SortVars)}>
                 Sort Variables...
               </MenubarItem>
               <MenubarItem onClick={() => openModal(ModalType.Transpose)}>
@@ -249,7 +249,7 @@ const Navbar: React.FC = () => {
               {/*<MenubarItem onClick={() => openModal(ModalType.RakeWeights)}>Rake Weights...</MenubarItem>*/}
               {/*<MenubarItem onClick={() => openModal(ModalType.PropensityScoreMatching)}>Propensity Score Matching...</MenubarItem>*/}
               {/*<MenubarItem onClick={() => openModal(ModalType.CaseControlMatching)}>Case Control Matching...</MenubarItem>*/}
-              {/*<MenubarItem onClick={() => openModal(ModalType.Aggregate)}>Aggregate...</MenubarItem>*/}
+              <MenubarItem onClick={() => openModal(ModalType.Aggregate)}>Aggregate...</MenubarItem>
               {/*<MenubarItem onClick={() => openModal(ModalType.OrthogonalDesign)}>Orthogonal Design</MenubarItem>*/}
               <MenubarSeparator />
               {/*<MenubarItem onClick={() => openModal(ModalType.SplitIntoFiles)}>Split into Files</MenubarItem>*/}

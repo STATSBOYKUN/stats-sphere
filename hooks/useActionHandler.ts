@@ -42,7 +42,9 @@ export const useActionHandler = () => {
 
     const handleAction = async ({ actionType }: ActionPayload) => {
         switch (actionType) {
-            // ... kasus lain jika diperlukan
+            case "New":
+                useDataStore.getState().resetData();
+                useVariableStore.getState().resetVariables();
             case "Save":
                 console.log("Executing Save action");
 
