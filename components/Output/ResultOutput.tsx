@@ -64,30 +64,53 @@ const ResultOutput: React.FC = () => {
                                                         {
   "tables": [
     {
-      "title": "Descriptive Statistics",
+      "title": "ANOVAa",
       "columnHeaders": [
-        { "header": "Variable", "key": "variable" },
-        { "header": "Mean", "key": "mean" },
-        { "header": "Std. Deviation", "key": "stdDeviation" },
-        { "header": "N", "key": "n" }
+        { "header": "Model" },
+        { "header": "" },
+        { "header": "Sum of Squares" },
+        { "header": "df" },
+        { "header": "Mean Square" },
+        { "header": "F" },
+        { "header": "Sig" }
       ],
       "rows": [
         {
-          "rowHeader": ["VAR00001"],
-          "mean": 2.75,
-          "stdDeviation": 1.98206,
-          "n": 8
-        },
-        {
-          "rowHeader": ["VAR00002"],
-          "mean": 2.5,
-          "stdDeviation": 1.19523,
-          "n": 8
+          "rowHeader": ["1"],
+          "children": [
+            {
+              "rowHeader": [null, "Regression"],
+              "Sum of Squares": 1.600,
+              "df": 1,
+              "Mean Square": 1.600,
+              "F": 0.371,
+              "Sig": 0.565
+            },
+            {
+              "rowHeader": [null, "Residual"],
+              "Sum of Squares": 25.900,
+              "df": 6,
+              "Mean Square": 4.317,
+              "F": "",
+              "Sig": ""
+            },
+            {
+              "rowHeader": [null, "Total"],
+              "Sum of Squares": 27.500,
+              "df": 7,
+              "Mean Square": "",
+              "F": "",
+              "Sig": ""
+            }
+          ]
         }
       ]
     }
   ]
 }
+
+
+
 
 
 
