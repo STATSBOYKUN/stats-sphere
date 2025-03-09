@@ -35,7 +35,6 @@ interface ModalLinearProps {
 
 const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   // Tambahkan state untuk menyimpan statistics parameters
-  const [statsParams, setStatsParams] = useState<StatisticsParams | null>(null);
   const [availableVariables, setAvailableVariables] = useState<Variable[]>([]);
   const [selectedDependentVariable, setSelectedDependentVariable] = useState<Variable | null>(null);
   const [selectedIndependentVariables, setSelectedIndependentVariables] = useState<Variable[]>([]);
@@ -47,8 +46,29 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   const [saveParams, setSaveParams] = useState<SaveLinearParams | null>(null);
   const { openModal } = useModal();
 
+  // In ModalLinear.tsx, add this at the top of your component function
+  const defaultStatsParams: StatisticsParams = {
+    estimates: true,
+    confidenceIntervals: false,
+    covarianceMatrix: false,
+    modelFit: true,
+    rSquaredChange: false,
+    descriptives: false,
+    partAndPartial: false,
+    collinearityDiagnostics: false,
+    durbinWatson: false,
+    casewiseDiagnostics: false,
+    selectedResidualOption: '',
+    outlierThreshold: '3'
+  };
+
+// Initialize state with default values
+  const [statsParams, setStatsParams] = useState<StatisticsParams | null>(defaultStatsParams);
+
   const [showStatistics, setShowStatistics] = useState<boolean>(false);
   const handleStatisticsSubmit = (params: StatisticsParams) => {
+    // Store the parameters in localStorage
+    localStorage.setItem('temp_stats_params', JSON.stringify(params));
     setStatsParams(params);
     console.log("Statistics parameters received:", params);
   };
@@ -70,6 +90,52 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       }));
     setAvailableVariables(availableVars);
   }, [variables]);
+
+  const handleReset = () => {
+    // Clear the statistics parameters from localStorage
+    localStorage.removeItem('temp_stats_params');
+
+    // Reset the statsParams state to default
+    setStatsParams(defaultStatsParams);
+
+    // Move dependent variable back to available variables if it exists
+    if (selectedDependentVariable) {
+      setAvailableVariables(prev => [...prev, selectedDependentVariable]);
+    }
+
+    // Move independent variables back to available variables
+    if (selectedIndependentVariables.length > 0) {
+      setAvailableVariables(prev => [...prev, ...selectedIndependentVariables]);
+    }
+
+    // Move selection variable back if it exists
+    if (selectedSelectionVariable) {
+      setAvailableVariables(prev => [...prev, selectedSelectionVariable]);
+    }
+
+    // Move case labels variable back if it exists
+    if (selectedCaseLabelsVariable) {
+      setAvailableVariables(prev => [...prev, selectedCaseLabelsVariable]);
+    }
+
+    // Move WLS weight variable back if it exists
+    if (selectedWLSWeightVariable) {
+      setAvailableVariables(prev => [...prev, selectedWLSWeightVariable]);
+    }
+
+    // Now clear all selection states
+    setSelectedDependentVariable(null);
+    setSelectedIndependentVariables([]);
+    setSelectedSelectionVariable(null);
+    setSelectedCaseLabelsVariable(null);
+    setSelectedWLSWeightVariable(null);
+    setHighlightedVariable(null);
+
+    // Reset method to default
+    setMethod('Enter');
+
+    console.log("Reset button clicked - All selections returned to available variables");
+  };
 
   // Handlers for selecting and moving variables
   const handleSelectAvailableVariable = (variable: Variable) => {
@@ -181,6 +247,13 @@ const handleAnalyze = async () => {
       alert('Please select a dependent variable and at least one independent variable.');
       return;
     }
+
+    const storedParams = localStorage.getItem('temp_stats_params');
+    const retrievedStatsParams: StatisticsParams = storedParams
+        ? JSON.parse(storedParams)
+        : defaultStatsParams;
+
+    console.log("[Analyze] Using statistics parameters:", retrievedStatsParams);
 
     // 1. Create log command
     const logMessage = `REGRESSION 
@@ -874,7 +947,7 @@ descriptiveWorker.onerror = (error) => {
       <DialogFooter className="flex justify-center space-x-4 mt-4">
         <Button onClick={handleAnalyze}>OK</Button>
         <Button variant="outline">Paste</Button>
-        <Button variant="outline">Reset</Button>
+        <Button variant="outline" onClick={handleReset}>Reset</Button>
         <Button variant="outline" onClick={handleClose}>
           Cancel
         </Button>

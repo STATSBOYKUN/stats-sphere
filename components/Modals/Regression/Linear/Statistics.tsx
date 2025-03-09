@@ -62,6 +62,8 @@ const Statistics: React.FC<StatisticsProps> = ({ onClose, onSubmit }) => {
     outlierThreshold,
   };
   const handleContinue = () => {
+    // Store params in localStorage before closing
+    localStorage.setItem('temp_stats_params', JSON.stringify(params));
     onSubmit(params);
     onClose();
   };
