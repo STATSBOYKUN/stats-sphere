@@ -111,7 +111,8 @@ export const createMultilineChart = (
       typeof d.category === "string" &&
       typeof d.subcategory === "string" &&
       typeof d.value === "number" &&
-      d.value >= 0
+      d.value >= 0 &&
+      d.category !== ""
   );
 
   if (validData.length === 0) {
@@ -131,9 +132,11 @@ export const createMultilineChart = (
   const subcategoryNames = Array.from(
     new Set(validData.map((d) => d.subcategory))
   );
-  const categories = Array.from(new Set(validData.map((d) => d.category))).sort(
-    d3.ascending
-  );
+  const categories = Array.from(new Set(validData.map((d) => d.category)));
+
+  //.sort(
+  //   d3.ascending
+  // );
 
   // Pastikan semua kategori ada dalam skala X
   const xScaleDomain = categories;
@@ -143,9 +146,9 @@ export const createMultilineChart = (
     [key: string]: { category: string; value: number }[];
   } = {};
   subcategoryNames.forEach((subcategory) => {
-    dataBySubcategory[subcategory] = validData
-      .filter((d) => d.subcategory === subcategory)
-      .sort((a, b) => d3.ascending(a.category, b.category));
+    dataBySubcategory[subcategory] = validData.filter(
+      (d) => d.subcategory === subcategory
+    );
   });
 
   // Membuat skala untuk sumbu X dan Y
@@ -230,7 +233,7 @@ export const createMultilineChart = (
     .attr("stroke-linecap", "round")
     .attr("d", (d) => line(dataBySubcategory[d])!);
 
-  // Menambahkan interaktivitas (tooltip)
+  // Tooltip
   // Membuat div untuk tooltip
   const tooltip = d3
     .select("body")
