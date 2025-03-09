@@ -66,28 +66,29 @@ const ResultOutput: React.FC = () => {
     {
       "title": "Descriptive Statistics",
       "columnHeaders": [
-        { "header": "Variable" },
-        { "header": "Mean" },
-        { "header": "Std. Deviation" },
-        { "header": "N" }
+        { "header": "Variable", "key": "variable" },
+        { "header": "Mean", "key": "mean" },
+        { "header": "Std. Deviation", "key": "stdDeviation" },
+        { "header": "N", "key": "n" }
       ],
       "rows": [
         {
           "rowHeader": ["VAR00001"],
-          "Mean": 2.75,
-          "Std. Deviation": 1.98206,
-          "N": 8
+          "mean": 2.75,
+          "stdDeviation": 1.98206,
+          "n": 8
         },
         {
           "rowHeader": ["VAR00002"],
-          "Mean": 2.50,
-          "Std. Deviation": 1.19523,
-          "N": 8
+          "mean": 2.5,
+          "stdDeviation": 1.19523,
+          "n": 8
         }
       ]
     }
   ]
 }
+
 
 
 '/> */}

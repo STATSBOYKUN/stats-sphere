@@ -283,25 +283,295 @@ const handleAnalyze = async () => {
     };
     //AKHIR RSQUARE CHANGE
 
-    // ... di dalam fungsi handleAnalyze pada ModalLinear.tsx
 
-// AWAL DESCRIPTIVE STATISTICS
+
+// AWAL CONFIDENCE INTERVAL WORKER
+const confidenceWorker = new Worker('/workers/Regression/confidence_interval.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Confidence Interval...");
+confidenceWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+confidenceWorker.onmessage = async (e) => {
+  const confidenceResults = e.data;
+  console.log("[Analyze] Hasil Confidence Interval dari Worker:", confidenceResults);
+  const confidenceStat = {
+    analytic_id: analyticId,
+    title: "Confidence Interval",
+    output_data: JSON.stringify(confidenceResults),
+    output_type: "table",
+    components: "ConfidenceInterval",
+  };
+  await addStatistic(confidenceStat);
+  console.log("[Analyze] Statistik Confidence Interval disimpan.");
+  confidenceWorker.terminate();
+};
+
+confidenceWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Confidence Interval error:", error);
+  confidenceWorker.terminate();
+};
+// AKHIR CONFIDENCE INTERVAL WORKER
+
+
+// AWAL COEFFICIENTS PART & PARTIAL WORKER
+const partAndPartialWorker = new Worker('/workers/Regression/coefficients_partandpartial.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Coefficients Part & Partial Correlations...");
+partAndPartialWorker.postMessage({
+  dependent: filteredDependentData,
+  independents: filteredIndependentData
+});
+
+partAndPartialWorker.onmessage = async (e) => {
+  const partAndPartialResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Coefficients Part & Partial:", partAndPartialResults);
+  const partAndPartialStat = {
+    analytic_id: analyticId,
+    title: "Coefficients (Part & Partial Correlations)",
+    output_data: JSON.stringify(partAndPartialResults),
+    output_type: "table",
+    components: "CoefficientsPartAndPartial",
+  };
+  await addStatistic(partAndPartialStat);
+  console.log("[Analyze] Statistik Coefficients Part & Partial disimpan.");
+  partAndPartialWorker.terminate();
+};
+
+partAndPartialWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Coefficients Part & Partial error:", error);
+  partAndPartialWorker.terminate();
+};
+// AKHIR COEFFICIENTS PART & PARTIAL WORKER
+
+// AWAL COEFFICIENTS COLLINEARITY WORKER
+const collinearityWorker = new Worker('/workers/Regression/coefficients_collinearity.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Coefficients Collinearity...");
+collinearityWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData
+});
+
+collinearityWorker.onmessage = async (e) => {
+  const collinearityResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Coefficients Collinearity:", collinearityResults);
+  const collinearityStat = {
+    analytic_id: analyticId,
+    title: "Collinearity Diagnostics",
+    output_data: JSON.stringify(collinearityResults),
+    output_type: "table",
+    components: "CollinearityStatistics",
+  };
+  await addStatistic(collinearityStat);
+  console.log("[Analyze] Statistik Collinearity Diagnostics disimpan.");
+  collinearityWorker.terminate();
+};
+
+collinearityWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Coefficients Collinearity error:", error);
+  collinearityWorker.terminate();
+};
+// AKHIR COEFFICIENTS COLLINEARITY WORKER
+
+// AWAL COLLINEARITY DIAGNOSTICS WORKER
+const collinearityDiagnosticsWorker = new Worker('/workers/Regression/collinearity_diagnostics.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Collinearity Diagnostics...");
+collinearityDiagnosticsWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData
+});
+
+collinearityDiagnosticsWorker.onmessage = async (e) => {
+  const collinearityDiagnosticsResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Collinearity Diagnostics:", collinearityDiagnosticsResults);
+  const collinearityDiagnosticsStat = {
+    analytic_id: analyticId,
+    title: "Collinearity Diagnostics",
+    output_data: JSON.stringify(collinearityDiagnosticsResults),
+    output_type: "table",
+    components: "CollinearityDiagnostics",
+  };
+  await addStatistic(collinearityDiagnosticsStat);
+  console.log("[Analyze] Statistik Collinearity Diagnostics disimpan.");
+  collinearityDiagnosticsWorker.terminate();
+};
+
+collinearityDiagnosticsWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Collinearity Diagnostics error:", error);
+  collinearityDiagnosticsWorker.terminate();
+};
+// AKHIR COLLINEARITY DIAGNOSTICS WORKER
+
+// AWAL MODEL DURBIN WORKER
+const modelDurbinWorker = new Worker('/workers/Regression/model_durbin.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Model Durbin...");
+// Misalnya, jika independent hanya satu variabel, ambil data dari filteredIndependentData[0]
+modelDurbinWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+modelDurbinWorker.onmessage = async (e) => {
+  const modelDurbinResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Model Durbin:", modelDurbinResults);
+  const modelDurbinStat = {
+    analytic_id: analyticId,
+    title: "Model Summary (Durbin-Watson)",
+    output_data: JSON.stringify(modelDurbinResults),
+    output_type: "table",
+    components: "ModelDurbin",
+  };
+  await addStatistic(modelDurbinStat);
+  console.log("[Analyze] Statistik Model Durbin disimpan.");
+  modelDurbinWorker.terminate();
+};
+
+modelDurbinWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Model Durbin error:", error);
+  modelDurbinWorker.terminate();
+};
+// AKHIR MODEL DURBIN WORKER
+
+// AWAL RESIDUALS STATISTICS WORKER
+const residualsStatisticsWorker = new Worker('/workers/Regression/residuals_statistics.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Residuals Statistics...");
+
+// Jika data dependen dan independen sudah difilter, misalnya:
+// filteredDependentData: array data dependen,
+// filteredIndependentData[0]: array data independen (untuk regresi linear sederhana)
+residualsStatisticsWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+residualsStatisticsWorker.onmessage = async (e) => {
+  const residualsStatisticsResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Residuals Statistics:", residualsStatisticsResults);
+  const residualsStatisticsStat = {
+    analytic_id: analyticId,
+    title: "Residuals Statistics",
+    output_data: JSON.stringify(residualsStatisticsResults),
+    output_type: "table",
+    components: "ResidualsStatistics",
+  };
+  await addStatistic(residualsStatisticsStat);
+  console.log("[Analyze] Statistik Residuals Statistics disimpan.");
+  residualsStatisticsWorker.terminate();
+};
+
+residualsStatisticsWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Residuals Statistics error:", error);
+  residualsStatisticsWorker.terminate();
+};
+// AKHIR RESIDUALS STATISTICS WORKER
+
+// AWAL CASEWISE DIAGNOSTICS WORKER
+const casewiseDiagnosticsWorker = new Worker('/workers/Regression/casewise_diagnostics.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Casewise Diagnostics...");
+
+// Kirim data dependen dan independen yang sudah difilter
+casewiseDiagnosticsWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]  // Untuk regresi linear sederhana dengan satu variabel
+});
+
+casewiseDiagnosticsWorker.onmessage = async (e) => {
+  const casewiseDiagnosticsResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Casewise Diagnostics:", casewiseDiagnosticsResults);
+  const casewiseDiagnosticsStat = {
+    analytic_id: analyticId,
+    title: "Casewise Diagnostics",
+    output_data: JSON.stringify(casewiseDiagnosticsResults),
+    output_type: "table",
+    components: "CasewiseDiagnostics",
+  };
+  await addStatistic(casewiseDiagnosticsStat);
+  console.log("[Analyze] Statistik Casewise Diagnostics disimpan.");
+  casewiseDiagnosticsWorker.terminate();
+};
+
+casewiseDiagnosticsWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Casewise Diagnostics error:", error);
+  casewiseDiagnosticsWorker.terminate();
+};
+// AKHIR CASEWISE DIAGNOSTICS WORKER
+
+// AWAL CORRELATIONS WORKER
+const correlationsWorker = new Worker('/workers/Regression/correlations.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Correlations...");
+// Mengirim data yang sudah difilter, misalnya:
+// filteredDependentData: array data dependen
+// filteredIndependentData[0]: array data independen (untuk regresi linear sederhana)
+correlationsWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+correlationsWorker.onmessage = async (e) => {
+  const correlationsResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Correlations:", correlationsResults);
+  const correlationsStat = {
+    analytic_id: analyticId,
+    title: "Correlations",
+    output_data: JSON.stringify(correlationsResults),
+    output_type: "table",
+    components: "Correlations",
+  };
+  await addStatistic(correlationsStat);
+  console.log("[Analyze] Statistik Correlations disimpan.");
+  correlationsWorker.terminate();
+};
+
+correlationsWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Correlations error:", error);
+  correlationsWorker.terminate();
+};
+// AKHIR CORRELATIONS WORKER
+
+// AWAL COEFFICIENT CORRELATIONS WORKER
+const coefficientCorrelationsWorker = new Worker('/workers/Regression/coefficient_correlations.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Coefficient Correlations...");
+
+// Misalnya, jika independent hanya ada satu variabel, gunakan filteredIndependentData[0]
+coefficientCorrelationsWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+coefficientCorrelationsWorker.onmessage = async (e) => {
+  const correlationsResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Coefficient Correlations:", correlationsResults);
+  const correlationsStat = {
+    analytic_id: analyticId,
+    title: "Coefficient Correlations",
+    output_data: JSON.stringify(correlationsResults),
+    output_type: "table",
+    components: "CoefficientCorrelations",
+  };
+  await addStatistic(correlationsStat);
+  console.log("[Analyze] Statistik Coefficient Correlations disimpan.");
+  coefficientCorrelationsWorker.terminate();
+};
+
+coefficientCorrelationsWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Coefficient Correlations error:", error);
+  coefficientCorrelationsWorker.terminate();
+};
+// AKHIR COEFFICIENT CORRELATIONS WORKER
+
+// AWAL DESCRIPTIVE STATISTICS WORKER
 const descriptiveWorker = new Worker('/workers/Regression/descriptive_statistics.js');
 console.log("[Analyze] Mengirim data ke Worker untuk Descriptive Statistics...");
 
-// Karena worker mengharapkan data independent sebagai array 1 dimensi,
-// gunakan filteredDependentData dan filteredIndependentData[0]
+// Jika hanya ada satu variabel independen, gunakan filteredIndependentData[0]
 descriptiveWorker.postMessage({
   dependent: filteredDependentData,
   independent: filteredIndependentData[0]
 });
 
-// Tangani respon dari worker
 descriptiveWorker.onmessage = async (e) => {
   const descriptiveResults = e.data;
   console.log("[Analyze] Hasil Descriptive Statistics dari Worker:", descriptiveResults);
-
-  // Membuat object statistik untuk Descriptive Statistics
   const descriptiveStat = {
     analytic_id: analyticId,
     title: "Descriptive Statistics",
@@ -309,11 +579,8 @@ descriptiveWorker.onmessage = async (e) => {
     output_type: "table",
     components: "DescriptiveStatistics",
   };
-
-  // Simpan statistik menggunakan addStatistic seperti statistik lainnya
   await addStatistic(descriptiveStat);
   console.log("[Analyze] Statistik Descriptive Statistics disimpan.");
-
   descriptiveWorker.terminate();
 };
 
@@ -321,7 +588,39 @@ descriptiveWorker.onerror = (error) => {
   console.error("[Analyze] Worker Descriptive Statistics error:", error);
   descriptiveWorker.terminate();
 };
-// AKHIR DESCRIPTIVE STATISTICS
+// AKHIR DESCRIPTIVE STATISTICS WORKER
+
+// AWAL MODEL SUMMARY WORKER
+const modelSummaryWorker = new Worker('/workers/Regression/model_summary.js');
+console.log("[Analyze] Mengirim data ke Worker untuk Model Summary...");
+
+// Misalnya, jika data sudah difilter dan hanya ada satu variabel independen:
+modelSummaryWorker.postMessage({
+  dependent: filteredDependentData,
+  independent: filteredIndependentData[0]
+});
+
+modelSummaryWorker.onmessage = async (e) => {
+  const modelSummaryResults = e.data;
+  console.log("[Analyze] Hasil dari Worker Model Summary:", modelSummaryResults);
+  const modelSummaryStat = {
+    analytic_id: analyticId,
+    title: "Model Summary",
+    output_data: JSON.stringify(modelSummaryResults),
+    output_type: "table",
+    components: "ModelSummary",
+  };
+  await addStatistic(modelSummaryStat);
+  console.log("[Analyze] Statistik Model Summary disimpan.");
+  modelSummaryWorker.terminate();
+};
+
+modelSummaryWorker.onerror = (error) => {
+  console.error("[Analyze] Worker Model Summary error:", error);
+  modelSummaryWorker.terminate();
+};
+// AKHIR MODEL SUMMARY WORKER
+
 
     // 4. Insert statistik lainnya
     // Variables Entered/Removed
@@ -358,65 +657,6 @@ descriptiveWorker.onerror = (error) => {
     await addStatistic(variablesEnteredRemovedStat);
     console.log("[Analyze] Statistik Variables Entered/Removed disimpan.");
 
-    // Model Summary (dari regressionResults)
-    const modelSummary = {
-      tables: [
-        {
-          title: "Model Summary",
-          columnHeaders: [
-            { header: "Model" },
-            { header: "" },
-            { header: "Sum of Squares" },
-            { header: "df" },
-            { header: "Mean Square" },
-            { header: "F" },
-            { header: "Sig" }
-          ],
-          rows: [
-            {
-              rowHeader: ["1"],
-              children: [
-                {
-                  rowHeader: [null, "Regression"],
-                  "Sum of Squares": regressionResults.regressionSS.toFixed(3),
-                  "df": regressionResults.regressionDF,
-                  "Mean Square": regressionResults.regressionMS.toFixed(3),
-                  "F": regressionResults.F.toFixed(3),
-                  "Sig": regressionResults.pValue.toFixed(3)
-                },
-                {
-                  rowHeader: [null, "Residual"],
-                  "Sum of Squares": regressionResults.residualSS.toFixed(3),
-                  "df": regressionResults.residualDF,
-                  "Mean Square": regressionResults.residualMS.toFixed(3),
-                  "F": "",
-                  "Sig": ""
-                },
-                {
-                  rowHeader: [null, "Total"],
-                  "Sum of Squares": regressionResults.totalSS.toFixed(3),
-                  "df": regressionResults.totalDF,
-                  "Mean Square": "",
-                  "F": "",
-                  "Sig": ""
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    };
-
-    const modelSummaryStat = {
-      analytic_id: analyticId,
-      title: "Model Summary",
-      output_data: JSON.stringify(modelSummary),
-      output_type: "table",
-      components: "ModelSummary",
-    };
-
-    await addStatistic(modelSummaryStat);
-    console.log("[Analyze] Statistik Model Summary disimpan.");
 
     // ANOVA
     const anovaTable = {
