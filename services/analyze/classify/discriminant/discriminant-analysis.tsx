@@ -4,6 +4,9 @@ import {
     DiscriminantAnalysisType
 } from "@/models/classify/discriminant/discriminant-worker";
 import init, {discriminant_analysis} from "@/src/wasm/pkg/wasm";
+import {analyzeCase} from "@/services/analyze/classify/discriminant/discriminant-analysis-check-data";
+import {groupStatistics} from "@/services/analyze/classify/discriminant/discriminant-analysis-groups-statistics";
+import {resultDiscriminant} from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
 
 export async function analyzeDiscriminant({
                                               tempData,
@@ -43,22 +46,22 @@ export async function analyzeDiscriminant({
     /*
     * 🧩 Analysis Case Process 🧩
     * */
-    // const checkGroupingData = await analyzeCase({data: slicedDataForGrouping});
-    // const checkIndependentData = await analyzeCase({data: slicedDataForIndependent});
-    // const checkSelectionData = await analyzeCase({data: slicedDataForSelection});
-    // const allCheckData = [checkGroupingData, checkIndependentData, checkSelectionData];
+    const checkGroupingData = await analyzeCase({data: slicedDataForGrouping});
+    const checkIndependentData = await analyzeCase({data: slicedDataForIndependent});
+    const checkSelectionData = await analyzeCase({data: slicedDataForSelection});
+    const allCheckData = [checkGroupingData, checkIndependentData, checkSelectionData];
 
     /*
     * 📊 Group Statistics Process 📊
     * */
-    // const groupStatisticsData = await groupStatistics({
-    //     groupData: slicedDataForGrouping,
-    //     groupDefs: varDefsForGrouping,
-    //     independentData: slicedDataForIndependent,
-    //     independentDefs: varDefsForIndependent,
-    //     minRange: tempData.defineRange.minRange,
-    //     maxRange: tempData.defineRange.maxRange
-    // });
+    const groupStatisticsData = await groupStatistics({
+        groupData: slicedDataForGrouping,
+        groupDefs: varDefsForGrouping,
+        independentData: slicedDataForIndependent,
+        independentDefs: varDefsForIndependent,
+        minRange: tempData.defineRange.minRange,
+        maxRange: tempData.defineRange.maxRange
+    });
 
     /*
     * 🚀 Stepwise Statistics Process 🚀
@@ -69,11 +72,10 @@ export async function analyzeDiscriminant({
     /*
     * 📜 Summary Canonical Process 📜
     * */
-
-    const summaryCanonicalData = await summaryCanonicalProcess({
-        groupData: slicedDataForGrouping,
-        independentData: slicedDataForIndependent
-    });
+    // const summaryCanonicalData = await summaryCanonicalProcess({
+    //     groupData: slicedDataForGrouping,
+    //     independentData: slicedDataForIndependent
+    // });
 
 
     /*
@@ -90,11 +92,13 @@ export async function analyzeDiscriminant({
     * 🎉 Final Result Process 🎯
     * */
 
-    // await resultDiscriminant({
-    //     analysisCaseData: allCheckData,
-    //     groupStatisticsData: groupStatisticsData,
-    //     addLog, addAnalytic, addStatistic
-    // });
+    console.log(allCheckData, groupStatisticsData);
+
+    await resultDiscriminant({
+        analysisCaseData: allCheckData,
+        groupStatisticsData: groupStatisticsData,
+        addLog, addAnalytic, addStatistic
+    });
 }
 
 export async function summaryCanonicalProcess({
