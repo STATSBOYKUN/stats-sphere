@@ -357,64 +357,75 @@ variablesEnteredRemovedWorker.onerror = (error) => {
   variablesEnteredRemovedWorker.terminate();
 };
 
-// // Anova Worker
-// const anovaWorker = new Worker('/workers/anovaWorker.js');
-// // Send data to the ANOVA Web Worker
-// anovaWorker.postMessage({ dependentData, independentData, analyticId: 'some-analytic-id' });
+      const anovaWorker = new Worker('/workers/Regression/anovaWorker.js');
+      console.log("[Analyze] Sending data to ANOVA Worker...");
+      anovaWorker.postMessage({
+        dependentData: filteredDependentData,
+        independentData: filteredIndependentData
+      });
 
-// anovaWorker.onmessage = async (e) => {
-//   const anovaStat = e.data;
-//   if (anovaStat.error) {
-//     console.error("Worker Error:", anovaStat.error);
-//     alert(`Worker Error: ${anovaStat.error}`);
-//   } else {
-//     await addStatistic(anovaStat);
-//     console.log("[Analyze] Statistik ANOVA disimpan.");
-//   }
-//   anovaWorker.terminate();  // Terminate the worker after use
-// };
+      anovaWorker.onmessage = async (e) => {
+        const anovaStat = e.data;
+        if (anovaStat.error) {
+          console.error("[Analyze] ANOVA Worker Error:", anovaStat.error);
+          alert(`ANOVA Worker Error: ${anovaStat.error}`);
+        } else {
+          // Add the analyticId here in the main thread
+          const completeStats = {
+            ...anovaStat,
+            analytic_id: analyticId
+          };
+          await addStatistic(completeStats);
+          console.log("[Analyze] ANOVA statistics saved.");
+        }
+        anovaWorker.terminate();
+      };
 
-// anovaWorker.onerror = (error) => {
-//   console.error("[Analyze] Web Worker error:", error.message || error);
-//   alert("An error occurred in the Web Worker.");
-//   anovaWorker.terminate();
-// };
+      anovaWorker.onerror = (error) => {
+        console.error("[Analyze] ANOVA Worker error:", error, error.message);
+        alert("An error occurred in the ANOVA Worker: " + (error.message || "Unknown error"));
+        anovaWorker.terminate();
+      };
 
-// // Coefficients Worker
-// const coefficientsWorker = new Worker('/workers/Regression/coefficients.js');
+// Coefficients Worker
+// Coefficients Worker - Now just sending raw data
+      const coefficientsWorker = new Worker('/workers/Regression/coefficients.js');
+      console.log("[Analyze] Sending data to Coefficients Worker...");
 
-//     coefficientsWorker.postMessage({
-//       regressionResult: { coefficients: filteredDependentData },  // Sesuaikan dengan struktur data yang dibutuhkan oleh worker
-//       independentVarNames
-//     });
+      coefficientsWorker.postMessage({
+        dependentData: filteredDependentData,
+        independentData: filteredIndependentData,
+        independentVarNames: independentVarNames
+      });
 
-//     coefficientsWorker.onmessage = async (e) => {
-//       const { success, result, error } = e.data;
+      coefficientsWorker.onmessage = async (e) => {
+        const { success, result, error } = e.data;
 
-//       if (success) {
-//         const coefficientsTable = result;
-//         // Anda bisa menyimpan hasil koefisien regresi ke dalam analitik atau tampilkan di UI
-//         const coefficientsStat = {
-//           analytic_id: analyticId,
-//           title: "Coefficients",
-//           output_data: JSON.stringify(coefficientsTable),
-//           output_type: "table",
-//           components: "Coefficients",
-//         };
+        if (success) {
+          const coefficientsTable = result;
+          const coefficientsStat = {
+            analytic_id: analyticId,
+            title: "Coefficients",
+            output_data: JSON.stringify(coefficientsTable),
+            output_type: "table",
+            components: "Coefficients",
+          };
 
-//         await addStatistic(coefficientsStat);
-//         console.log("[Analyze] Statistik Coefficients disimpan.");
-//       } else {
-//         alert(`Worker Error: ${error}`);
-//       }
+          await addStatistic(coefficientsStat);
+          console.log("[Analyze] Coefficients statistics saved.");
+        } else {
+          console.error("[Analyze] Coefficients Worker error:", error);
+          alert(`Coefficients Worker Error: ${error}`);
+        }
 
-//       coefficientsWorker.terminate();
-//     };
+        coefficientsWorker.terminate();
+      };
 
-//     coefficientsWorker.onerror = (error) => {
-//       console.error("[Analyze] Worker error:", error);
-//       coefficientsWorker.terminate();
-//     };
+      coefficientsWorker.onerror = (error) => {
+        console.error("[Analyze] Coefficients Worker error:", error, error.message);
+        alert("An error occurred in the Coefficients Worker: " + (error.message || "Unknown error"));
+        coefficientsWorker.terminate();
+      };
 
       // RSquare Change Worker
       if (retrievedStatsParams.rSquaredChange) {
