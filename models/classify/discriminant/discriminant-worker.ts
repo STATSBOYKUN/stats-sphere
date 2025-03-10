@@ -25,7 +25,9 @@ export type DiscriminantAnalysisGroupStatisticsType = {
 
 export type DiscriminantAnalysisSummaryCanonicalType = {
     groupData: any[],
-    independentData: any[]
+    independentData: any[],
+    minRange: number | null,
+    maxRange: number | null
 }
 
 export type DiscriminantFinalResultType = {
