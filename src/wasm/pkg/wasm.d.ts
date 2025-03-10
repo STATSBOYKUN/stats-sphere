@@ -1,28 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
 export function discriminant_analysis(group_variable: any, independent_variable: any): any;
-/**
- * Fungsi utama untuk melakukan analisis diskriminan
- *
- * # Arguments
- * * `group_variable` - Data grup dalam format JsValue
- * * `independent_variable` - Data variabel independen dalam format JsValue
- * * `min_range` - Nilai minimum untuk kelompok yang valid
- * * `max_range` - Nilai maksimum untuk kelompok yang valid
- *
- * # Returns
- * * JsValue - Hasil analisis diskriminan dalam format JSON
- */
-export function start_analysis(group_variable: any, independent_variable: any, min_range: number, max_range: number): any;
-export function js_array_to_vec_f64(array: any): Float64Array;
-export function get_group_means(result_js: any): any;
-export function get_overall_means(result_js: any): any;
-export function get_f_values(result_js: any): any;
-export function get_lambda_values(result_js: any): any;
-export function get_selected_variables(result_js: any): any;
-export function get_valid_groups(result_js: any): any;
-export function get_success_status(result_js: any): boolean;
-export function get_error_message(result_js: any): string;
+export function first_difference(data: Float64Array): Float64Array;
+export function second_difference(data: Float64Array): Float64Array;
+export function seasonal_difference(data: Float64Array, season: number): Float64Array;
+export function group_statistics(group_variable: any, independent_variable: any, min_range: number, max_range: number): any;
 export function check_sliced_data(sliced_data: any): any;
 export function mse(data: Float64Array, forecast: Float64Array): number;
 export function rmse(data: Float64Array, forecast: Float64Array): number;
@@ -30,17 +12,8 @@ export function mae(data: Float64Array, forecast: Float64Array): number;
 export function mpe(data: Float64Array, forecast: Float64Array): number;
 export function mape(data: Float64Array, forecast: Float64Array): number;
 export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
-export function group_statistics(group_variable: any, independent_variable: any, min_range: number, max_range: number): any;
-export function first_difference(data: Float64Array): Float64Array;
-export function second_difference(data: Float64Array): Float64Array;
-export function seasonal_difference(data: Float64Array, season: number): Float64Array;
 export class Autocorrelation {
   free(): void;
-  calculate_acf(difference: Float64Array): Float64Array;
-  calculate_acf_se(autocorelate: Float64Array): Float64Array;
-  calculate_pacf(autocorrelate: Float64Array): Float64Array;
-  calculate_pacf_se(partial_autocorelate: Float64Array): Float64Array;
-  autocorelate(difference: string, seasonally: number): void;
   constructor(data: Float64Array, data_header: string, lag: number);
   get_data(): Float64Array;
   get_data_header(): string;
@@ -62,9 +35,14 @@ export class Autocorrelation {
   set_lb(lb: Float64Array): void;
   set_df_lb(df_lb: Uint32Array): void;
   set_pvalue_lb(pvalue_lb: Float64Array): void;
+  calculate_acf(difference: Float64Array): Float64Array;
+  calculate_acf_se(autocorelate: Float64Array): Float64Array;
+  calculate_pacf(autocorrelate: Float64Array): Float64Array;
+  calculate_pacf_se(partial_autocorelate: Float64Array): Float64Array;
   calculate_ljung_box(autocorrelate: Float64Array): Float64Array;
   pvalue_ljung_box(ljung_box: Float64Array): Float64Array;
   df_ljung_box(): Uint32Array;
+  autocorelate(difference: string, seasonally: number): void;
 }
 export class Decomposition {
   free(): void;
@@ -98,6 +76,113 @@ export class Decomposition {
 export class DiscriminantAnalysisResult {
   private constructor();
   free(): void;
+}
+/**
+ * Main WebAssembly binding for discriminant analysis
+ */
+export class DiscriminantAnalysisWasm {
+  free(): void;
+  /**
+   * Create a new discriminant analysis
+   *
+   * # Arguments
+   * * `group_variable` - JSON string containing group data
+   * * `independent_variable` - JSON string containing independent variable data
+   * * `min_range` - Minimum range for scaling
+   * * `max_range` - Maximum range for scaling
+   * * `prior_probs` - JSON string containing prior probabilities (optional)
+   *
+   * # Returns
+   * * New instance of DiscriminantAnalysisWasm
+   */
+  constructor(group_variable: any, independent_variable: any, min_range: number, max_range: number, prior_probs: any);
+  /**
+   * Compute canonical discriminant functions
+   */
+  compute_canonical_discriminant_functions(): void;
+  /**
+   * Get univariate F-statistics and Wilks' Lambda for a variable
+   *
+   * # Arguments
+   * * `variable_index` - Index of the variable (0-based)
+   *
+   * # Returns
+   * * JSON string with the F-Lambda result
+   */
+  univariate_f_lambda(variable_index: number): any;
+  /**
+   * Perform Box's M test for equality of covariance matrices
+   *
+   * # Returns
+   * * JSON string with the Box's M test result
+   */
+  box_m_test(): any;
+  /**
+   * Get Wilks' Lambda for the discriminant functions
+   *
+   * # Returns
+   * * JSON string with Wilks' Lambda results
+   */
+  wilks_lambda(): any;
+  /**
+   * Classify a new observation
+   *
+   * # Arguments
+   * * `x` - JSON array of feature values
+   *
+   * # Returns
+   * * JSON string with classification result
+   */
+  classify(x: any): any;
+  /**
+   * Perform cross-validation
+   *
+   * # Returns
+   * * JSON string with cross-validation results
+   */
+  cross_validate(): any;
+  /**
+   * Get group centroids
+   *
+   * # Returns
+   * * JSON string with group centroids
+   */
+  group_centroids(): any;
+  /**
+   * Get standardized coefficients
+   *
+   * # Returns
+   * * JSON string with standardized coefficients
+   */
+  standardized_coefficients(): any;
+  /**
+   * Get structure matrix
+   *
+   * # Returns
+   * * JSON string with structure matrix
+   */
+  structure_matrix(): any;
+  /**
+   * Get canonical correlations
+   *
+   * # Returns
+   * * JSON string with canonical correlations
+   */
+  canonical_correlations(): any;
+  /**
+   * Get classification functions
+   *
+   * # Returns
+   * * JSON string with classification function coefficients
+   */
+  classification_functions(): any;
+  /**
+   * Get complete discriminant analysis results
+   *
+   * # Returns
+   * * JSON string with all results
+   */
+  get_results(): any;
 }
 export class RangeStats {
   private constructor();
@@ -138,75 +223,23 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_discriminantanalysisresult_free: (a: number, b: number) => void;
   readonly discriminant_analysis: (a: any, b: any) => any;
-  readonly start_analysis: (a: any, b: any, c: number, d: number) => [number, number, number];
-  readonly js_array_to_vec_f64: (a: any) => [number, number, number, number];
-  readonly get_group_means: (a: any) => [number, number, number];
-  readonly get_overall_means: (a: any) => [number, number, number];
-  readonly get_f_values: (a: any) => [number, number, number];
-  readonly get_lambda_values: (a: any) => [number, number, number];
-  readonly get_selected_variables: (a: any) => [number, number, number];
-  readonly get_valid_groups: (a: any) => [number, number, number];
-  readonly get_success_status: (a: any) => [number, number, number];
-  readonly get_error_message: (a: any) => [number, number, number, number];
-  readonly __wbg_sliceddata_free: (a: number, b: number) => void;
-  readonly check_sliced_data: (a: any) => any;
-  readonly mse: (a: number, b: number, c: number, d: number) => number;
-  readonly rmse: (a: number, b: number, c: number, d: number) => number;
-  readonly mae: (a: number, b: number, c: number, d: number) => number;
-  readonly mpe: (a: number, b: number, c: number, d: number) => number;
-  readonly mape: (a: number, b: number, c: number, d: number) => number;
-  readonly autocorrelation_calculate_acf: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_calculate_acf_se: (a: number, b: number, c: number) => [number, number];
-  readonly partial_kj: (a: number, b: number, c: number, d: number) => number;
-  readonly autocorrelation_calculate_pacf: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_calculate_pacf_se: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
-  readonly __wbg_smoothing_free: (a: number, b: number) => void;
-  readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly smoothing_get_data_header: (a: number) => [number, number];
-  readonly smoothing_get_data: (a: number) => [number, number];
-  readonly smoothing_get_time: (a: number) => [number, number];
-  readonly smoothing_get_time_header: (a: number) => [number, number];
-  readonly smoothing_set_data_header: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_data: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_time: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_time_header: (a: number, b: number, c: number) => void;
-  readonly smoothing_calculate_sma: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_dma: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_wma: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_ses: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_des: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
-  readonly smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
-  readonly __wbg_autocorrelation_free: (a: number, b: number) => void;
-  readonly autocorrelation_new: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly autocorrelation_get_data: (a: number) => [number, number];
-  readonly autocorrelation_get_data_header: (a: number) => [number, number];
-  readonly autocorrelation_get_lag: (a: number) => number;
-  readonly autocorrelation_get_acf: (a: number) => [number, number];
-  readonly autocorrelation_get_acf_se: (a: number) => [number, number];
-  readonly autocorrelation_get_pacf: (a: number) => [number, number];
-  readonly autocorrelation_get_pacf_se: (a: number) => [number, number];
-  readonly autocorrelation_get_lb: (a: number) => [number, number];
-  readonly autocorrelation_get_df_lb: (a: number) => [number, number];
-  readonly autocorrelation_get_pvalue_lb: (a: number) => [number, number];
-  readonly autocorrelation_set_data: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_data_header: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_lag: (a: number, b: number) => void;
-  readonly autocorrelation_set_acf: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_acf_se: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_pacf: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_pacf_se: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_lb: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_df_lb: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_set_pvalue_lb: (a: number, b: number, c: number) => void;
-  readonly autocorrelation_calculate_ljung_box: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_df_ljung_box: (a: number) => [number, number];
-  readonly __wbg_rangestats_free: (a: number, b: number) => void;
-  readonly __wbg_statistics_free: (a: number, b: number) => void;
-  readonly group_statistics: (a: any, b: any, c: number, d: number) => any;
+  readonly first_difference: (a: number, b: number) => [number, number];
+  readonly second_difference: (a: number, b: number) => [number, number];
+  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
+  readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
+  readonly discriminantanalysiswasm_new: (a: any, b: any, c: number, d: number, e: any) => [number, number, number];
+  readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
+  readonly discriminantanalysiswasm_univariate_f_lambda: (a: number, b: number) => [number, number, number];
+  readonly discriminantanalysiswasm_box_m_test: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_wilks_lambda: (a: number) => any;
+  readonly discriminantanalysiswasm_classify: (a: number, b: any) => [number, number, number];
+  readonly discriminantanalysiswasm_cross_validate: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_group_centroids: (a: number) => any;
+  readonly discriminantanalysiswasm_standardized_coefficients: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_structure_matrix: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_canonical_correlations: (a: number) => any;
+  readonly discriminantanalysiswasm_classification_functions: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
   readonly __wbg_decomposition_free: (a: number, b: number) => void;
   readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly decomposition_get_data: (a: number) => [number, number];
@@ -234,16 +267,72 @@ export interface InitOutput {
   readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
-  readonly first_difference: (a: number, b: number) => [number, number];
-  readonly second_difference: (a: number, b: number) => [number, number];
-  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
+  readonly __wbg_rangestats_free: (a: number, b: number) => void;
+  readonly __wbg_statistics_free: (a: number, b: number) => void;
+  readonly group_statistics: (a: any, b: any, c: number, d: number) => any;
+  readonly __wbg_sliceddata_free: (a: number, b: number) => void;
+  readonly check_sliced_data: (a: any) => any;
+  readonly __wbg_smoothing_free: (a: number, b: number) => void;
+  readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly smoothing_get_data_header: (a: number) => [number, number];
+  readonly smoothing_get_data: (a: number) => [number, number];
+  readonly smoothing_get_time: (a: number) => [number, number];
+  readonly smoothing_get_time_header: (a: number) => [number, number];
+  readonly smoothing_set_data_header: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_data: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_time: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_time_header: (a: number, b: number, c: number) => void;
+  readonly smoothing_calculate_sma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_dma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_wma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_ses: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_des: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
+  readonly smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
+  readonly mse: (a: number, b: number, c: number, d: number) => number;
+  readonly rmse: (a: number, b: number, c: number, d: number) => number;
+  readonly mae: (a: number, b: number, c: number, d: number) => number;
+  readonly mpe: (a: number, b: number, c: number, d: number) => number;
+  readonly mape: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbg_autocorrelation_free: (a: number, b: number) => void;
+  readonly autocorrelation_new: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly autocorrelation_get_data: (a: number) => [number, number];
+  readonly autocorrelation_get_data_header: (a: number) => [number, number];
+  readonly autocorrelation_get_lag: (a: number) => number;
+  readonly autocorrelation_get_acf: (a: number) => [number, number];
+  readonly autocorrelation_get_acf_se: (a: number) => [number, number];
+  readonly autocorrelation_get_pacf: (a: number) => [number, number];
+  readonly autocorrelation_get_pacf_se: (a: number) => [number, number];
+  readonly autocorrelation_get_lb: (a: number) => [number, number];
+  readonly autocorrelation_get_df_lb: (a: number) => [number, number];
+  readonly autocorrelation_get_pvalue_lb: (a: number) => [number, number];
+  readonly autocorrelation_set_data: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_data_header: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_lag: (a: number, b: number) => void;
+  readonly autocorrelation_set_acf: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_acf_se: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_pacf: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_pacf_se: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_lb: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_df_lb: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_set_pvalue_lb: (a: number, b: number, c: number) => void;
+  readonly autocorrelation_calculate_acf: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_acf_se: (a: number, b: number, c: number) => [number, number];
+  readonly partial_kj: (a: number, b: number, c: number, d: number) => number;
+  readonly autocorrelation_calculate_pacf: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_pacf_se: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_ljung_box: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_df_ljung_box: (a: number) => [number, number];
+  readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_4: WebAssembly.Table;
-  readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+  readonly __externref_table_dealloc: (a: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
 }

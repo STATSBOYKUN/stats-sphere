@@ -176,36 +176,6 @@ export function discriminant_analysis(group_variable, independent_variable) {
     return ret;
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_4.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-/**
- * Fungsi utama untuk melakukan analisis diskriminan
- *
- * # Arguments
- * * `group_variable` - Data grup dalam format JsValue
- * * `independent_variable` - Data variabel independen dalam format JsValue
- * * `min_range` - Nilai minimum untuk kelompok yang valid
- * * `max_range` - Nilai maksimum untuk kelompok yang valid
- *
- * # Returns
- * * JsValue - Hasil analisis diskriminan dalam format JSON
- * @param {any} group_variable
- * @param {any} independent_variable
- * @param {number} min_range
- * @param {number} max_range
- * @returns {any}
- */
-export function start_analysis(group_variable, independent_variable, min_range, max_range) {
-    const ret = wasm.start_analysis(group_variable, independent_variable, min_range, max_range);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
 let cachedFloat64ArrayMemory0 = null;
 
 function getFloat64ArrayMemory0() {
@@ -215,129 +185,93 @@ function getFloat64ArrayMemory0() {
     return cachedFloat64ArrayMemory0;
 }
 
+function passArrayF64ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 8, 8) >>> 0;
+    getFloat64ArrayMemory0().set(arg, ptr / 8);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+
 function getArrayF64FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
 }
 /**
- * @param {any} array
+ * @param {Float64Array} data
  * @returns {Float64Array}
  */
-export function js_array_to_vec_f64(array) {
-    const ret = wasm.js_array_to_vec_f64(array);
-    if (ret[3]) {
-        throw takeFromExternrefTable0(ret[2]);
-    }
-    var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+export function first_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.first_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v1;
+    return v2;
 }
 
 /**
- * @param {any} result_js
+ * @param {Float64Array} data
+ * @returns {Float64Array}
+ */
+export function second_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.second_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {number} season
+ * @returns {Float64Array}
+ */
+export function seasonal_difference(data, season) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.seasonal_difference(ptr0, len0, season);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_4.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    for (let i = 0; i < array.length; i++) {
+        const add = addToExternrefTable0(array[i]);
+        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_4.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
+}
+/**
+ * @param {any} group_variable
+ * @param {any} independent_variable
+ * @param {number} min_range
+ * @param {number} max_range
  * @returns {any}
  */
-export function get_group_means(result_js) {
-    const ret = wasm.get_group_means(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {any}
- */
-export function get_overall_means(result_js) {
-    const ret = wasm.get_overall_means(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {any}
- */
-export function get_f_values(result_js) {
-    const ret = wasm.get_f_values(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {any}
- */
-export function get_lambda_values(result_js) {
-    const ret = wasm.get_lambda_values(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {any}
- */
-export function get_selected_variables(result_js) {
-    const ret = wasm.get_selected_variables(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {any}
- */
-export function get_valid_groups(result_js) {
-    const ret = wasm.get_valid_groups(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * @param {any} result_js
- * @returns {boolean}
- */
-export function get_success_status(result_js) {
-    const ret = wasm.get_success_status(result_js);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return ret[0] !== 0;
-}
-
-/**
- * @param {any} result_js
- * @returns {string}
- */
-export function get_error_message(result_js) {
-    let deferred2_0;
-    let deferred2_1;
-    try {
-        const ret = wasm.get_error_message(result_js);
-        var ptr1 = ret[0];
-        var len1 = ret[1];
-        if (ret[3]) {
-            ptr1 = 0; len1 = 0;
-            throw takeFromExternrefTable0(ret[2]);
-        }
-        deferred2_0 = ptr1;
-        deferred2_1 = len1;
-        return getStringFromWasm0(ptr1, len1);
-    } finally {
-        wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
-    }
+export function group_statistics(group_variable, independent_variable, min_range, max_range) {
+    const ret = wasm.group_statistics(group_variable, independent_variable, min_range, max_range);
+    return ret;
 }
 
 /**
@@ -349,12 +283,6 @@ export function check_sliced_data(sliced_data) {
     return ret;
 }
 
-function passArrayF64ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 8, 8) >>> 0;
-    getFloat64ArrayMemory0().set(arg, ptr / 8);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
 /**
  * @param {Float64Array} data
  * @param {Float64Array} forecast
@@ -425,40 +353,6 @@ export function mape(data, forecast) {
     return ret;
 }
 
-/**
- * @param {number} k
- * @param {number} j
- * @param {Float64Array} partial_autocorrelate
- * @returns {number}
- */
-export function partial_kj(k, j, partial_autocorrelate) {
-    const ptr0 = passArrayF64ToWasm0(partial_autocorrelate, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.partial_kj(k, j, ptr0, len0);
-    return ret;
-}
-
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    for (let i = 0; i < array.length; i++) {
-        const add = addToExternrefTable0(array[i]);
-        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
-}
-
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_4.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
-}
-
 let cachedUint32ArrayMemory0 = null;
 
 function getUint32ArrayMemory0() {
@@ -480,55 +374,16 @@ function passArray32ToWasm0(arg, malloc) {
     return ptr;
 }
 /**
- * @param {any} group_variable
- * @param {any} independent_variable
- * @param {number} min_range
- * @param {number} max_range
- * @returns {any}
+ * @param {number} k
+ * @param {number} j
+ * @param {Float64Array} partial_autocorrelate
+ * @returns {number}
  */
-export function group_statistics(group_variable, independent_variable, min_range, max_range) {
-    const ret = wasm.group_statistics(group_variable, independent_variable, min_range, max_range);
+export function partial_kj(k, j, partial_autocorrelate) {
+    const ptr0 = passArrayF64ToWasm0(partial_autocorrelate, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.partial_kj(k, j, ptr0, len0);
     return ret;
-}
-
-/**
- * @param {Float64Array} data
- * @returns {Float64Array}
- */
-export function first_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.first_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @returns {Float64Array}
- */
-export function second_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.second_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @param {number} season
- * @returns {Float64Array}
- */
-export function seasonal_difference(data, season) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.seasonal_difference(ptr0, len0, season);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
 }
 
 const AutocorrelationFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -547,63 +402,6 @@ export class Autocorrelation {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_autocorrelation_free(ptr, 0);
-    }
-    /**
-     * @param {Float64Array} difference
-     * @returns {Float64Array}
-     */
-    calculate_acf(difference) {
-        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorelate
-     * @returns {Float64Array}
-     */
-    calculate_acf_se(autocorelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorrelate
-     * @returns {Float64Array}
-     */
-    calculate_pacf(autocorrelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_pacf(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} partial_autocorelate
-     * @returns {Float64Array}
-     */
-    calculate_pacf_se(partial_autocorelate) {
-        const ptr0 = passArrayF64ToWasm0(partial_autocorelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_pacf_se(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {string} difference
-     * @param {number} seasonally
-     */
-    autocorelate(difference, seasonally) {
-        const ptr0 = passStringToWasm0(difference, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.autocorrelation_autocorelate(this.__wbg_ptr, ptr0, len0, seasonally);
     }
     /**
      * @param {Float64Array} data
@@ -793,6 +591,54 @@ export class Autocorrelation {
         wasm.autocorrelation_set_pvalue_lb(this.__wbg_ptr, ptr0, len0);
     }
     /**
+     * @param {Float64Array} difference
+     * @returns {Float64Array}
+     */
+    calculate_acf(difference) {
+        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} autocorelate
+     * @returns {Float64Array}
+     */
+    calculate_acf_se(autocorelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} autocorrelate
+     * @returns {Float64Array}
+     */
+    calculate_pacf(autocorrelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_pacf(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} partial_autocorelate
+     * @returns {Float64Array}
+     */
+    calculate_pacf_se(partial_autocorelate) {
+        const ptr0 = passArrayF64ToWasm0(partial_autocorelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_pacf_se(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
      * @param {Float64Array} autocorrelate
      * @returns {Float64Array}
      */
@@ -824,6 +670,15 @@ export class Autocorrelation {
         var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
         return v1;
+    }
+    /**
+     * @param {string} difference
+     * @param {number} seasonally
+     */
+    autocorelate(difference, seasonally) {
+        const ptr0 = passStringToWasm0(difference, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.autocorrelation_autocorelate(this.__wbg_ptr, ptr0, len0, seasonally);
     }
 }
 
@@ -1147,6 +1002,216 @@ export class DiscriminantAnalysisResult {
     }
 }
 
+const DiscriminantAnalysisWasmFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_discriminantanalysiswasm_free(ptr >>> 0, 1));
+/**
+ * Main WebAssembly binding for discriminant analysis
+ */
+export class DiscriminantAnalysisWasm {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        DiscriminantAnalysisWasmFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_discriminantanalysiswasm_free(ptr, 0);
+    }
+    /**
+     * Create a new discriminant analysis
+     *
+     * # Arguments
+     * * `group_variable` - JSON string containing group data
+     * * `independent_variable` - JSON string containing independent variable data
+     * * `min_range` - Minimum range for scaling
+     * * `max_range` - Maximum range for scaling
+     * * `prior_probs` - JSON string containing prior probabilities (optional)
+     *
+     * # Returns
+     * * New instance of DiscriminantAnalysisWasm
+     * @param {any} group_variable
+     * @param {any} independent_variable
+     * @param {number} min_range
+     * @param {number} max_range
+     * @param {any} prior_probs
+     */
+    constructor(group_variable, independent_variable, min_range, max_range, prior_probs) {
+        const ret = wasm.discriminantanalysiswasm_new(group_variable, independent_variable, min_range, max_range, prior_probs);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        DiscriminantAnalysisWasmFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Compute canonical discriminant functions
+     */
+    compute_canonical_discriminant_functions() {
+        const ret = wasm.discriminantanalysiswasm_compute_canonical_discriminant_functions(this.__wbg_ptr);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * Get univariate F-statistics and Wilks' Lambda for a variable
+     *
+     * # Arguments
+     * * `variable_index` - Index of the variable (0-based)
+     *
+     * # Returns
+     * * JSON string with the F-Lambda result
+     * @param {number} variable_index
+     * @returns {any}
+     */
+    univariate_f_lambda(variable_index) {
+        const ret = wasm.discriminantanalysiswasm_univariate_f_lambda(this.__wbg_ptr, variable_index);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Perform Box's M test for equality of covariance matrices
+     *
+     * # Returns
+     * * JSON string with the Box's M test result
+     * @returns {any}
+     */
+    box_m_test() {
+        const ret = wasm.discriminantanalysiswasm_box_m_test(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get Wilks' Lambda for the discriminant functions
+     *
+     * # Returns
+     * * JSON string with Wilks' Lambda results
+     * @returns {any}
+     */
+    wilks_lambda() {
+        const ret = wasm.discriminantanalysiswasm_wilks_lambda(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Classify a new observation
+     *
+     * # Arguments
+     * * `x` - JSON array of feature values
+     *
+     * # Returns
+     * * JSON string with classification result
+     * @param {any} x
+     * @returns {any}
+     */
+    classify(x) {
+        const ret = wasm.discriminantanalysiswasm_classify(this.__wbg_ptr, x);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Perform cross-validation
+     *
+     * # Returns
+     * * JSON string with cross-validation results
+     * @returns {any}
+     */
+    cross_validate() {
+        const ret = wasm.discriminantanalysiswasm_cross_validate(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get group centroids
+     *
+     * # Returns
+     * * JSON string with group centroids
+     * @returns {any}
+     */
+    group_centroids() {
+        const ret = wasm.discriminantanalysiswasm_group_centroids(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Get standardized coefficients
+     *
+     * # Returns
+     * * JSON string with standardized coefficients
+     * @returns {any}
+     */
+    standardized_coefficients() {
+        const ret = wasm.discriminantanalysiswasm_standardized_coefficients(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get structure matrix
+     *
+     * # Returns
+     * * JSON string with structure matrix
+     * @returns {any}
+     */
+    structure_matrix() {
+        const ret = wasm.discriminantanalysiswasm_structure_matrix(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get canonical correlations
+     *
+     * # Returns
+     * * JSON string with canonical correlations
+     * @returns {any}
+     */
+    canonical_correlations() {
+        const ret = wasm.discriminantanalysiswasm_canonical_correlations(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Get classification functions
+     *
+     * # Returns
+     * * JSON string with classification function coefficients
+     * @returns {any}
+     */
+    classification_functions() {
+        const ret = wasm.discriminantanalysiswasm_classification_functions(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get complete discriminant analysis results
+     *
+     * # Returns
+     * * JSON string with all results
+     * @returns {any}
+     */
+    get_results() {
+        const ret = wasm.discriminantanalysiswasm_get_results(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+}
+
 const RangeStatsFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_rangestats_free(ptr >>> 0, 1));
@@ -1464,20 +1529,12 @@ function __wbg_get_imports() {
         const ret = Object.entries(arg0);
         return ret;
     };
-    imports.wbg.__wbg_from_2a5d3e218e67aa85 = function(arg0) {
-        const ret = Array.from(arg0);
-        return ret;
-    };
     imports.wbg.__wbg_get_67b2ba62fc30de12 = function() { return handleError(function (arg0, arg1) {
         const ret = Reflect.get(arg0, arg1);
         return ret;
     }, arguments) };
     imports.wbg.__wbg_get_b9b93047fe3cf45b = function(arg0, arg1) {
         const ret = arg0[arg1 >>> 0];
-        return ret;
-    };
-    imports.wbg.__wbg_getwithrefkey_1dc361bd10053bfe = function(arg0, arg1) {
-        const ret = arg0[arg1];
         return ret;
     };
     imports.wbg.__wbg_instanceof_ArrayBuffer_e14585432e3737fc = function(arg0) {
@@ -1574,10 +1631,6 @@ function __wbg_get_imports() {
         const ret = arg0.value;
         return ret;
     };
-    imports.wbg.__wbindgen_as_number = function(arg0) {
-        const ret = +arg0;
-        return ret;
-    };
     imports.wbg.__wbindgen_bigint_from_i64 = function(arg0) {
         const ret = arg0;
         return ret;
@@ -1630,13 +1683,13 @@ function __wbg_get_imports() {
         const ret = typeof(arg0) === 'function';
         return ret;
     };
+    imports.wbg.__wbindgen_is_null = function(arg0) {
+        const ret = arg0 === null;
+        return ret;
+    };
     imports.wbg.__wbindgen_is_object = function(arg0) {
         const val = arg0;
         const ret = typeof(val) === 'object' && val !== null;
-        return ret;
-    };
-    imports.wbg.__wbindgen_is_undefined = function(arg0) {
-        const ret = arg0 === undefined;
         return ret;
     };
     imports.wbg.__wbindgen_json_parse = function(arg0, arg1) {
