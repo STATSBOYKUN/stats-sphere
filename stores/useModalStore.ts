@@ -27,9 +27,9 @@ export enum ModalType {
   // Time Series
   Smoothing = "smoothing", //Time Series Smoothing
   Decomposition = "decomposition", //Time Series Decomposition
-  StationaryTest = "stationaryTest", //Time Series Stationary Test
-  CreateModel = "createModel", //Time Series Create Model
-
+  Autocorrelation = 'autocorrelation', //Time Series Stationary Test
+    UnitRootTest = "unitRootTest", //Time Series Stationary Test
+  BoxJenkinsModel = "BoxJenkinsModel", //Time Series Create Model
   FrequenciesStatistic = "frequenciesStatistic",
   DescriptiveStatistic = "descriptiveStatistic",
   StatisticsSettingsModal = "statisticsSettingsModal",
@@ -94,18 +94,19 @@ interface ModalStoreState {
 }
 
 export const useModalStore = create<ModalStoreState>()(
-  devtools(
-    zukeper((set, get) => ({
-      modals: [],
-      openModal: (type, props) => {
-        set((state) => ({ modals: [...state.modals, { type, props }] }));
-      },
-      closeModal: () => {
-        set((state) => ({ modals: state.modals.slice(0, -1) }));
-      },
-      closeAllModals: () => {
-        set({ modals: [] });
-      },
-    }))
-  )
+    devtools(
+        zukeper((set, get) => ({
+            modals: [],
+            openModal: (type, props) => {
+                console.log('openModal', type, props);
+                set((state) => ({ modals: [...state.modals, { type, props }] }));
+            },
+            closeModal: () => {
+                set((state) => ({ modals: state.modals.slice(0, -1) }));
+            },
+            closeAllModals: () => {
+                set({ modals: [] });
+            },
+        }))
+    )
 );

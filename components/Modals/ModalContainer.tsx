@@ -5,10 +5,13 @@
 import React from "react";
 import { useModal, ModalType } from "@/hooks/useModal";
 
+// Time Series Tolong Jangan Dihapus
 import SmoothingModal from "@/components/Modals/Analyze/TimeSeries/SmoothingModal";
 import DecompositionModal from "@/components/Modals/Analyze/TimeSeries/DecompositionModal";
-import StationaryTestModal from "@/components/Modals/Analyze/TimeSeries/StationaryTestModal";
-import CreateModelModal from "@/components/Modals/Analyze/TimeSeries/CreateModelModal";
+import AutocorrelationModal from '@/components/Modals/Analyze/TimeSeries/AutocorrelationModal';
+import UnitRootTestModal from '@/components/Modals/Analyze/TimeSeries/UnitRootTestModal';
+import BoxJenkinsModelModal from '@/components/Modals/Analyze/TimeSeries/BoxJenkinsModelModal';
+
 import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableModal";
 import { Dialog } from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
@@ -28,6 +31,8 @@ import ModalOrdinal from "./Regression/Ordinal/ModalOrdinal";
 import ModalProbit from "./Regression/Probit/ModalProbit";
 import ModalNonlinear from "./Regression/Nonlinear/ModalNonlinear";
 
+import OpenData from "@/components/Modals/File/OpenData";
+import PrintModal from "@/components/Modals/File/Print";
 import ModalTwoStageLeastSquares from "./Regression/TwoStageLeastSquares/ModalTwoStageLeastSquares";
 import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEstimation";
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
@@ -43,6 +48,23 @@ const ModalContainer: React.FC = () => {
 
   const renderModal = () => {
     switch (currentModal.type) {
+      case ModalType.ImportCSV:
+          console.log('ImportCSV');
+          return <ImportCSV onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ReadCSVFile:
+          return <ReadCSVFile onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ImportExcel:
+          return <ImportExcel onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ReadExcelFile:
+          return <ReadExcelFile onClose={closeModal} {...currentModal.props} />;
+      case ModalType.OpenData:
+          console.log('OpenData');
+          return <OpenData onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ComputeVariable:
+          return <ComputeVariableModal onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Print:
+          return <PrintModal onClose={closeModal} {...currentModal.props} />;
+
       case ModalType.ImportCSV:
         return <ImportCSV onClose={closeModal} {...currentModal.props} />;
       case ModalType.ReadCSVFile:
@@ -121,16 +143,20 @@ const ModalContainer: React.FC = () => {
         return (
           <DecompositionModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.StationaryTest:
+      case ModalType.Autocorrelation:
         return (
-          <StationaryTestModal onClose={closeModal} {...currentModal.props} />
+          <AutocorrelationModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.CreateModel:
+      case ModalType.UnitRootTest:
+          return (
+            <UnitRootTestModal onClose={closeModal} {...currentModal.props} />
+          );
+      case ModalType.BoxJenkinsModel:
         return (
-          <CreateModelModal onClose={closeModal} {...currentModal.props} />
+          <BoxJenkinsModelModal onClose={closeModal} {...currentModal.props} />
         );
-      case ModalType.Frequencies:
 
+      case ModalType.Frequencies:
       case ModalType.FrequenciesStatistic:
         return (
           <FrequenciesModal onClose={closeModal} {...currentModal.props} />

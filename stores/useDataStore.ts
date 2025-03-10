@@ -11,6 +11,7 @@ interface DataStoreState {
     setData: (data: DataRow[]) => void;
     updateCell: (row: number, col: number, value: string) => void;
     loadData: () => Promise<void>;
+    resetData: () => void;
 }
 
 const totalRows = 100;
@@ -23,6 +24,7 @@ export const useDataStore = create<DataStoreState>()(
         updateCell: async (row, col, value) => {
             const newData = get().data.map((rowData) => [...rowData]);
             newData[row][col] = value;
+
             set({ data: newData });
 
             try {
@@ -43,6 +45,14 @@ export const useDataStore = create<DataStoreState>()(
                 set({ data: dataMatrix });
             } catch (error) {
                 console.error('Failed to fetch data from Dexie:', error);
+            }
+        },
+        resetData: async () => {
+            try {
+                await db.cells.clear();
+                set({ data: Array.from({ length: totalRows }, () => Array(totalCols).fill('')) });
+            } catch (error) {
+                console.error('Failed to reset data in Dexie:', error);
             }
         },
     }))
