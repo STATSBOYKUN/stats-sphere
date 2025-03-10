@@ -15,6 +15,7 @@ export interface Variable {
     type:
         | "NUMERIC"
         | "COMMA"
+        | "DOT"
         | "SCIENTIFIC"
         | "DATE"
         | "ADATE"
@@ -30,7 +31,11 @@ export interface Variable {
         | "WKDAY"
         | "MONTH"
         | "DOLLAR"
-        | "CUSTOM_CURRENCY"
+        | "CCA"
+        | "CCB"
+        | "CCC"
+        | "CCD"
+        | "CCE"
         | "STRING"
         | "RESTRICTED_NUMERIC";
     width: number;
@@ -40,7 +45,7 @@ export interface Variable {
     missing: (number | string)[];
     columns: number;
     align: "right" | "left" | "center";
-    measure: "scale" | "ordinal" | "nominal";
+    measure: "scale" | "ordinal" | "nominal" | "unknown";
     role: "input" | "target" | "both" | "none" | "partition" | "split";
 }
 
