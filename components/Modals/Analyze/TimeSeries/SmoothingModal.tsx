@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InputRow } from "./timeSeriesComponent/smoothingInput";
+import { InputRow } from "./timeSeriesComponent/timeSeriesInput";
 import { handleSmoothing } from "./handleAnalyze/handleSmoothing";
 import db from "@/lib/db"; // Adjust the import path according to your project structure
 
@@ -293,7 +293,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -344,16 +344,16 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             case 'winter':
                 return (
                     <div className="flex flex-col gap-2">
-                        <div className="flex flex-row gap-2 pl-2">
+                        <div className="flex flex-row gap-2">
                             <InputRow label="alpha" id="par1" value={parameters[0]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(0, value)} />
                             <InputRow label="beta" id="par2" value={parameters[1]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(1, value)} />
                             <InputRow label="gamma" id="par3" value={parameters[2]} min={'0.1'} max={'0.9'} step={'0.1'} onChange={(value) => handleInputChange(2, value)} />
                         </div>
                         
                         <div className="flex flex-row mt-2">
-                            <div className="flex items-center"><label className="w-[120px] text-sm font-semibold pl-2" htmlFor="par4">periodicity : {selectedPeriod[0]}</label></div>
+                            <div className="flex items-center"><label className="w-[100px] text-sm font-semibold" htmlFor="par4">periodicity : {selectedPeriod[0]}</label></div>
                             <Select onValueChange={(value) => handleSelectedPeriod(value)} defaultValue={selectedPeriod[1]}>
-                                <SelectTrigger className="mr-2">
+                                <SelectTrigger className="">
                                     <SelectValue>{selectedPeriod[1]}</SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
@@ -495,9 +495,12 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                     <div className="flex flex-col gap-4">
                         {/* Awal Baris Satu Kolom Tiga */}
                         <div className="border-2 rounded-md w-[420px] pb-2">
-                            <div className="w-full p-2 border-0 rounded-t-md flex flex-row gap-4 mt-2">
-                                <div className="flex items-center ml-2">
-                                    <Label className="font-semibold">Methods:</Label>
+                            <div className="mt-4 ml-4">
+                                <label className="font-semibold">Smoothing Method</label>
+                            </div>
+                            <div className="w-full pl-4 border-0 rounded-t-md flex flex-row gap-4 mt-4">
+                                <div className="flex items-center">
+                                    <Label className="font-semibold">method:</Label>
                                 </div>
                                 <Select onValueChange={(value) => handleSelectedMethod(value)}>
                                     <SelectTrigger className="mr-2">
@@ -512,7 +515,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="flex flex-col gap-2 p-2 ml-4">
+                            <div className="flex flex-col gap-2 p-2 ml-2 mt-2">
                                 {inputParameters(selectedMethod[0])}
                             </div>
                         </div>

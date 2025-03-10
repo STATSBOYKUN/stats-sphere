@@ -28,9 +28,7 @@ impl Decomposition{
             for j in 0..self.get_data().len(){
                 if index[j] == i as usize{
                     sum += detrended_values[j];
-                    if detrended_values[j] != 0.0{
-                        count += 1;
-                    }
+                    count += 1;
                 }
             }
             seasonal_indices.push(sum / count as f64);

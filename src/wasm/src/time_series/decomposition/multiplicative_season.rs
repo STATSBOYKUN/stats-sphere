@@ -22,13 +22,18 @@ impl Decomposition{
         }
 
         // Calculate seasonal indices
+        let mut centered_index = Vec::new();
+        let position = ((self.get_period() - (self.get_period() % 2)) / 2) as usize;
+        for i in 0..self.get_data().len(){
+            centered_index.push(i as usize + 1);
+        }
         for i in 0..self.get_period(){
             let mut sum = 0.0;
             let mut count = 0;
             for j in 0..self.get_data().len(){
                 if index[j] == i as usize{
-                    sum += centered_ma_values[j];
-                    if centered_ma_values[j] != 0.0{
+                    if centered_index[j] > position && centered_index[j] <= centered_ma_values.len() - position{
+                        sum += self.get_data()[j]/centered_ma_values[j];
                         count += 1;
                     }
                 }
@@ -39,7 +44,7 @@ impl Decomposition{
         // Calculate seasonal indices correction
         let seasonal_indices_total: f64 = seasonal_indices.iter().sum();
         let seasonal_indices_correction: f64 = self.get_period() as f64;
-        for i in 0..seasonal_indices.len(){
+        for i in 0..self.get_period() as usize{
             seasonal_indices[i] = seasonal_indices[i] * seasonal_indices_correction / seasonal_indices_total;
         }
 

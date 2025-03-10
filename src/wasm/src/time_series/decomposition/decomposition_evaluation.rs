@@ -2,7 +2,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsValue;
 use js_sys::{Object, Reflect};
 use crate::Decomposition;
-use crate::time_series::evaluation::evaluation::*;
+use crate::time_series::evaluation::basic_evaluation::*;
 
 #[wasm_bindgen]
 impl Decomposition {

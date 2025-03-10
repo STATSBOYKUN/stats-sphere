@@ -11,7 +11,6 @@ import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTit
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleDecomposition } from "./handleAnalyze/handleDecomposition";
 import db from "@/lib/db"; // Adjust the import path according to your project structure
-import { AnyARecord } from "dns";
 
 interface VariableDef {
     name: string;
@@ -28,18 +27,17 @@ interface VariableDef {
 }
 type RawData = string[][];
 interface DecompositionModalProps {
-  onClose: () => void;
+    onClose: () => void;
 }
 
 const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
     const decompositionMethods = [
-        { value: 'additive', label: 'Additive' },
-        { value: 'multiplicative', label: 'Multiplicative' },
+        { value: 'additive', label: 'additive' },
+        { value: 'multiplicative', label: 'multiplicative' },
     ];
 
     const trendedMethods = [
         { value: 'linear', label: 'Linear' },
-        { value: 'quadratic', label: 'Quadratic' },
         { value: 'exponential', label: 'Exponential' },
     ];
 
@@ -115,6 +113,14 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
     };
 
     const handleReset = () => {
+        setSelectedDecompositionMethod(['additive','Additive']);
+        setSelectedTrendedMethod(['linear','Linear']);
+        setSelectedPeriod(['7','Daily in Week']);
+        setSaveDecomposition(false);
+        setAvailableVariables(variables.map((v) => v.name));
+        setDataVariable([]);
+        setTimeVariable([]);
+        setHighlightedVariable(null);
     };
 
     const handleAnalyzes = async () => {
@@ -208,8 +214,8 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 return;
             }
 
-            let [seasonal, trend, irrengular, forecasting, evaluation, seasonIndices, equation]:
-                [any[], any[], any[], any[], any, any, any] = 
+            let [testing, seasonal, trend, irrengular, forecasting, evaluation, seasonIndices, equation]:
+                [any[],any[], any[], any[], any[], any, any, any] = 
                 await handleDecomposition(
                     dataValues as number[],
                     varDefs[0].name,
@@ -221,6 +227,9 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     selectedPeriod[1],
                 )
             ;
+
+            // Testing
+            console.log(testing);
 
             // Membuat Log
             const logMsg = `DECOMPOSITION: ${varDefs[0].label? varDefs[0].label + ' Using' : varDefs[0].name + ' Using'} ${selectedDecompositionMethod[1]}.`;
@@ -241,13 +250,15 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 components: "Seasonal Indices",
             });
 
-            // Membuat Tabel Persamaan Trend pada Log
-            const equationTrendTable = await addStatistic({
-                analytic_id: analyticId,
-                title: "Equation",
-                output_data: equation,
-                components: "Equation Trend",
-            });
+            if(selectedDecompositionMethod[0]==='multiplicative'){
+                // Membuat Tabel Persamaan Trend pada Log
+                const equationTrendTable = await addStatistic({
+                    analytic_id: analyticId,
+                    title: "Equation",
+                    output_data: equation,
+                    components: "Equation Trend",
+                });
+            }
 
             // Membuat Tabel Evaluasi pada Log
             const evalTable = await addStatistic({
@@ -283,7 +294,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateSeasonal);
                 // Definisi Metadata
                 const seasonalMetadata = {
-                    name: `${varDefs[0].name} Seasonal Component`,
+                    name: `${varDefs[0].name}-SC-${length}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -291,7 +302,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -329,7 +340,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateTrend);
                 // Definisi Metadata
                 const trendMetadata = {
-                    name: `${varDefs[0].name} Trend Component`,
+                    name: `${varDefs[0].name}-TC-${length-1}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -337,7 +348,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -375,7 +386,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateIrrengular);
                 // Definisi Metadata
                 const irrengularMetadata = {
-                    name: `${varDefs[0].name} Irrengular Component`,
+                    name: `${varDefs[0].name}-IC-${length-2}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -383,7 +394,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -421,7 +432,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                 setData(updateForecasting);
                 // Definisi Metadata
                 const forecastingMetadata = {
-                    name: `${varDefs[0].name} Forecasting Component`,
+                    name: `${varDefs[0].name}-Forecasting-${length-3}`,
                     columnIndex: length,
                     type: 'numeric',
                     label: '',
@@ -429,7 +440,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                     missing: '',
                     measure: 'scale',
                     width: 8,
-                    decimals: 2,
+                    decimals: 3,
                     columns: 200,
                     align: 'left',
                 };
@@ -586,7 +597,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                             </RadioGroup>
                             {selectedDecompositionMethod[0] === 'multiplicative' && (
                                 <div className="flex flex-row gap-2 items-center">
-                                    <label className="text-sm w-[150px] font-semibold">Trend Method</label>
+                                    <label className="text-sm w-[150px] font-semibold">trend method:</label>
                                     <Select value={selectedTrendedMethod[0]}
                                         onValueChange={(value) => setSelectedTrendedMethod([value,trendedMethods.find((method) => method.value === value)!.label])}>
                                         <SelectTrigger>
@@ -605,7 +616,7 @@ const DecompositionModal: React.FC<DecompositionModalProps> = ({ onClose }) => {
                                 </div>
                             )}
                             <div className="flex flex-row gap-2 items-center">
-                                <label className="text-sm w-[150px] font-semibold">Periodicity: {selectedPeriod[0]}</label>
+                                <label className="text-sm w-[150px] font-semibold">periodicity: {selectedPeriod[0]}</label>
                                 <Select
                                     onValueChange={(value) => {
                                         const selected = periods.find((period) => period.id === value);

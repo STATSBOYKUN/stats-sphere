@@ -9,6 +9,8 @@ export interface Cell {
     value: string;
 }
 
+export type RawData = string[][];
+
 export interface Variable {
     id?: number;
     columnIndex: number;
@@ -22,6 +24,20 @@ export interface Variable {
     columns: string;
     align: string;
     measure: string;
+}
+
+export interface VariableDef {
+    name: string;
+    columnIndex: number;
+    type: string;
+    label: string;
+    values: string;
+    missing: string;
+    measure: string;
+    width: number;
+    decimals: number;
+    columns: number;
+    align: string;
 }
 
 export interface Log {

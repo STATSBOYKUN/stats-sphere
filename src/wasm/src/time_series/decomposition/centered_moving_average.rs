@@ -8,13 +8,13 @@ impl Decomposition{
         // Initialize the variables
         let period = self.get_period() as usize;
         let mut centered_ma: Vec<f64>;
-        let mut data = Smoothing::new(self.get_data_header(), self.get_data(), self.get_time_header(), self.get_time());
+        let data = Smoothing::new(self.get_data_header(), self.get_data(), self.get_time_header(), self.get_time());
         
         // Calculate Moving Average
         if period%2 == 0{ // if the period is even
             let moving_average = data.calculate_sma(period);
-            data.set_data(moving_average);
-            centered_ma = data.calculate_sma(2);
+            let second_moving_average = Smoothing::new(data.get_data_header(), moving_average.clone(), data.get_time_header(), data.get_time());
+            centered_ma = second_moving_average.calculate_sma(2);
         }else{ // if the period is odd
             centered_ma = data.calculate_sma(period);
         }
@@ -28,7 +28,7 @@ impl Decomposition{
 
         // Make sure values if even
         if period%2 == 0{
-            centered_ma[position] = 0.0;
+            centered_ma[position-1] = 0.0;
         }
 
         centered_ma
