@@ -13,13 +13,13 @@ import {
   MenubarSubTrigger,
   MenubarSubContent,
 } from "@/components/ui/menubar";
-import { useActionHandler } from "@/hooks/useActionHandler";
+import { useActions } from "@/hooks/actions";
 import { ModalType, useModal } from "@/hooks/useModal";
 import "@/components/Modals/Graphs/ChartBuilder/ChartBuilderModal";
 
 const Navbar: React.FC = () => {
   const { openModal } = useModal();
-  const { handleAction } = useActionHandler();
+  const { handleAction } = useActions();
 
   return (
     <nav>

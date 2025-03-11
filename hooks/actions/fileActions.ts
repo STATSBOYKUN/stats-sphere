@@ -1,37 +1,20 @@
-// hooks/useActionHandler.ts
+// hooks/fileActions.ts
 import { useModal } from "@/hooks/useModal";
 import { useDataStore } from "@/stores/useDataStore";
 import { useVariableStore } from "@/stores/useVariableStore";
 
-export type ActionType =
-    | "Undo"
-    | "Redo"
-    | "Cut"
-    | "Copy"
-    | "CopyWithVariableNames"
-    | "CopyWithVariableLabels"
-    | "Paste"
-    | "PasteVariables"
-    | "PasteWithVariableNames"
-    | "Clear"
-    | "InsertVariable"
-    | "InsertCases"
-    | "Save"
-    | "New";
+export type FileActionType =
+    | "Save";
 
-interface ActionPayload {
-    actionType: ActionType;
+interface FileActionPayload {
+    actionType: FileActionType;
 }
 
-export const useActionHandler = () => {
+export const useFileActions = () => {
     const { openModal } = useModal();
 
-    const handleAction = async ({ actionType }: ActionPayload) => {
+    const handleAction = async ({ actionType }: FileActionPayload) => {
         switch (actionType) {
-            case "New":
-                useDataStore.getState().resetData();
-                useVariableStore.getState().resetVariables();
-                break;
             case "Save":
                 const dataMatrix = useDataStore.getState().data;
                 const variablesStore = useVariableStore.getState().variables;
@@ -74,9 +57,9 @@ export const useActionHandler = () => {
                 };
 
                 const transformedVariables = filteredVariables.map(variable => {
-                   const name = sanitizeVariableName(variable.name || `VAR${variable.columnIndex}`);
+                    const name = sanitizeVariableName(variable.name || `VAR${variable.columnIndex}`);
 
-                  const valueLabels = Array.isArray(variable.values) ?
+                    const valueLabels = Array.isArray(variable.values) ?
                         variable.values.map(vl => ({
                             value: vl.value,
                             label: vl.label || ""
@@ -95,7 +78,7 @@ export const useActionHandler = () => {
                     };
                 });
 
-              const transformedData = trimmedDataMatrix.map(row => {
+                const transformedData = trimmedDataMatrix.map(row => {
                     const record: Record<string, any> = {};
                     filteredVariables.forEach(variable => {
                         if (variable.columnIndex !== undefined && variable.columnIndex < actualColCount) {
@@ -106,7 +89,7 @@ export const useActionHandler = () => {
                     return record;
                 });
 
-              console.log(transformedVariables);
+                console.log(transformedVariables);
                 try {
                     const response = await fetch("http://localhost:5000/api/sav/create", {
                         method: "POST",
@@ -140,7 +123,7 @@ export const useActionHandler = () => {
                 }
                 break;
             default:
-                console.warn("Unknown action:", actionType);
+                console.warn("Unknown file action:", actionType);
         }
     };
 
