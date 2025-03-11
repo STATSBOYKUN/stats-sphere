@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
 import db from "@/lib/db";
-import { Variable } from "@/lib/db";
+import { Variable } from "@/types/Variable";
 
 const createDefaultVariable = (index: number, existingVariables: Variable[] = []): Variable => {
     const regex = /^var(\d+)$/;

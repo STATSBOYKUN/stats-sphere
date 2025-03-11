@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
-import db, { Log, Analytic, Statistic } from "@/lib/db";
+import db from "@/lib/db";
+import { Log } from '@/types/Log';
+import { Analytic } from '@/types/Analytic';
+import { Statistic } from '@/types/Statistic';
 
 export interface ResultState {
     logs: Log[];

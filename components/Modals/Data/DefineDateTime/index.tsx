@@ -16,7 +16,8 @@ import { Calendar, Clock, Info } from "lucide-react";
 import { useMetaStore } from "@/stores/useMetaStore"; // Import meta store
 import { useVariableStore } from "@/stores/useVariableStore"; // Import variable store
 import { useDataStore } from "@/stores/useDataStore"; // Import data store
-import { Variable, ValueLabel } from "@/lib/db";
+import { Variable } from "@/types/Variable";
+import { ValueLabel } from '@/types/ValueLabel'
 
 interface DefineDatesProps {
     onClose: () => void;

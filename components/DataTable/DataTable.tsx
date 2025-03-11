@@ -6,7 +6,7 @@ import { registerAllModules } from 'handsontable/registry';
 import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
 import { useModalStore } from "@/stores/useModalStore";
-import { Variable } from '@/lib/db';
+import { Variable } from '@/types/Variable';
 
 registerAllModules();
 

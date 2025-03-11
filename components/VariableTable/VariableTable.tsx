@@ -6,7 +6,7 @@ import { registerAllModules } from "handsontable/registry";
 import "handsontable/dist/handsontable.full.min.css";
 import { colHeaders, columns } from "./tableConfig";
 import { useVariableStore } from "@/stores/useVariableStore";
-import { Variable } from "@/lib/db";
+import { Variable } from "@/types/Variable";
 
 registerAllModules();
 
