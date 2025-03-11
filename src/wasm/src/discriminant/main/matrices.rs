@@ -212,7 +212,7 @@ pub fn find_eigenpairs(matrix: &[Vec<f64>], num_pairs: usize) -> Result<(Vec<f64
     }
 
     let mut eigenvalues = Vec::with_capacity(num_pairs);
-    let mut eigenvectors = vec![vec![0.0; num_pairs]; n];
+    let mut eigenvectors = vec![vec![0.0; num_pairs]; matrix.len()];
 
     // Make a copy of the matrix that we can modify during deflation
     let mut working_matrix = matrix.to_vec();
@@ -235,6 +235,19 @@ pub fn find_eigenpairs(matrix: &[Vec<f64>], num_pairs: usize) -> Result<(Vec<f64
             }
         }
     }
+
+    for k in 0..num_pairs.min(matrix.len()) {
+            let mut norm_sq = 0.0;
+            for i in 0..matrix.len() {
+                norm_sq += eigenvectors[i][k] * eigenvectors[i][k];
+            }
+            let norm = norm_sq.sqrt();
+            if norm > 1e-10 {
+                for i in 0..matrix.len() {
+                    eigenvectors[i][k] /= norm;
+                }
+            }
+        }
 
     Ok((eigenvalues, eigenvectors))
 }
@@ -378,6 +391,21 @@ pub fn is_positive_definite(matrix: &[Vec<f64>]) -> bool {
 
 /// Calculate matrix logarithm of determinant using Cholesky decomposition
 pub fn log_determinant(matrix: &[Vec<f64>]) -> Option<f64> {
+    let n = matrix.len();
+    if n == 0 || matrix[0].len() != n {
+        return None;
+    }
+
+    // Direct calculation for 2x2 matrices for better precision
+    if n == 2 {
+        let det = matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
+        if det <= 0.0 {
+            return None;
+        }
+        return Some(det.ln());
+    }
+
+    // For larger matrices, use Cholesky decomposition
     let cholesky = cholesky_decomposition(matrix)?;
 
     let mut log_det = 0.0;

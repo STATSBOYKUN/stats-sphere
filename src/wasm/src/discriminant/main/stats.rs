@@ -65,39 +65,112 @@ pub fn f_distribution_cdf(x: f64, df1: u32, df2: u32) -> f64 {
 
     let beta_x = v1 * x / (v1 * x + v2);
 
-    incomplete_beta(beta_x, v1 / 2.0, v2 / 2.0)
+    regularized_incomplete_beta(beta_x, v1 / 2.0, v2 / 2.0)
 }
 
-/// Incomplete beta function approximation
-pub fn incomplete_beta(x: f64, a: f64, b: f64) -> f64 {
+/// Compute p-value from F statistic
+pub fn f_test_p_value(f: f64, df1: u32, df2: u32) -> f64 {
+    if f <= 0.0 {
+        return 1.0;
+    }
+
+    // Convert F-distribution to Beta distribution
+    let v1 = df1 as f64;
+    let v2 = df2 as f64;
+    let x = v2 / (v2 + v1 * f);
+
+    // P-value = I_x(v2/2, v1/2) where I_x is regularized incomplete beta function
+    let p_value = regularized_incomplete_beta(x, v2/2.0, v1/2.0);
+
+    p_value
+}
+
+/// Accurate implementation of regularized incomplete beta function
+pub fn regularized_incomplete_beta(x: f64, a: f64, b: f64) -> f64 {
     if x <= 0.0 {
         return 0.0;
     }
-
     if x >= 1.0 {
         return 1.0;
     }
 
-    // Use series expansion for small x
-    if x < 0.5 {
-        let mut sum = 0.0;
-        let mut term = 1.0;
-        let mut n = 0.0;
-
-        while term > 1e-10 {
-            term *= (a + n) * x / (a + b + n);
-            sum += term;
-            n += 1.0;
-            if n > 1000.0 {
-                break; // Avoid infinite loops
-            }
-        }
-
-        return sum * x.powf(a) * (1.0 - x).powf(b) / a;
+    // For better numerical stability, use different methods depending on parameters
+    if x > (a + 1.0)/(a + b + 2.0) {
+        // Use symmetry relation for better numerical accuracy
+        return 1.0 - regularized_incomplete_beta(1.0 - x, b, a);
     }
 
-    // For x > 0.5, use 1 - I_(1-x)(b,a)
-    1.0 - incomplete_beta(1.0 - x, b, a)
+    // Calculate logarithm of Beta function for numerical stability
+    let ln_beta = ln_gamma(a) + ln_gamma(b) - ln_gamma(a + b);
+
+    // Calculate using continued fraction method (Lentz's algorithm)
+    let cfrac = continued_fraction_beta(x, a, b);
+
+    // Final formula
+    let factor = (a * x.ln() + b * (1.0-x).ln() - ln_beta).exp() / a;
+    factor * cfrac
+}
+
+fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
+    // Implementation based on Numerical Recipes
+    // Uses Lentz's method for continued fraction evaluation
+
+    let max_iterations = 200;
+    let epsilon = 1.0e-14;
+    let small = 1.0e-30;
+
+    let qab = a + b;
+    let qap = a + 1.0;
+    let qam = a - 1.0;
+
+    // First term
+    let mut c = 1.0;
+    let mut d = 1.0 - qab * x / qap;
+    if d.abs() < small { d = small; }
+    d = 1.0 / d;
+    let mut h = d;
+
+    // Continue with the fraction
+    for m in 1..max_iterations {
+        let m2 = 2 * m;
+
+        // Even term
+        let m_f = m as f64;
+        let aa = m_f * (b - m_f) * x / ((qam + m2 as f64) * (a + m2 as f64));
+        d = 1.0 + aa * d;
+        if d.abs() < small { d = small; }
+        c = 1.0 + aa / c;
+        if c.abs() < small { c = small; }
+        d = 1.0 / d;
+        h *= d * c;
+
+        // Odd term
+        let aa = -(a + m_f) * (qab + m_f) * x / ((a + m2 as f64) * (qap + m2 as f64));
+        d = 1.0 + aa * d;
+        if d.abs() < small { d = small; }
+        c = 1.0 + aa / c;
+        if c.abs() < small { c = small; }
+        d = 1.0 / d;
+        let del = d * c;
+        h *= del;
+
+        // Check for convergence
+        if (del - 1.0).abs() < epsilon {
+            break;
+        }
+    }
+
+    h
+}
+
+/// Calculate beta function B(a,b)
+pub fn beta(a: f64, b: f64) -> f64 {
+    // Using logarithms for better numerical stability
+    let ln_gamma_a = ln_gamma(a);
+    let ln_gamma_b = ln_gamma(b);
+    let ln_gamma_ab = ln_gamma(a + b);
+
+    (ln_gamma_a + ln_gamma_b - ln_gamma_ab).exp()
 }
 
 /// Gamma function approximation using Lanczos approximation
@@ -127,13 +200,38 @@ pub fn gamma(x: f64) -> f64 {
 }
 
 /// Calculate natural logarithm of gamma function
+/// Improved ln_gamma function using Lanczos approximation
 pub fn ln_gamma(x: f64) -> f64 {
-    gamma(x).ln()
-}
+    // Constants for Lanczos approximation
+    let p = [
+        676.5203681218851, -1259.1392167224028, 771.32342877765313,
+        -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+        9.9843695780195716e-6, 1.5056327351493116e-7
+    ];
 
-/// Compute p-value from F statistic
-pub fn f_test_p_value(f: f64, df1: u32, df2: u32) -> f64 {
-    1.0 - f_distribution_cdf(f, df1, df2)
+    let mut result;
+
+    if x <= 0.0 {
+        // Use reflection formula for negative values
+        let pi = std::f64::consts::PI;
+        let sinpx = (pi * (x - (x as i64) as f64)).sin().abs();
+        if sinpx.abs() < 1e-10 {
+            // Return infinity for negative integers (gamma function poles)
+            return f64::INFINITY;
+        }
+        result = (pi / sinpx / gamma(1.0 - x)).ln();
+    } else {
+        // Lanczos approximation for positive values
+        let mut z = x - 1.0;
+        let mut a = 0.99999999999980993;
+        for i in 0..p.len() {
+            a += p[i] / (z + (i as f64) + 1.0);
+        }
+        let t = z + p.len() as f64 - 0.5;
+        result = (2.0 * std::f64::consts::PI).sqrt().ln() + (z + 0.5) * t.ln() - t + a.ln();
+    }
+
+    result
 }
 
 /// Compute p-value from chi-square statistic

@@ -110,7 +110,6 @@ export async function summaryCanonicalProcess({
     await init();
     // Prior probabilities (opsional)
     const priors = null;
-    minRange = 0;
     console.log(groupData, independentData, minRange, maxRange, priors);
 
     const da = new DiscriminantAnalysisWasm(groupData, independentData, minRange ?? 0, maxRange ?? 0, priors);
