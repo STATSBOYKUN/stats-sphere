@@ -23,18 +23,22 @@ impl MultipleLinearRegression {
         let xt: Vec<Vec<f64>> = transpose(&design_matrix);
         let xtx: Vec<Vec<f64>> = multiply_matrix(&xt, &design_matrix);
         let xtx_inv: Vec<Vec<f64>> = invert_matrix(&xtx).unwrap();
-        let xt_y: Vec<f64> = multiply_matrix_vector(&xt, &y_values);
+        
         let mut yty: f64 = 0.0;
         for i in 0..n{
             yty += y_values[i] * y_values[i];
         }
+
+        let xt_y: Vec<f64> = multiply_matrix_vector(&xt, &y_values);
         let mut bt_xt_y: f64 = 0.0;
         for i in 0..beta.len(){
             bt_xt_y += beta[i] * xt_y[i];
         }
+
         // Calculate sse dan mse
         let ss_res: f64 = yty - bt_xt_y;
-        let ms_res: f64 = ss_res / (n as f64 - m as f64);
+        let ms_res: f64 = ss_res / (n as f64 - beta.len() as f64);
+
         // Calculate standard error
         let mut se: Vec<f64> = Vec::new();
         for i in 0..beta.len(){

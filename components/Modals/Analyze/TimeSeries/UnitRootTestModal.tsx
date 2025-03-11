@@ -49,7 +49,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
 
     const [selectedMethod, setSelectedMethod] = useState<string[]>(['dickey-fuller','dickey-fuller']);
     const [selectedDifference, setSelectedDifference] = useState<string[]>(['level','level']);
-    const [selectedEquation, setSelectedEquation] = useState<string[]>(['no_constant','none']);
+    const [selectedEquation, setSelectedEquation] = useState<string[]>(['no_trend','intercept']);
     const [lengthLag, setLengthLag] = useState<number>(1);
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
     const [dataVariable, setDataVariable] = useState<string[]>([]);
@@ -72,8 +72,13 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
         setHighlightedVariable(null);
         setSelectedMethod(['dickey-fuller','dickey-fuller']);
         setSelectedDifference(['level','level']);
-        setSelectedEquation(['no_constant','none']);
-        setLengthLag(0);
+        setSelectedEquation(['no_trend','intercept']);
+        setLengthLag(1);
+    };
+
+    const handleMethodChange = (value:string) => {
+        setSelectedEquation(['no_trend','intercept']);
+        setSelectedMethod([value,methods.find((method) => method.value === value)!.label]);
     };
 
     const handleSelectDataVariable = (variable: string) => {
@@ -162,14 +167,15 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                 return;
             }
 
-            let [testing, t_stat, crit_value, methodName]: [any,any,any,any] = await handleUnitRootTest(dataValues as number[], varDefs[0].name, selectedMethod[0], lengthLag, selectedEquation[0], selectedDifference[0]);
+            let [testing, df_stat, coef_stat, fit, methodName]: [any,any,any,any,any] = await handleUnitRootTest(dataValues as number[], varDefs[0].name, selectedMethod[0], lengthLag, selectedEquation[0], selectedDifference[0]);
             
             console.log(testing);
-            console.log(t_stat);
-            console.log(crit_value);
+            console.log(df_stat);
+            console.log(coef_stat);
+            console.log(fit);
 
             // Membuat Log
-            const logMsg = `UNIT ROOT TEST: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]}`;
+            const logMsg = `UNIT ROOT TEST: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]} ${selectedEquation[1]} ${selectedMethod[1] == 'augmented dickey-fuller' ? `with lag length ${lengthLag}` : ''}`;
             const logId = await addLog({ log: logMsg });
 
             // Membuat Judul Log
@@ -179,20 +185,28 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                 note: "",
             });
 
-            // Membuat Tabel T-Statistic
-            const t_statTable = await addStatistic({
+            // Membuat Tabel Dickey Fuller Test Statistic
+            const df_stat_table = await addStatistic({
                 analytic_id: analyticId,
-                title: "T Statistic Table",
-                output_data: t_stat,
-                components: "T Statistic Table",
+                title: `${methodName} Test Statistic`,
+                output_data: df_stat,
+                components: `${methodName} Test Statistic`,
             });
 
-            // Membuat Tabel Critical Value
-            const crit_valueTable = await addStatistic({
+            // Membuat Tabel Coeficient Regression Test
+            const coef_stat_table = await addStatistic({
                 analytic_id: analyticId,
-                title: "Critical Value Table",
-                output_data: crit_value,
-                components: "Critical Value Table",
+                title: `Coeficient Regression Test`,
+                output_data: coef_stat,
+                components: `Coeficient Regression Test`,
+            });
+
+            // Membuat Tabel Fit Regression
+            const fit_table = await addStatistic({
+                analytic_id: analyticId,
+                title: `Fit Regression`,
+                output_data: fit,
+                components: `Fit Regression`,
             });
 
             setIsCalculating(false);
@@ -279,7 +293,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                             <label className="w-[100px] font-semibold">Method:</label>
                             <RadioGroup
                                 value={selectedMethod[0]}
-                                onValueChange={(value) => setSelectedMethod([value,methods.find((method) => method.value === value)!.label])}
+                                onValueChange={(value) => handleMethodChange(value)}
                                 className="flex flex-col gap-4"
                             >
                                 {methods.map((method) => (
@@ -331,20 +345,22 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                 <Label className="w-[120px]">equation: </Label>
                                 <RadioGroup
                                     value={selectedEquation[0]}
-                                    onValueChange={(value) => setSelectedEquation([value,equations.find((equation) => equation.value === value)!.label])}
+                                    onValueChange={(value) => setSelectedEquation([value, equations.find((equation) => equation.value === value)!.label])}
                                     className="flex flex-row gap-4"
                                 >
                                     {equations.map((equation) => (
-                                        <div key={equation.value} className="flex flex-row items-center space-x-2">
-                                            <RadioGroupItem
-                                                value={equation.value}
-                                                id={equation.value}
-                                                className="w-4 h-4"
-                                            />
-                                            <label htmlFor={equation.value} className="text-sm font-medium text-gray-700">
-                                                {equation.label}
-                                            </label>
-                                        </div>
+                                        (selectedMethod[0] === 'augmented-dickey-fuller' && equation.value === 'no_constant') ? null :
+                                            <div key={equation.value} className="flex flex-row items-center space-x-2">
+                                                <RadioGroupItem
+                                                    value={equation.value}
+                                                    id={equation.value}
+                                                    className="w-4 h-4"
+                                                />
+                                                <label htmlFor={equation.value} className="text-sm font-medium text-gray-700">
+                                                    {equation.label}
+                                                </label>
+                                            </div>
+                                        
                                     ))}
                                 </RadioGroup>
                             </div>

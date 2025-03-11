@@ -12,8 +12,9 @@ impl AugmentedDickeyFuller {
 
     pub fn calculate_critical_value(&self) -> Vec<f64> {
         let mut critical_values: Vec<f64> = Vec::new();
+        let n = self.get_data().len() - 1 - self.get_lag() as usize;
         for level in ["1%", "5%", "10%"].iter() {
-            let c_hat = calculate_critical_values(1 + self.get_lag() as u8, &self.get_equation(), level, self.get_data().len() as f64);
+            let c_hat = calculate_critical_values(n as u8, &self.get_equation(), level);
             critical_values.push(c_hat);
         }
         critical_values
@@ -23,40 +24,41 @@ impl AugmentedDickeyFuller {
         let mut t: Vec<f64> = Vec::new();
         let mut x: Vec<f64> = Vec::new();
         let mut y: Vec<f64> = Vec::new();
+        let mut data_prepare = self.get_data();
     
         match self.get_level().as_str() {
             "first-difference" => {
-                let diff_data = first_difference(self.get_data().clone());
-                self.set_data(diff_data);
+                let diff_data = first_difference(data_prepare.clone());
+                data_prepare = diff_data;
             },
             "second-difference" => {
-                let diff_data = second_difference(self.get_data().clone());
-                self.set_data(diff_data);
+                let diff_data = second_difference(data_prepare.clone());
+                data_prepare = diff_data;
             },
             _ => {}
         }
     
-        let data = self.get_data();  // Simpan reference agar lebih efisien
+        let data = data_prepare;  // Simpan reference agar lebih efisien
         let difference: Vec<f64> = first_difference(data.clone());
         let mut lag_values: Vec<Vec<f64>> = Vec::new();
     
         for i in 1..=self.get_lag(){
             let mut lag_tmp = Vec::new();
             for j in self.get_lag() as usize - i as usize..difference.len() - i as usize {
-                lag_tmp.push(data[j]);
+                lag_tmp.push(difference[j]);
             }            
             lag_values.push(lag_tmp.clone());    
         }
         for i in self.get_lag() as usize..difference.len() {
             t.push(i as f64 + 1.0);
-            x.push(self.get_data()[i]);
+            x.push(data[i]);
             y.push(difference[i]);
         }
     
         if lag_values[0].len() as usize != x.len() as usize {
             return lag_values[0].len() as f64 / x.len() as f64;
         }
-        let (b, se) = match self.get_equation().as_str() {
+        let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec,r_square) = match self.get_equation().as_str() {
             "no_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
                 x_matriks.push(x.clone());
@@ -65,9 +67,12 @@ impl AugmentedDickeyFuller {
                 let x_matriks_js = serde_wasm_bindgen::to_value(&x_matriks).expect("Gagal mengkonversi x_matriks ke JS value");
                 let mut reg = MultipleLinearRegression::new(x_matriks_js, y.clone());
                 reg.calculate_regression();
-                let b_vector = reg.get_beta();
-                let se_vector = reg.calculate_standard_error();
-                (b_vector[x_matriks.len()], se_vector[x_matriks.len()])
+                let b = reg.get_beta();
+                let se = reg.calculate_standard_error();
+                let test_stat = reg.calculate_t_stat();
+                let p_value = reg.calculate_pvalue();
+                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
+                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, r_square)
             },
             "with_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
@@ -78,16 +83,24 @@ impl AugmentedDickeyFuller {
                 let x_matriks_js = serde_wasm_bindgen::to_value(&x_matriks).expect("Gagal mengkonversi x_matriks ke JS value");
                 let mut reg = MultipleLinearRegression::new(x_matriks_js, y.clone());
                 reg.calculate_regression();
-                let b_vector = reg.get_beta();
-                let se_vector = reg.calculate_standard_error();
-                (b_vector[x_matriks.len()], se_vector[x_matriks.len()])
+                let b = reg.get_beta();
+                let se = reg.calculate_standard_error();
+                let test_stat = reg.calculate_t_stat();
+                let p_value = reg.calculate_pvalue();
+                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
+                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, r_square)
             }
-            _ => {(0.0, 0.0)}
+            _ => {(0.0, 0.0, vec![0.0], vec![0.0], vec![0.0], vec![0.0], vec![0.0, 0.0])}
         };
         let test_stat = if se != 0.0 { b / se } else { 0.0 };
         self.set_b(b);
         self.set_se(se);
         self.set_test_stat(test_stat);
+        self.set_b_vec(b_vec);
+        self.set_se_vec(se_vec);
+        self.set_test_stat_vec(stat_test_vec);
+        self.set_p_value_vec(p_value_vec);
+        self.set_r_square(r_square);
         test_stat
     }    
 }

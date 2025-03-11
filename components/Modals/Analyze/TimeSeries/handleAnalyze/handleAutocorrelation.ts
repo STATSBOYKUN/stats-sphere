@@ -1,4 +1,4 @@
-import init, {Autocorrelation} from '../../../../../src/pkg/wasm.js';
+import init, {Autocorrelation} from '../../../../../src/wasm/pkg/wasm.js';
 
 export async function handleAutocorrelation(
     data: (number)[], 

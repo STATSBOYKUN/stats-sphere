@@ -1,4 +1,4 @@
-import init, {Decomposition} from '../../../../../src/pkg/wasm.js';
+import init, {Decomposition} from '../../../../../src/wasm/pkg/wasm.js';
 
 export async function handleDecomposition(
     data: (number)[],

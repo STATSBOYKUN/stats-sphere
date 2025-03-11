@@ -8,6 +8,11 @@ pub struct DickeyFuller {
     b: f64,
     se: f64,
     test_stat: f64,
+    b_vec: Vec<f64>,
+    se_vec: Vec<f64>,
+    test_stat_vec: Vec<f64>,
+    p_value_vec: Vec<f64>,
+    r_square: Vec<f64>,
 }
 
 #[wasm_bindgen]
@@ -21,6 +26,11 @@ impl DickeyFuller {
             b: 0.0,
             se: 0.0,
             test_stat: 0.0,
+            b_vec: Vec::new(),
+            se_vec: Vec::new(),
+            test_stat_vec: Vec::new(),
+            p_value_vec: Vec::new(),
+            r_square: Vec::new(),
         }
     }
 
@@ -43,6 +53,21 @@ impl DickeyFuller {
     pub fn get_test_stat(&self) -> f64 {
         self.test_stat
     }
+    pub fn get_b_vec(&self) -> Vec<f64> {
+        self.b_vec.clone()
+    }
+    pub fn get_se_vec(&self) -> Vec<f64> {
+        self.se_vec.clone()
+    }
+    pub fn get_test_stat_vec(&self) -> Vec<f64> {
+        self.test_stat_vec.clone()
+    }
+    pub fn get_p_value_vec(&self) -> Vec<f64> {
+        self.p_value_vec.clone()
+    }
+    pub fn get_r_square(&self) -> Vec<f64> {
+        self.r_square.clone()
+    }
 
     // Setters
     pub fn set_data(&mut self, data: Vec<f64>) {
@@ -62,5 +87,20 @@ impl DickeyFuller {
     }
     pub fn set_test_stat(&mut self, test_stat: f64) {
         self.test_stat = test_stat;
+    }
+    pub fn set_b_vec(&mut self, b_vec: Vec<f64>) {
+        self.b_vec = b_vec;
+    }
+    pub fn set_se_vec(&mut self, se_vec: Vec<f64>) {
+        self.se_vec = se_vec;
+    }
+    pub fn set_test_stat_vec(&mut self, test_stat_vec: Vec<f64>) {
+        self.test_stat_vec = test_stat_vec;
+    }
+    pub fn set_p_value_vec(&mut self, p_value_vec: Vec<f64>) {
+        self.p_value_vec = p_value_vec;
+    }
+    pub fn set_r_square(&mut self, r_square: Vec<f64>) {
+        self.r_square = r_square;
     }
 }

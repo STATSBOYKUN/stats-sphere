@@ -25,6 +25,7 @@ num = "0.4"
 finitediff = "0.1"   
 rand = "0.8"
 rand_distr = "0.4" 
+unit-root = "0.6.0"
 
 [dependencies.getrandom]
 version = "0.2"
