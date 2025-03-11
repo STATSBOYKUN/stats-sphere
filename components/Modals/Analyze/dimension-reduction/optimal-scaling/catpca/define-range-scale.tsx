@@ -69,7 +69,7 @@ export const OptScaCatpcaDefineRangeScale = ({
                                     id="Weight"
                                     type="number"
                                     placeholder=""
-                                    value={defineRangeScaleState.Weight || ""}
+                                    value={defineRangeScaleState.Weight ?? ""}
                                     onChange={(e) => handleChange("Weight", Number(e.target.value))}
                                 />
                             </div>
@@ -149,7 +149,7 @@ export const OptScaCatpcaDefineRangeScale = ({
                                                     id="Degree"
                                                     type="number"
                                                     placeholder=""
-                                                    value={defineRangeScaleState.Degree || ""}
+                                                    value={defineRangeScaleState.Degree ?? ""}
                                                     onChange={(e) => handleChange("Degree", Number(e.target.value))}
                                                 />
                                             </div>
@@ -161,7 +161,7 @@ export const OptScaCatpcaDefineRangeScale = ({
                                                     id="InteriorKnots"
                                                     type="number"
                                                     placeholder=""
-                                                    value={defineRangeScaleState.InteriorKnots || ""}
+                                                    value={defineRangeScaleState.InteriorKnots ?? ""}
                                                     onChange={(e) => handleChange("InteriorKnots", Number(e.target.value))}
                                                 />
                                             </div>

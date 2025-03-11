@@ -245,7 +245,7 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                     id="DatasetName"
                                                     type="text"
                                                     placeholder=""
-                                                    value={saveState.DatasetName || ""}
+                                                    value={saveState.DatasetName ?? ""}
                                                     onChange={(e) => handleChange("DatasetName", e.target.value)}
                                                 />
                                             </div>

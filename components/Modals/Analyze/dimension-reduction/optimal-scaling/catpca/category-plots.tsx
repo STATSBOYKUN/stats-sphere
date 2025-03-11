@@ -107,7 +107,7 @@ export const OptScaCatpcaCategoryPlots = ({
                                                     id="DimensionsForMultiNom"
                                                     type="number"
                                                     placeholder=""
-                                                    value={categoryPlotsState.DimensionsForMultiNom || ""}
+                                                    value={categoryPlotsState.DimensionsForMultiNom ?? ""}
                                                     onChange={(e) => handleChange("DimensionsForMultiNom", Number(e.target.value))}
                                                 />
                                             </div>

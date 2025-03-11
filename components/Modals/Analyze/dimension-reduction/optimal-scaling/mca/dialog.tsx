@@ -140,7 +140,7 @@ export const OptScaMCADialog = ({
                                                     id="Dimensions"
                                                     type="number"
                                                     placeholder=""
-                                                    value={mainState.Dimensions || ""}
+                                                    value={mainState.Dimensions ?? ""}
                                                     onChange={(e) => handleChange("Dimensions", Number(e.target.value))}
                                                 />
                                             </div>

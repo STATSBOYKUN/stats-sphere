@@ -46,7 +46,7 @@ export const FactorValue = ({ isValueOpen, setIsValueOpen, updateFormData, data 
                             className="w-full"
                             type="text"
                             placeholder=""
-                            value={valueState.Selection || ""}
+                            value={valueState.Selection ?? ""}
                             onChange={(e) => handleChange("Selection", e.target.value)}
                         />
                     </div>

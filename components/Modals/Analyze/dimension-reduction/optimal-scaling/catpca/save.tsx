@@ -137,7 +137,7 @@ export const OptScaCatpcaSave = ({isSaveOpen, setIsSaveOpen, updateFormData, dat
                                                                     id="DiscDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.DiscDataset || ""}
+                                                                    value={saveState.DiscDataset ?? ""}
                                                                     onChange={(e) => handleChange("DiscDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -209,7 +209,7 @@ export const OptScaCatpcaSave = ({isSaveOpen, setIsSaveOpen, updateFormData, dat
                                                                     id="TransDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.TransDataset || ""}
+                                                                    value={saveState.TransDataset ?? ""}
                                                                     onChange={(e) => handleChange("TransDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -285,7 +285,7 @@ export const OptScaCatpcaSave = ({isSaveOpen, setIsSaveOpen, updateFormData, dat
                                                                     id="ObjDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.ObjDataset || ""}
+                                                                    value={saveState.ObjDataset ?? ""}
                                                                     onChange={(e) => handleChange("ObjDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -357,7 +357,7 @@ export const OptScaCatpcaSave = ({isSaveOpen, setIsSaveOpen, updateFormData, dat
                                                                     id="ApproxDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.ApproxDataset || ""}
+                                                                    value={saveState.ApproxDataset ?? ""}
                                                                     onChange={(e) => handleChange("ApproxDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -461,7 +461,7 @@ export const OptScaCatpcaSave = ({isSaveOpen, setIsSaveOpen, updateFormData, dat
                                                                     id="BTDatasetName"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.BTDatasetName || ""}
+                                                                    value={saveState.BTDatasetName ?? ""}
                                                                     onChange={(e) => handleChange("BTDatasetName", e.target.value)}
                                                                 />
                                                             </div>

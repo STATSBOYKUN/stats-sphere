@@ -47,7 +47,7 @@ export const DiscriminantSetValue = ({ isSetValueOpen, setIsSetValueOpen, update
                         <Input
                             id="Value"
                             type="number"
-                            value={setValueState.Value || ""}
+                            value={setValueState.Value ?? ""}
                             onChange={(e) => handleChange("Value", Number(e.target.value))}
                             placeholder=""
                         />

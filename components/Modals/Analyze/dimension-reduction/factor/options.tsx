@@ -123,7 +123,7 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                                             id="SuppressValuesNum"
                                             type="number"
                                             placeholder=""
-                                            value={optionsState.SuppressValuesNum || ""}
+                                            value={optionsState.SuppressValuesNum ?? ""}
                                             onChange={(e) => handleChange("SuppressValuesNum", Number(e.target.value))}
                                         />
                                     </div>

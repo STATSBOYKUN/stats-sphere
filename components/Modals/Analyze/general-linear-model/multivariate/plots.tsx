@@ -199,7 +199,7 @@ export const MultivariatePlots = ({isPlotsOpen, setIsPlotsOpen, updateFormData, 
                                                             id="Multiplier"
                                                             type="number"
                                                             placeholder=""
-                                                            value={plotsState.Multiplier || ""}
+                                                            value={plotsState.Multiplier ?? ""}
                                                             onChange={(e) => handleChange("Multiplier", Number(e.target.value))}
                                                         />
                                                     </div>

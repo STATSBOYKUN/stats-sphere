@@ -139,7 +139,7 @@ export const KNNFeatures = ({ isFeaturesOpen, setIsFeaturesOpen, updateFormData,
                                                         id="MaxToSelect"
                                                         type="number"
                                                         placeholder=""
-                                                        value={featuresState.MaxToSelect || ""}
+                                                        value={featuresState.MaxToSelect ?? ""}
                                                         onChange={(e) => handleChange("MaxToSelect", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -161,7 +161,7 @@ export const KNNFeatures = ({ isFeaturesOpen, setIsFeaturesOpen, updateFormData,
                                                         id="MinChange"
                                                         type="number"
                                                         placeholder=""
-                                                        value={featuresState.MinChange || ""}
+                                                        value={featuresState.MinChange ?? ""}
                                                         onChange={(e) => handleChange("MinChange", Number(e.target.value))}
                                                     />
                                                 </div>

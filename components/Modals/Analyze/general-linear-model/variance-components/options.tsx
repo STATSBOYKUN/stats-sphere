@@ -199,7 +199,7 @@ export const VarianceCompsOptions = ({
                                                     id="ConvergenceMethod"
                                                     type="number"
                                                     placeholder=""
-                                                    value={optionsState.ConvergenceMethod || ""}
+                                                    value={optionsState.ConvergenceMethod ?? ""}
                                                     onChange={(e) => handleChange("ConvergenceMethod", Number(e.target.value))}
                                                 />
                                             </div>
@@ -211,7 +211,7 @@ export const VarianceCompsOptions = ({
                                                     id="MaxIter"
                                                     type="number"
                                                     placeholder=""
-                                                    value={optionsState.MaxIter || ""}
+                                                    value={optionsState.MaxIter ?? ""}
                                                     onChange={(e) => handleChange("MaxIter", Number(e.target.value))}
                                                 />
                                             </div>
@@ -274,7 +274,7 @@ export const VarianceCompsOptions = ({
                                                     id="InStepsOf"
                                                     type="number"
                                                     placeholder=""
-                                                    value={optionsState.InStepsOf || ""}
+                                                    value={optionsState.InStepsOf ?? ""}
                                                     onChange={(e) => handleChange("InStepsOf", Number(e.target.value))}
                                                 />
                                             </div>

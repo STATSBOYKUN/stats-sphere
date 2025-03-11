@@ -212,7 +212,7 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                     id="SigLevel"
                                     type="number"
                                     placeholder=""
-                                    value={optionsState.SigLevel || ""}
+                                    value={optionsState.SigLevel ?? ""}
                                     onChange={(e) => handleChange("SigLevel", Number(e.target.value))}
                                 />
                             </div>

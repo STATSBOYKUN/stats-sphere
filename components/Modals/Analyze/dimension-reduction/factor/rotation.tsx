@@ -95,7 +95,7 @@ export const FactorRotation = ({isRotationOpen, setIsRotationOpen, updateFormDat
                                                             id="Delta"
                                                             type="number"
                                                             placeholder=""
-                                                            value={rotationState.Delta || ""}
+                                                            value={rotationState.Delta ?? ""}
                                                             onChange={(e) => handleChange("Delta", Number(e.target.value))}
                                                         />
                                                     </div>
@@ -127,7 +127,7 @@ export const FactorRotation = ({isRotationOpen, setIsRotationOpen, updateFormDat
                                                             id="Kappa"
                                                             type="number"
                                                             placeholder=""
-                                                            value={rotationState.Kappa || ""}
+                                                            value={rotationState.Kappa ?? ""}
                                                             onChange={(e) => handleChange("Kappa", Number(e.target.value))}
                                                         />
                                                     </div>
@@ -179,7 +179,7 @@ export const FactorRotation = ({isRotationOpen, setIsRotationOpen, updateFormDat
                                     id="MaxIter"
                                     type="number"
                                     placeholder=""
-                                    value={rotationState.MaxIter || ""}
+                                    value={rotationState.MaxIter ?? ""}
                                     onChange={(e) => handleChange("MaxIter", Number(e.target.value))}
                                 />
                             </div>

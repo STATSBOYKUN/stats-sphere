@@ -50,7 +50,7 @@ export const OptScaMCADefineVariable = ({ isDefineVariableOpen, setIsDefineVaria
                                     id="VariableWeight"
                                     type="number"
                                     placeholder=""
-                                    value={defineVariableState.VariableWeight || ""}
+                                    value={defineVariableState.VariableWeight ?? ""}
                                     onChange={(e) => handleChange("VariableWeight", Number(e.target.value))}
                                 />
                             </div>

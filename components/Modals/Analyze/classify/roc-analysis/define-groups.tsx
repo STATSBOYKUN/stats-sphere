@@ -78,7 +78,7 @@ export const RocAnalysisDefineGroups = ({
                                                         id="Group1"
                                                         type="text"
                                                         placeholder=""
-                                                        value={defineGroupsState.Group1 || ""}
+                                                        value={defineGroupsState.Group1 ?? ""}
                                                         onChange={(e) => handleChange("Group1", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -90,7 +90,7 @@ export const RocAnalysisDefineGroups = ({
                                                         id="Group2"
                                                         type="text"
                                                         placeholder=""
-                                                        value={defineGroupsState.Group2 || ""}
+                                                        value={defineGroupsState.Group2 ?? ""}
                                                         onChange={(e) => handleChange("Group2", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -116,7 +116,7 @@ export const RocAnalysisDefineGroups = ({
                                                         id="CutPointValue"
                                                         type="number"
                                                         placeholder=""
-                                                        value={defineGroupsState.CutPointValue || ""}
+                                                        value={defineGroupsState.CutPointValue ?? ""}
                                                         onChange={(e) => handleChange("CutPointValue", Number(e.target.value))}
                                                     />
                                                 </div>

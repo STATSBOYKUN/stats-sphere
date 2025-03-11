@@ -281,7 +281,7 @@ export const UnivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFormD
                                                                 id="ErrorRatio"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={postHocState.ErrorRatio || ""}
+                                                                value={postHocState.ErrorRatio ?? ""}
                                                                 onChange={(e) => handleChange("ErrorRatio", Number(e.target.value))}
                                                             />
                                                         </div>

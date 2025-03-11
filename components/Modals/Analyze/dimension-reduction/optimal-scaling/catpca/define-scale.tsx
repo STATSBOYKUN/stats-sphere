@@ -131,7 +131,7 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                                                 id="Degree"
                                                 type="number"
                                                 placeholder=""
-                                                value={defineScaleState.Degree || ""}
+                                                value={defineScaleState.Degree ?? ""}
                                                 onChange={(e) => handleChange("Degree", Number(e.target.value))}
                                             />
                                         </div>
@@ -143,7 +143,7 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                                                 id="InteriorKnots"
                                                 type="number"
                                                 placeholder=""
-                                                value={defineScaleState.InteriorKnots || ""}
+                                                value={defineScaleState.InteriorKnots ?? ""}
                                                 onChange={(e) => handleChange("InteriorKnots", Number(e.target.value))}
                                             />
                                         </div>

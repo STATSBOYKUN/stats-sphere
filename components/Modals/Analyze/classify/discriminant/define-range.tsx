@@ -16,12 +16,6 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
         }
     }, [isDefineRangeOpen, data]);
 
-    useEffect(() => {
-        const { minRange, maxRange } = defineRangeState;
-
-        setIsContinueDisabled(!minRange || !maxRange);
-    }, [defineRangeState]);
-
     const handleChange = (field: keyof DiscriminantDefineRangeType, value: number) => {
         setDefineRangeState((prev) => ({ ...prev, [field]: value }));
     };
@@ -48,7 +42,7 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
                             <Input
                                 id="Minimum"
                                 type="number"
-                                value={defineRangeState.minRange || ""}
+                                value={defineRangeState.minRange ?? ""}
                                 onChange={(e) => handleChange("minRange", Number(e.target.value))}
                                 placeholder=""
                             />
@@ -58,14 +52,14 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
                             <Input
                                 id="Maximum"
                                 type="number"
-                                value={defineRangeState.maxRange || ""}
+                                value={defineRangeState.maxRange ?? ""}
                                 onChange={(e) => handleChange("maxRange", Number(e.target.value))}
                                 placeholder=""
                             />
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button type="button" onClick={handleContinue}>
                             Continue
                         </Button>
                         <Button type="button" variant="secondary" onClick={() => setIsDefineRangeOpen(false)}>

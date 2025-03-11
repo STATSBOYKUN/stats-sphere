@@ -118,7 +118,7 @@ export const OptScaMCAVariablePlots = ({
                                                         id="DimensionsForMultiNom"
                                                         type="number"
                                                         placeholder=""
-                                                        value={variablePlotsState.DimensionsForMultiNom || ""}
+                                                        value={variablePlotsState.DimensionsForMultiNom ?? ""}
                                                         onChange={(e) => handleChange("DimensionsForMultiNom", Number(e.target.value))}
                                                     />
                                                 </div>

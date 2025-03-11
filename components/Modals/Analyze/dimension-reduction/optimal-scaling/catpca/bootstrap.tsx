@@ -122,7 +122,7 @@ export const OptScaCatpcaBootstrap = ({
                                                     id="NumberSamples"
                                                     type="number"
                                                     placeholder=""
-                                                    value={bootstrapState.NumberSamples || ""}
+                                                    value={bootstrapState.NumberSamples ?? ""}
                                                     onChange={(e) => handleChange("NumberSamples", Number(e.target.value))}
                                                 />
                                             </div>
@@ -134,7 +134,7 @@ export const OptScaCatpcaBootstrap = ({
                                                     id="ConfLevel"
                                                     type="number"
                                                     placeholder=""
-                                                    value={bootstrapState.ConfLevel || ""}
+                                                    value={bootstrapState.ConfLevel ?? ""}
                                                     onChange={(e) => handleChange("ConfLevel", Number(e.target.value))}
                                                 />
                                             </div>
@@ -227,7 +227,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 id="ValueLoading"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={bootstrapState.ValueLoading || ""}
+                                                                value={bootstrapState.ValueLoading ?? ""}
                                                                 onChange={(e) => handleChange("ValueLoading", Number(e.target.value))}
                                                             />
                                                         </TableCell>
@@ -292,7 +292,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 id="ValueObject"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={bootstrapState.ValueObject || ""}
+                                                                value={bootstrapState.ValueObject ?? ""}
                                                                 onChange={(e) => handleChange("ValueObject", Number(e.target.value))}
                                                             />
                                                         </TableCell>
@@ -357,7 +357,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 id="ValueCategory"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={bootstrapState.ValueCategory || ""}
+                                                                value={bootstrapState.ValueCategory ?? ""}
                                                                 onChange={(e) => handleChange("ValueCategory", Number(e.target.value))}
                                                             />
                                                         </TableCell>
@@ -372,7 +372,7 @@ export const OptScaCatpcaBootstrap = ({
                                                     id="NumberPoints"
                                                     type="number"
                                                     placeholder=""
-                                                    value={bootstrapState.NumberPoints || ""}
+                                                    value={bootstrapState.NumberPoints ?? ""}
                                                     onChange={(e) => handleChange("NumberPoints", Number(e.target.value))}
                                                 />
                                             </div>

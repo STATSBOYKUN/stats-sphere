@@ -82,7 +82,7 @@ export const TwoStepClusterOptions = ({
                                                         id="NoiseCluster"
                                                         type="number"
                                                         placeholder=""
-                                                        value={optionsState.NoiseCluster || ""}
+                                                        value={optionsState.NoiseCluster ?? ""}
                                                         onChange={(e) => handleChange("NoiseCluster", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -100,7 +100,7 @@ export const TwoStepClusterOptions = ({
                                                         id="MemoryValue"
                                                         type="number"
                                                         placeholder=""
-                                                        value={optionsState.MemoryValue || ""}
+                                                        value={optionsState.MemoryValue ?? ""}
                                                         onChange={(e) => handleChange("MemoryValue", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -167,7 +167,7 @@ export const TwoStepClusterOptions = ({
                                                                         id="NoiseThreshold"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={optionsState.NoiseThreshold || ""}
+                                                                        value={optionsState.NoiseThreshold ?? ""}
                                                                         onChange={(e) => handleChange("NoiseThreshold", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -179,7 +179,7 @@ export const TwoStepClusterOptions = ({
                                                                         id="MxBranch"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={optionsState.MxBranch || ""}
+                                                                        value={optionsState.MxBranch ?? ""}
                                                                         onChange={(e) => handleChange("MxBranch", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -193,7 +193,7 @@ export const TwoStepClusterOptions = ({
                                                                         id="MxDepth"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={optionsState.MxDepth || ""}
+                                                                        value={optionsState.MxDepth ?? ""}
                                                                         onChange={(e) => handleChange("MxDepth", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -205,7 +205,7 @@ export const TwoStepClusterOptions = ({
                                                                         id="MaxNodes"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={optionsState.MaxNodes || ""}
+                                                                        value={optionsState.MaxNodes ?? ""}
                                                                         onChange={(e) => handleChange("MaxNodes", Number(e.target.value))}
                                                                     />
                                                                 </div>

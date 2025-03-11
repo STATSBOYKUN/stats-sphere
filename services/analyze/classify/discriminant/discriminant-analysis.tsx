@@ -1,11 +1,7 @@
 import {getSlicedData, getVarDefs} from "@/hooks/useVariable";
-import {
-    DiscriminantAnalysisSummaryCanonicalType,
-    DiscriminantAnalysisType
-} from "@/models/classify/discriminant/discriminant-worker";
-import init, {discriminant_analysis, DiscriminantAnalysisWasm} from "@/src/wasm/pkg/wasm";
-import {analyzeCase} from "@/services/analyze/classify/discriminant/discriminant-analysis-check-data";
-import {groupStatistics} from "@/services/analyze/classify/discriminant/discriminant-analysis-groups-statistics";
+import {DiscriminantAnalysisType} from "@/models/classify/discriminant/discriminant-worker";
+import init, {DiscriminantAnalysisWasm} from "@/src/wasm/pkg/wasm";
+import {convertStatisticalData} from "@/services/analyze/classify/discriminant/discriminant-analysis-formatter";
 import {resultDiscriminant} from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
 
 export async function analyzeDiscriminant({
@@ -43,81 +39,81 @@ export async function analyzeDiscriminant({
     const varDefsForIndependent = getVarDefs(variables, IndependentVariables);
     const varDefsForSelection = getVarDefs(variables, SelectionVariable);
 
-    /*
-    * 🧩 Analysis Case Process 🧩
-    * */
-    // const checkGroupingData = await analyzeCase({data: slicedDataForGrouping});
-    // const checkIndependentData = await analyzeCase({data: slicedDataForIndependent});
-    // const checkSelectionData = await analyzeCase({data: slicedDataForSelection});
-    // const allCheckData = [checkGroupingData, checkIndependentData, checkSelectionData];
+    const da = new DiscriminantAnalysisWasm(
+        slicedDataForGrouping,
+        slicedDataForIndependent,
+        tempData.defineRange.minRange ?? 0,
+        tempData.defineRange.maxRange ?? 0,
+        null
+    );
 
-    /*
-    * 📊 Group Statistics Process 📊
-    * */
-    // const groupStatisticsData = await groupStatistics({
-    //     groupData: slicedDataForGrouping,
-    //     groupDefs: varDefsForGrouping,
-    //     independentData: slicedDataForIndependent,
-    //     independentDefs: varDefsForIndependent,
-    //     minRange: tempData.defineRange.minRange,
-    //     maxRange: tempData.defineRange.maxRange
-    // });
-
-    /*
-    * 🚀 Stepwise Statistics Process 🚀
-    * (Optional)
-    * */
-
-
-    /*
-    * 📜 Summary Canonical Process 📜
-    * */
-    const summaryCanonicalData = await summaryCanonicalProcess({
-        groupData: slicedDataForGrouping,
-        independentData: slicedDataForIndependent,
-        minRange: tempData.defineRange.minRange,
-        maxRange: tempData.defineRange.maxRange
-    });
-
-
-    /*
-    * 🛠️ Standardized Function Process 🛠️
-    * */
-
-
-    /*
-    * 🎯 Function Group Centroids Process 🎯
-    * */
-
-
-    /*
-    * 🎉 Final Result Process 🎯
-    * */
-
-    // await resultDiscriminant({
-    //     analysisCaseData: allCheckData,
-    //     groupStatisticsData: groupStatisticsData,
-    //     addLog, addAnalytic, addStatistic
-    // });
-}
-
-export async function summaryCanonicalProcess({
-                                                    groupData,
-                                                    independentData,
-                                                    minRange,
-                                                    maxRange
-                                              } : DiscriminantAnalysisSummaryCanonicalType) {
-    await init();
-    // Prior probabilities (opsional)
-    const priors = null;
-    console.log(groupData, independentData, minRange, maxRange, priors);
-
-    const da = new DiscriminantAnalysisWasm(groupData, independentData, minRange ?? 0, maxRange ?? 0, priors);
     da.compute_canonical_discriminant_functions();
     da.cross_validate();
 
     const results = da.get_results();
     console.log(results);
+    const caseProcessingSummary = convertStatisticalData(results);
+    console.log(caseProcessingSummary.tables[0]);
 
-    return "Success";
+    /*
+     * 🧩 Analysis Case Process 🧩
+     */
+    // const caseProcessingSummary = convertStatisticalData(results, "caseProcessingSummary");
+
+    /*
+     * 📊 Group Statistics Process 📊
+     */
+    // const groupStatistics = convertStatisticalData(results, "groupStatistics");
+
+    /*
+     * 📊 Homogeneity Test Process 📊
+     */
+    // const testsOfEquality = convertStatisticalData(results, "testsOfEquality");
+    // const pooledMatrices = convertStatisticalData(results, "pooledMatrices");
+    // const covarianceMatrices = convertStatisticalData(results, "covarianceMatrices");
+
+    /*
+     * 🔍 Box’s M Test Process 🔍
+     */
+    // const boxTestLogDeterminants = convertStatisticalData(results, "boxTestLogDeterminants");
+    // const boxTestResults = convertStatisticalData(results, "boxTestResults");
+
+    /*
+     * 📜 Summary Canonical Process 📜
+     */
+    // const eigenvaluesTable = convertStatisticalData(results, "eigenvaluesTable");
+    // const wilksLambdaTable = convertStatisticalData(results, "wilksLambdaTable");
+
+    /*
+     * 🛠️ Standardized Function Process 🛠️
+     */
+    // const stdCoefficientsTable = convertStatisticalData(results, "stdCoefficientsTable");
+    // const structureMatrixTable = convertStatisticalData(results, "structureMatrixTable");
+
+    /*
+     * 🎯 Function Group Centroids Process 🎯
+     */
+    // const groupCentroidsTable = convertStatisticalData(results, "groupCentroidsTable");
+    // const classificationResultsTable = convertStatisticalData(results, "classificationResultsTable");
+
+    /*
+    * 🎉 Final Result Process 🎯
+    * */
+    // await resultDiscriminant({
+    //     addLog, addAnalytic, addStatistic,
+    //     caseProcessingSummary,
+    //     groupStatistics,
+    //     testsOfEquality,
+    //     pooledMatrices,
+    //     covarianceMatrices,
+    //     boxTestLogDeterminants,
+    //     boxTestResults,
+    //     eigenvaluesTable,
+    //     wilksLambdaTable,
+    //     stdCoefficientsTable,
+    //     structureMatrixTable,
+    //     groupCentroidsTable,
+    //     classificationResultsTable
+    // });
 }
+

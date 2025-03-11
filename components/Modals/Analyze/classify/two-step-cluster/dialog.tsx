@@ -229,7 +229,7 @@ export const TwoStepClusterDialog = ({
                                                             id="MaxCluster"
                                                             type="number"
                                                             placeholder=""
-                                                            value={mainState.MaxCluster || ""}
+                                                            value={mainState.MaxCluster ?? ""}
                                                             onChange={(e) => handleChange("MaxCluster", Number(e.target.value))}
                                                         />
                                                     </div>
@@ -247,7 +247,7 @@ export const TwoStepClusterDialog = ({
                                                             id="NumCluster"
                                                             type="number"
                                                             placeholder=""
-                                                            value={mainState.NumCluster || ""}
+                                                            value={mainState.NumCluster ?? ""}
                                                             onChange={(e) => handleChange("NumCluster", Number(e.target.value))}
                                                         />
                                                     </div>
@@ -267,7 +267,7 @@ export const TwoStepClusterDialog = ({
                                                         id="ToStandardized"
                                                         type="number"
                                                         placeholder=""
-                                                        value={mainState.ToStandardized || ""}
+                                                        value={mainState.ToStandardized ?? ""}
                                                         onChange={(e) => handleChange("ToStandardized", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -280,7 +280,7 @@ export const TwoStepClusterDialog = ({
                                                         id="AssumedStandardized"
                                                         type="number"
                                                         placeholder=""
-                                                        value={mainState.AssumedStandardized || ""}
+                                                        value={mainState.AssumedStandardized ?? ""}
                                                         onChange={(e) => handleChange("AssumedStandardized", Number(e.target.value))}
                                                     />
                                                 </div>

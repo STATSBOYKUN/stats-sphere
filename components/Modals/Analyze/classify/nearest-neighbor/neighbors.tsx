@@ -92,7 +92,7 @@ export const KNNNeighbors = ({isNeighborsOpen, setIsNeighborsOpen, updateFormDat
                                                         id="SpecifyK"
                                                         type="number"
                                                         placeholder=""
-                                                        value={neighborsState.SpecifyK || ""}
+                                                        value={neighborsState.SpecifyK ?? ""}
                                                         onChange={(e) => handleChange("SpecifyK", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -112,7 +112,7 @@ export const KNNNeighbors = ({isNeighborsOpen, setIsNeighborsOpen, updateFormDat
                                                         id="MinK"
                                                         type="number"
                                                         placeholder=""
-                                                        value={neighborsState.MinK || ""}
+                                                        value={neighborsState.MinK ?? ""}
                                                         onChange={(e) => handleChange("MinK", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -124,7 +124,7 @@ export const KNNNeighbors = ({isNeighborsOpen, setIsNeighborsOpen, updateFormDat
                                                         id="MaxK"
                                                         type="number"
                                                         placeholder=""
-                                                        value={neighborsState.MaxK || ""}
+                                                        value={neighborsState.MaxK ?? ""}
                                                         onChange={(e) => handleChange("MaxK", Number(e.target.value))}
                                                     />
                                                 </div>

@@ -1,13 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from "@/components/ui/dialog";
+import {Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import {Label} from "@/components/ui/label";
@@ -16,11 +8,6 @@ import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
 import {DiscriminantDialogProps, DiscriminantMainType} from "@/models/classify/discriminant/discriminant";
 import {Badge} from "@/components/ui/badge";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {useVariableStore} from "@/stores/useVariableStore";
-import {useDataStore} from "@/stores/useDataStore";
-import useResultStore from "@/stores/useResultStore";
-import {RawData, VariableDef} from "@/lib/db";
-import {useReadCSV} from "@/hooks/read_csv";
 import {useModal} from "@/hooks/useModal";
 
 export const DiscriminantDialog = ({
@@ -192,7 +179,7 @@ export const DiscriminantDialog = ({
                                                 </div>
                                                 <input
                                                     type="hidden"
-                                                    value={mainState.GroupingVariable || ""}
+                                                    value={mainState.GroupingVariable ?? ""}
                                                     name="GroupingVariable"
                                                 />
                                             </div>
@@ -240,7 +227,7 @@ export const DiscriminantDialog = ({
                                             </div>
                                             <input
                                                 type="hidden"
-                                                value={mainState.IndependentVariables || ""}
+                                                value={mainState.IndependentVariables ?? ""}
                                                 name="Independents"
                                             />
                                         </div>
@@ -288,7 +275,7 @@ export const DiscriminantDialog = ({
                                                 </div>
                                                 <input
                                                     type="hidden"
-                                                    value={mainState.SelectionVariable || ""}
+                                                    value={mainState.SelectionVariable ?? ""}
                                                     name="GroupingVariable"
                                                 />
                                             </div>
@@ -316,6 +303,7 @@ export const DiscriminantDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
+                                        disabled={mainState.Together}
                                         onClick={openDialog(setIsMethodOpen)}
                                     >
                                         Method...
@@ -341,6 +329,7 @@ export const DiscriminantDialog = ({
                                         type="button"
                                         variant="secondary"
                                         onClick={openDialog(setIsBootstrapOpen)}
+                                        disabled={mainState.Stepwise}
                                     >
                                         Bootstrap...
                                     </Button>

@@ -105,7 +105,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                     id="First"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.First || ""}
+                                                                    value={optionsState.First ?? ""}
                                                                     onChange={(e) => handleChange("First", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -117,7 +117,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                     id="Last"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.Last || ""}
+                                                                    value={optionsState.Last ?? ""}
                                                                     onChange={(e) => handleChange("Last", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -131,7 +131,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                 id="SingleCaseValue"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.SingleCaseValue || ""}
+                                                                value={optionsState.SingleCaseValue ?? ""}
                                                                 onChange={(e) => handleChange("SingleCaseValue", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -179,7 +179,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                     id="PlotDimLoDim"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.PlotDimLoDim || ""}
+                                                                    value={optionsState.PlotDimLoDim ?? ""}
                                                                     onChange={(e) => handleChange("PlotDimLoDim", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -191,7 +191,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                     id="PlotDimHiDim"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.PlotDimHiDim || ""}
+                                                                    value={optionsState.PlotDimHiDim ?? ""}
                                                                     onChange={(e) => handleChange("PlotDimHiDim", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -267,7 +267,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                 id="NormCustomValue"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.NormCustomValue || ""}
+                                                                value={optionsState.NormCustomValue ?? ""}
                                                                 onChange={(e) => handleChange("NormCustomValue", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -285,7 +285,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                 id="Convergence"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.Convergence || ""}
+                                                                value={optionsState.Convergence ?? ""}
                                                                 onChange={(e) => handleChange("Convergence", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -297,7 +297,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                 id="MaximumIterations"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.MaximumIterations || ""}
+                                                                value={optionsState.MaximumIterations ?? ""}
                                                                 onChange={(e) => handleChange("MaximumIterations", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -324,7 +324,7 @@ export const OptScaMCAOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormDa
                                                                 className="w-[65px]"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.LimitForLabel || ""}
+                                                                value={optionsState.LimitForLabel ?? ""}
                                                                 onChange={(e) => handleChange("LimitForLabel", Number(e.target.value))}
                                                             />
                                                         </div>

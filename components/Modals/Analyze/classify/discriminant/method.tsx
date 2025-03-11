@@ -101,7 +101,8 @@ export const DiscriminantMethod = ({isMethodOpen, setIsMethodOpen, updateFormDat
                                                                 id="VEnter"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={methodState.VEnter || ""}
+                                                                value={methodState.VEnter ?? ""}
+                                                                disabled={!methodState.Raos}
                                                                 onChange={(e) => handleChange("VEnter", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -136,7 +137,7 @@ export const DiscriminantMethod = ({isMethodOpen, setIsMethodOpen, updateFormDat
                                                                         id="FEntry"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={methodState.FEntry || ""}
+                                                                        value={methodState.FEntry ?? ""}
                                                                         onChange={(e) => handleChange("FEntry", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -147,7 +148,7 @@ export const DiscriminantMethod = ({isMethodOpen, setIsMethodOpen, updateFormDat
                                                                     <Input
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={methodState.FRemoval || ""}
+                                                                        value={methodState.FRemoval ?? ""}
                                                                         onChange={(e) => handleChange("FRemoval", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -168,7 +169,7 @@ export const DiscriminantMethod = ({isMethodOpen, setIsMethodOpen, updateFormDat
                                                                         id="PEntry"
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={methodState.PEntry || ""}
+                                                                        value={methodState.PEntry ?? ""}
                                                                         onChange={(e) => handleChange("PEntry", Number(e.target.value))}
                                                                     />
                                                                 </div>
@@ -179,7 +180,7 @@ export const DiscriminantMethod = ({isMethodOpen, setIsMethodOpen, updateFormDat
                                                                     <Input
                                                                         type="number"
                                                                         placeholder=""
-                                                                        value={methodState.PRemoval || ""}
+                                                                        value={methodState.PRemoval ?? ""}
                                                                         onChange={(e) => handleChange("PRemoval", Number(e.target.value))}
                                                                     />
                                                                 </div>

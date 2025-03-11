@@ -278,7 +278,7 @@ export const UnivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data
                                                             id="DatasetName"
                                                             type="text"
                                                             placeholder=""
-                                                            value={saveState.DatasetName || ""}
+                                                            value={saveState.DatasetName ?? ""}
                                                             onChange={(e) => handleChange("DatasetName", e.target.value)}
                                                         />
                                                     </div>

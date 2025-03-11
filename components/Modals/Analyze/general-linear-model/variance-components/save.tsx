@@ -130,7 +130,7 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                                                 id="DatasetName"
                                                 type="text"
                                                 placeholder=""
-                                                value={saveState.DatasetName || ""}
+                                                value={saveState.DatasetName ?? ""}
                                                 onChange={(e) => handleChange("DatasetName", e.target.value)}
                                             />
                                         </div>

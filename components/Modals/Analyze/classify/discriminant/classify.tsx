@@ -134,6 +134,7 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                     <Checkbox
                                                         id="Limit"
                                                         checked={classifyState.Limit}
+                                                        disabled={!classifyState.Case}
                                                         onCheckedChange={(checked) => handleChange("Limit", checked)}
                                                     />
                                                     <label
@@ -148,6 +149,7 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                             type="number"
                                                             placeholder=""
                                                             value={classifyState.LimitValue ?? ""}
+                                                            disabled={!classifyState.Limit}
                                                             onChange={(e) => handleChange("LimitValue", Number(e.target.value))}
                                                         />
                                                     </div>

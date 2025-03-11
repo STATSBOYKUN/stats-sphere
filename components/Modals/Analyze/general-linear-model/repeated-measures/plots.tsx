@@ -202,7 +202,7 @@ export const RepeatedMeasuresPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormD
                                                             id="Multiplier"
                                                             type="number"
                                                             placeholder=""
-                                                            value={plotsState.Multiplier || ""}
+                                                            value={plotsState.Multiplier ?? ""}
                                                             onChange={(e) => handleChange("Multiplier", Number(e.target.value))}
                                                         />
                                                     </div>

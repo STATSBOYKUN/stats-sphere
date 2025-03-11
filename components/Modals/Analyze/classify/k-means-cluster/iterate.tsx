@@ -47,7 +47,7 @@ export const KMeansClusterIterate = ({ isIterateOpen, setIsIterateOpen, updateFo
                             <Input
                                 id="MaximumIterations"
                                 type="number"
-                                value={iterateState.MaximumIterations || ""}
+                                value={iterateState.MaximumIterations ?? ""}
                                 onChange={(e) => handleChange("MaximumIterations", Number(e.target.value))}
                                 placeholder=""
                             />
@@ -57,7 +57,7 @@ export const KMeansClusterIterate = ({ isIterateOpen, setIsIterateOpen, updateFo
                             <Input
                                 id="ConvergenceCriterion"
                                 type="number"
-                                value={iterateState.ConvergenceCriterion || ""}
+                                value={iterateState.ConvergenceCriterion ?? ""}
                                 onChange={(e) => handleChange("ConvergenceCriterion", Number(e.target.value))}
                                 placeholder=""
                             />

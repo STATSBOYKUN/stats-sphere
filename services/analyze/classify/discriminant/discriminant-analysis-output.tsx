@@ -1,11 +1,22 @@
 import {DiscriminantFinalResultType} from "@/models/classify/discriminant/discriminant-worker";
 
 export async function resultDiscriminant({
-                                             analysisCaseData,
-                                             groupStatisticsData,
                                              addLog,
                                              addAnalytic,
-                                             addStatistic
+                                             addStatistic,
+                                             caseProcessingSummary,
+                                             groupStatistics,
+                                             testsOfEquality,
+                                             pooledMatrices,
+                                             covarianceMatrices,
+                                             boxTestLogDeterminants,
+                                             boxTestResults,
+                                             eigenvaluesTable,
+                                             wilksLambdaTable,
+                                             stdCoefficientsTable,
+                                             structureMatrixTable,
+                                             groupCentroidsTable,
+                                             classificationResultsTable
                                          }: DiscriminantFinalResultType) {
     try {
         const discriminantResult = async () => {
@@ -29,24 +40,6 @@ export async function resultDiscriminant({
                 note: "",
             });
 
-            for (let i = 0; i < analysisCaseData.length; i++) {
-                let title;
-                if (i === 0) {
-                    title = 'Grouping Variable';
-                } else if (i === 1) {
-                    title = 'Independent Variables';
-                } else {
-                    title = 'Selection Variable';
-                }
-
-                const analyzeCaseTable = await addStatistic({
-                    analytic_id: analyzeCaseId,
-                    title: `${title}`,
-                    output_data: analysisCaseData[i],
-                    components: `${title}`,
-                });
-            }
-
             /*
             * 📈 Group Statistics Result 📈
             * */
@@ -59,7 +52,7 @@ export async function resultDiscriminant({
             const analyzeCaseTable = await addStatistic({
                 analytic_id: groupStatisticsId,
                 title: `Group Statistics`,
-                output_data: groupStatisticsData,
+                output_data: groupStatistics,
                 components: `Group Statistics`,
             });
 

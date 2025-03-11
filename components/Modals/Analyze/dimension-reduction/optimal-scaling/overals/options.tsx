@@ -279,7 +279,7 @@ export const OptScaOveralsOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFo
                                                     id="MaxIter"
                                                     type="number"
                                                     placeholder=""
-                                                    value={optionsState.MaxIter || ""}
+                                                    value={optionsState.MaxIter ?? ""}
                                                     onChange={(e) => handleChange("MaxIter", Number(e.target.value))}
                                                 />
                                             </div>
@@ -291,7 +291,7 @@ export const OptScaOveralsOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFo
                                                     id="Conv"
                                                     type="number"
                                                     placeholder=""
-                                                    value={optionsState.Conv || ""}
+                                                    value={optionsState.Conv ?? ""}
                                                     onChange={(e) => handleChange("Conv", Number(e.target.value))}
                                                 />
                                             </div>

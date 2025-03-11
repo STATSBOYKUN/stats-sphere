@@ -121,7 +121,7 @@ export const OptScaMCASave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data 
                                                                     id="DiscDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.DiscDataset || ""}
+                                                                    value={saveState.DiscDataset ?? ""}
                                                                     onChange={(e) => handleChange("DiscDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -193,7 +193,7 @@ export const OptScaMCASave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data 
                                                                     id="TransDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.TransDataset || ""}
+                                                                    value={saveState.TransDataset ?? ""}
                                                                     onChange={(e) => handleChange("TransDataset", e.target.value)}
                                                                 />
                                                             </div>
@@ -269,7 +269,7 @@ export const OptScaMCASave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data 
                                                                     id="ObjDataset"
                                                                     type="text"
                                                                     placeholder=""
-                                                                    value={saveState.ObjDataset || ""}
+                                                                    value={saveState.ObjDataset ?? ""}
                                                                     onChange={(e) => handleChange("ObjDataset", e.target.value)}
                                                                 />
                                                             </div>

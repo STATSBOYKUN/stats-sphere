@@ -174,7 +174,7 @@ export const FactorExtraction = ({
                                                         id="EigenVal"
                                                         type="number"
                                                         placeholder=""
-                                                        value={extractionState.EigenVal || ""}
+                                                        value={extractionState.EigenVal ?? ""}
                                                         onChange={(e) => handleChange("EigenVal", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -192,7 +192,7 @@ export const FactorExtraction = ({
                                                         id="MaxFactors"
                                                         type="number"
                                                         placeholder=""
-                                                        value={extractionState.MaxFactors || ""}
+                                                        value={extractionState.MaxFactors ?? ""}
                                                         onChange={(e) => handleChange("MaxFactors", Number(e.target.value))}
                                                     />
                                                 </div>
@@ -209,7 +209,7 @@ export const FactorExtraction = ({
                                     id="MaxIter"
                                     type="number"
                                     placeholder=""
-                                    value={extractionState.MaxIter || ""}
+                                    value={extractionState.MaxIter ?? ""}
                                     onChange={(e) => handleChange("MaxIter", Number(e.target.value))}
                                 />
                             </div>

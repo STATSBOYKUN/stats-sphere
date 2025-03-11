@@ -73,7 +73,7 @@ export const CorrespondenceDefineRangeColumn = ({ isDefineRangeColumnOpen, setIs
                                             id="MinValue"
                                             type="number"
                                             placeholder=""
-                                            value={defineRangeColumnState.MinValue || ""}
+                                            value={defineRangeColumnState.MinValue ?? ""}
                                             onChange={(e) => handleChange("MinValue", Number(e.target.value))}
                                         />
                                     </div>
@@ -86,7 +86,7 @@ export const CorrespondenceDefineRangeColumn = ({ isDefineRangeColumnOpen, setIs
                                             id="MaxValue"
                                             type="number"
                                             placeholder=""
-                                            value={defineRangeColumnState.MaxValue || ""}
+                                            value={defineRangeColumnState.MaxValue ?? ""}
                                             onChange={(e) => handleChange("MaxValue", Number(e.target.value))}
                                         />
                                     </div>

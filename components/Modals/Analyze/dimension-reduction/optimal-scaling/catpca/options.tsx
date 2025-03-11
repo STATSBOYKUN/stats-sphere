@@ -119,7 +119,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                     id="First"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.First || ""}
+                                                                    value={optionsState.First ?? ""}
                                                                     onChange={(e) => handleChange("First", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -131,7 +131,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                     id="Last"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.Last || ""}
+                                                                    value={optionsState.Last ?? ""}
                                                                     onChange={(e) => handleChange("Last", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -145,7 +145,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                 id="SingleCaseValue"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.SingleCaseValue || ""}
+                                                                value={optionsState.SingleCaseValue ?? ""}
                                                                 onChange={(e) => handleChange("SingleCaseValue", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -193,7 +193,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                     id="PlotDimLoDim"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.PlotDimLoDim || ""}
+                                                                    value={optionsState.PlotDimLoDim ?? ""}
                                                                     onChange={(e) => handleChange("PlotDimLoDim", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -205,7 +205,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                     id="PlotDimHiDim"
                                                                     type="number"
                                                                     placeholder=""
-                                                                    value={optionsState.PlotDimHiDim || ""}
+                                                                    value={optionsState.PlotDimHiDim ?? ""}
                                                                     onChange={(e) => handleChange("PlotDimHiDim", Number(e.target.value))}
                                                                 />
                                                             </div>
@@ -281,7 +281,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                 id="NormCustomValue"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.NormCustomValue || ""}
+                                                                value={optionsState.NormCustomValue ?? ""}
                                                                 onChange={(e) => handleChange("NormCustomValue", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -299,7 +299,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                 id="Convergence"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.Convergence || ""}
+                                                                value={optionsState.Convergence ?? ""}
                                                                 onChange={(e) => handleChange("Convergence", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -311,7 +311,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                 id="MaximumIterations"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.MaximumIterations || ""}
+                                                                value={optionsState.MaximumIterations ?? ""}
                                                                 onChange={(e) => handleChange("MaximumIterations", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -338,7 +338,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                 className="w-[65px]"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={optionsState.LimitForLabel || ""}
+                                                                value={optionsState.LimitForLabel ?? ""}
                                                                 onChange={(e) => handleChange("LimitForLabel", Number(e.target.value))}
                                                             />
                                                         </div>
@@ -387,7 +387,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                             id="Delta"
                                                                             type="number"
                                                                             placeholder=""
-                                                                            value={optionsState.Delta || ""}
+                                                                            value={optionsState.Delta ?? ""}
                                                                             onChange={(e) => handleChange("Delta", Number(e.target.value))}
                                                                         />
                                                                     </div>
@@ -419,7 +419,7 @@ export const OptScaCatpcaOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFor
                                                                             id="Kappa"
                                                                             type="number"
                                                                             placeholder=""
-                                                                            value={optionsState.Kappa || ""}
+                                                                            value={optionsState.Kappa ?? ""}
                                                                             onChange={(e) => handleChange("Kappa", Number(e.target.value))}
                                                                         />
                                                                     </div>

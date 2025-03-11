@@ -80,7 +80,7 @@ export const OptScaOveralsDefineRangeScale = ({ isDefineRangeScaleOpen, setIsDef
                                             id="Maximum"
                                             type="number"
                                             placeholder=""
-                                            value={defineRangeScaleState.Maximum || ""}
+                                            value={defineRangeScaleState.Maximum ?? ""}
                                             onChange={(e) => handleChange("Maximum", Number(e.target.value))}
                                         />
                                     </div>

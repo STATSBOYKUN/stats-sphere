@@ -73,7 +73,7 @@ export const CorrespondenceDefineRangeRow = ({ isDefineRangeRowOpen, setIsDefine
                                             id="MinValue"
                                             type="number"
                                             placeholder=""
-                                            value={defineRangeRowState.MinValue || ""}
+                                            value={defineRangeRowState.MinValue ?? ""}
                                             onChange={(e) => handleChange("MinValue", Number(e.target.value))}
                                         />
                                     </div>
@@ -86,7 +86,7 @@ export const CorrespondenceDefineRangeRow = ({ isDefineRangeRowOpen, setIsDefine
                                             id="MaxValue"
                                             type="number"
                                             placeholder=""
-                                            value={defineRangeRowState.MaxValue || ""}
+                                            value={defineRangeRowState.MaxValue ?? ""}
                                             onChange={(e) => handleChange("MaxValue", Number(e.target.value))}
                                         />
                                     </div>
