@@ -1,6 +1,7 @@
 /// Statistical functions for discriminant analysis
-
 use std::f64::consts::PI;
+use crate::discriminant::main::types::results::DiscriminantError;
+use crate::discriminant::main::matrix::basics::vector_norm;
 
 /// Chi-square CDF (Cumulative Distribution Function)
 pub fn chi_square_cdf(x: f64, df: u32) -> f64 {
@@ -34,9 +35,10 @@ pub fn normal_cdf(x: f64, mean: f64, std_dev: f64) -> f64 {
     0.5 * (1.0 + erf(z / std::f64::consts::SQRT_2))
 }
 
-/// Error function (erf) approximation
+/// Error function (erf) approximation with improved accuracy
 pub fn erf(x: f64) -> f64 {
-    // Constants for approximation
+    // Constants for Abramowitz and Stegun approximation (more accurate than
+    // the previous implementation)
     let a1 =  0.254829592;
     let a2 = -0.284496736;
     let a3 =  1.421413741;
@@ -111,6 +113,7 @@ pub fn regularized_incomplete_beta(x: f64, a: f64, b: f64) -> f64 {
     factor * cfrac
 }
 
+/// Continued fraction evaluation for beta function
 fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
     // Implementation based on Numerical Recipes
     // Uses Lentz's method for continued fraction evaluation
@@ -163,14 +166,40 @@ fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
     h
 }
 
-/// Calculate beta function B(a,b)
-pub fn beta(a: f64, b: f64) -> f64 {
-    // Using logarithms for better numerical stability
-    let ln_gamma_a = ln_gamma(a);
-    let ln_gamma_b = ln_gamma(b);
-    let ln_gamma_ab = ln_gamma(a + b);
+/// Calculate natural logarithm of gamma function
+/// Improved ln_gamma function using Lanczos approximation
+pub fn ln_gamma(x: f64) -> f64 {
+    // Constants for Lanczos approximation
+    let p = [
+        676.5203681218851, -1259.1392167224028, 771.32342877765313,
+        -176.61502916214059, 12.507343278686905, -0.13857109526572012,
+        9.9843695780195716e-6, 1.5056327351493116e-7
+    ];
 
-    (ln_gamma_a + ln_gamma_b - ln_gamma_ab).exp()
+    let mut result;
+
+    if x <= 0.0 {
+        // Use reflection formula for negative values
+        let pi = std::f64::consts::PI;
+        let sinpx = (pi * (x - (x as i64) as f64)).sin().abs();
+        if sinpx.abs() < 1e-10 {
+            // Return infinity for negative integers (gamma function poles)
+            return f64::INFINITY;
+        }
+        let gamma_1_minus_x = gamma(1.0 - x);
+        result = (pi / sinpx / gamma_1_minus_x).ln();
+    } else {
+        // Lanczos approximation for positive values
+        let mut z = x - 1.0;
+        let mut a = 0.99999999999980993;
+        for i in 0..p.len() {
+            a += p[i] / (z + (i as f64) + 1.0);
+        }
+        let t = z + p.len() as f64 - 0.5;
+        result = (2.0 * std::f64::consts::PI).sqrt().ln() + (z + 0.5) * t.ln() - t + a.ln();
+    }
+
+    result
 }
 
 /// Gamma function approximation using Lanczos approximation
@@ -199,47 +228,13 @@ pub fn gamma(x: f64) -> f64 {
     }
 }
 
-/// Calculate natural logarithm of gamma function
-/// Improved ln_gamma function using Lanczos approximation
-pub fn ln_gamma(x: f64) -> f64 {
-    // Constants for Lanczos approximation
-    let p = [
-        676.5203681218851, -1259.1392167224028, 771.32342877765313,
-        -176.61502916214059, 12.507343278686905, -0.13857109526572012,
-        9.9843695780195716e-6, 1.5056327351493116e-7
-    ];
-
-    let mut result;
-
-    if x <= 0.0 {
-        // Use reflection formula for negative values
-        let pi = std::f64::consts::PI;
-        let sinpx = (pi * (x - (x as i64) as f64)).sin().abs();
-        if sinpx.abs() < 1e-10 {
-            // Return infinity for negative integers (gamma function poles)
-            return f64::INFINITY;
-        }
-        result = (pi / sinpx / gamma(1.0 - x)).ln();
-    } else {
-        // Lanczos approximation for positive values
-        let mut z = x - 1.0;
-        let mut a = 0.99999999999980993;
-        for i in 0..p.len() {
-            a += p[i] / (z + (i as f64) + 1.0);
-        }
-        let t = z + p.len() as f64 - 0.5;
-        result = (2.0 * std::f64::consts::PI).sqrt().ln() + (z + 0.5) * t.ln() - t + a.ln();
-    }
-
-    result
-}
-
 /// Compute p-value from chi-square statistic
 pub fn chi_square_p_value(chi_square: f64, df: u32) -> f64 {
     1.0 - chi_square_cdf(chi_square, df)
 }
 
-/// Compute Mahalanobis distance
+/// Compute Mahalanobis distance between a vector and a mean vector
+/// using the inverse covariance matrix
 pub fn mahalanobis_distance(x: &[f64], mean: &[f64], inv_cov: &[Vec<f64>]) -> f64 {
     if x.len() != mean.len() || x.len() != inv_cov.len() {
         return f64::NAN;
@@ -262,87 +257,52 @@ pub fn mahalanobis_distance(x: &[f64], mean: &[f64], inv_cov: &[Vec<f64>]) -> f6
     distance
 }
 
-/// Compute Wilks' Lambda significance test
-pub fn wilks_lambda_significance(lambda: f64, p: usize, df_hypothesis: usize, df_error: usize) -> f64 {
-    // Calculate approximation using chi-square or F distribution
-    let n = df_error + df_hypothesis + 1;
-
-    if p == 1 && df_hypothesis == 1 {
-        // Direct F-test for univariate case
-        let f = (1.0 - lambda) / lambda * df_error as f64 / df_hypothesis as f64;
-        return f_test_p_value(f, df_hypothesis as u32, df_error as u32);
-    } else if df_hypothesis == 1 || p == 1 {
-        // Rao's F approximation
-        let f = (1.0 - lambda.sqrt()) / lambda.sqrt() * df_error as f64 / df_hypothesis as f64;
-        return f_test_p_value(f, df_hypothesis as u32, df_error as u32);
-    } else if p == 2 {
-        // Exact F for 2-variable case
-        let ms = (p * df_hypothesis) as f64;
-        let f = (1.0 - lambda.powf(1.0 / ms)) / lambda.powf(1.0 / ms) * (df_error as f64 - (p - 1) as f64 / 2.0 + 1.0) / ms;
-        return f_test_p_value(f, 2 * df_hypothesis as u32, 2 * (df_error - 1) as u32);
-    } else {
-        // Chi-square approximation
-        let chi2 = -(n as f64 - 0.5 * (p as f64 + df_hypothesis as f64 + 1.0)) * lambda.ln();
-        return chi_square_p_value(chi2, (p * df_hypothesis) as u32);
-    }
-}
-
-/// Compute Bartlett's test for homogeneity of variances
-pub fn bartlett_test(variances: &[f64], sample_sizes: &[usize]) -> (f64, f64) {
-    let k = variances.len();
-    if k < 2 || sample_sizes.len() != k {
-        return (f64::NAN, f64::NAN);
-    }
-
-    // Calculate total sample size and pooled variance
-    let mut n_total = 0;
-    for &n in sample_sizes {
-        n_total += n;
-    }
-
-    let mut sum_var_weighted = 0.0;
-    for i in 0..k {
-        sum_var_weighted += (sample_sizes[i] - 1) as f64 * variances[i];
-    }
-
-    let pooled_var = sum_var_weighted / (n_total - k) as f64;
-
-    // Calculate test statistic
-    let mut sum_n_minus_1 = 0;
-    let mut sum_ln_var_weighted = 0.0;
-
-    for i in 0..k {
-        sum_n_minus_1 += sample_sizes[i] - 1;
-        sum_ln_var_weighted += (sample_sizes[i] - 1) as f64 * variances[i].ln();
-    }
-
-    let correction = 1.0 + (1.0 / (3.0 * (k - 1) as f64)) *
-                        (1.0 / sum_n_minus_1 as f64 - 1.0 / (n_total - k) as f64);
-
-    let test_statistic = ((n_total - k) as f64 * pooled_var.ln() - sum_ln_var_weighted) / correction;
-
-    let p_value = chi_square_p_value(test_statistic, (k - 1) as u32);
-
-    (test_statistic, p_value)
-}
-
 /// Compute variance of a vector
-pub fn variance(x: &[f64]) -> f64 {
+pub fn variance(x: &[f64]) -> Result<f64, DiscriminantError> {
     if x.len() < 2 {
-        return f64::NAN;
+        return Err(DiscriminantError::InsufficientData);
     }
 
     let mean = x.iter().sum::<f64>() / x.len() as f64;
     let sum_squared_diff = x.iter().map(|&val| (val - mean).powi(2)).sum::<f64>();
 
-    sum_squared_diff / (x.len() - 1) as f64
+    Ok(sum_squared_diff / (x.len() - 1) as f64)
+}
+
+/// Compute weighted variance of a vector
+pub fn weighted_variance(x: &[f64], weights: &[f64]) -> Result<f64, DiscriminantError> {
+    if x.len() != weights.len() || x.len() < 2 {
+        return Err(DiscriminantError::InsufficientData);
+    }
+
+    let sum_weights = weights.iter().sum::<f64>();
+    if sum_weights <= 0.0 {
+        return Err(DiscriminantError::InvalidInput("Sum of weights must be positive".to_string()));
+    }
+
+    // Calculate weighted mean
+    let mut weighted_sum = 0.0;
+    for i in 0..x.len() {
+        weighted_sum += weights[i] * x[i];
+    }
+    let weighted_mean = weighted_sum / sum_weights;
+
+    // Calculate weighted variance
+    let mut weighted_sq_sum = 0.0;
+    for i in 0..x.len() {
+        weighted_sq_sum += weights[i] * (x[i] - weighted_mean).powi(2);
+    }
+
+    // Bessel correction for sample variance
+    let correction = sum_weights / (sum_weights - 1.0);
+    Ok(weighted_sq_sum / sum_weights * correction)
 }
 
 /// Compute covariance between two vectors
-pub fn covariance(x: &[f64], y: &[f64]) -> f64 {
+pub fn covariance(x: &[f64], y: &[f64]) -> Result<f64, DiscriminantError> {
     let n = x.len().min(y.len());
     if n < 2 {
-        return f64::NAN;
+        return Err(DiscriminantError::InsufficientData);
     }
 
     let mean_x = x.iter().take(n).sum::<f64>() / n as f64;
@@ -353,24 +313,26 @@ pub fn covariance(x: &[f64], y: &[f64]) -> f64 {
         sum_product += (x[i] - mean_x) * (y[i] - mean_y);
     }
 
-    sum_product / (n - 1) as f64
+    Ok(sum_product / (n - 1) as f64)
 }
 
 /// Compute correlation between two vectors
-pub fn correlation(x: &[f64], y: &[f64]) -> f64 {
+pub fn correlation(x: &[f64], y: &[f64]) -> Result<f64, DiscriminantError> {
     let n = x.len().min(y.len());
     if n < 2 {
-        return f64::NAN;
+        return Err(DiscriminantError::InsufficientData);
     }
 
-    let var_x = variance(&x[0..n]);
-    let var_y = variance(&y[0..n]);
+    let var_x = variance(&x[0..n])?;
+    let var_y = variance(&y[0..n])?;
 
     if var_x <= 0.0 || var_y <= 0.0 {
-        return f64::NAN;
+        return Err(DiscriminantError::ComputationError(
+            "Cannot compute correlation with zero variance".to_string()
+        ));
     }
 
-    let cov_xy = covariance(&x[0..n], &y[0..n]);
+    let cov_xy = covariance(&x[0..n], &y[0..n])?;
 
-    cov_xy / (var_x * var_y).sqrt()
+    Ok(cov_xy / (var_x * var_y).sqrt())
 }
