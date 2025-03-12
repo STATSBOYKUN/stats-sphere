@@ -3,10 +3,58 @@ import { immer } from "zustand/middleware/immer";
 import { devtools } from "zustand/middleware";
 import db from "@/lib/db";
 import { Variable } from "@/types/Variable";
+import { ValueLabel } from "@/types/ValueLabel";
+
+export type VariableStoreError = {
+    message: string;
+    source: string;
+    originalError?: any;
+};
+
+const processVariableName = (name: string, existingVariables: Variable[]): {
+    isValid: boolean;
+    message?: string;
+    processedName?: string;
+} => {
+    if (!name) {
+        return { isValid: false, message: "Variable name cannot be empty" };
+    }
+
+    let processedName = name;
+
+    if (!/^[a-zA-Z@#$]/.test(processedName)) {
+        processedName = 'var_' + processedName;
+    }
+
+    processedName = processedName
+        .replace(/[^a-zA-Z0-9@#$_.]/g, '_')
+        .replace(/\s+/g, '_')
+        .replace(/\.$/, '_');
+
+    if (processedName.length > 64) {
+        processedName = processedName.substring(0, 64);
+    }
+
+    const existingNames = existingVariables.map(v => v.name.toLowerCase());
+    if (existingNames.includes(processedName.toLowerCase())) {
+        let counter = 1;
+        let uniqueName = processedName;
+
+        while (existingNames.includes(uniqueName.toLowerCase())) {
+            uniqueName = `${processedName.substring(0, 60)}_${counter}`;
+            counter++;
+        }
+
+        processedName = uniqueName;
+    }
+
+    return { isValid: true, processedName };
+};
 
 const createDefaultVariable = (index: number, existingVariables: Variable[] = []): Variable => {
     const regex = /^var(\d+)$/;
     let maxNum = 0;
+
     existingVariables.forEach(v => {
         const match = v.name.match(regex);
         if (match) {
@@ -14,9 +62,13 @@ const createDefaultVariable = (index: number, existingVariables: Variable[] = []
             if (num > maxNum) maxNum = num;
         }
     });
+
+    const baseName = `var${maxNum + 1}`;
+    const nameResult = processVariableName(baseName, existingVariables);
+
     return {
         columnIndex: index,
-        name: `var${maxNum + 1}`,
+        name: nameResult.processedName || baseName,
         type: "NUMERIC",
         width: 8,
         decimals: 2,
@@ -26,28 +78,30 @@ const createDefaultVariable = (index: number, existingVariables: Variable[] = []
         columns: 64,
         align: "right",
         measure: "scale",
-        role: "input",
+        role: "input"
     };
 };
 
 interface VariableStoreState {
     variables: Variable[];
     isLoading: boolean;
-    error: string | null;
+    error: VariableStoreError | null;
+    selectedVariable: number | null;
+    lastUpdated: Date | null;
 
     setVariables: (variables: Variable[]) => void;
     updateVariable: <K extends keyof Variable>(
-        rowIndex: number,
+        identifier: number | string,
         field: K,
         value: Variable[K]
     ) => Promise<void>;
-    addVariable: (variable: Variable) => Promise<void>;
+    addVariable: (columnIndex?: number, variableData?: Partial<Variable>) => Promise<void>;
     getVariableByColumnIndex: (columnIndex: number) => Variable | undefined;
+    getVariableByName: (name: string) => Variable | undefined;
     loadVariables: () => Promise<void>;
     resetVariables: () => Promise<void>;
-    getAvailableVariables: () => Promise<Variable[]>;
-    getTotalVariable: () => Promise<number>;
-    createVariable: (columnIndex: number, data: (string | number)[]) => Promise<void>;
+    deleteVariable: (columnIndex: number) => Promise<void>;
+    selectVariable: (columnIndex: number | null) => void;
     overwriteVariables: (variables: Variable[]) => Promise<void>;
 }
 
@@ -57,59 +111,125 @@ export const useVariableStore = create<VariableStoreState>()(
             variables: [],
             isLoading: false,
             error: null,
+            selectedVariable: null,
+            lastUpdated: null,
 
             setVariables: (variables) => {
                 set((draft) => {
                     draft.variables = variables;
+                    draft.lastUpdated = new Date();
                 });
             },
 
             updateVariable: async <K extends keyof Variable>(
-                rowIndex: number,
+                identifier: number | string,
                 field: K,
                 value: Variable[K]
             ) => {
-                set((draft) => {
-                    if (rowIndex >= draft.variables.length) {
-                        const currentLength = draft.variables.length;
-                        for (let i = currentLength; i <= rowIndex; i++) {
-                            draft.variables.push(createDefaultVariable(i, draft.variables));
-                        }
-                    }
-                    draft.variables[rowIndex][field] = value;
-                });
+                let variableToUpdate: Variable | undefined;
+                let variableIndex: number;
+
                 try {
-                    await db.variables.put(get().variables[rowIndex]);
+                    await db.transaction('rw', db.variables, async () => {
+                        if (typeof identifier === 'number') {
+                            variableToUpdate = await db.variables.where('columnIndex').equals(identifier).first();
+                            variableIndex = get().variables.findIndex(v => v.columnIndex === identifier);
+                        } else {
+                            variableToUpdate = await db.variables.where('name').equals(identifier).first();
+                            variableIndex = get().variables.findIndex(v => v.name.toLowerCase() === identifier.toLowerCase());
+                        }
+
+                        if (!variableToUpdate) {
+                            throw new Error(`Variable with identifier "${identifier}" not found`);
+                        }
+
+                        if (field === 'name' && typeof value === 'string') {
+                            const otherVariables = get().variables.filter((_, i) => i !== variableIndex);
+                            const nameResult = processVariableName(value as string, otherVariables);
+
+                            if (!nameResult.isValid) {
+                                throw new Error(nameResult.message || "Invalid variable name");
+                            }
+
+                            variableToUpdate[field] = nameResult.processedName as any;
+                        } else {
+                            variableToUpdate[field] = value;
+                        }
+
+                        await db.variables.put(variableToUpdate);
+
+                        set((draft) => {
+                            if (variableIndex !== -1) {
+                                draft.variables[variableIndex] = variableToUpdate!;
+                            }
+                            draft.lastUpdated = new Date();
+                        });
+                    });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error updating variable";
+                        draft.error = {
+                            message: error.message || "Error updating variable",
+                            source: "updateVariable",
+                            originalError: error
+                        };
                     });
                 }
             },
 
-            addVariable: async (variable) => {
-                set((draft) => {
-                    if (variable.columnIndex >= draft.variables.length) {
-                        const currentLength = draft.variables.length;
-                        for (let i = currentLength; i <= variable.columnIndex; i++) {
-                            draft.variables.push(createDefaultVariable(i, draft.variables));
-                        }
-                    }
-                    const existingIndex = draft.variables.findIndex(
-                        (v) => v.columnIndex === variable.columnIndex
-                    );
-                    if (existingIndex !== -1) {
-                        draft.variables[existingIndex] = variable;
-                    } else {
-                        draft.variables[variable.columnIndex] = variable;
-                    }
-                });
+            addVariable: async (columnIndex?, variableData?) => {
+                const targetIndex = columnIndex !== undefined ? columnIndex : get().variables.length;
+
                 try {
-                    await db.variables.put(variable);
+                    await db.transaction('rw', db.variables, async () => {
+                        const existingVariables = [...get().variables];
+                        const defaultVar = createDefaultVariable(targetIndex, existingVariables);
+
+                        const newVariable: Variable = {
+                            ...defaultVar,
+                            ...variableData,
+                            columnIndex: targetIndex
+                        };
+
+                        if (variableData?.name) {
+                            const nameResult = processVariableName(variableData.name, existingVariables);
+                            if (nameResult.isValid && nameResult.processedName) {
+                                newVariable.name = nameResult.processedName;
+                            }
+                        }
+
+                        const updatedVariables = [...existingVariables];
+
+                        for (let i = 0; i < updatedVariables.length; i++) {
+                            if (updatedVariables[i].columnIndex >= targetIndex) {
+                                updatedVariables[i].columnIndex += 1;
+                                await db.variables.put(updatedVariables[i]);
+                            }
+                        }
+
+                        const id = await db.variables.add(newVariable);
+
+                        set((draft) => {
+                            for (let i = 0; i < draft.variables.length; i++) {
+                                if (draft.variables[i].columnIndex >= targetIndex) {
+                                    draft.variables[i].columnIndex += 1;
+                                }
+                            }
+
+                            draft.variables.push({...newVariable, id});
+                            draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
+                            draft.lastUpdated = new Date();
+                        });
+                    });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error adding/updating variable";
+                        draft.error = {
+                            message: error.message || "Error adding variable",
+                            source: "addVariable",
+                            originalError: error
+                        };
                     });
+
+                    await get().loadVariables();
                 }
             },
 
@@ -121,28 +241,48 @@ export const useVariableStore = create<VariableStoreState>()(
                 return variable;
             },
 
+            getVariableByName: (name) => {
+                return get().variables.find(v =>
+                    v.name.toLowerCase() === name.toLowerCase()
+                );
+            },
+
             loadVariables: async () => {
                 set((draft) => {
                     draft.isLoading = true;
                     draft.error = null;
                 });
+
                 try {
-                    const variablesFromDb = await db.variables.toArray();
-                    const lastVariable = await db.variables.orderBy("columnIndex").last();
-                    const maxColumn = lastVariable ? lastVariable.columnIndex + 1 : 0;
-                    const newVariables: Variable[] = Array.from({ length: maxColumn }, (_, i) => {
-                        const found = variablesFromDb.find((v) => v.columnIndex === i);
-                        return found ? found : createDefaultVariable(i, variablesFromDb);
-                    });
-                    set((draft) => {
-                        draft.variables = newVariables;
+                    await db.transaction('r', db.variables, async () => {
+                        const variablesFromDb = await db.variables.toArray();
+
+                        const normalizedVariables = variablesFromDb
+                            .sort((a, b) => a.columnIndex - b.columnIndex)
+                            .map((variable, index) => ({
+                                ...variable,
+                                columnIndex: index
+                            }));
+
+                        set((draft) => {
+                            draft.variables = normalizedVariables;
+                            draft.lastUpdated = new Date();
+                            draft.isLoading = false;
+                        });
+
+                        if (JSON.stringify(variablesFromDb.map(v => v.columnIndex)) !==
+                            JSON.stringify(normalizedVariables.map(v => v.columnIndex))) {
+                            await db.variables.clear();
+                            await db.variables.bulkPut(normalizedVariables);
+                        }
                     });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error loading variables";
-                    });
-                } finally {
-                    set((draft) => {
+                        draft.error = {
+                            message: error.message || "Error loading variables",
+                            source: "loadVariables",
+                            originalError: error
+                        };
                         draft.isLoading = false;
                     });
                 }
@@ -150,79 +290,112 @@ export const useVariableStore = create<VariableStoreState>()(
 
             resetVariables: async () => {
                 try {
-                    await db.variables.clear();
-                    set((draft) => {
-                        draft.variables = [];
+                    await db.transaction('rw', db.variables, async () => {
+                        await db.variables.clear();
+
+                        set((draft) => {
+                            draft.variables = [];
+                            draft.lastUpdated = new Date();
+                        });
                     });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error resetting variables";
+                        draft.error = {
+                            message: error.message || "Error resetting variables",
+                            source: "resetVariables",
+                            originalError: error
+                        };
                     });
                 }
             },
 
-            getAvailableVariables: async (): Promise<Variable[]> => {
+            deleteVariable: async (columnIndex: number) => {
                 try {
-                    const availableVariables = await db.variables.toArray();
-                    return availableVariables;
-                } catch (error: any) {
-                    return [];
-                }
-            },
+                    await db.transaction('rw', db.variables, async () => {
+                        const variableToDelete = await db.variables.where('columnIndex').equals(columnIndex).first();
 
-            getTotalVariable: async () => {
-                return get().variables.length;
-            },
-
-            createVariable: async (columnIndex, data) => {
-                set((draft) => {
-                    if (columnIndex >= draft.variables.length) {
-                        const currentLength = draft.variables.length;
-                        for (let i = currentLength; i <= columnIndex; i++) {
-                            draft.variables.push(createDefaultVariable(i, draft.variables));
+                        if (!variableToDelete) {
+                            throw new Error(`Variable with column index ${columnIndex} not found`);
                         }
-                    }
-                    const nonEmptyData = data.filter(d => d !== "");
-                    const allNumeric = nonEmptyData.every(
-                        d => typeof d === "number" || (!isNaN(Number(d)) && d !== "")
-                    );
-                    let variable = createDefaultVariable(columnIndex, draft.variables);
-                    if (!allNumeric) {
-                        const maxWidth = nonEmptyData.reduce<number>(
-                            (max: number, d: string | number): number => {
-                                const str = String(d);
-                                return Math.max(max, str.length);
-                            },
-                            0
-                        );
-                        variable = { ...variable, type: "STRING", width: maxWidth || variable.width };
-                    }
-                    draft.variables[columnIndex] = variable;
-                });
-                try {
-                    const newVariable = get().variables[columnIndex];
-                    await db.variables.put(newVariable);
+
+                        await db.variables.delete(variableToDelete.id!);
+
+                        await db.variables
+                            .where('columnIndex')
+                            .above(columnIndex)
+                            .modify(variable => {
+                                variable.columnIndex--;
+                            });
+
+                        set((draft) => {
+                            const variableIndex = draft.variables.findIndex(v => v.columnIndex === columnIndex);
+
+                            if (variableIndex !== -1) {
+                                draft.variables.splice(variableIndex, 1);
+
+                                for (let i = 0; i < draft.variables.length; i++) {
+                                    if (draft.variables[i].columnIndex > columnIndex) {
+                                        draft.variables[i].columnIndex -= 1;
+                                    }
+                                }
+
+                                draft.lastUpdated = new Date();
+
+                                if (draft.selectedVariable === columnIndex) {
+                                    draft.selectedVariable = null;
+                                } else if (draft.selectedVariable !== null && draft.selectedVariable > columnIndex) {
+                                    draft.selectedVariable -= 1;
+                                }
+                            }
+                        });
+                    });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error creating variable";
+                        draft.error = {
+                            message: error.message || "Error deleting variable",
+                            source: "deleteVariable",
+                            originalError: error
+                        };
                     });
+
+                    await get().loadVariables();
                 }
             },
 
+            selectVariable: (columnIndex: number | null) => {
+                set((draft) => {
+                    draft.selectedVariable = columnIndex;
+                });
+            },
 
             overwriteVariables: async (newVariables) => {
-                set((draft) => {
-                    draft.variables = newVariables;
-                });
                 try {
-                    await db.variables.clear();
-                    await Promise.all(newVariables.map((variable) => db.variables.put(variable)));
+                    await db.transaction('rw', db.variables, async () => {
+                        const normalizedVariables = [...newVariables]
+                            .sort((a, b) => a.columnIndex - b.columnIndex)
+                            .map((variable, index) => ({
+                                ...variable,
+                                columnIndex: index
+                            }));
+
+                        await db.variables.clear();
+                        await db.variables.bulkPut(normalizedVariables);
+
+                        set((draft) => {
+                            draft.variables = normalizedVariables;
+                            draft.lastUpdated = new Date();
+                        });
+                    });
                 } catch (error: any) {
                     set((draft) => {
-                        draft.error = error.message || "Error overwriting variables";
+                        draft.error = {
+                            message: error.message || "Error overwriting variables",
+                            source: "overwriteVariables",
+                            originalError: error
+                        };
                     });
                 }
-            },
+            }
         }))
     )
 );

@@ -8,23 +8,21 @@ import { Statistic } from '@/types/Statistic';
 
 export interface ResultState {
     logs: Log[];
-    analytics: Analytic[];
-    statistics: Statistic[];
 
     fetchLogs: () => Promise<void>;
     getLogById: (id: number) => Promise<Log | undefined>;
-    addLog: (log: Omit<Log, "id">) => Promise<number>;
-    deleteLog: (log_id: number) => Promise<void>;
 
-    fetchAnalytics: () => Promise<void>;
-    getAnalyticById: (id: number) => Promise<Analytic | undefined>;
-    addAnalytic: (analytic: Omit<Analytic, "id">) => Promise<number>;
-    deleteAnalytic: (analytic_id: number) => Promise<void>;
+    addLog: (log: Omit<Log, "id" | "analytics">) => Promise<number>;
+    updateLog: (id: number, logData: Partial<Omit<Log, "id" | "analytics">>) => Promise<void>;
+    deleteLog: (logId: number) => Promise<void>;
 
-    fetchStatistics: () => Promise<void>;
-    getStatisticById: (id: number) => Promise<Statistic | undefined>;
-    addStatistic: (stat: Omit<Statistic, "id">) => Promise<number>;
-    deleteStatistic: (stat_id: number) => Promise<void>;
+    addAnalytic: (logId: number, analytic: Omit<Analytic, "id" | "log_id" | "statistics">) => Promise<number>;
+    updateAnalytic: (analyticId: number, analyticData: Partial<Omit<Analytic, "id" | "log_id" | "statistics">>) => Promise<void>;
+    deleteAnalytic: (analyticId: number) => Promise<void>;
+
+    addStatistic: (analyticId: number, statistic: Omit<Statistic, "id" | "analytic_id">) => Promise<number>;
+    updateStatistic: (statisticId: number, statisticData: Partial<Omit<Statistic, "id" | "analytic_id">>) => Promise<void>;
+    deleteStatistic: (statisticId: number) => Promise<void>;
 
     clearAll: () => Promise<void>;
 }
@@ -32,13 +30,11 @@ export interface ResultState {
 export const useResultStore = create<ResultState>()(
     devtools(
         immer((set) => ({
-            logs: [] as Log[],
-            analytics: [] as Analytic[],
-            statistics: [] as Statistic[],
+            logs: [],
 
             fetchLogs: async () => {
                 try {
-                    const logs = await db.logs.toArray();
+                    const logs = await db.getAllLogsWithRelations();
                     set((state) => {
                         state.logs = logs;
                     });
@@ -49,8 +45,7 @@ export const useResultStore = create<ResultState>()(
 
             getLogById: async (id: number) => {
                 try {
-                    const log = await db.logs.get(id);
-                    return log;
+                    return await db.getLogWithRelations(id);
                 } catch (error) {
                     console.error("Failed to fetch log by id:", error);
                     return undefined;
@@ -61,7 +56,7 @@ export const useResultStore = create<ResultState>()(
                 try {
                     const id = await db.logs.add(log);
                     set((state) => {
-                        state.logs.push({ ...log, id });
+                        state.logs.push({ ...log, id, analytics: [] });
                     });
                     return id;
                 } catch (error) {
@@ -70,125 +65,215 @@ export const useResultStore = create<ResultState>()(
                 }
             },
 
-            deleteLog: async (log_id: number) => {
+            updateLog: async (id, logData) => {
                 try {
-                    await db.logs.delete(log_id);
+                    await db.logs.update(id, logData);
                     set((state) => {
-                        state.logs = state.logs.filter((log) => log.id !== log_id);
+                        const logIndex = state.logs.findIndex(log => log.id === id);
+                        if (logIndex >= 0) {
+                            Object.assign(state.logs[logIndex], logData);
+                        }
+                    });
+                } catch (error) {
+                    console.error("Failed to update log:", error);
+                    throw error;
+                }
+            },
+
+            deleteLog: async (logId) => {
+                try {
+                    const analytics = await db.analytics.where('log_id').equals(logId).toArray();
+                    const analyticIds = analytics.map(a => a.id!).filter(id => id !== undefined);
+
+                    if (analyticIds.length > 0) {
+                        await Promise.all(
+                            analyticIds.map(id =>
+                                db.statistics.where('analytic_id').equals(id).delete()
+                            )
+                        );
+                    }
+
+                    await db.analytics.where('log_id').equals(logId).delete();
+                    await db.logs.delete(logId);
+
+                    set((state) => {
+                        state.logs = state.logs.filter(log => log.id !== logId);
                     });
                 } catch (error) {
                     console.error("Failed to delete log:", error);
+                    throw error;
                 }
             },
 
-            fetchAnalytics: async () => {
+            addAnalytic: async (logId, analyticData) => {
                 try {
-                    const analytics = await db.analytics.toArray();
+                    const analytic: Omit<Analytic, "id"> = {
+                        ...analyticData,
+                        log_id: logId,
+                    };
+
+                    const analyticId = await db.analytics.add(analytic);
+
                     set((state) => {
-                        state.analytics = analytics;
+                        const logIndex = state.logs.findIndex(log => log.id === logId);
+                        if (logIndex >= 0) {
+                            const analyticWithId = { ...analytic, id: analyticId, statistics: [] };
+                            if (!state.logs[logIndex].analytics) {
+                                state.logs[logIndex].analytics = [];
+                            }
+                            state.logs[logIndex].analytics!.push(analyticWithId);
+                        }
                     });
-                } catch (error) {
-                    console.error("Failed to fetch analytics:", error);
-                }
-            },
 
-            getAnalyticById: async (id: number) => {
-                try {
-                    const analytic = await db.analytics.get(id);
-                    return analytic;
-                } catch (error) {
-                    console.error("Failed to fetch analytic by id:", error);
-                    return undefined;
-                }
-            },
-
-            addAnalytic: async (analytic) => {
-                try {
-                    const id = await db.analytics.add(analytic);
-                    set((state) => {
-                        state.analytics.push({ ...analytic, id });
-                    });
-                    return id;
+                    return analyticId;
                 } catch (error) {
                     console.error("Failed to add analytic:", error);
                     throw error;
                 }
             },
 
-            deleteAnalytic: async (analytic_id: number) => {
+            updateAnalytic: async (analyticId, analyticData) => {
                 try {
-                    await db.analytics.delete(analytic_id);
+                    await db.analytics.update(analyticId, analyticData);
+
                     set((state) => {
-                        state.analytics = state.analytics.filter(
-                            (analytic) => analytic.id !== analytic_id
-                        );
+                        for (const log of state.logs) {
+                            if (!log.analytics) continue;
+
+                            const analyticIndex = log.analytics.findIndex(a => a.id === analyticId);
+                            if (analyticIndex >= 0) {
+                                Object.assign(log.analytics[analyticIndex], analyticData);
+                                break;
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Failed to update analytic:", error);
+                    throw error;
+                }
+            },
+
+            deleteAnalytic: async (analyticId) => {
+                try {
+                    await db.statistics.where('analytic_id').equals(analyticId).delete();
+                    await db.analytics.delete(analyticId);
+
+                    set((state) => {
+                        for (const log of state.logs) {
+                            if (!log.analytics) continue;
+
+                            const analyticIndex = log.analytics.findIndex(a => a.id === analyticId);
+                            if (analyticIndex >= 0) {
+                                log.analytics.splice(analyticIndex, 1);
+                                break;
+                            }
+                        }
                     });
                 } catch (error) {
                     console.error("Failed to delete analytic:", error);
+                    throw error;
                 }
             },
 
-            fetchStatistics: async () => {
+            addStatistic: async (analyticId, statisticData) => {
                 try {
-                    const statistics = await db.statistics.toArray();
+                    const statistic: Omit<Statistic, "id"> = {
+                        ...statisticData,
+                        analytic_id: analyticId
+                    };
+
+                    const statisticId = await db.statistics.add(statistic);
+                    const statisticWithId = { ...statistic, id: statisticId };
+
                     set((state) => {
-                        state.statistics = statistics;
-                    });
-                } catch (error) {
-                    console.error("Failed to fetch statistics:", error);
-                }
-            },
+                        outerLoop: for (const log of state.logs) {
+                            if (!log.analytics) continue;
 
-            getStatisticById: async (id: number) => {
-                try {
-                    const statistic = await db.statistics.get(id);
-                    return statistic;
-                } catch (error) {
-                    console.error("Failed to fetch statistic by id:", error);
-                    return undefined;
-                }
-            },
-
-            addStatistic: async (stat) => {
-                try {
-                    const id = await db.statistics.add(stat);
-                    set((state) => {
-                        state.statistics.push({ ...stat, id });
+                            for (const analytic of log.analytics) {
+                                if (analytic.id === analyticId) {
+                                    if (!analytic.statistics) {
+                                        analytic.statistics = [];
+                                    }
+                                    analytic.statistics.push(statisticWithId);
+                                    break outerLoop;
+                                }
+                            }
+                        }
                     });
-                    return id;
+
+                    return statisticId;
                 } catch (error) {
                     console.error("Failed to add statistic:", error);
                     throw error;
                 }
             },
 
-            deleteStatistic: async (stat_id: number) => {
+            updateStatistic: async (statisticId, statisticData) => {
                 try {
-                    await db.statistics.delete(stat_id);
+                    await db.statistics.update(statisticId, statisticData);
+
                     set((state) => {
-                        state.statistics = state.statistics.filter(
-                            (stat) => stat.id !== stat_id
-                        );
+                        outerLoop: for (const log of state.logs) {
+                            if (!log.analytics) continue;
+
+                            for (const analytic of log.analytics) {
+                                if (!analytic.statistics) continue;
+
+                                const statisticIndex = analytic.statistics.findIndex(s => s.id === statisticId);
+                                if (statisticIndex >= 0) {
+                                    Object.assign(analytic.statistics[statisticIndex], statisticData);
+                                    break outerLoop;
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error("Failed to update statistic:", error);
+                    throw error;
+                }
+            },
+
+            deleteStatistic: async (statisticId) => {
+                try {
+                    await db.statistics.delete(statisticId);
+
+                    set((state) => {
+                        outerLoop: for (const log of state.logs) {
+                            if (!log.analytics) continue;
+
+                            for (const analytic of log.analytics) {
+                                if (!analytic.statistics) continue;
+
+                                const statisticIndex = analytic.statistics.findIndex(s => s.id === statisticId);
+                                if (statisticIndex >= 0) {
+                                    analytic.statistics.splice(statisticIndex, 1);
+                                    break outerLoop;
+                                }
+                            }
+                        }
                     });
                 } catch (error) {
                     console.error("Failed to delete statistic:", error);
+                    throw error;
                 }
             },
 
             clearAll: async () => {
                 try {
-                    await db.logs.clear();
-                    await db.analytics.clear();
-                    await db.statistics.clear();
+                    await Promise.all([
+                        db.statistics.clear(),
+                        db.analytics.clear(),
+                        db.logs.clear()
+                    ]);
+
                     set((state) => {
                         state.logs = [];
-                        state.analytics = [];
-                        state.statistics = [];
                     });
                 } catch (error) {
                     console.error("Failed to clear all data:", error);
+                    throw error;
                 }
-            },
+            }
         })),
         { name: "StatifyStore" }
     )

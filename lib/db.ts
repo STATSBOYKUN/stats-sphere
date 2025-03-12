@@ -16,13 +16,13 @@ class MyDatabase extends Dexie {
 
     constructor() {
         super("Statify");
-        this.version(2).stores({
+        this.version(3).stores({
             cells: "[col+row], col, row, value",
             variables: "++id, columnIndex, name, type, width, decimals, label, missing, columns, align, measure, role",
             valueLabels: "++id, variableName, value, label",
             logs: "++id, log",
             analytics: "++id, log_id, title, note",
-            statistics: "++id, analytic_id, title, output_data, components"
+            statistics: "++id, analytic_id, title, output_data, components, description"
         });
         this.cells = this.table("cells");
         this.variables = this.table("variables");
@@ -35,6 +35,60 @@ class MyDatabase extends Dexie {
                 console.error("Unhandled promise rejection:", event.reason);
             });
         }
+    }
+
+    async getLogWithRelations(logId: number): Promise<Log | undefined> {
+        const log = await this.logs.get(logId);
+        if (!log) return undefined;
+
+        const analytics = await this.analytics.where('log_id').equals(logId).toArray();
+
+        for (const analytic of analytics) {
+            if (analytic.id) {
+                analytic.statistics = await this.statistics.where('analytic_id').equals(analytic.id).toArray();
+            }
+        }
+
+        log.analytics = analytics;
+        return log;
+    }
+
+    async getAllLogsWithRelations(): Promise<Log[]> {
+        const logs = await this.logs.toArray();
+        const analytics = await this.analytics.toArray();
+        const statistics = await this.statistics.toArray();
+
+        const analyticMap = new Map<number, Analytic[]>();
+        const statisticMap = new Map<number, Statistic[]>();
+
+        for (const statistic of statistics) {
+            if (!statistic.analytic_id) continue;
+
+            if (!statisticMap.has(statistic.analytic_id)) {
+                statisticMap.set(statistic.analytic_id, []);
+            }
+            statisticMap.get(statistic.analytic_id)!.push(statistic);
+        }
+
+        for (const analytic of analytics) {
+            if (!analytic.id) continue;
+
+            analytic.statistics = statisticMap.get(analytic.id) || [];
+
+            if (!analytic.log_id) continue;
+
+            if (!analyticMap.has(analytic.log_id)) {
+                analyticMap.set(analytic.log_id, []);
+            }
+            analyticMap.get(analytic.log_id)!.push(analytic);
+        }
+
+        for (const log of logs) {
+            if (!log.id) continue;
+            log.analytics = analyticMap.get(log.id) || [];
+        }
+
+        return logs;
     }
 
     serializeData(obj: any): string {
