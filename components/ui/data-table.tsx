@@ -37,12 +37,15 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
 
     const getLeafColumnCount = (col: ColumnHeader): number => {
         if (!col.children || col.children.length === 0) return 1;
-        return col.children.reduce((sum, child) => sum + getLeafColumnCount(child), 0);
+        return col.children.reduce(
+            (sum, child) => sum + getLeafColumnCount(child),
+            0
+        );
     };
 
     const getMaxDepth = (columns: ColumnHeader[]): number => {
         let max = 1;
-        columns.forEach(col => {
+        columns.forEach((col) => {
             if (col.children && col.children.length > 0) {
                 const depth = 1 + getMaxDepth(col.children);
                 if (depth > max) max = depth;
@@ -53,9 +56,12 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
 
     const buildColumnLevels = (columns: ColumnHeader[]) => {
         const maxLevel = getMaxDepth(columns);
-        const levels: ColumnHeader[][] = Array.from({ length: maxLevel }, () => []);
+        const levels: ColumnHeader[][] = Array.from(
+            { length: maxLevel },
+            () => []
+        );
         const traverse = (cols: ColumnHeader[], level: number) => {
-            cols.forEach(col => {
+            cols.forEach((col) => {
                 levels[level].push(col);
                 if (col.children && col.children.length > 0) {
                     traverse(col.children, level + 1);
@@ -98,16 +104,16 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
             if (!col.children || col.children.length === 0) {
                 keys.push(col.key ? col.key : col.header);
             } else {
-                col.children.forEach(ch => traverse(ch));
+                col.children.forEach((ch) => traverse(ch));
             }
         };
-        cols.forEach(c => traverse(c));
+        cols.forEach((c) => traverse(c));
         return keys;
     };
 
     const computeMaxRowHeaderDepth = (rows: TableRowData[]): number => {
         let max = 0;
-        rows.forEach(r => {
+        rows.forEach((r) => {
             if (r.rowHeader.length > max) max = r.rowHeader.length;
         });
         return max;
@@ -148,12 +154,14 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
         flatRows: TableRowData[],
         rowHeaderCount: number
     ) => {
-        const nonEmptyHeaders = row.rowHeader.filter(h => h !== null);
+        const nonEmptyHeaders = row.rowHeader.filter((h) => h !== null);
         if (rowHeaderCount === 2 && nonEmptyHeaders.length === 1) {
             const colIdx = 0;
             const current = row.rowHeader[colIdx] ?? "";
             const prev =
-                rowIndex > 0 ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? "" : null;
+                rowIndex > 0
+                    ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? ""
+                    : null;
             const renderCell = rowIndex === 0 || current !== prev;
             if (!renderCell) {
                 return null;
@@ -178,7 +186,9 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
         return Array.from({ length: rowHeaderCount }, (_, colIdx) => {
             const current = row.rowHeader[colIdx] ?? "";
             const prev =
-                rowIndex > 0 ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? "" : null;
+                rowIndex > 0
+                    ? flatRows[rowIndex - 1].rowHeader[colIdx] ?? ""
+                    : null;
             const renderCell = rowIndex === 0 || current !== prev;
             if (!renderCell) {
                 return null;
@@ -218,36 +228,47 @@ const DataTableRenderer: React.FC<DataTableProps> = ({ data }) => {
                         className="border-collapse border border-gray-300 text-sm mb-6"
                     >
                         <thead>
-                        <tr>
-                            <th
-                                colSpan={rowHeaderCount + leafCols.length}
-                                className="border border-gray-300 bg-gray-200 px-2 py-2 text-center font-semibold"
-                            >
-                                {title}
-                            </th>
-                        </tr>
-                        {levels.map((cols, lvlIndex) =>
-                            renderColumnHeaderRow(cols, lvlIndex, maxDepth)
-                        )}
+                            <tr>
+                                <th
+                                    colSpan={rowHeaderCount + leafCols.length}
+                                    className="border border-gray-300 bg-gray-200 px-2 py-2 text-center font-semibold"
+                                >
+                                    {title}
+                                </th>
+                            </tr>
+                            {levels.map((cols, lvlIndex) =>
+                                renderColumnHeaderRow(cols, lvlIndex, maxDepth)
+                            )}
                         </thead>
                         <tbody>
-                        {flatRows.map((row, rowIndex) => {
-                            const allDataNull = leafCols.every(k => row[k] == null);
-                            if (allDataNull && row.rowHeader.every(h => h !== "")) return null;
-                            return (
-                                <tr key={rowIndex}>
-                                    {renderRowHeaderCells(row, rowIndex, flatRows, rowHeaderCount)}
-                                    {leafCols.map((colKey, i) => (
-                                        <td
-                                            key={i}
-                                            className="border border-gray-300 px-2 py-1 text-center text-sm"
-                                        >
-                                            {row[colKey] ?? ""}
-                                        </td>
-                                    ))}
-                                </tr>
-                            );
-                        })}
+                            {flatRows.map((row, rowIndex) => {
+                                const allDataNull = leafCols.every(
+                                    (k) => row[k] == null
+                                );
+                                if (
+                                    allDataNull &&
+                                    row.rowHeader.every((h) => h !== "")
+                                )
+                                    return null;
+                                return (
+                                    <tr key={rowIndex}>
+                                        {renderRowHeaderCells(
+                                            row,
+                                            rowIndex,
+                                            flatRows,
+                                            rowHeaderCount
+                                        )}
+                                        {leafCols.map((colKey, i) => (
+                                            <td
+                                                key={i}
+                                                className="border border-gray-300 px-2 py-1 text-center text-sm"
+                                            >
+                                                {row[colKey] ?? ""}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 );
