@@ -1,7 +1,7 @@
+use crate::discriminant::main::matrix::basics::vector_norm;
+use crate::discriminant::main::types::results::DiscriminantError;
 /// Statistical functions for discriminant analysis
 use std::f64::consts::PI;
-use crate::discriminant::main::types::results::DiscriminantError;
-use crate::discriminant::main::matrix::basics::vector_norm;
 
 /// Chi-square CDF (Cumulative Distribution Function)
 pub fn chi_square_cdf(x: f64, df: u32) -> f64 {
@@ -13,16 +13,16 @@ pub fn chi_square_cdf(x: f64, df: u32) -> f64 {
         1 => {
             // For df=1, use normal distribution
             2.0 * normal_cdf(x.sqrt(), 0.0, 1.0) - 1.0
-        },
+        }
         2 => {
             // For df=2, use exponential distribution
             1.0 - (-x / 2.0).exp()
-        },
+        }
         _ => {
             // For df > 2, use Wilson-Hilferty approximation
             let df_f64 = df as f64;
-            let z = ((x / df_f64).powf(1.0 / 3.0) - 1.0 + 2.0 / (9.0 * df_f64)) /
-                    (2.0 / (9.0 * df_f64)).sqrt();
+            let z = ((x / df_f64).powf(1.0 / 3.0) - 1.0 + 2.0 / (9.0 * df_f64))
+                / (2.0 / (9.0 * df_f64)).sqrt();
 
             normal_cdf(z, 0.0, 1.0)
         }
@@ -39,12 +39,12 @@ pub fn normal_cdf(x: f64, mean: f64, std_dev: f64) -> f64 {
 pub fn erf(x: f64) -> f64 {
     // Constants for Abramowitz and Stegun approximation (more accurate than
     // the previous implementation)
-    let a1 =  0.254829592;
+    let a1 = 0.254829592;
     let a2 = -0.284496736;
-    let a3 =  1.421413741;
+    let a3 = 1.421413741;
     let a4 = -1.453152027;
-    let a5 =  1.061405429;
-    let p  =  0.3275911;
+    let a5 = 1.061405429;
+    let p = 0.3275911;
 
     let sign = if x < 0.0 { -1.0 } else { 1.0 };
     let x = x.abs();
@@ -82,7 +82,7 @@ pub fn f_test_p_value(f: f64, df1: u32, df2: u32) -> f64 {
     let x = v2 / (v2 + v1 * f);
 
     // P-value = I_x(v2/2, v1/2) where I_x is regularized incomplete beta function
-    let p_value = regularized_incomplete_beta(x, v2/2.0, v1/2.0);
+    let p_value = regularized_incomplete_beta(x, v2 / 2.0, v1 / 2.0);
 
     p_value
 }
@@ -97,7 +97,7 @@ pub fn regularized_incomplete_beta(x: f64, a: f64, b: f64) -> f64 {
     }
 
     // For better numerical stability, use different methods depending on parameters
-    if x > (a + 1.0)/(a + b + 2.0) {
+    if x > (a + 1.0) / (a + b + 2.0) {
         // Use symmetry relation for better numerical accuracy
         return 1.0 - regularized_incomplete_beta(1.0 - x, b, a);
     }
@@ -109,7 +109,7 @@ pub fn regularized_incomplete_beta(x: f64, a: f64, b: f64) -> f64 {
     let cfrac = continued_fraction_beta(x, a, b);
 
     // Final formula
-    let factor = (a * x.ln() + b * (1.0-x).ln() - ln_beta).exp() / a;
+    let factor = (a * x.ln() + b * (1.0 - x).ln() - ln_beta).exp() / a;
     factor * cfrac
 }
 
@@ -129,7 +129,9 @@ fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
     // First term
     let mut c = 1.0;
     let mut d = 1.0 - qab * x / qap;
-    if d.abs() < small { d = small; }
+    if d.abs() < small {
+        d = small;
+    }
     d = 1.0 / d;
     let mut h = d;
 
@@ -141,18 +143,26 @@ fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
         let m_f = m as f64;
         let aa = m_f * (b - m_f) * x / ((qam + m2 as f64) * (a + m2 as f64));
         d = 1.0 + aa * d;
-        if d.abs() < small { d = small; }
+        if d.abs() < small {
+            d = small;
+        }
         c = 1.0 + aa / c;
-        if c.abs() < small { c = small; }
+        if c.abs() < small {
+            c = small;
+        }
         d = 1.0 / d;
         h *= d * c;
 
         // Odd term
         let aa = -(a + m_f) * (qab + m_f) * x / ((a + m2 as f64) * (qap + m2 as f64));
         d = 1.0 + aa * d;
-        if d.abs() < small { d = small; }
+        if d.abs() < small {
+            d = small;
+        }
         c = 1.0 + aa / c;
-        if c.abs() < small { c = small; }
+        if c.abs() < small {
+            c = small;
+        }
         d = 1.0 / d;
         let del = d * c;
         h *= del;
@@ -171,9 +181,15 @@ fn continued_fraction_beta(x: f64, a: f64, b: f64) -> f64 {
 pub fn ln_gamma(x: f64) -> f64 {
     // Constants for Lanczos approximation
     let p = [
-        676.5203681218851, -1259.1392167224028, 771.32342877765313,
-        -176.61502916214059, 12.507343278686905, -0.13857109526572012,
-        9.9843695780195716e-6, 1.5056327351493116e-7
+        0.99999999999980993,
+        676.5203681218851,
+        -1259.1392167224028,
+        771.32342877765313,
+        -176.61502916214059,
+        12.507343278686905,
+        -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7,
     ];
 
     let mut result;
@@ -210,9 +226,15 @@ pub fn gamma(x: f64) -> f64 {
     } else {
         // Lanczos approximation
         let p = [
-            676.5203681218851, -1259.1392167224028, 771.32342877765313,
-            -176.61502916214059, 12.507343278686905, -0.13857109526572012,
-            9.9843695780195716e-6, 1.5056327351493116e-7
+            0.99999999999980993,
+            676.5203681218851,
+            -1259.1392167224028,
+            771.32342877765313,
+            -176.61502916214059,
+            12.507343278686905,
+            -0.13857109526572012,
+            9.9843695780195716e-6,
+            1.5056327351493116e-7,
         ];
 
         let mut x = x - 1.0;
@@ -277,7 +299,9 @@ pub fn weighted_variance(x: &[f64], weights: &[f64]) -> Result<f64, Discriminant
 
     let sum_weights = weights.iter().sum::<f64>();
     if sum_weights <= 0.0 {
-        return Err(DiscriminantError::InvalidInput("Sum of weights must be positive".to_string()));
+        return Err(DiscriminantError::InvalidInput(
+            "Sum of weights must be positive".to_string(),
+        ));
     }
 
     // Calculate weighted mean
@@ -328,7 +352,7 @@ pub fn correlation(x: &[f64], y: &[f64]) -> Result<f64, DiscriminantError> {
 
     if var_x <= 0.0 || var_y <= 0.0 {
         return Err(DiscriminantError::ComputationError(
-            "Cannot compute correlation with zero variance".to_string()
+            "Cannot compute correlation with zero variance".to_string(),
         ));
     }
 

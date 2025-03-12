@@ -303,7 +303,7 @@ impl DiscriminantAnalysis {
             v_to_enter: 0.0
         };
         let stepwise_display = StepwiseDisplay {
-            pairwise_distances: false,  // Default: don't display pairwise distances
+            pairwise_distances: true,  // Default: don't display pairwise distances
             summary_steps: true,        // Default: display summary steps
         };
         let stepwise_method = StepwiseMethod::Wilks;  // Default method

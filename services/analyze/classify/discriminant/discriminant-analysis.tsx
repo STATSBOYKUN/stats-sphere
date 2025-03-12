@@ -53,6 +53,7 @@ export async function analyzeDiscriminant({
 
     da.compute_canonical_discriminant_functions();
     da.cross_validate();
+    da.perform_stepwise_analysis();
 
     const results = da.get_results();
     console.log(results);
@@ -160,25 +161,25 @@ export async function analyzeDiscriminant({
     /*
      * 🎉 Final Result Process 🎯
      * */
-    await resultDiscriminant({
-        addLog,
-        addAnalytic,
-        addStatistic,
-        caseProcessingSummary,
-        groupStatistics,
-        testsOfEquality,
-        pooledMatrices,
-        covarianceMatrices,
-        boxTestLogDeterminants,
-        boxTestResults,
-        eigenvaluesTable,
-        wilksLambdaTable,
-        stdCoefficientsTable,
-        structureMatrixTable,
-        groupCentroidsTable,
-        classificationResultsTable,
-        classificationSummaryTable,
-        priorProbabilitiesTable,
-        classificationFunctionCoefficientsTable,
-    });
+    // await resultDiscriminant({
+    //     addLog,
+    //     addAnalytic,
+    //     addStatistic,
+    //     caseProcessingSummary,
+    //     groupStatistics,
+    //     testsOfEquality,
+    //     pooledMatrices,
+    //     covarianceMatrices,
+    //     boxTestLogDeterminants,
+    //     boxTestResults,
+    //     eigenvaluesTable,
+    //     wilksLambdaTable,
+    //     stdCoefficientsTable,
+    //     structureMatrixTable,
+    //     groupCentroidsTable,
+    //     classificationResultsTable,
+    //     classificationSummaryTable,
+    //     priorProbabilitiesTable,
+    //     classificationFunctionCoefficientsTable,
+    // });
 }
