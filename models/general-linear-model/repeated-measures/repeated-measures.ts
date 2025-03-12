@@ -5,7 +5,7 @@ export type RepeatedMeasuresMainType = {
     SubVar: string | null;
     FactorsVar: string | null;
     Covariates: string | null;
-}
+};
 
 export type RepeatedMeasuresDialogProps = {
     isMainOpen: boolean;
@@ -17,9 +17,15 @@ export type RepeatedMeasuresDialogProps = {
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresMainType,
+        value: string | null
+    ) => void;
     data: RepeatedMeasuresMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: RepeatedMeasuresMainType) => void;
+    onReset: () => void;
+};
 
 export type RepeatedMeasuresModelType = {
     NonCust: boolean;
@@ -35,28 +41,34 @@ export type RepeatedMeasuresModelType = {
     BuildTermMethod: string | null;
     SumOfSquareMethod: string | null;
     TermText: string | null;
-}
+};
 
 export type RepeatedMeasuresModelProps = {
     isModelOpen: boolean;
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresModelType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresModelType,
+        value: string | boolean | null
+    ) => void;
     data: RepeatedMeasuresModelType;
-}
+};
 
 export type RepeatedMeasuresContrastType = {
     FactorList: string | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
-}
+};
 
 export type RepeatedMeasuresContrastProps = {
     isContrastOpen: boolean;
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresContrastType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresContrastType,
+        value: string | boolean | null
+    ) => void;
     data: RepeatedMeasuresContrastType;
-}
+};
 
 export type RepeatedMeasuresPlotsType = {
     SrcList: string | null;
@@ -73,14 +85,17 @@ export type RepeatedMeasuresPlotsType = {
     IncludeRefLineForGrandMean: boolean;
     YAxisStart0: boolean;
     Multiplier: number | null;
-}
+};
 
 export type RepeatedMeasuresPlotsProps = {
     isPlotsOpen: boolean;
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresPlotsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresPlotsType,
+        value: string | number | boolean | null
+    ) => void;
     data: RepeatedMeasuresPlotsType;
-}
+};
 
 export type RepeatedMeasuresPostHocType = {
     SrcList: string | null;
@@ -108,28 +123,34 @@ export type RepeatedMeasuresPostHocType = {
     Dunt: boolean;
     Games: boolean;
     Dunc: boolean;
-}
+};
 
 export type RepeatedMeasuresPostHocProps = {
     isPostHocOpen: boolean;
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresPostHocType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresPostHocType,
+        value: string | boolean | null
+    ) => void;
     data: RepeatedMeasuresPostHocType;
-}
+};
 
 export type RepeatedMeasuresEMMeansType = {
     SrcList: string | null;
     TargetList: string | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
-}
+};
 
 export type RepeatedMeasuresEMMeansProps = {
     isEMMeansOpen: boolean;
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresEMMeansType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresEMMeansType,
+        value: string | boolean | null
+    ) => void;
     data: RepeatedMeasuresEMMeansType;
-}
+};
 
 export type RepeatedMeasuresSaveType = {
     ResWeighted: boolean;
@@ -147,14 +168,17 @@ export type RepeatedMeasuresSaveType = {
     FilePath: string | null;
     DatasetName: string | null;
     WriteNewDataSet: boolean;
-}
+};
 
 export type RepeatedMeasuresSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresSaveType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresSaveType,
+        value: string | boolean | null
+    ) => void;
     data: RepeatedMeasuresSaveType;
-}
+};
 
 export type RepeatedMeasuresOptionsType = {
     DescStats: boolean;
@@ -171,14 +195,17 @@ export type RepeatedMeasuresOptionsType = {
     CoefficientMatrix: boolean;
     TransformMat: boolean;
     SigLevel: number | null;
-}
+};
 
 export type RepeatedMeasuresOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RepeatedMeasuresOptionsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof RepeatedMeasuresOptionsType,
+        value: number | boolean | null
+    ) => void;
     data: RepeatedMeasuresOptionsType;
-}
+};
 
 export type RepeatedMeasuresType = {
     main: RepeatedMeasuresMainType;
@@ -189,8 +216,8 @@ export type RepeatedMeasuresType = {
     emmeans: RepeatedMeasuresEMMeansType;
     save: RepeatedMeasuresSaveType;
     options: RepeatedMeasuresOptionsType;
-}
+};
 
 export type RepeatedMeasuresContainerProps = {
     onClose: () => void;
-}
+};

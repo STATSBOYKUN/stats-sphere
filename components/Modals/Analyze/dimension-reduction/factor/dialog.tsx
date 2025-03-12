@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,36 +6,49 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
-import {FactorDialogProps, FactorMainType} from "@/models/dimension-reduction/factor/factor";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
+import {
+    FactorDialogProps,
+    FactorMainType,
+} from "@/models/dimension-reduction/factor/factor";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const FactorDialog = ({
-                                 isMainOpen,
-                                 setIsMainOpen,
-                                 setIsValueOpen,
-                                 setIsDescriptivesOpen,
-                                 setIsExtractionOpen,
-                                 setIsRotationOpen,
-                                 setIsScoresOpen,
-                                 setIsOptionsOpen,
-                                 updateFormData,
-                                 data
-                             }: FactorDialogProps) => {
-    const [mainState, setMainState] = useState<FactorMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsValueOpen,
+    setIsDescriptivesOpen,
+    setIsExtractionOpen,
+    setIsRotationOpen,
+    setIsScoresOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: FactorDialogProps) => {
+    const [mainState, setMainState] = useState<FactorMainType>({ ...data });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof FactorMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof FactorMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -49,9 +62,10 @@ export const FactorDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -64,7 +78,7 @@ export const FactorDialog = ({
                     <DialogHeader>
                         <DialogTitle>Factor Analysis</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -73,42 +87,62 @@ export const FactorDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-4 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">Variables: </Label>
+                                        <Label className="font-bold">
+                                            Variables:{" "}
+                                        </Label>
                                         <Input
                                             id="TargetVar"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.TargetVar ?? ""}
-                                            onChange={(e) => handleChange("TargetVar", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "TargetVar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Selection Variable: </Label>
+                                            <Label className="font-bold">
+                                                Selection Variable:{" "}
+                                            </Label>
                                             <Input
                                                 id="ValueTarget"
                                                 type="text"
                                                 className="w-full"
                                                 placeholder=""
-                                                value={mainState.ValueTarget ?? ""}
-                                                onChange={(e) => handleChange("ValueTarget", e.target.value)}
+                                                value={
+                                                    mainState.ValueTarget ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "ValueTarget",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsValueOpen)}
+                                                onClick={openDialog(
+                                                    setIsValueOpen
+                                                )}
                                             >
                                                 Value...
                                             </Button>
@@ -124,7 +158,9 @@ export const FactorDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsDescriptivesOpen)}
+                                        onClick={openDialog(
+                                            setIsDescriptivesOpen
+                                        )}
                                     >
                                         Descriptives...
                                     </Button>
@@ -132,7 +168,9 @@ export const FactorDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsExtractionOpen)}
+                                        onClick={openDialog(
+                                            setIsExtractionOpen
+                                        )}
                                     >
                                         Extraction...
                                     </Button>
@@ -165,10 +203,7 @@ export const FactorDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

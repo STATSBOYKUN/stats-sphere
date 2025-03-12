@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,38 +6,50 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
 import {
     CorrespondenceDialogProps,
-    CorrespondenceMainType
+    CorrespondenceMainType,
 } from "@/models/dimension-reduction/correspondence-analysis/correspondence-analysis";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const CorrespondenceDialog = ({
-                                         isMainOpen,
-                                         setIsMainOpen,
-                                         setIsDefineRangeRowOpen,
-                                         setIsDefineRangeColumnOpen,
-                                         setIsModelOpen,
-                                         setIsStatisticsOpen,
-                                         setIsPlotsOpen,
-                                         updateFormData,
-                                         data
-                                     }: CorrespondenceDialogProps) => {
-    const [mainState, setMainState] = useState<CorrespondenceMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsDefineRangeRowOpen,
+    setIsDefineRangeColumnOpen,
+    setIsModelOpen,
+    setIsStatisticsOpen,
+    setIsPlotsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: CorrespondenceDialogProps) => {
+    const [mainState, setMainState] = useState<CorrespondenceMainType>({
+        ...data,
+    });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof CorrespondenceMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof CorrespondenceMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -51,9 +63,10 @@ export const CorrespondenceDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -66,7 +79,7 @@ export const CorrespondenceDialog = ({
                     <DialogHeader>
                         <DialogTitle>Coresspondence Analysis</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -75,31 +88,44 @@ export const CorrespondenceDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-4 p-2">
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Row: </Label>
+                                            <Label className="font-bold">
+                                                Row:{" "}
+                                            </Label>
                                             <Input
                                                 id="RowTargetVar"
                                                 type="text"
                                                 className="w-full"
                                                 placeholder=""
-                                                value={mainState.RowTargetVar ?? ""}
-                                                onChange={(e) => handleChange("RowTargetVar", e.target.value)}
+                                                value={
+                                                    mainState.RowTargetVar ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "RowTargetVar",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineRangeRowOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineRangeRowOpen
+                                                )}
                                             >
                                                 Define Range...
                                             </Button>
@@ -107,21 +133,32 @@ export const CorrespondenceDialog = ({
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Column: </Label>
+                                            <Label className="font-bold">
+                                                Column:{" "}
+                                            </Label>
                                             <Input
                                                 id="ColTargetVar"
                                                 type="text"
                                                 className="w-full"
                                                 placeholder=""
-                                                value={mainState.ColTargetVar ?? ""}
-                                                onChange={(e) => handleChange("ColTargetVar", e.target.value)}
+                                                value={
+                                                    mainState.ColTargetVar ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "ColTargetVar",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineRangeColumnOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineRangeColumnOpen
+                                                )}
                                             >
                                                 Define Range...
                                             </Button>
@@ -145,7 +182,9 @@ export const CorrespondenceDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsStatisticsOpen)}
+                                        onClick={openDialog(
+                                            setIsStatisticsOpen
+                                        )}
                                     >
                                         Statistics...
                                     </Button>
@@ -162,10 +201,7 @@ export const CorrespondenceDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

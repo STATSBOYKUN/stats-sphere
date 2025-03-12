@@ -6,7 +6,7 @@ export type DiscriminantMainType = {
     Together: boolean;
     Stepwise: boolean;
     SelectionVariable: string | null;
-}
+};
 
 export type DiscriminantDialogProps = {
     isMainOpen: boolean;
@@ -18,10 +18,13 @@ export type DiscriminantDialogProps = {
     setIsClassifyOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantMainType, value: string | string[] | boolean | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantMainType,
+        value: string | string[] | boolean | null
+    ) => void;
     data: DiscriminantMainType;
     globalVariables: string[];
-    onContinue: (mainState : DiscriminantMainType) => void;
+    onContinue: (mainState: DiscriminantMainType) => void;
     onReset: () => void;
 };
 
@@ -33,7 +36,10 @@ export type DiscriminantDefineRangeType = {
 export type DiscriminantDefineRangeProps = {
     isDefineRangeOpen: boolean;
     setIsDefineRangeOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantDefineRangeType, value: number | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantDefineRangeType,
+        value: number | null
+    ) => void;
     data: DiscriminantDefineRangeType;
 };
 
@@ -44,7 +50,10 @@ export type DiscriminantSetValueType = {
 export type DiscriminantSetValueProps = {
     isSetValueOpen: boolean;
     setIsSetValueOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantSetValueType, value: number | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantSetValueType,
+        value: number | null
+    ) => void;
     data: DiscriminantSetValueType;
 };
 
@@ -58,12 +67,15 @@ export type DiscriminantStatisticsType = {
     WGCovariance: boolean;
     SGCovariance: boolean;
     TotalCovariance: boolean;
-}
+};
 
 export type DiscriminantStatisticsProps = {
     isStatisticsOpen: boolean;
     setIsStatisticsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantStatisticsType, value: boolean) => void;
+    updateFormData: (
+        field: keyof DiscriminantStatisticsType,
+        value: boolean
+    ) => void;
     data: DiscriminantStatisticsType;
 };
 
@@ -82,12 +94,15 @@ export type DiscriminantMethodType = {
     FRemoval: number | null;
     PEntry: number | null;
     PRemoval: number | null;
-}
+};
 
 export type DiscriminantMethodProps = {
     isMethodOpen: boolean;
     setIsMethodOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantMethodType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantMethodType,
+        value: number | boolean | null
+    ) => void;
     data: DiscriminantMethodType;
 };
 
@@ -105,12 +120,15 @@ export type DiscriminantClassifyType = {
     SepGrp: boolean;
     Terr: boolean;
     Replace: boolean;
-}
+};
 
 export type DiscriminantClassifyProps = {
     isClassifyOpen: boolean;
     setIsClassifyOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantClassifyType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantClassifyType,
+        value: number | boolean | null
+    ) => void;
     data: DiscriminantClassifyType;
 };
 
@@ -119,12 +137,15 @@ export type DiscriminantSaveType = {
     Discriminant: boolean;
     Probabilities: boolean;
     XmlFile: string | null;
-}
+};
 
 export type DiscriminantSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantSaveType, value: boolean | string | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantSaveType,
+        value: boolean | string | null
+    ) => void;
     data: DiscriminantSaveType;
 };
 
@@ -140,12 +161,15 @@ export type DiscriminantBootstrapType = {
     Stratified: boolean;
     Variables: string | null;
     StrataVariables: string | null;
-}
+};
 
 export type DiscriminantBootstrapProps = {
     isBootstrapOpen: boolean;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof DiscriminantBootstrapType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof DiscriminantBootstrapType,
+        value: string | number | boolean | null
+    ) => void;
     data: DiscriminantBootstrapType;
 };
 
@@ -158,8 +182,8 @@ export type DiscriminantType = {
     classify: DiscriminantClassifyType;
     save: DiscriminantSaveType;
     bootstrap: DiscriminantBootstrapType;
-}
+};
 
 export type DiscriminantContainerProps = {
     onClose: () => void;
-}
+};

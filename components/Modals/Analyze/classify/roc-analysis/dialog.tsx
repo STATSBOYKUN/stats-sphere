@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,35 +6,50 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
-import {RocAnalysisDialogProps, RocAnalysisMainType} from "@/models/classify/roc-analysis/roc-analysis";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
+import {
+    RocAnalysisDialogProps,
+    RocAnalysisMainType,
+} from "@/models/classify/roc-analysis/roc-analysis";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const RocAnalysisDialog = ({
-                                      isMainOpen,
-                                      setIsMainOpen,
-                                      setIsOptionsOpen,
-                                      setIsDefineGroupsOpen,
-                                      setIsDisplayOpen,
-                                      updateFormData,
-                                      data
-                                  }: RocAnalysisDialogProps) => {
-    const [mainState, setMainState] = useState<RocAnalysisMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsOptionsOpen,
+    setIsDefineGroupsOpen,
+    setIsDisplayOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: RocAnalysisDialogProps) => {
+    const [mainState, setMainState] = useState<RocAnalysisMainType>({
+        ...data,
+    });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof RocAnalysisMainType, value: CheckedState | number | boolean | string | null) => {
+    const handleChange = (
+        field: keyof RocAnalysisMainType,
+        value: CheckedState | number | boolean | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -48,9 +63,10 @@ export const RocAnalysisDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -63,7 +79,7 @@ export const RocAnalysisDialog = ({
                     <DialogHeader>
                         <DialogTitle>ROC Analysis</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -72,51 +88,87 @@ export const RocAnalysisDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">Test Variable: </Label>
+                                        <Label className="font-bold">
+                                            Test Variable:{" "}
+                                        </Label>
                                         <Input
                                             id="TestTargetVariable"
                                             type="text"
                                             className="min-w-2xl w-full min-h-[150px]"
                                             placeholder=""
-                                            value={mainState.TestTargetVariable ?? ""}
-                                            onChange={(e) => handleChange("TestTargetVariable", e.target.value)}
+                                            value={
+                                                mainState.TestTargetVariable ??
+                                                ""
+                                            }
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "TestTargetVariable",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">State Variable: </Label>
+                                        <Label className="font-bold">
+                                            State Variable:{" "}
+                                        </Label>
                                         <Input
                                             id="StateTargetVariable"
                                             type="text"
                                             className="min-w-2xl w-full"
                                             placeholder=""
-                                            value={mainState.StateTargetVariable ?? ""}
-                                            onChange={(e) => handleChange("StateTargetVariable", e.target.value)}
+                                            value={
+                                                mainState.StateTargetVariable ??
+                                                ""
+                                            }
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "StateTargetVariable",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[300px]">Value of State Variable:</Label>
+                                            <Label className="w-[300px]">
+                                                Value of State Variable:
+                                            </Label>
                                             <Input
                                                 id="StateVarVal"
                                                 type="text"
-                                                value={mainState.StateVarVal ?? ""}
-                                                onChange={(e) => handleChange("StateVarVal", e.target.value)}
+                                                value={
+                                                    mainState.StateVarVal ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "StateVarVal",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="PairedSample"
                                                 checked={mainState.PairedSample}
-                                                onCheckedChange={(checked) => handleChange("PairedSample", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "PairedSample",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="PairedSample"
@@ -127,21 +179,32 @@ export const RocAnalysisDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Grouping Variable: </Label>
+                                        <Label className="font-bold">
+                                            Grouping Variable:{" "}
+                                        </Label>
                                         <Input
                                             id="TargetGroupVar"
                                             type="text"
                                             className="min-w-2xl w-full"
                                             placeholder=""
-                                            value={mainState.TargetGroupVar ?? ""}
-                                            onChange={(e) => handleChange("TargetGroupVar", e.target.value)}
+                                            value={
+                                                mainState.TargetGroupVar ?? ""
+                                            }
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "TargetGroupVar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div>
                                         <Button
                                             type="button"
                                             variant="secondary"
-                                            onClick={openDialog(setIsDefineGroupsOpen)}
+                                            onClick={openDialog(
+                                                setIsDefineGroupsOpen
+                                            )}
                                         >
                                             Define Groups...
                                         </Button>
@@ -173,10 +236,7 @@ export const RocAnalysisDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

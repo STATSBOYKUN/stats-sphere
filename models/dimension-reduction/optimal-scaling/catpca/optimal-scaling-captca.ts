@@ -6,7 +6,7 @@ export type OptScaCatpcaMainType = {
     SuppleVars: string | null;
     LabelingVars: string | null;
     Dimensions: number | null;
-}
+};
 
 export type OptScaCatpcaDialogProps = {
     isMainOpen: boolean;
@@ -22,9 +22,15 @@ export type OptScaCatpcaDialogProps = {
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsCategoryPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsLoadingPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaMainType, value: string | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaMainType,
+        value: string | number | null
+    ) => void;
     data: OptScaCatpcaMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: OptScaCatpcaMainType) => void;
+    onReset: () => void;
+};
 
 export type OptScaCatpcaDefineRangeScaleType = {
     Weight: number | null;
@@ -36,14 +42,17 @@ export type OptScaCatpcaDefineRangeScaleType = {
     Numeric: boolean;
     Degree: number | null;
     InteriorKnots: number | null;
-}
+};
 
 export type OptScaCatpcaDefineRangeScaleProps = {
     isDefineRangeScaleOpen: boolean;
     setIsDefineRangeScaleOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaDefineRangeScaleType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaDefineRangeScaleType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaCatpcaDefineRangeScaleType;
-}
+};
 
 export type OptScaCatpcaDefineScaleType = {
     SplineOrdinal: boolean;
@@ -54,14 +63,17 @@ export type OptScaCatpcaDefineScaleType = {
     Numeric: boolean;
     Degree: number | null;
     InteriorKnots: number | null;
-}
+};
 
 export type OptScaCatpcaDefineScaleProps = {
     isDefineScaleOpen: boolean;
     setIsDefineScaleOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaDefineScaleType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaDefineScaleType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaCatpcaDefineScaleType;
-}
+};
 
 export type OptScaCatpcaDiscretizeType = {
     VariablesList: string | null;
@@ -72,14 +84,17 @@ export type OptScaCatpcaDiscretizeType = {
     DistributionUniform: boolean;
     EqualIntervals: boolean;
     EqualIntervalsValue: number | null;
-}
+};
 
 export type OptScaCatpcaDiscretizeProps = {
     isDiscretizeOpen: boolean;
     setIsDiscretizeOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaDiscretizeType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaDiscretizeType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaCatpcaDiscretizeType;
-}
+};
 
 export type OptScaCatpcaMissingType = {
     CurrentTargetList: string | null;
@@ -94,14 +109,17 @@ export type OptScaCatpcaMissingType = {
     ImputeExtraCat: boolean;
     ImputeRandomCat: boolean;
     ExcludeObjects: boolean;
-}
+};
 
 export type OptScaCatpcaMissingProps = {
     isMissingOpen: boolean;
     setIsMissingOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaMissingType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaMissingType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaCatpcaMissingType;
-}
+};
 
 export type OptScaCatpcaOptionsType = {
     RangeOfCases: boolean;
@@ -131,14 +149,17 @@ export type OptScaCatpcaOptionsType = {
     Promax: boolean;
     Kappa: number | null;
     Kaiser: boolean;
-}
+};
 
 export type OptScaCatpcaOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaOptionsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaOptionsType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaCatpcaOptionsType;
-}
+};
 
 export type OptScaCatpcaOutputType = {
     ObjectScores: boolean;
@@ -154,14 +175,17 @@ export type OptScaCatpcaOutputType = {
     DescStats: string | null;
     ObjScoresIncludeCat: string | null;
     ObjScoresLabelBy: string | null;
-}
+};
 
 export type OptScaCatpcaOutputProps = {
     isOutputOpen: boolean;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaOutputType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaOutputType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaCatpcaOutputType;
-}
+};
 
 export type OptScaCatpcaSaveType = {
     Discretized: boolean;
@@ -198,14 +222,17 @@ export type OptScaCatpcaSaveType = {
     All: boolean;
     First: boolean;
     MultiNomDim: number | null;
-}
+};
 
 export type OptScaCatpcaSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaSaveType, value: string | boolean | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaSaveType,
+        value: string | boolean | number | null
+    ) => void;
     data: OptScaCatpcaSaveType;
-}
+};
 
 export type OptScaCatpcaBootstrapType = {
     PerformBT: boolean;
@@ -225,14 +252,17 @@ export type OptScaCatpcaBootstrapType = {
     ValueObject: number | null;
     ValueCategory: number | null;
     NumberPoints: number | null;
-}
+};
 
 export type OptScaCatpcaBootstrapProps = {
     isBootstrapOpen: boolean;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaBootstrapType, value: string | boolean | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaBootstrapType,
+        value: string | boolean | number | null
+    ) => void;
     data: OptScaCatpcaBootstrapType;
-}
+};
 
 export type OptScaCatpcaObjectPlotsType = {
     ObjectPoints: boolean;
@@ -248,14 +278,17 @@ export type OptScaCatpcaObjectPlotsType = {
     LabelObjLabelByVar: boolean;
     LabelObjAvailableVars: string | null;
     LabelObjSelectedVars: string | null;
-}
+};
 
 export type OptScaCatpcaObjectPlotsProps = {
     isObjectPlotsOpen: boolean;
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaObjectPlotsType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaObjectPlotsType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaCatpcaObjectPlotsType;
-}
+};
 
 export type OptScaCatpcaCategoryPlotsType = {
     SourceVar: string | null;
@@ -266,14 +299,17 @@ export type OptScaCatpcaCategoryPlotsType = {
     InclResidPlots: boolean;
     PrjCentroidsOfVar: string | null;
     PrjCentroidsOntoVar: string | null;
-}
+};
 
 export type OptScaCatpcaCategoryPlotsProps = {
     isCategoryPlotsOpen: boolean;
     setIsCategoryPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaCategoryPlotsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaCategoryPlotsType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaCatpcaCategoryPlotsType;
-}
+};
 
 export type OptScaCatpcaLoadingPlotsType = {
     Variance: boolean;
@@ -287,14 +323,17 @@ export type OptScaCatpcaLoadingPlotsType = {
     IncludeCentroidsIncludeSelectedVars: boolean;
     IncludeCentroidsAvailableVars: string | null;
     IncludeCentroidsSelectedVars: string | null;
-}
+};
 
 export type OptScaCatpcaLoadingPlotsProps = {
     isLoadingPlotsOpen: boolean;
     setIsLoadingPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaCatpcaLoadingPlotsType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaCatpcaLoadingPlotsType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaCatpcaLoadingPlotsType;
-}
+};
 
 export type OptScaCatpcaType = {
     main: OptScaCatpcaMainType;
@@ -309,4 +348,8 @@ export type OptScaCatpcaType = {
     objectPlots: OptScaCatpcaObjectPlotsType;
     categoryPlots: OptScaCatpcaCategoryPlotsType;
     loadingPlots: OptScaCatpcaLoadingPlotsType;
-}
+};
+
+export type OptScaCatpcaContainerProps = {
+    onClose: () => void;
+};

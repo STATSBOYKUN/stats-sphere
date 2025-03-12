@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,40 +6,52 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
 import {
     RepeatedMeasuresDialogProps,
-    RepeatedMeasuresMainType
+    RepeatedMeasuresMainType,
 } from "@/models/general-linear-model/repeated-measures/repeated-measures";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const RepeatedMeasuresDialog = ({
-                                       isMainOpen,
-                                       setIsMainOpen,
-                                       setIsModelOpen,
-                                       setIsContrastOpen,
-                                       setIsPlotsOpen,
-                                       setIsPostHocOpen,
-                                       setIsEMMeansOpen,
-                                       setIsSaveOpen,
-                                       setIsOptionsOpen,
-                                       updateFormData,
-                                       data
-                                   }: RepeatedMeasuresDialogProps) => {
-    const [mainState, setMainState] = useState<RepeatedMeasuresMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsModelOpen,
+    setIsContrastOpen,
+    setIsPlotsOpen,
+    setIsPostHocOpen,
+    setIsEMMeansOpen,
+    setIsSaveOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: RepeatedMeasuresDialogProps) => {
+    const [mainState, setMainState] = useState<RepeatedMeasuresMainType>({
+        ...data,
+    });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof RepeatedMeasuresMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof RepeatedMeasuresMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -53,9 +65,10 @@ export const RepeatedMeasuresDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -68,7 +81,7 @@ export const RepeatedMeasuresDialog = ({
                     <DialogHeader>
                         <DialogTitle>Repeated Measures</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -77,45 +90,68 @@ export const RepeatedMeasuresDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">Within-Subjects Variables: </Label>
+                                        <Label className="font-bold">
+                                            Within-Subjects Variables:{" "}
+                                        </Label>
                                         <Input
                                             id="SubVar"
                                             type="text"
                                             className="w-full min-h-[165px]"
                                             placeholder=""
                                             value={mainState.SubVar ?? ""}
-                                            onChange={(e) => handleChange("SubVar", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "SubVar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Between-Subjects Factor(s): </Label>
+                                        <Label className="font-bold">
+                                            Between-Subjects Factor(s):{" "}
+                                        </Label>
                                         <Input
                                             id="FactorsVar"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.FactorsVar ?? ""}
-                                            onChange={(e) => handleChange("FactorsVar", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "FactorsVar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Covariates: </Label>
+                                        <Label className="font-bold">
+                                            Covariates:{" "}
+                                        </Label>
                                         <Input
                                             id="Covariates"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.Covariates ?? ""}
-                                            onChange={(e) => handleChange("Covariates", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "Covariates",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -185,10 +221,7 @@ export const RepeatedMeasuresDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

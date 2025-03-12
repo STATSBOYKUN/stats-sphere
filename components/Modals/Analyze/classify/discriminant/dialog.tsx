@@ -1,38 +1,54 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Separator} from "@/components/ui/separator";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {DiscriminantDialogProps, DiscriminantMainType} from "@/models/classify/discriminant/discriminant";
-import {Badge} from "@/components/ui/badge";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {useModal} from "@/hooks/useModal";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+    DiscriminantDialogProps,
+    DiscriminantMainType,
+} from "@/models/classify/discriminant/discriminant";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const DiscriminantDialog = ({
-                                       isMainOpen,
-                                       setIsMainOpen,
-                                       setIsDefineRangeOpen,
-                                       setIsSetValueOpen,
-                                       setIsStatisticsOpen,
-                                       setIsMethodOpen,
-                                       setIsClassifyOpen,
-                                       setIsSaveOpen,
-                                       setIsBootstrapOpen,
-                                       updateFormData,
-                                       data,
-                                       globalVariables,
-                                       onContinue,
-                                       onReset,
-                                   }: DiscriminantDialogProps) => {
-    const [mainState, setMainState] = useState<DiscriminantMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsDefineRangeOpen,
+    setIsSetValueOpen,
+    setIsStatisticsOpen,
+    setIsMethodOpen,
+    setIsClassifyOpen,
+    setIsSaveOpen,
+    setIsBootstrapOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: DiscriminantDialogProps) => {
+    const [mainState, setMainState] = useState<DiscriminantMainType>({
+        ...data,
+    });
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
-    const {closeModal} = useModal();
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        setMainState({...data});
+        setMainState({ ...data });
         setAvailableVariables(globalVariables);
     }, [data, globalVariables]);
 
@@ -51,7 +67,7 @@ export const DiscriminantDialog = ({
 
     const handleDrop = (target: string, variable: string) => {
         setMainState((prev) => {
-            const updatedState = {...prev};
+            const updatedState = { ...prev };
             if (target === "GroupingVariable") {
                 updatedState.GroupingVariable = variable;
             } else if (target === "IndependentVariables") {
@@ -68,7 +84,7 @@ export const DiscriminantDialog = ({
 
     const handleRemoveVariable = (target: string, variable?: string) => {
         setMainState((prev) => {
-            const updatedState = {...prev};
+            const updatedState = { ...prev };
             if (target === "GroupingVariable") {
                 updatedState.GroupingVariable = "";
             } else if (target === "IndependentVariables") {
@@ -100,14 +116,15 @@ export const DiscriminantDialog = ({
         onContinue(mainState);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     const handleDialog = () => {
         setIsMainOpen(false);
         closeModal();
-    }
+    };
 
     return (
         <>
@@ -120,7 +137,7 @@ export const DiscriminantDialog = ({
                     <DialogHeader>
                         <DialogTitle>Discriminant Analysis</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -130,56 +147,93 @@ export const DiscriminantDialog = ({
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
                                     <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
-                                        {availableVariables.map((variable: string, index: number) => (
-                                            <Badge
-                                                key={index}
-                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                variant="outline"
-                                                draggable
-                                                onDragStart={(e) => e.dataTransfer.setData("text", variable)}
-                                            >
-                                                {variable}
-                                            </Badge>
-                                        ))}
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
                                     </div>
                                 </ScrollArea>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-6 p-2">
                                     <div className="flex flex-col w-full gap-2">
                                         <div
-                                            onDragOver={(e) => e.preventDefault()}
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
+                                            }
                                             onDrop={(e) => {
-                                                handleDrop("GroupingVariable", e.dataTransfer.getData("text"));
+                                                handleDrop(
+                                                    "GroupingVariable",
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    )
+                                                );
                                             }}
                                         >
-                                            <Label className="font-bold">Grouping Variable:</Label>
+                                            <Label className="font-bold">
+                                                Grouping Variable:
+                                            </Label>
                                             <div className="flex items-center space-x-2">
                                                 <div
                                                     className="w-full min-h-[40px] p-2 border rounded"
                                                     onDrop={(e) => {
-                                                        handleDrop("GroupingVariable", e.dataTransfer.getData("text"));
+                                                        handleDrop(
+                                                            "GroupingVariable",
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            )
+                                                        );
                                                     }}
-                                                    onDragOver={(e) => e.preventDefault()}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
                                                 >
                                                     {mainState.GroupingVariable ? (
                                                         <Badge
                                                             className="text-start text-sm font-light p-2 cursor-pointer"
                                                             variant="outline"
-                                                            onClick={() => handleRemoveVariable("GroupingVariable")}
+                                                            onClick={() =>
+                                                                handleRemoveVariable(
+                                                                    "GroupingVariable"
+                                                                )
+                                                            }
                                                         >
-                                                            {mainState.GroupingVariable}
+                                                            {
+                                                                mainState.GroupingVariable
+                                                            }
                                                         </Badge>
                                                     ) : (
-                                                        <span className="text-sm font-light text-gray-500">Drop variables here.</span>
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
                                                     )}
                                                 </div>
                                                 <input
                                                     type="hidden"
-                                                    value={mainState.GroupingVariable ?? ""}
+                                                    value={
+                                                        mainState.GroupingVariable ??
+                                                        ""
+                                                    }
                                                     name="GroupingVariable"
                                                 />
                                             </div>
@@ -188,7 +242,9 @@ export const DiscriminantDialog = ({
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineRangeOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineRangeOpen
+                                                )}
                                             >
                                                 Define Range...
                                             </Button>
@@ -196,91 +252,164 @@ export const DiscriminantDialog = ({
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
                                         <div
-                                            onDragOver={(e) => e.preventDefault()}
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
+                                            }
                                             onDrop={(e) => {
-                                                const variable = e.dataTransfer.getData("text");
-                                                handleDrop("IndependentVariables", variable);
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "IndependentVariables",
+                                                    variable
+                                                );
                                             }}
                                         >
-                                            <Label className="font-bold">Independents:</Label>
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
                                                     <div className="w-full h-[100px]">
-                                                        {mainState.IndependentVariables && mainState.IndependentVariables.length > 0 ? (
+                                                        {mainState.IndependentVariables &&
+                                                        mainState
+                                                            .IndependentVariables
+                                                            .length > 0 ? (
                                                             <div className="flex flex-wrap gap-1">
-                                                                {mainState.IndependentVariables.map((variable, index) => (
-                                                                    <Badge
-                                                                        key={index}
-                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                        variant="outline"
-                                                                        onClick={() => handleRemoveVariable("IndependentVariables", variable)}
-                                                                    >
-                                                                        {variable}
-                                                                    </Badge>
-                                                                ))}
+                                                                {mainState.IndependentVariables.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "IndependentVariables",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
                                                             </div>
                                                         ) : (
-                                                            <span className="text-sm font-light text-gray-500">Drop variables here.</span>
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
                                                         )}
                                                     </div>
                                                 </ScrollArea>
                                             </div>
                                             <input
                                                 type="hidden"
-                                                value={mainState.IndependentVariables ?? ""}
+                                                value={
+                                                    mainState.IndependentVariables ??
+                                                    ""
+                                                }
                                                 name="Independents"
                                             />
                                         </div>
                                         <div>
                                             <RadioGroup
                                                 defaultValue="Together"
-                                                value={mainState.Together ? "Together" : mainState.Stepwise ? "Stepwise" : "Together"}
+                                                value={
+                                                    mainState.Together
+                                                        ? "Together"
+                                                        : mainState.Stepwise
+                                                        ? "Stepwise"
+                                                        : "Together"
+                                                }
                                                 onValueChange={handleMethodGrp}
                                             >
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Together" id="Together"/>
+                                                    <RadioGroupItem
+                                                        value="Together"
+                                                        id="Together"
+                                                    />
                                                     <Label htmlFor="Together">
-                                                        Enter independents together
+                                                        Enter independents
+                                                        together
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Stepwise" id="Stepwise"/>
-                                                    <Label htmlFor="Stepwise">Use stepwise method</Label>
+                                                    <RadioGroupItem
+                                                        value="Stepwise"
+                                                        id="Stepwise"
+                                                    />
+                                                    <Label htmlFor="Stepwise">
+                                                        Use stepwise method
+                                                    </Label>
                                                 </div>
                                             </RadioGroup>
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
-                                        <Label className="font-bold">Selection Variable:</Label>
+                                        <Label className="font-bold">
+                                            Selection Variable:
+                                        </Label>
                                         <div className="flex w-full items-center space-x-2">
                                             <div className="flex w-full items-center space-x-2">
                                                 <div
                                                     className="w-full min-h-[40px] p-2 border rounded"
                                                     onDrop={(e) => {
-                                                        handleDrop("SelectionVariable", e.dataTransfer.getData("text"));
+                                                        handleDrop(
+                                                            "SelectionVariable",
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            )
+                                                        );
                                                     }}
-                                                    onDragOver={(e) => e.preventDefault()}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
                                                 >
                                                     {mainState.SelectionVariable ? (
                                                         <Badge
                                                             className="text-start text-sm font-light p-2 cursor-pointer"
                                                             variant="outline"
-                                                            onClick={() => handleRemoveVariable("SelectionVariable")}
+                                                            onClick={() =>
+                                                                handleRemoveVariable(
+                                                                    "SelectionVariable"
+                                                                )
+                                                            }
                                                         >
-                                                            {mainState.SelectionVariable}
+                                                            {
+                                                                mainState.SelectionVariable
+                                                            }
                                                         </Badge>
                                                     ) : (
-                                                        <span className="text-sm font-light text-gray-500">Drop variables here.</span>
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
                                                     )}
                                                 </div>
                                                 <input
                                                     type="hidden"
-                                                    value={mainState.SelectionVariable ?? ""}
+                                                    value={
+                                                        mainState.SelectionVariable ??
+                                                        ""
+                                                    }
                                                     name="GroupingVariable"
                                                 />
                                             </div>
-                                            <Button type="button" variant="secondary"
-                                                    onClick={openDialog(setIsSetValueOpen)}>
+                                            <Button
+                                                type="button"
+                                                variant="secondary"
+                                                onClick={openDialog(
+                                                    setIsSetValueOpen
+                                                )}
+                                            >
                                                 Value...
                                             </Button>
                                         </div>
@@ -295,7 +424,9 @@ export const DiscriminantDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsStatisticsOpen)}
+                                        onClick={openDialog(
+                                            setIsStatisticsOpen
+                                        )}
                                     >
                                         Statistics...
                                     </Button>
@@ -338,10 +469,7 @@ export const DiscriminantDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,38 +6,51 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
-import {UnivariateDialogProps, UnivariateMainType} from "@/models/general-linear-model/univariate/univariate";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
+import {
+    UnivariateDialogProps,
+    UnivariateMainType,
+} from "@/models/general-linear-model/univariate/univariate";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const UnivariateDialog = ({
-                                       isMainOpen,
-                                       setIsMainOpen,
-                                       setIsModelOpen,
-                                       setIsContrastOpen,
-                                       setIsPlotsOpen,
-                                       setIsPostHocOpen,
-                                       setIsEMMeansOpen,
-                                       setIsSaveOpen,
-                                       setIsOptionsOpen,
-                                       setIsBootstrapOpen,
-                                       updateFormData,
-                                       data
-                                   }: UnivariateDialogProps) => {
-    const [mainState, setMainState] = useState<UnivariateMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsModelOpen,
+    setIsContrastOpen,
+    setIsPlotsOpen,
+    setIsPostHocOpen,
+    setIsEMMeansOpen,
+    setIsSaveOpen,
+    setIsOptionsOpen,
+    setIsBootstrapOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: UnivariateDialogProps) => {
+    const [mainState, setMainState] = useState<UnivariateMainType>({ ...data });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof UnivariateMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof UnivariateMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -51,9 +64,10 @@ export const UnivariateDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -66,7 +80,7 @@ export const UnivariateDialog = ({
                     <DialogHeader>
                         <DialogTitle>Univariate</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -75,67 +89,104 @@ export const UnivariateDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">Dependent Variables: </Label>
+                                        <Label className="font-bold">
+                                            Dependent Variables:{" "}
+                                        </Label>
                                         <Input
                                             id="DepVar"
                                             type="text"
                                             className="w-full"
                                             placeholder=""
                                             value={mainState.DepVar ?? ""}
-                                            onChange={(e) => handleChange("DepVar", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "DepVar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Fixed Factor(s): </Label>
+                                        <Label className="font-bold">
+                                            Fixed Factor(s):{" "}
+                                        </Label>
                                         <Input
                                             id="FixFactor"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.FixFactor ?? ""}
-                                            onChange={(e) => handleChange("FixFactor", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "FixFactor",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Random Factor(s): </Label>
+                                        <Label className="font-bold">
+                                            Random Factor(s):{" "}
+                                        </Label>
                                         <Input
                                             id="RandFactor"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.RandFactor ?? ""}
-                                            onChange={(e) => handleChange("RandFactor", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "RandFactor",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">Covariate(s): </Label>
+                                        <Label className="font-bold">
+                                            Covariate(s):{" "}
+                                        </Label>
                                         <Input
                                             id="Covar"
                                             type="text"
                                             className="w-full min-h-[65px]"
                                             placeholder=""
                                             value={mainState.Covar ?? ""}
-                                            onChange={(e) => handleChange("Covar", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "Covar",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">WLS Weight: </Label>
+                                        <Label className="font-bold">
+                                            WLS Weight:{" "}
+                                        </Label>
                                         <Input
                                             id="WlsWeight"
                                             type="text"
                                             className="w-full"
                                             placeholder=""
                                             value={mainState.WlsWeight ?? ""}
-                                            onChange={(e) => handleChange("WlsWeight", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "WlsWeight",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -213,10 +264,7 @@ export const UnivariateDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

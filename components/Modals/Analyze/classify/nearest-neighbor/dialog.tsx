@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,38 +6,51 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
-import {KNNDialogProps, KNNMainType} from "@/models/classify/nearest-neighbor/nearest-neighbor";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
+import {
+    KNNDialogProps,
+    KNNMainType,
+} from "@/models/classify/nearest-neighbor/nearest-neighbor";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 export const KNNDialog = ({
-                              isMainOpen,
-                              setIsMainOpen,
-                              setIsNeighborsOpen,
-                              setIsFeaturesOpen,
-                              setIsPartitionOpen,
-                              setIsSaveOpen,
-                              setIsOutputOpen,
-                              setIsOptionsOpen,
-                              updateFormData,
-                              data
-                          }: KNNDialogProps) => {
-    const [mainState, setMainState] = useState<KNNMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsNeighborsOpen,
+    setIsFeaturesOpen,
+    setIsPartitionOpen,
+    setIsSaveOpen,
+    setIsOutputOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: KNNDialogProps) => {
+    const [mainState, setMainState] = useState<KNNMainType>({ ...data });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof KNNMainType, value: CheckedState | number | boolean | string | null) => {
+    const handleChange = (
+        field: keyof KNNMainType,
+        value: CheckedState | number | boolean | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -51,9 +64,10 @@ export const KNNDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -66,7 +80,7 @@ export const KNNDialog = ({
                     <DialogHeader>
                         <DialogTitle>Nearest Neighbor Analysis</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -75,16 +89,20 @@ export const KNNDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-3 p-2">
                                     <div className="flex flex-col w-full gap-1">
-                                        <Label className="font-bold">Target (Optional):</Label>
+                                        <Label className="font-bold">
+                                            Target (Optional):
+                                        </Label>
                                         <Input
                                             id="DepVar"
                                             type="text"
@@ -93,7 +111,9 @@ export const KNNDialog = ({
                                         />
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
-                                        <Label className="font-bold">Features:</Label>
+                                        <Label className="font-bold">
+                                            Features:
+                                        </Label>
                                         <Input
                                             id="FeatureVar"
                                             type="text"
@@ -104,7 +124,12 @@ export const KNNDialog = ({
                                             <Checkbox
                                                 id="NormCovar"
                                                 checked={mainState.NormCovar}
-                                                onCheckedChange={(checked) => handleChange("NormCovar", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "NormCovar",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="NormCovar"
@@ -115,7 +140,9 @@ export const KNNDialog = ({
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
-                                        <Label className="font-bold">Focal Case Identifier (Optional):</Label>
+                                        <Label className="font-bold">
+                                            Focal Case Identifier (Optional):
+                                        </Label>
                                         <Input
                                             id="FocalCaseIdenVar"
                                             type="text"
@@ -124,7 +151,9 @@ export const KNNDialog = ({
                                         />
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
-                                        <Label className="font-bold">Case Label (Optional):</Label>
+                                        <Label className="font-bold">
+                                            Case Label (Optional):
+                                        </Label>
                                         <Input
                                             id="CaseIdenVar"
                                             type="text"
@@ -191,10 +220,7 @@ export const KNNDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

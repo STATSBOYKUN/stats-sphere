@@ -7,7 +7,7 @@ export type KNNMainType = {
     CaseIdenVar: string | null;
     FocalCaseIdenVar: string | null;
     NormCovar: boolean;
-}
+};
 
 export type KNNDialogProps = {
     isMainOpen: boolean;
@@ -18,8 +18,14 @@ export type KNNDialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNMainType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNMainType,
+        value: string | boolean | null
+    ) => void;
     data: KNNMainType;
+    globalVariables: string[];
+    onContinue: (mainState: KNNMainType) => void;
+    onReset: () => void;
 };
 
 export type KNNNeighborsType = {
@@ -33,12 +39,15 @@ export type KNNNeighborsType = {
     Weight: boolean;
     PredictionsMean: boolean;
     PredictionsMedian: boolean;
-}
+};
 
 export type KNNNeighborsProps = {
     isNeighborsOpen: boolean;
     setIsNeighborsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNNeighborsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNNeighborsType,
+        value: number | boolean | null
+    ) => void;
     data: KNNNeighborsType;
 };
 
@@ -52,14 +61,17 @@ export type KNNFeaturesType = {
     BelowMin: boolean;
     MaxToSelect: number | null;
     MinChange: number | null;
-}
+};
 
 export type KNNFeaturesProps = {
     isFeaturesOpen: boolean;
     setIsFeaturesOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNFeaturesType, value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNFeaturesType,
+        value: number | string | boolean | null
+    ) => void;
     data: KNNFeaturesType;
-}
+};
 
 export type KNNPartitionType = {
     SrcVar: string | null;
@@ -73,14 +85,17 @@ export type KNNPartitionType = {
     TrainingNumber: number | null;
     SetSeed: boolean;
     Seed: number | null;
-}
+};
 
 export type KNNPartitionProps = {
     isPartitionOpen: boolean;
     setIsPartitionOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNPartitionType, value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNPartitionType,
+        value: number | string | boolean | null
+    ) => void;
     data: KNNPartitionType;
-}
+};
 
 export type KNNSaveType = {
     AutoName: boolean;
@@ -90,14 +105,17 @@ export type KNNSaveType = {
     IsCateTargetVar: boolean;
     RandomAssignToPartition: boolean;
     RandomAssignToFold: boolean;
-}
+};
 
 export type KNNSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNSaveType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNSaveType,
+        value: number | boolean | null
+    ) => void;
     data: KNNSaveType;
-}
+};
 
 export type KNNOutputType = {
     CaseSummary: boolean;
@@ -109,26 +127,32 @@ export type KNNOutputType = {
     WriteDataFile: boolean;
     NewDataFilePath: string | null;
     DatasetName: string | null;
-}
+};
 
 export type KNNOutputProps = {
     isOutputOpen: boolean;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNOutputType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNOutputType,
+        value: string | boolean | null
+    ) => void;
     data: KNNOutputType;
-}
+};
 
 export type KNNOptionsType = {
     Exclude: boolean;
     Include: boolean;
-}
+};
 
 export type KNNOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof KNNOptionsType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof KNNOptionsType,
+        value: string | boolean | null
+    ) => void;
     data: KNNOptionsType;
-}
+};
 
 export type KNNType = {
     main: KNNMainType;
@@ -138,8 +162,8 @@ export type KNNType = {
     save: KNNSaveType;
     output: KNNOutputType;
     options: KNNOptionsType;
-}
+};
 
 export type KNNContainerProps = {
     onClose: () => void;
-}
+};

@@ -4,7 +4,7 @@ export type CorrespondenceMainType = {
     SrcVar: string | null;
     RowTargetVar: string | null;
     ColTargetVar: string | null;
-}
+};
 
 export type CorrespondenceDialogProps = {
     isMainOpen: boolean;
@@ -14,9 +14,15 @@ export type CorrespondenceDialogProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsStatisticsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondenceMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof CorrespondenceMainType,
+        value: string | null
+    ) => void;
     data: CorrespondenceMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: CorrespondenceMainType) => void;
+    onReset: () => void;
+};
 
 export type CorrespondenceDefineRangeRowType = {
     MinValue: number | null;
@@ -26,14 +32,17 @@ export type CorrespondenceDefineRangeRowType = {
     CategoryEqual: boolean;
     CategorySupplemental: boolean;
     DefaultListModel: string | null;
-}
+};
 
 export type CorrespondenceDefineRangeRowProps = {
     isDefineRangeRowOpen: boolean;
     setIsDefineRangeRowOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondenceDefineRangeRowType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof CorrespondenceDefineRangeRowType,
+        value: string | number | boolean | null
+    ) => void;
     data: CorrespondenceDefineRangeRowType;
-}
+};
 
 export type CorrespondenceDefineRangeColumnType = {
     MinValue: number | null;
@@ -43,14 +52,17 @@ export type CorrespondenceDefineRangeColumnType = {
     CategoryEqual: boolean;
     CategorySupplemental: boolean;
     DefaultListModel: string | null;
-}
+};
 
 export type CorrespondenceDefineRangeColumnProps = {
     isDefineRangeColumnOpen: boolean;
     setIsDefineRangeColumnOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondenceDefineRangeColumnType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof CorrespondenceDefineRangeColumnType,
+        value: string | number | boolean | null
+    ) => void;
     data: CorrespondenceDefineRangeColumnType;
-}
+};
 
 export type CorrespondenceModelType = {
     ChiSquare: boolean;
@@ -67,14 +79,17 @@ export type CorrespondenceModelType = {
     ColPrincipal: boolean;
     Dimensions: number | null;
     CustomDimensions: number | null;
-}
+};
 
 export type CorrespondenceModelProps = {
     isModelOpen: boolean;
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondenceModelType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof CorrespondenceModelType,
+        value: string | number | boolean | null
+    ) => void;
     data: CorrespondenceModelType;
-}
+};
 
 export type CorrespondenceStatisticsType = {
     CorrTable: boolean;
@@ -86,14 +101,17 @@ export type CorrespondenceStatisticsType = {
     ColProfile: boolean;
     RowPoints: boolean;
     ColPoints: boolean;
-}
+};
 
 export type CorrespondenceStatisticsProps = {
     isStatisticsOpen: boolean;
     setIsStatisticsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondenceStatisticsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof CorrespondenceStatisticsType,
+        value: number | boolean | null
+    ) => void;
     data: CorrespondenceStatisticsType;
-}
+};
 
 export type CorrespondencePlotsType = {
     Biplot: boolean;
@@ -107,14 +125,17 @@ export type CorrespondencePlotsType = {
     RestrictDim: boolean;
     Lowest: number | null;
     Highest: number | null;
-}
+};
 
 export type CorrespondencePlotsProps = {
     isPlotsOpen: boolean;
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof CorrespondencePlotsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof CorrespondencePlotsType,
+        value: number | boolean | null
+    ) => void;
     data: CorrespondencePlotsType;
-}
+};
 
 export type CorrespondenceType = {
     main: CorrespondenceMainType;
@@ -123,8 +144,8 @@ export type CorrespondenceType = {
     model: CorrespondenceModelType;
     statistics: CorrespondenceStatisticsType;
     plots: CorrespondencePlotsType;
-}
+};
 
 export type CorrespondenceContainerProps = {
     onClose: () => void;
-}
+};

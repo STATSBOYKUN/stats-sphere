@@ -7,7 +7,7 @@ export type TreeMainType = {
     Force: boolean;
     InfluenceTargetVar: string | null;
     GrowingMethod: string | null;
-}
+};
 
 export type TreeDialogProps = {
     isMainOpen: boolean;
@@ -18,21 +18,30 @@ export type TreeDialogProps = {
     setIsCriteriaOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TreeMainType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TreeMainType,
+        value: string | boolean | null
+    ) => void;
     data: TreeMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: TreeMainType) => void;
+    onReset: () => void;
+};
 
 export type TreeCategoriesType = {
     TargetVar: string | null;
     ModelVar: string | null;
-}
+};
 
 export type TreeCategoriesProps = {
     isCategoriesOpen: boolean;
     setIsCategoriesOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TreeCategoriesType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TreeCategoriesType,
+        value: string | boolean | null
+    ) => void;
     data: TreeCategoriesType;
-}
+};
 
 export type TreeOutputTreeType = {
     TreeOutput: boolean;
@@ -48,7 +57,7 @@ export type TreeOutputTreeType = {
     IndVarStats: boolean;
     NodeDef: boolean;
     TreeInTableFormat: boolean;
-}
+};
 
 export type TreeOutputStatsType = {
     Summary: boolean;
@@ -63,7 +72,7 @@ export type TreeOutputStatsType = {
     SortOrderMethod: string | null;
     PercentIncMethod: string | null;
     Display: boolean;
-}
+};
 
 export type TreeOutputRulesType = {
     GenRules: boolean;
@@ -84,14 +93,21 @@ export type TreeOutputRulesType = {
     AllNodes: boolean;
     ExportRules: boolean;
     FileEdit: string | null;
-}
+};
 
 export type TreeOutputProps = {
     isOutputOpen: boolean;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof (TreeOutputTreeType | TreeOutputStatsType | TreeOutputRulesType), value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof (
+            | TreeOutputTreeType
+            | TreeOutputStatsType
+            | TreeOutputRulesType
+        ),
+        value: number | string | boolean | null
+    ) => void;
     data: TreeOutputTreeType & TreeOutputStatsType & TreeOutputRulesType;
-}
+};
 
 export type TreeValidationType = {
     None: boolean;
@@ -105,14 +121,17 @@ export type TreeValidationType = {
     TargetVar: string | null;
     Training: boolean;
     TestSample: boolean;
-}
+};
 
 export type TreeValidationProps = {
     isValidationOpen: boolean;
     setIsValidationOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TreeValidationType, value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TreeValidationType,
+        value: number | string | boolean | null
+    ) => void;
     data: TreeValidationType;
-}
+};
 
 export type TreeCriteriaGrowthType = {
     Automatic: boolean;
@@ -120,7 +139,7 @@ export type TreeCriteriaGrowthType = {
     Value: number | null;
     ParentNode: number | null;
     ChildNode: number | null;
-}
+};
 
 export type TreeCriteriaCHAIDType = {
     Split: number | null;
@@ -131,20 +150,29 @@ export type TreeCriteriaCHAIDType = {
     MinChange: number | null;
     AdjustSign: boolean;
     Allow: boolean;
-}
+};
 
 export type TreeCriteriaIntervalsType = {
     FixedNo: boolean;
     ValueFixed: number | null;
     CustomInterval: boolean;
-}
+};
 
 export type TreeCriteriaProps = {
     isCriteriaOpen: boolean;
     setIsCriteriaOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof (TreeCriteriaGrowthType | TreeCriteriaCHAIDType | TreeCriteriaIntervalsType), value: string | number | boolean | null) => void;
-    data: TreeCriteriaGrowthType & TreeCriteriaCHAIDType & TreeCriteriaIntervalsType;
-}
+    updateFormData: (
+        field: keyof (
+            | TreeCriteriaGrowthType
+            | TreeCriteriaCHAIDType
+            | TreeCriteriaIntervalsType
+        ),
+        value: string | number | boolean | null
+    ) => void;
+    data: TreeCriteriaGrowthType &
+        TreeCriteriaCHAIDType &
+        TreeCriteriaIntervalsType;
+};
 
 export type TreeSaveType = {
     TerminalNode: boolean;
@@ -155,14 +183,17 @@ export type TreeSaveType = {
     TrainingFile: string | null;
     TestSample: boolean;
     TestSampleFile: string | null;
-}
+};
 
 export type TreeSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TreeSaveType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TreeSaveType,
+        value: string | boolean | null
+    ) => void;
     data: TreeSaveType;
-}
+};
 
 export type TreeOptionsMissCostsType = {
     EqualCrossCate: boolean;
@@ -170,30 +201,36 @@ export type TreeOptionsMissCostsType = {
     DupLowMatrix: boolean;
     DupUppMatrix: boolean;
     UseAvg: boolean;
-}
+};
 
 export type TreeOptionsProfitsType = {
     NoneProfits: boolean;
     CustomProfits: boolean;
-}
+};
 
 export type TreeOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof (TreeOptionsMissCostsType | TreeOptionsProfitsType), value: boolean | null) => void;
+    updateFormData: (
+        field: keyof (TreeOptionsMissCostsType | TreeOptionsProfitsType),
+        value: boolean | null
+    ) => void;
     data: TreeOptionsMissCostsType & TreeOptionsProfitsType;
-}
+};
 
 export type TreeType = {
     main: TreeMainType;
     categories: TreeCategoriesType;
     output: TreeOutputTreeType | TreeOutputStatsType | TreeOutputRulesType;
     validation: TreeValidationType;
-    criteria: TreeCriteriaGrowthType | TreeCriteriaCHAIDType | TreeCriteriaIntervalsType;
+    criteria:
+        | TreeCriteriaGrowthType
+        | TreeCriteriaCHAIDType
+        | TreeCriteriaIntervalsType;
     save: TreeSaveType;
     options: TreeOptionsMissCostsType | TreeOptionsProfitsType;
-}
+};
 
 export type TreeContainerProps = {
     onClose: () => void;
-}
+};

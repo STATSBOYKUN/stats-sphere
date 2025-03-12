@@ -6,7 +6,7 @@ export type OptScaMCAMainType = {
     SuppleVars: string | null;
     LabelingVars: string | null;
     Dimensions: number | null;
-}
+};
 
 export type OptScaMCADialogProps = {
     isMainOpen: boolean;
@@ -19,20 +19,29 @@ export type OptScaMCADialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsVariablePlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAMainType, value: string | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAMainType,
+        value: string | number | null
+    ) => void;
     data: OptScaMCAMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: OptScaMCAMainType) => void;
+    onReset: () => void;
+};
 
 export type OptScaMCADefineVariableType = {
     VariableWeight: number | null;
-}
+};
 
 export type OptScaMCADefineVariableProps = {
     isDefineVariableOpen: boolean;
     setIsDefineVariableOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCADefineVariableType, value: number | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCADefineVariableType,
+        value: number | null
+    ) => void;
     data: OptScaMCADefineVariableType;
-}
+};
 
 export type OptScaMCADiscretizeType = {
     VariablesList: string | null;
@@ -43,14 +52,17 @@ export type OptScaMCADiscretizeType = {
     DistributionUniform: boolean;
     EqualIntervals: boolean;
     EqualIntervalsValue: number | null;
-}
+};
 
 export type OptScaMCADiscretizeProps = {
     isDiscretizeOpen: boolean;
     setIsDiscretizeOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCADiscretizeType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCADiscretizeType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaMCADiscretizeType;
-}
+};
 
 export type OptScaMCAMissingType = {
     CurrentTargetList: string | null;
@@ -65,14 +77,17 @@ export type OptScaMCAMissingType = {
     ImputeExtraCat: boolean;
     ImputeRandomCat: boolean;
     ExcludeObjects: boolean;
-}
+};
 
 export type OptScaMCAMissingProps = {
     isMissingOpen: boolean;
     setIsMissingOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAMissingType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAMissingType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaMCAMissingType;
-}
+};
 
 export type OptScaMCAOptionsType = {
     RangeOfCases: boolean;
@@ -102,14 +117,17 @@ export type OptScaMCAOptionsType = {
     Promax: boolean;
     KappaFloat: number | null;
     Kaiser: boolean;
-}
+};
 
 export type OptScaMCAOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAOptionsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAOptionsType,
+        value: string | number | boolean | null
+    ) => void;
     data: OptScaMCAOptionsType;
-}
+};
 
 export type OptScaMCAOutputType = {
     QuantifiedVars: string | null;
@@ -123,14 +141,17 @@ export type OptScaMCAOutputType = {
     IterationHistory: boolean;
     CorreOriginalVars: boolean;
     CorreTransVars: boolean;
-}
+};
 
 export type OptScaMCAOutputProps = {
     isOutputOpen: boolean;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAOutputType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAOutputType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaMCAOutputType;
-}
+};
 
 export type OptScaMCASaveType = {
     Discretized: boolean;
@@ -153,14 +174,17 @@ export type OptScaMCASaveType = {
     All: boolean;
     First: boolean;
     MultiNomDim: number | null;
-}
+};
 
 export type OptScaMCASaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCASaveType, value: string | boolean | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCASaveType,
+        value: string | boolean | number | null
+    ) => void;
     data: OptScaMCASaveType;
-}
+};
 
 export type OptScaMCAObjectPlotsType = {
     ObjectPoints: boolean;
@@ -173,14 +197,17 @@ export type OptScaMCAObjectPlotsType = {
     LabelObjLabelByVar: boolean;
     LabelObjAvailableVars: string | null;
     LabelObjSelectedVars: string | null;
-}
+};
 
 export type OptScaMCAObjectPlotsProps = {
     isObjectPlotsOpen: boolean;
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAObjectPlotsType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAObjectPlotsType,
+        value: string | boolean | null
+    ) => void;
     data: OptScaMCAObjectPlotsType;
-}
+};
 
 export type OptScaMCAVariablePlotsType = {
     DimensionsForMultiNom: number | null;
@@ -193,14 +220,17 @@ export type OptScaMCAVariablePlotsType = {
     DisplayPlot: boolean;
     UseAllVars: boolean;
     UseSelectedVars: boolean;
-}
+};
 
 export type OptScaMCAVariablePlotsProps = {
     isVariablePlotsOpen: boolean;
     setIsVariablePlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof OptScaMCAVariablePlotsType, value: string | boolean | number | null) => void;
+    updateFormData: (
+        field: keyof OptScaMCAVariablePlotsType,
+        value: string | boolean | number | null
+    ) => void;
     data: OptScaMCAVariablePlotsType;
-}
+};
 
 export type OptScaMCAType = {
     main: OptScaMCAMainType;
@@ -212,8 +242,8 @@ export type OptScaMCAType = {
     save: OptScaMCASaveType;
     objectPlots: OptScaMCAObjectPlotsType;
     variablePlots: OptScaMCAVariablePlotsType;
-}
+};
 
 export type OptScaMCAContainerProps = {
     onClose: () => void;
-}
+};

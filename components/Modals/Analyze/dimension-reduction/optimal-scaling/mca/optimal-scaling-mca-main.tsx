@@ -1,28 +1,52 @@
-import {useEffect, useState} from "react";
-import {OptScaMCAType} from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
-import {OptScaMCADefault} from "@/constants/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-default";
-import {OptScaMCADialog} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/dialog";
-import {OptScaMCADefineVariable} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/define-variable";
-import {OptScaMCAVariablePlots} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/variable-plots";
-import {OptScaMCADiscretize} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/discretize";
-import {OptScaMCAMissing} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/missing";
-import {OptScaMCAOptions} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/options";
-import {OptScaMCAOutput} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/output";
-import {OptScaMCASave} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/save";
-import {OptScaMCAObjectPlots} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/object-plots";
-import {OptScaMCAContainerProps} from "@/models/dimension-reduction/optimal-scaling-define";
+import { useEffect, useState } from "react";
+import { OptScaMCAType } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
+import { OptScaMCADefault } from "@/constants/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-default";
+import { OptScaMCADialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/dialog";
+import { OptScaMCADefineVariable } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/define-variable";
+import { OptScaMCAVariablePlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/variable-plots";
+import { OptScaMCADiscretize } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/discretize";
+import { OptScaMCAMissing } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/missing";
+import { OptScaMCAOptions } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/options";
+import { OptScaMCAOutput } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/output";
+import { OptScaMCASave } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/save";
+import { OptScaMCAObjectPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/object-plots";
+import { OptScaMCAContainerProps } from "@/models/dimension-reduction/optimal-scaling-define";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useModal } from "@/hooks/useModal";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { RawData, VariableDef } from "@/lib/db";
+import { useDataStore } from "@/stores/useDataStore";
+import useResultStore from "@/stores/useResultStore";
 
-export const OptScaMCAContainer = (
-    {
-        isOptScaMCA,
-        setIsOptScaMCA,
-    }: OptScaMCAContainerProps
-) => {
-    const [formData, setFormData] = useState<OptScaMCAType>({...OptScaMCADefault});
+export const OptScaMCAContainer = ({
+    isOptScaMCA,
+    setIsOptScaMCA,
+}: OptScaMCAContainerProps) => {
+    const variables = useVariableStore(
+        (state) => state.variables
+    ) as VariableDef[];
+    const dataVariables = useDataStore((state) => state.data) as RawData;
+    const tempVariables = variables.map((variables) => variables.name);
+
+    const [formData, setFormData] = useState<OptScaMCAType>({
+        ...OptScaMCADefault,
+    });
+    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isDefineVariableOpen, setIsDefineVariableOpen] = useState(false);
+    const [isDiscretizeOpen, setIsDiscretizeOpen] = useState(false);
+    const [isMissingOpen, setIsMissingOpen] = useState(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const [isOutputOpen, setIsOutputOpen] = useState(false);
+    const [isSaveOpen, setIsSaveOpen] = useState(false);
+    const [isObjectPlotsOpen, setIsObjectPlotsOpen] = useState(false);
+    const [isVariablePlotsOpen, setIsVariablePlotsOpen] = useState(false);
+
+    const { closeModal } = useModal();
+    const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
-        field: keyof typeof formData[T],
+        field: keyof (typeof formData)[T],
         value: unknown
     ) => {
         setFormData((prev) => ({
@@ -34,22 +58,16 @@ export const OptScaMCAContainer = (
         }));
     };
 
-    const [isMainOpen, setIsMainOpen] = useState(false);
-    const [isDefineVariableOpen, setIsDefineVariableOpen] = useState(false);
-    const [isDiscretizeOpen, setIsDiscretizeOpen] = useState(false);
-    const [isMissingOpen, setIsMissingOpen] = useState(false);
-    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
-    const [isOutputOpen, setIsOutputOpen] = useState(false);
-    const [isSaveOpen, setIsSaveOpen] = useState(false);
-    const [isObjectPlotsOpen, setIsObjectPlotsOpen] = useState(false);
-    const [isVariablePlotsOpen, setIsVariablePlotsOpen] = useState(false);
-
     useEffect(() => {
         if (isOptScaMCA) {
             setIsMainOpen(true);
             setIsOptScaMCA(false);
         }
     }, [isOptScaMCA, setIsOptScaMCA]);
+
+    const resetFormData = () => {
+        setFormData({ ...OptScaMCADefault });
+    };
 
     return (
         <>
@@ -64,15 +82,22 @@ export const OptScaMCAContainer = (
                 setIsSaveOpen={setIsSaveOpen}
                 setIsObjectPlotsOpen={setIsObjectPlotsOpen}
                 setIsVariablePlotsOpen={setIsVariablePlotsOpen}
-                updateFormData={(field, value) => updateFormData("main", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("main", field, value)
+                }
                 data={formData.main}
+                globalVariables={tempVariables}
+                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onReset={resetFormData}
             />
 
             {/* Define Variable */}
             <OptScaMCADefineVariable
                 isDefineVariableOpen={isDefineVariableOpen}
                 setIsDefineVariableOpen={setIsDefineVariableOpen}
-                updateFormData={(field, value) => updateFormData("defineVariable", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("defineVariable", field, value)
+                }
                 data={formData.defineVariable}
             />
 
@@ -80,7 +105,9 @@ export const OptScaMCAContainer = (
             <OptScaMCADiscretize
                 isDiscretizeOpen={isDiscretizeOpen}
                 setIsDiscretizeOpen={setIsDiscretizeOpen}
-                updateFormData={(field, value) => updateFormData("discretize", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("discretize", field, value)
+                }
                 data={formData.discretize}
             />
 
@@ -88,7 +115,9 @@ export const OptScaMCAContainer = (
             <OptScaMCAMissing
                 isMissingOpen={isMissingOpen}
                 setIsMissingOpen={setIsMissingOpen}
-                updateFormData={(field, value) => updateFormData("missing", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("missing", field, value)
+                }
                 data={formData.missing}
             />
 
@@ -96,7 +125,9 @@ export const OptScaMCAContainer = (
             <OptScaMCAOptions
                 isOptionsOpen={isOptionsOpen}
                 setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) => updateFormData("options", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("options", field, value)
+                }
                 data={formData.options}
             />
 
@@ -104,7 +135,9 @@ export const OptScaMCAContainer = (
             <OptScaMCAOutput
                 isOutputOpen={isOutputOpen}
                 setIsOutputOpen={setIsOutputOpen}
-                updateFormData={(field, value) => updateFormData("output", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("output", field, value)
+                }
                 data={formData.output}
             />
 
@@ -112,7 +145,9 @@ export const OptScaMCAContainer = (
             <OptScaMCASave
                 isSaveOpen={isSaveOpen}
                 setIsSaveOpen={setIsSaveOpen}
-                updateFormData={(field, value) => updateFormData("save", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("save", field, value)
+                }
                 data={formData.save}
             />
 
@@ -120,7 +155,9 @@ export const OptScaMCAContainer = (
             <OptScaMCAObjectPlots
                 isObjectPlotsOpen={isObjectPlotsOpen}
                 setIsObjectPlotsOpen={setIsObjectPlotsOpen}
-                updateFormData={(field, value) => updateFormData("objectPlots", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("objectPlots", field, value)
+                }
                 data={formData.objectPlots}
             />
 
@@ -128,9 +165,11 @@ export const OptScaMCAContainer = (
             <OptScaMCAVariablePlots
                 isVariablePlotsOpen={isVariablePlotsOpen}
                 setIsVariablePlotsOpen={setIsVariablePlotsOpen}
-                updateFormData={(field, value) => updateFormData("variablePlots", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("variablePlots", field, value)
+                }
                 data={formData.variablePlots}
             />
         </>
     );
-}
+};

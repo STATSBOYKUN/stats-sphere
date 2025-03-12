@@ -1,46 +1,39 @@
-import {useEffect, useState} from "react";
-import {OptScaCatpcaType} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {
-    OptScaCatpcaDefault
-} from "@/constants/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-default";
-import {OptScaCatpcaDialog} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/dialog";
-import {
-    OptScaCatpcaDefineRangeScale
-} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-range-scale";
-import {OptScaCatpcaLoadingPlots} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/loading-plots";
-import {OptScaCatpcaDefineScale} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-scale";
-import {OptScaCatpcaDiscretize} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/discretize";
-import {OptScaCatpcaMissing} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/missing";
-import {OptScaCatpcaOptions} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/options";
-import {OptScaCatpcaOutput} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/output";
-import {OptScaCatpcaSave} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/save";
-import {OptScaCatpcaBootstrap} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/bootstrap";
-import {OptScaCatpcaObjectPlots} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/object-plots";
-import {OptScaCatpcaCategoryPlots} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/category-plots";
-import {OptScaCatpcaContainerProps} from "@/models/dimension-reduction/optimal-scaling-define";
+import { useEffect, useState } from "react";
+import { OptScaCatpcaType } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
+import { OptScaCatpcaDefault } from "@/constants/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-default";
+import { OptScaCatpcaDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/dialog";
+import { OptScaCatpcaDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-range-scale";
+import { OptScaCatpcaLoadingPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/loading-plots";
+import { OptScaCatpcaDefineScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-scale";
+import { OptScaCatpcaDiscretize } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/discretize";
+import { OptScaCatpcaMissing } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/missing";
+import { OptScaCatpcaOptions } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/options";
+import { OptScaCatpcaOutput } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/output";
+import { OptScaCatpcaSave } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/save";
+import { OptScaCatpcaBootstrap } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/bootstrap";
+import { OptScaCatpcaObjectPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/object-plots";
+import { OptScaCatpcaCategoryPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/category-plots";
+import { OptScaCatpcaContainerProps } from "@/models/dimension-reduction/optimal-scaling-define";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useModal } from "@/hooks/useModal";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { RawData, VariableDef } from "@/lib/db";
+import { useDataStore } from "@/stores/useDataStore";
+import useResultStore from "@/stores/useResultStore";
 
-export const OptScaCatpcaContainer = (
-    {
-        isOptScaCatpca,
-        setIsOptScaCatpca,
-    }: OptScaCatpcaContainerProps
-) => {
-    const [formData, setFormData] = useState<OptScaCatpcaType>({...OptScaCatpcaDefault});
+export const OptScaCatpcaContainer = ({
+    isOptScaCatpca,
+    setIsOptScaCatpca,
+}: OptScaCatpcaContainerProps) => {
+    const variables = useVariableStore(
+        (state) => state.variables
+    ) as VariableDef[];
+    const dataVariables = useDataStore((state) => state.data) as RawData;
+    const tempVariables = variables.map((variables) => variables.name);
 
-    const updateFormData = <T extends keyof typeof formData>(
-        section: T,
-        field: keyof typeof formData[T],
-        value: unknown
-    ) => {
-        setFormData((prev) => ({
-            ...prev,
-            [section]: {
-                ...prev[section],
-                [field]: value,
-            },
-        }));
-    };
-
+    const [formData, setFormData] = useState<OptScaCatpcaType>({
+        ...OptScaCatpcaDefault,
+    });
     const [isMainOpen, setIsMainOpen] = useState(false);
     const [isDefineRangeScaleOpen, setIsDefineRangeScaleOpen] = useState(false);
     const [isDefineScaleOpen, setIsDefineScaleOpen] = useState(false);
@@ -54,12 +47,33 @@ export const OptScaCatpcaContainer = (
     const [isCategoryPlotsOpen, setIsCategoryPlotsOpen] = useState(false);
     const [isLoadingPlotsOpen, setIsLoadingPlotsOpen] = useState(false);
 
+    const { closeModal } = useModal();
+    const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    const updateFormData = <T extends keyof typeof formData>(
+        section: T,
+        field: keyof (typeof formData)[T],
+        value: unknown
+    ) => {
+        setFormData((prev) => ({
+            ...prev,
+            [section]: {
+                ...prev[section],
+                [field]: value,
+            },
+        }));
+    };
+
     useEffect(() => {
         if (isOptScaCatpca) {
             setIsMainOpen(true);
             setIsOptScaCatpca(false);
         }
     }, [isOptScaCatpca, setIsOptScaCatpca]);
+
+    const resetFormData = () => {
+        setFormData({ ...OptScaCatpcaDefault });
+    };
 
     return (
         <>
@@ -77,15 +91,22 @@ export const OptScaCatpcaContainer = (
                 setIsObjectPlotsOpen={setIsObjectPlotsOpen}
                 setIsCategoryPlotsOpen={setIsCategoryPlotsOpen}
                 setIsLoadingPlotsOpen={setIsLoadingPlotsOpen}
-                updateFormData={(field, value) => updateFormData("main", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("main", field, value)
+                }
                 data={formData.main}
+                globalVariables={tempVariables}
+                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onReset={resetFormData}
             />
 
             {/* Define Range Scale */}
             <OptScaCatpcaDefineRangeScale
                 isDefineRangeScaleOpen={isDefineRangeScaleOpen}
                 setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
-                updateFormData={(field, value) => updateFormData("defineRangeScale", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("defineRangeScale", field, value)
+                }
                 data={formData.defineRangeScale}
             />
 
@@ -93,7 +114,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaDefineScale
                 isDefineScaleOpen={isDefineScaleOpen}
                 setIsDefineScaleOpen={setIsDefineScaleOpen}
-                updateFormData={(field, value) => updateFormData("defineScale", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("defineScale", field, value)
+                }
                 data={formData.defineScale}
             />
 
@@ -101,7 +124,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaDiscretize
                 isDiscretizeOpen={isDiscretizeOpen}
                 setIsDiscretizeOpen={setIsDiscretizeOpen}
-                updateFormData={(field, value) => updateFormData("discretize", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("discretize", field, value)
+                }
                 data={formData.discretize}
             />
 
@@ -109,7 +134,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaMissing
                 isMissingOpen={isMissingOpen}
                 setIsMissingOpen={setIsMissingOpen}
-                updateFormData={(field, value) => updateFormData("missing", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("missing", field, value)
+                }
                 data={formData.missing}
             />
 
@@ -117,7 +144,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaOptions
                 isOptionsOpen={isOptionsOpen}
                 setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) => updateFormData("options", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("options", field, value)
+                }
                 data={formData.options}
             />
 
@@ -125,7 +154,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaOutput
                 isOutputOpen={isOutputOpen}
                 setIsOutputOpen={setIsOutputOpen}
-                updateFormData={(field, value) => updateFormData("output", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("output", field, value)
+                }
                 data={formData.output}
             />
 
@@ -133,7 +164,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaSave
                 isSaveOpen={isSaveOpen}
                 setIsSaveOpen={setIsSaveOpen}
-                updateFormData={(field, value) => updateFormData("save", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("save", field, value)
+                }
                 data={formData.save}
             />
 
@@ -141,7 +174,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaBootstrap
                 isBootstrapOpen={isBootstrapOpen}
                 setIsBootstrapOpen={setIsBootstrapOpen}
-                updateFormData={(field, value) => updateFormData("bootstrap", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("bootstrap", field, value)
+                }
                 data={formData.bootstrap}
             />
 
@@ -149,7 +184,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaObjectPlots
                 isObjectPlotsOpen={isObjectPlotsOpen}
                 setIsObjectPlotsOpen={setIsObjectPlotsOpen}
-                updateFormData={(field, value) => updateFormData("objectPlots", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("objectPlots", field, value)
+                }
                 data={formData.objectPlots}
             />
 
@@ -157,7 +194,9 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaCategoryPlots
                 isCategoryPlotsOpen={isCategoryPlotsOpen}
                 setIsCategoryPlotsOpen={setIsCategoryPlotsOpen}
-                updateFormData={(field, value) => updateFormData("categoryPlots", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("categoryPlots", field, value)
+                }
                 data={formData.categoryPlots}
             />
 
@@ -165,9 +204,11 @@ export const OptScaCatpcaContainer = (
             <OptScaCatpcaLoadingPlots
                 isLoadingPlotsOpen={isLoadingPlotsOpen}
                 setIsLoadingPlotsOpen={setIsLoadingPlotsOpen}
-                updateFormData={(field, value) => updateFormData("loadingPlots", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("loadingPlots", field, value)
+                }
                 data={formData.loadingPlots}
             />
         </>
     );
-}
+};

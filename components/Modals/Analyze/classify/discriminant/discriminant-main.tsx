@@ -1,32 +1,38 @@
-import {useState} from "react";
-import {DiscriminantDialog} from "@/components/Modals/Analyze/classify/discriminant/dialog";
-import {DiscriminantDefineRange} from "@/components/Modals/Analyze/classify/discriminant/define-range";
-import {DiscriminantSetValue} from "@/components/Modals/Analyze/classify/discriminant/set-value";
-import {DiscriminantStatistics} from "@/components/Modals/Analyze/classify/discriminant/statistics";
-import {DiscriminantMethod} from "@/components/Modals/Analyze/classify/discriminant/method";
-import {DiscriminantClassify} from "@/components/Modals/Analyze/classify/discriminant/classify";
-import {DiscriminantSave} from "@/components/Modals/Analyze/classify/discriminant/save";
-import {DiscriminantBootstrap} from "@/components/Modals/Analyze/classify/discriminant/bootstrap";
+import { useState } from "react";
+import { DiscriminantDialog } from "@/components/Modals/Analyze/classify/discriminant/dialog";
+import { DiscriminantDefineRange } from "@/components/Modals/Analyze/classify/discriminant/define-range";
+import { DiscriminantSetValue } from "@/components/Modals/Analyze/classify/discriminant/set-value";
+import { DiscriminantStatistics } from "@/components/Modals/Analyze/classify/discriminant/statistics";
+import { DiscriminantMethod } from "@/components/Modals/Analyze/classify/discriminant/method";
+import { DiscriminantClassify } from "@/components/Modals/Analyze/classify/discriminant/classify";
+import { DiscriminantSave } from "@/components/Modals/Analyze/classify/discriminant/save";
+import { DiscriminantBootstrap } from "@/components/Modals/Analyze/classify/discriminant/bootstrap";
 import {
     DiscriminantContainerProps,
     DiscriminantMainType,
-    DiscriminantType
+    DiscriminantType,
 } from "@/models/classify/discriminant/discriminant";
-import {DiscriminantDefault} from "@/constants/classify/discriminant/discriminant-default";
-import {Dialog, DialogContent, DialogTitle} from "@/components/ui/dialog";
-import {useModal} from "@/hooks/useModal";
-import {useVariableStore} from "@/stores/useVariableStore";
-import {RawData, VariableDef} from "@/lib/db";
-import {useDataStore} from "@/stores/useDataStore";
-import {analyzeDiscriminant} from "@/services/analyze/classify/discriminant/discriminant-analysis";
+import { DiscriminantDefault } from "@/constants/classify/discriminant/discriminant-default";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useModal } from "@/hooks/useModal";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { RawData, VariableDef } from "@/lib/db";
+import { useDataStore } from "@/stores/useDataStore";
+import { analyzeDiscriminant } from "@/services/analyze/classify/discriminant/discriminant-analysis";
 import useResultStore from "@/stores/useResultStore";
 
-export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => {
-    const variables = useVariableStore((state) => state.variables) as VariableDef[];
+export const DiscriminantContainer = ({
+    onClose,
+}: DiscriminantContainerProps) => {
+    const variables = useVariableStore(
+        (state) => state.variables
+    ) as VariableDef[];
     const dataVariables = useDataStore((state) => state.data) as RawData;
     const tempVariables = variables.map((variables) => variables.name);
 
-    const [formData, setFormData] = useState<DiscriminantType>({...DiscriminantDefault});
+    const [formData, setFormData] = useState<DiscriminantType>({
+        ...DiscriminantDefault,
+    });
     const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
     const [isSetValueOpen, setIsSetValueOpen] = useState(false);
@@ -36,12 +42,12 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
     const [isSaveOpen, setIsSaveOpen] = useState(false);
     const [isBootstrapOpen, setIsBootstrapOpen] = useState(false);
 
-    const {closeModal} = useModal();
+    const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
-        field: keyof typeof formData[T],
+        field: keyof (typeof formData)[T],
         value: unknown
     ) => {
         setFormData((prev) => ({
@@ -66,9 +72,8 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 variables: variables,
                 addLog,
                 addAnalytic,
-                addStatistic
+                addStatistic,
             });
-
         } catch (error) {
             console.error(error);
         }
@@ -78,18 +83,17 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
     };
 
     const resetFormData = () => {
-        setFormData({...DiscriminantDefault});
+        setFormData({ ...DiscriminantDefault });
     };
 
     const handleClose = () => {
         closeModal();
         onClose();
-    }
+    };
 
     return (
         <Dialog open={isMainOpen} onOpenChange={handleClose}>
-            <DialogTitle>
-            </DialogTitle>
+            <DialogTitle></DialogTitle>
             <DialogContent>
                 <DiscriminantDialog
                     isMainOpen={isMainOpen}
@@ -101,7 +105,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                     setIsClassifyOpen={setIsClassifyOpen}
                     setIsSaveOpen={setIsSaveOpen}
                     setIsBootstrapOpen={setIsBootstrapOpen}
-                    updateFormData={(field, value) => updateFormData("main", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("main", field, value)
+                    }
                     data={formData.main}
                     globalVariables={tempVariables}
                     onContinue={(mainData) => executeDiscriminant(mainData)}
@@ -112,7 +118,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantDefineRange
                     isDefineRangeOpen={isDefineRangeOpen}
                     setIsDefineRangeOpen={setIsDefineRangeOpen}
-                    updateFormData={(field, value) => updateFormData("defineRange", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("defineRange", field, value)
+                    }
                     data={formData.defineRange}
                 />
 
@@ -120,7 +128,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantSetValue
                     isSetValueOpen={isSetValueOpen}
                     setIsSetValueOpen={setIsSetValueOpen}
-                    updateFormData={(field, value) => updateFormData("setValue", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("setValue", field, value)
+                    }
                     data={formData.setValue}
                 />
 
@@ -128,7 +138,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantStatistics
                     isStatisticsOpen={isStatisticsOpen}
                     setIsStatisticsOpen={setIsStatisticsOpen}
-                    updateFormData={(field, value) => updateFormData("statistics", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("statistics", field, value)
+                    }
                     data={formData.statistics}
                 />
 
@@ -136,7 +148,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantMethod
                     isMethodOpen={isMethodOpen}
                     setIsMethodOpen={setIsMethodOpen}
-                    updateFormData={(field, value) => updateFormData("method", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("method", field, value)
+                    }
                     data={formData.method}
                 />
 
@@ -144,7 +158,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantClassify
                     isClassifyOpen={isClassifyOpen}
                     setIsClassifyOpen={setIsClassifyOpen}
-                    updateFormData={(field, value) => updateFormData("classify", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("classify", field, value)
+                    }
                     data={formData.classify}
                 />
 
@@ -152,7 +168,9 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantSave
                     isSaveOpen={isSaveOpen}
                     setIsSaveOpen={setIsSaveOpen}
-                    updateFormData={(field, value) => updateFormData("save", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("save", field, value)
+                    }
                     data={formData.save}
                 />
 
@@ -160,10 +178,12 @@ export const DiscriminantContainer = ({onClose}: DiscriminantContainerProps) => 
                 <DiscriminantBootstrap
                     isBootstrapOpen={isBootstrapOpen}
                     setIsBootstrapOpen={setIsBootstrapOpen}
-                    updateFormData={(field, value) => updateFormData("bootstrap", field, value)}
+                    updateFormData={(field, value) =>
+                        updateFormData("bootstrap", field, value)
+                    }
                     data={formData.bootstrap}
                 />
             </DialogContent>
         </Dialog>
     );
-}
+};

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,41 +6,51 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaMCADialogProps,
-    OptScaMCAMainType
+    OptScaMCAMainType,
 } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const OptScaMCADialog = ({
-                                    isMainOpen,
-                                    setIsMainOpen,
-                                    setIsDefineVariableOpen,
-                                    setIsDiscretizeOpen,
-                                    setIsMissingOpen,
-                                    setIsOptionsOpen,
-                                    setIsOutputOpen,
-                                    setIsSaveOpen,
-                                    setIsObjectPlotsOpen,
-                                    setIsVariablePlotsOpen,
-                                    updateFormData,
-                                    data
-                                }: OptScaMCADialogProps) => {
-    const [mainState, setMainState] = useState<OptScaMCAMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsDefineVariableOpen,
+    setIsDiscretizeOpen,
+    setIsMissingOpen,
+    setIsOptionsOpen,
+    setIsOutputOpen,
+    setIsSaveOpen,
+    setIsObjectPlotsOpen,
+    setIsVariablePlotsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: OptScaMCADialogProps) => {
+    const [mainState, setMainState] = useState<OptScaMCAMainType>({ ...data });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof OptScaMCAMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaMCAMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -54,9 +64,10 @@ export const OptScaMCADialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -67,9 +78,11 @@ export const OptScaMCADialog = ({
                 {/*</DialogTrigger>*/}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>Multiple Correspondence Analysis</DialogTitle>
+                        <DialogTitle>
+                            Multiple Correspondence Analysis
+                        </DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -78,31 +91,44 @@ export const OptScaMCADialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-4 p-2">
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Analysis Variables: </Label>
+                                            <Label className="font-bold">
+                                                Analysis Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="AnalysisVars"
                                                 type="text"
                                                 className="w-full min-h-[65px]"
                                                 placeholder=""
-                                                value={mainState.AnalysisVars ?? ""}
-                                                onChange={(e) => handleChange("AnalysisVars", e.target.value)}
+                                                value={
+                                                    mainState.AnalysisVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "AnalysisVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineVariableOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineVariableOpen
+                                                )}
                                             >
                                                 Define Variable Weight...
                                             </Button>
@@ -110,38 +136,68 @@ export const OptScaMCADialog = ({
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Supplementary Variables: </Label>
+                                            <Label className="font-bold">
+                                                Supplementary Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="SuppleVars"
                                                 type="text"
                                                 className="w-full min-h-[65px]"
                                                 placeholder=""
-                                                value={mainState.SuppleVars ?? ""}
-                                                onChange={(e) => handleChange("SuppleVars", e.target.value)}
+                                                value={
+                                                    mainState.SuppleVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "SuppleVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <div className="w-full">
-                                            <Label className="font-bold">Labeling Variables: </Label>
+                                            <Label className="font-bold">
+                                                Labeling Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="LabelingVars"
                                                 type="text"
                                                 className="w-full min-h-[65px]"
                                                 placeholder=""
-                                                value={mainState.LabelingVars ?? ""}
-                                                onChange={(e) => handleChange("LabelingVars", e.target.value)}
+                                                value={
+                                                    mainState.LabelingVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "LabelingVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[150px]">Dimension in Solution:</Label>
+                                            <Label className="w-[150px]">
+                                                Dimension in Solution:
+                                            </Label>
                                             <div className="w-[75px]">
                                                 <Input
                                                     id="Dimensions"
                                                     type="number"
                                                     placeholder=""
-                                                    value={mainState.Dimensions ?? ""}
-                                                    onChange={(e) => handleChange("Dimensions", Number(e.target.value))}
+                                                    value={
+                                                        mainState.Dimensions ??
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            "Dimensions",
+                                                            Number(
+                                                                e.target.value
+                                                            )
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -156,7 +212,9 @@ export const OptScaMCADialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsDiscretizeOpen)}
+                                        onClick={openDialog(
+                                            setIsDiscretizeOpen
+                                        )}
                                     >
                                         Discretize...
                                     </Button>
@@ -192,12 +250,14 @@ export const OptScaMCADialog = ({
                                     >
                                         Save...
                                     </Button>
-                                    <Separator className="my-2"/>
+                                    <Separator className="my-2" />
                                     <Button
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsObjectPlotsOpen)}
+                                        onClick={openDialog(
+                                            setIsObjectPlotsOpen
+                                        )}
                                     >
                                         Object...
                                     </Button>
@@ -205,7 +265,9 @@ export const OptScaMCADialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsVariablePlotsOpen)}
+                                        onClick={openDialog(
+                                            setIsVariablePlotsOpen
+                                        )}
                                     >
                                         Variable...
                                     </Button>
@@ -214,10 +276,7 @@ export const OptScaMCADialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

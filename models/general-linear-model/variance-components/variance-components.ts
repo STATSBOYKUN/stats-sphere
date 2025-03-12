@@ -7,7 +7,7 @@ export type VarianceCompsMainType = {
     RandFactor: string | null;
     Covar: string | null;
     WlsWeight: string | null;
-}
+};
 
 export type VarianceCompsDialogProps = {
     isMainOpen: boolean;
@@ -15,9 +15,15 @@ export type VarianceCompsDialogProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof VarianceCompsMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof VarianceCompsMainType,
+        value: string | null
+    ) => void;
     data: VarianceCompsMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: VarianceCompsMainType) => void;
+    onReset: () => void;
+};
 
 export type VarianceCompsModelType = {
     NonCust: boolean;
@@ -27,14 +33,17 @@ export type VarianceCompsModelType = {
     FactorsModel: string | null;
     BuildTermMethod: string | null;
     Intercept: boolean;
-}
+};
 
 export type VarianceCompsModelProps = {
     isModelOpen: boolean;
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof VarianceCompsModelType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof VarianceCompsModelType,
+        value: string | boolean | null
+    ) => void;
     data: VarianceCompsModelType;
-}
+};
 
 export type VarianceCompsOptionsType = {
     Minque: boolean;
@@ -51,14 +60,17 @@ export type VarianceCompsOptionsType = {
     ExpectedMeanSquares: boolean;
     IterationHistory: boolean;
     InStepsOf: number | null;
-}
+};
 
 export type VarianceCompsOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof VarianceCompsOptionsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof VarianceCompsOptionsType,
+        value: string | number | boolean | null
+    ) => void;
     data: VarianceCompsOptionsType;
-}
+};
 
 export type VarianceCompsSaveType = {
     VarCompEst: boolean;
@@ -69,22 +81,25 @@ export type VarianceCompsSaveType = {
     DatasetName: string | null;
     WriteNewDataFile: boolean;
     FilePath: string | null;
-}
+};
 
 export type VarianceCompsSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof VarianceCompsSaveType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof VarianceCompsSaveType,
+        value: string | boolean | null
+    ) => void;
     data: VarianceCompsSaveType;
-}
+};
 
 export type VarianceCompsType = {
     main: VarianceCompsMainType;
     model: VarianceCompsModelType;
     options: VarianceCompsOptionsType;
     save: VarianceCompsSaveType;
-}
+};
 
 export type VarianceCompsContainerProps = {
     onClose: () => void;
-}
+};

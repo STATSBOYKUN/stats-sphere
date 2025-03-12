@@ -1,21 +1,28 @@
-import {useState} from "react";
-import {OptScaContainerProps, OptScaDefineType} from "@/models/dimension-reduction/optimal-scaling-define";
-import {OptScaDefineDefault} from "@/constants/dimension-reduction/optimal-scaling/optimal-scaling-define-default";
-import {OptScaInitial} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/optimal-scaling-dialog";
+import { useState } from "react";
 import {
-    OptScaCatpcaContainer
-} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-main";
-import {OptScaMCAContainer} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-main";
-import {
-    OptScaOveralsContainer
-} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-main";
+    OptScaContainerProps,
+    OptScaDefineType,
+} from "@/models/dimension-reduction/optimal-scaling-define";
+import { OptScaDefineDefault } from "@/constants/dimension-reduction/optimal-scaling/optimal-scaling-define-default";
+import { OptScaInitial } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/optimal-scaling-dialog";
+import { OptScaCatpcaContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-main";
+import { OptScaMCAContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-main";
+import { OptScaOveralsContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-main";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useModal } from "@/hooks/useModal";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { RawData, VariableDef } from "@/lib/db";
+import { useDataStore } from "@/stores/useDataStore";
+import useResultStore from "@/stores/useResultStore";
 
-export const OptScaContainer = ({onClose} : OptScaContainerProps) => {
-    const [formData, setFormData] = useState<OptScaDefineType>({...OptScaDefineDefault});
+export const OptScaContainer = ({ onClose }: OptScaContainerProps) => {
+    const [formData, setFormData] = useState<OptScaDefineType>({
+        ...OptScaDefineDefault,
+    });
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
-        field: keyof typeof formData[T],
+        field: keyof (typeof formData)[T],
         value: unknown
     ) => {
         setFormData((prev) => ({
@@ -40,7 +47,9 @@ export const OptScaContainer = ({onClose} : OptScaContainerProps) => {
                 setIsOptScaCatpca={setIsOptScaCatpca}
                 setIsOptScaMCA={setIsOptScaMCA}
                 setIsOptScaOverals={setIsOptScaOverals}
-                updateFormData={(field, value) => updateFormData("main", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("main", field, value)
+                }
                 data={formData.main}
             />
 
@@ -60,4 +69,4 @@ export const OptScaContainer = ({onClose} : OptScaContainerProps) => {
             />
         </>
     );
-}
+};

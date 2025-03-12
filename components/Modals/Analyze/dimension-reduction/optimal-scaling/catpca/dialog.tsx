@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,44 +6,56 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaCatpcaDialogProps,
-    OptScaCatpcaMainType
+    OptScaCatpcaMainType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export const OptScaCatpcaDialog = ({
-                                       isMainOpen,
-                                       setIsMainOpen,
-                                       setIsDefineRangeScaleOpen,
-                                       setIsDefineScaleOpen,
-                                       setIsDiscretizeOpen,
-                                       setIsMissingOpen,
-                                       setIsOptionsOpen,
-                                       setIsOutputOpen,
-                                       setIsSaveOpen,
-                                       setIsBootstrapOpen,
-                                       setIsObjectPlotsOpen,
-                                       setIsCategoryPlotsOpen,
-                                       setIsLoadingPlotsOpen,
-                                       updateFormData,
-                                       data
-                                   }: OptScaCatpcaDialogProps) => {
-    const [mainState, setMainState] = useState<OptScaCatpcaMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsDefineRangeScaleOpen,
+    setIsDefineScaleOpen,
+    setIsDiscretizeOpen,
+    setIsMissingOpen,
+    setIsOptionsOpen,
+    setIsOutputOpen,
+    setIsSaveOpen,
+    setIsBootstrapOpen,
+    setIsObjectPlotsOpen,
+    setIsCategoryPlotsOpen,
+    setIsLoadingPlotsOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: OptScaCatpcaDialogProps) => {
+    const [mainState, setMainState] = useState<OptScaCatpcaMainType>({
+        ...data,
+    });
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof OptScaCatpcaMainType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaCatpcaMainType,
+        value: number | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -57,9 +69,10 @@ export const OptScaCatpcaDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -70,9 +83,11 @@ export const OptScaCatpcaDialog = ({
                 {/*</DialogTrigger>*/}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
-                        <DialogTitle>Categorical Principal Components</DialogTitle>
+                        <DialogTitle>
+                            Categorical Principal Components
+                        </DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
@@ -81,31 +96,44 @@ export const OptScaCatpcaDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle withHandle/>
+                            <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-4 p-2">
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Analysis Variables: </Label>
+                                            <Label className="font-bold">
+                                                Analysis Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="AnalysisVars"
                                                 type="text"
                                                 className="w-full min-h-[65px]"
                                                 placeholder=""
-                                                value={mainState.AnalysisVars ?? ""}
-                                                onChange={(e) => handleChange("AnalysisVars", e.target.value)}
+                                                value={
+                                                    mainState.AnalysisVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "AnalysisVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineRangeScaleOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineRangeScaleOpen
+                                                )}
                                             >
                                                 Define Range and Scale...
                                             </Button>
@@ -113,21 +141,32 @@ export const OptScaCatpcaDialog = ({
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label className="font-bold">Supplementary Variables: </Label>
+                                            <Label className="font-bold">
+                                                Supplementary Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="SuppleVars"
                                                 type="text"
                                                 className="w-full min-h-[35px]"
                                                 placeholder=""
-                                                value={mainState.SuppleVars ?? ""}
-                                                onChange={(e) => handleChange("SuppleVars", e.target.value)}
+                                                value={
+                                                    mainState.SuppleVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "SuppleVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div>
                                             <Button
                                                 type="button"
                                                 variant="secondary"
-                                                onClick={openDialog(setIsDefineScaleOpen)}
+                                                onClick={openDialog(
+                                                    setIsDefineScaleOpen
+                                                )}
                                             >
                                                 Define Scale...
                                             </Button>
@@ -135,25 +174,46 @@ export const OptScaCatpcaDialog = ({
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <div className="w-full">
-                                            <Label className="font-bold">Labeling Variables: </Label>
+                                            <Label className="font-bold">
+                                                Labeling Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="LabelingVars"
                                                 type="text"
                                                 className="w-full min-h-[35px]"
                                                 placeholder=""
-                                                value={mainState.LabelingVars ?? ""}
-                                                onChange={(e) => handleChange("LabelingVars", e.target.value)}
+                                                value={
+                                                    mainState.LabelingVars ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "LabelingVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[150px]">Dimension in Solution:</Label>
+                                            <Label className="w-[150px]">
+                                                Dimension in Solution:
+                                            </Label>
                                             <div className="w-[75px]">
                                                 <Input
                                                     id="Dimensions"
                                                     type="number"
                                                     placeholder=""
-                                                    value={mainState.Dimensions ?? ""}
-                                                    onChange={(e) => handleChange("Dimensions", Number(e.target.value))}
+                                                    value={
+                                                        mainState.Dimensions ??
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            "Dimensions",
+                                                            Number(
+                                                                e.target.value
+                                                            )
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -168,7 +228,9 @@ export const OptScaCatpcaDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsDiscretizeOpen)}
+                                        onClick={openDialog(
+                                            setIsDiscretizeOpen
+                                        )}
                                     >
                                         Discretize...
                                     </Button>
@@ -217,7 +279,9 @@ export const OptScaCatpcaDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsObjectPlotsOpen)}
+                                        onClick={openDialog(
+                                            setIsObjectPlotsOpen
+                                        )}
                                     >
                                         Object...
                                     </Button>
@@ -225,7 +289,9 @@ export const OptScaCatpcaDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsCategoryPlotsOpen)}
+                                        onClick={openDialog(
+                                            setIsCategoryPlotsOpen
+                                        )}
                                     >
                                         Category...
                                     </Button>
@@ -233,7 +299,9 @@ export const OptScaCatpcaDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsLoadingPlotsOpen)}
+                                        onClick={openDialog(
+                                            setIsLoadingPlotsOpen
+                                        )}
                                     >
                                         Loading...
                                     </Button>
@@ -242,10 +310,7 @@ export const OptScaCatpcaDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

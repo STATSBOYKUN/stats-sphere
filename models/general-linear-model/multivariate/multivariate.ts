@@ -6,7 +6,7 @@ export type MultivariateMainType = {
     FixFactor: string | null;
     Covar: string | null;
     WlsWeight: string | null;
-}
+};
 
 export type MultivariateDialogProps = {
     isMainOpen: boolean;
@@ -19,9 +19,15 @@ export type MultivariateDialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof MultivariateMainType,
+        value: string | null
+    ) => void;
     data: MultivariateMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: MultivariateMainType) => void;
+    onReset: () => void;
+};
 
 export type MultivariateModelType = {
     NonCust: boolean;
@@ -36,28 +42,34 @@ export type MultivariateModelType = {
     TermText: string | null;
     SumOfSquareMethod: string | null;
     Intercept: boolean;
-}
+};
 
 export type MultivariateModelProps = {
     isModelOpen: boolean;
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateModelType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateModelType,
+        value: string | boolean | null
+    ) => void;
     data: MultivariateModelType;
-}
+};
 
 export type MultivariateContrastType = {
     FactorList: string | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
-}
+};
 
 export type MultivariateContrastProps = {
     isContrastOpen: boolean;
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateContrastType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateContrastType,
+        value: string | boolean | null
+    ) => void;
     data: MultivariateContrastType;
-}
+};
 
 export type MultivariatePlotsType = {
     SrcList: string | null;
@@ -74,14 +86,17 @@ export type MultivariatePlotsType = {
     Multiplier: number | null;
     IncludeRefLineForGrandMean: boolean;
     YAxisStart0: boolean;
-}
+};
 
 export type MultivariatePlotsProps = {
     isPlotsOpen: boolean;
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariatePlotsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariatePlotsType,
+        value: string | number | boolean | null
+    ) => void;
     data: MultivariatePlotsType;
-}
+};
 
 export type MultivariatePostHocType = {
     SrcList: string | null;
@@ -109,28 +124,34 @@ export type MultivariatePostHocType = {
     Dunt: boolean;
     Games: boolean;
     Dunc: boolean;
-}
+};
 
 export type MultivariatePostHocProps = {
     isPostHocOpen: boolean;
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariatePostHocType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariatePostHocType,
+        value: string | boolean | null
+    ) => void;
     data: MultivariatePostHocType;
-}
+};
 
 export type MultivariateEMMeansType = {
     SrcList: string | null;
     TargetList: string | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
-}
+};
 
 export type MultivariateEMMeansProps = {
     isEMMeansOpen: boolean;
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateEMMeansType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateEMMeansType,
+        value: string | boolean | null
+    ) => void;
     data: MultivariateEMMeansType;
-}
+};
 
 export type MultivariateSaveType = {
     ResWeighted: boolean;
@@ -148,14 +169,17 @@ export type MultivariateSaveType = {
     DatasetName: string | null;
     WriteNewDataSet: boolean;
     FilePath: string | null;
-}
+};
 
 export type MultivariateSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateSaveType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateSaveType,
+        value: string | boolean | null
+    ) => void;
     data: MultivariateSaveType;
-}
+};
 
 export type MultivariateOptionsType = {
     DescStats: boolean;
@@ -172,14 +196,17 @@ export type MultivariateOptionsType = {
     SigLevel: number | null;
     CoefficientMatrix: boolean;
     TransformMat: boolean;
-}
+};
 
 export type MultivariateOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateOptionsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateOptionsType,
+        value: number | boolean | null
+    ) => void;
     data: MultivariateOptionsType;
-}
+};
 
 export type MultivariateBootstrapType = {
     PerformBootStrapping: boolean;
@@ -193,14 +220,17 @@ export type MultivariateBootstrapType = {
     Stratified: boolean;
     Variables: string | null;
     StrataVariables: string | null;
-}
+};
 
 export type MultivariateBootstrapProps = {
     isBootstrapOpen: boolean;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof MultivariateBootstrapType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof MultivariateBootstrapType,
+        value: string | number | boolean | null
+    ) => void;
     data: MultivariateBootstrapType;
-}
+};
 
 export type MultivariateType = {
     main: MultivariateMainType;
@@ -212,8 +242,8 @@ export type MultivariateType = {
     save: MultivariateSaveType;
     options: MultivariateOptionsType;
     bootstrap: MultivariateBootstrapType;
-}
+};
 
 export type MultivariateContainerProps = {
     onClose: () => void;
-}
+};

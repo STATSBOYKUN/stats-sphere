@@ -7,7 +7,7 @@ export type RocAnalysisMainType = {
     StateVarVal: string | null;
     TestTargetVariable: string | null;
     TargetGroupVar: string | null;
-}
+};
 
 export type RocAnalysisDialogProps = {
     isMainOpen: boolean;
@@ -15,9 +15,15 @@ export type RocAnalysisDialogProps = {
     setIsDefineGroupsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsDisplayOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RocAnalysisMainType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RocAnalysisMainType,
+        value: string | boolean | null
+    ) => void;
     data: RocAnalysisMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: RocAnalysisMainType) => void;
+    onReset: () => void;
+};
 
 export type RocAnalysisDefineGroupsType = {
     SpecifiedValues: boolean;
@@ -26,14 +32,17 @@ export type RocAnalysisDefineGroupsType = {
     UseMidValue: boolean;
     CutPoint: boolean;
     CutPointValue: number | null;
-}
+};
 
 export type RocAnalysisDefineGroupsProps = {
     isDefineGroupsOpen: boolean;
     setIsDefineGroupsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RocAnalysisDefineGroupsType, value: string | boolean | number | null) => void;
+    updateFormData: (
+        field: keyof RocAnalysisDefineGroupsType,
+        value: string | boolean | number | null
+    ) => void;
     data: RocAnalysisDefineGroupsType;
-}
+};
 
 export type RocAnalysisOptionsType = {
     IncludeCutoff: boolean;
@@ -44,13 +53,17 @@ export type RocAnalysisOptionsType = {
     ConfLevel: number | null;
     ExcludeMissValue: boolean;
     MissValueAsValid: boolean;
-}
+};
 
 export type RocAnalysisOptionsProps = {
     isOptionsOpen: boolean;
-    setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>; updateFormData: (field: keyof RocAnalysisOptionsType, value: string | number | boolean | null) => void;
+    setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    updateFormData: (
+        field: keyof RocAnalysisOptionsType,
+        value: string | number | boolean | null
+    ) => void;
     data: RocAnalysisOptionsType;
-}
+};
 
 export type RocAnalysisDisplayType = {
     RocCurve: boolean;
@@ -63,22 +76,25 @@ export type RocAnalysisDisplayType = {
     ROCPoint: boolean;
     PRCPoint: boolean;
     EvalMetrics: boolean;
-}
+};
 
 export type RocAnalysisDisplayProps = {
     isDisplayOpen: boolean;
     setIsDisplayOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof RocAnalysisDisplayType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof RocAnalysisDisplayType,
+        value: string | boolean | null
+    ) => void;
     data: RocAnalysisDisplayType;
-}
+};
 
 export type RocAnalysisType = {
     main: RocAnalysisMainType;
     defineGroups: RocAnalysisDefineGroupsType;
     options: RocAnalysisOptionsType;
     display: RocAnalysisDisplayType;
-}
+};
 
 export type RocAnalysisContainerProps = {
     onClose: () => void;
-}
+};

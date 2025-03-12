@@ -1,4 +1,5 @@
 import React from "react";
+import { TreeMainType } from "../tree/tree";
 
 export type TwoStepClusterMainType = {
     SrcVar: string | null;
@@ -14,15 +15,21 @@ export type TwoStepClusterMainType = {
     Bic: boolean;
     ToStandardized: number | null;
     AssumedStandardized: number | null;
-}
+};
 
 export type TwoStepClusterDialogProps = {
     isMainOpen: boolean;
     setIsMainOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TwoStepClusterMainType, value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TwoStepClusterMainType,
+        value: number | string | boolean | null
+    ) => void;
     data: TwoStepClusterMainType;
+    globalVariables: string[];
+    onContinue: (mainState: TreeMainType) => void;
+    onReset: () => void;
 };
 
 export type TwoStepClusterOptionsType = {
@@ -37,14 +44,17 @@ export type TwoStepClusterOptionsType = {
     MaxNodes: number | null;
     ImportCFTree: boolean;
     CFTreeName: string | null;
-}
+};
 
 export type TwoStepClusterOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TwoStepClusterOptionsType, value: number | string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TwoStepClusterOptionsType,
+        value: number | string | boolean | null
+    ) => void;
     data: TwoStepClusterOptionsType;
-}
+};
 
 export type TwoStepClusterOutputType = {
     SrcVar: string | null;
@@ -56,21 +66,24 @@ export type TwoStepClusterOutputType = {
     ExportCFTree: boolean;
     ModelName: string | null;
     CFTreeName: string | null;
-}
+};
 
 export type TwoStepClusterOutputProps = {
     isOutputOpen: boolean;
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof TwoStepClusterOutputType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof TwoStepClusterOutputType,
+        value: string | boolean | null
+    ) => void;
     data: TwoStepClusterOutputType;
-}
+};
 
 export type TwoStepClusterType = {
     main: TwoStepClusterMainType;
     options: TwoStepClusterOptionsType;
     output: TwoStepClusterOutputType;
-}
+};
 
 export type TwoStepClusterContainerProps = {
     onClose: () => void;
-}
+};

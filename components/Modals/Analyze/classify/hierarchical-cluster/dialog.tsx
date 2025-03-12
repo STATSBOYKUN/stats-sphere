@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -6,38 +6,56 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
 } from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Separator} from "@/components/ui/separator";
-import {HierClusDialogProps, HierClusMainType} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Textarea} from "@/components/ui/textarea";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {Checkbox} from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
+import {
+    HierClusDialogProps,
+    HierClusMainType,
+} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useModal } from "@/hooks/useModal";
 
 export const HierClusDialog = ({
-                                       isMainOpen,
-                                       setIsMainOpen,
-                                       setIsStatisticsOpen,
-                                       setIsPlotsOpen,
-                                       setIsSaveOpen,
-                                       setIsMethodOpen,
-                                       updateFormData,
-                                       data
-                                   }: HierClusDialogProps) => {
-    const [mainState, setMainState] = useState<HierClusMainType>({...data});
+    isMainOpen,
+    setIsMainOpen,
+    setIsStatisticsOpen,
+    setIsPlotsOpen,
+    setIsSaveOpen,
+    setIsMethodOpen,
+    updateFormData,
+    data,
+    globalVariables,
+    onContinue,
+    onReset,
+}: HierClusDialogProps) => {
+    const [mainState, setMainState] = useState<HierClusMainType>({ ...data });
+
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
         if (isMainOpen) {
-            setMainState({...data});
+            setMainState({ ...data });
         }
     }, [isMainOpen, data]);
 
-    const handleChange = (field: keyof HierClusMainType, value: CheckedState | boolean | string | null) => {
+    const handleChange = (
+        field: keyof HierClusMainType,
+        value: CheckedState | boolean | string | null
+    ) => {
         setMainState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -48,7 +66,7 @@ export const HierClusDialog = ({
         setMainState((prev) => ({
             ...prev,
             ClusterCases: value === "ClusterCases",
-            ClusterVar: value === "ClusterVar"
+            ClusterVar: value === "ClusterVar",
         }));
     };
 
@@ -59,9 +77,10 @@ export const HierClusDialog = ({
         setIsMainOpen(false);
     };
 
-    const openDialog = (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
-        setter(true);
-    };
+    const openDialog =
+        (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            setter(true);
+        };
 
     return (
         <>
@@ -83,7 +102,9 @@ export const HierClusDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">List Variabel</span>
+                                    <span className="font-semibold">
+                                        List Variabel
+                                    </span>
                                 </div>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
@@ -92,49 +113,85 @@ export const HierClusDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-6 p-2">
                                     <div>
-                                        <Label className="font-bold">Variable(s):</Label>
+                                        <Label className="font-bold">
+                                            Variable(s):
+                                        </Label>
                                         <Input
                                             id="Variables"
                                             type="text"
                                             className="min-w-2xl w-full min-h-[150px]"
                                             placeholder=""
                                             value={mainState.Variables ?? ""}
-                                            onChange={(e) => handleChange("Variables", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "Variables",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
                                         <div>
-                                            <Label className="font-bold">Label Cases by:</Label>
-                                            <Textarea placeholder=""/>
+                                            <Label className="font-bold">
+                                                Label Cases by:
+                                            </Label>
+                                            <Textarea placeholder="" />
                                         </div>
                                         <div>
-                                            <Label className="font-bold">Cluster</Label>
+                                            <Label className="font-bold">
+                                                Cluster
+                                            </Label>
                                             <RadioGroup
                                                 defaultValue="ClusterCases"
-                                                value={mainState.ClusterCases ? "ClusterCases" : mainState.ClusterVar ? "ClusterVar" : "ClusterCases"}
+                                                value={
+                                                    mainState.ClusterCases
+                                                        ? "ClusterCases"
+                                                        : mainState.ClusterVar
+                                                        ? "ClusterVar"
+                                                        : "ClusterCases"
+                                                }
                                                 onValueChange={handleClusterGrp}
                                             >
                                                 <div className="flex flex-row gap-2">
                                                     <div className="flex items-center space-x-2">
-                                                        <RadioGroupItem value="ClusterCases" id="ClusterCases"/>
+                                                        <RadioGroupItem
+                                                            value="ClusterCases"
+                                                            id="ClusterCases"
+                                                        />
                                                         <Label htmlFor="ClusterCases">
                                                             Cases
                                                         </Label>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
-                                                        <RadioGroupItem value="ClusterVar" id="ClusterVar"/>
-                                                        <Label htmlFor="ClusterVar">Variables</Label>
+                                                        <RadioGroupItem
+                                                            value="ClusterVar"
+                                                            id="ClusterVar"
+                                                        />
+                                                        <Label htmlFor="ClusterVar">
+                                                            Variables
+                                                        </Label>
                                                     </div>
                                                 </div>
                                             </RadioGroup>
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <Label className="font-bold">Display</Label>
+                                            <Label className="font-bold">
+                                                Display
+                                            </Label>
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="DispStats"
-                                                    checked={mainState.DispStats}
-                                                    onCheckedChange={(checked) => handleChange("DispStats", checked)}
+                                                    checked={
+                                                        mainState.DispStats
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "DispStats",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="DispStats"
@@ -146,8 +203,17 @@ export const HierClusDialog = ({
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="DispPlots"
-                                                    checked={mainState.DispPlots}
-                                                    onCheckedChange={(checked) => handleChange("DispPlots", checked)}
+                                                    checked={
+                                                        mainState.DispPlots
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "DispPlots",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="DispPlots"
@@ -168,7 +234,9 @@ export const HierClusDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
-                                        onClick={openDialog(setIsStatisticsOpen)}
+                                        onClick={openDialog(
+                                            setIsStatisticsOpen
+                                        )}
                                     >
                                         Statistics...
                                     </Button>
@@ -201,10 +269,7 @@ export const HierClusDialog = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
                         <Button type="button" variant="secondary">

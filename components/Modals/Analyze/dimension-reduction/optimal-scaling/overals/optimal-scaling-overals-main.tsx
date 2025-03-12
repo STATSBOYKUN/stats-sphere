@@ -1,27 +1,42 @@
-import {useEffect, useState} from "react";
-import {OptScaOveralsType} from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
-import {
-    OptScaOveralsDefault
-} from "@/constants/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-default";
-import {OptScaOveralsDialog} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
-import {OptScaOveralsDefineRange} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
-import {
-    OptScaOveralsDefineRangeScale
-} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range-scale";
-import {OptScaOveralsOptions} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/options";
-import {OptScaOveralsContainerProps} from "@/models/dimension-reduction/optimal-scaling-define";
+import { useEffect, useState } from "react";
+import { OptScaOveralsType } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
+import { OptScaOveralsDefault } from "@/constants/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-default";
+import { OptScaOveralsDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
+import { OptScaOveralsDefineRange } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
+import { OptScaOveralsDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range-scale";
+import { OptScaOveralsOptions } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/options";
+import { OptScaOveralsContainerProps } from "@/models/dimension-reduction/optimal-scaling-define";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useModal } from "@/hooks/useModal";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { RawData, VariableDef } from "@/lib/db";
+import { useDataStore } from "@/stores/useDataStore";
+import useResultStore from "@/stores/useResultStore";
 
-export const OptScaOveralsContainer = (
-    {
-        isOptScaOverals,
-        setIsOptScaOverals,
-    }: OptScaOveralsContainerProps
-) => {
-    const [formData, setFormData] = useState<OptScaOveralsType>({...OptScaOveralsDefault});
+export const OptScaOveralsContainer = ({
+    isOptScaOverals,
+    setIsOptScaOverals,
+}: OptScaOveralsContainerProps) => {
+    const variables = useVariableStore(
+        (state) => state.variables
+    ) as VariableDef[];
+    const dataVariables = useDataStore((state) => state.data) as RawData;
+    const tempVariables = variables.map((variables) => variables.name);
+
+    const [formData, setFormData] = useState<OptScaOveralsType>({
+        ...OptScaOveralsDefault,
+    });
+    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isDefineRangeScaleOpen, setIsDefineRangeScaleOpen] = useState(false);
+    const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
+    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+
+    const { closeModal } = useModal();
+    const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
-        field: keyof typeof formData[T],
+        field: keyof (typeof formData)[T],
         value: unknown
     ) => {
         setFormData((prev) => ({
@@ -33,10 +48,9 @@ export const OptScaOveralsContainer = (
         }));
     };
 
-    const [isMainOpen, setIsMainOpen] = useState(false);
-    const [isDefineRangeScaleOpen, setIsDefineRangeScaleOpen] = useState(false);
-    const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
-    const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+    const resetFormData = () => {
+        setFormData({ ...OptScaOveralsDefault });
+    };
 
     useEffect(() => {
         if (isOptScaOverals) {
@@ -53,15 +67,22 @@ export const OptScaOveralsContainer = (
                 setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
                 setIsDefineRangeOpen={setIsDefineRangeOpen}
                 setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) => updateFormData("main", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("main", field, value)
+                }
                 data={formData.main}
+                globalVariables={tempVariables}
+                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onReset={resetFormData}
             />
 
             {/* Define Range Scale */}
             <OptScaOveralsDefineRangeScale
                 isDefineRangeScaleOpen={isDefineRangeScaleOpen}
                 setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
-                updateFormData={(field, value) => updateFormData("defineRangeScale", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("defineRangeScale", field, value)
+                }
                 data={formData.defineRangeScale}
             />
 
@@ -69,7 +90,9 @@ export const OptScaOveralsContainer = (
             <OptScaOveralsDefineRange
                 isDefineRangeOpen={isDefineRangeOpen}
                 setIsDefineRangeOpen={setIsDefineRangeOpen}
-                updateFormData={(field, value) => updateFormData("defineRange", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("defineRange", field, value)
+                }
                 data={formData.defineRange}
             />
 
@@ -77,9 +100,11 @@ export const OptScaOveralsContainer = (
             <OptScaOveralsOptions
                 isOptionsOpen={isOptionsOpen}
                 setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) => updateFormData("options", field, value)}
+                updateFormData={(field, value) =>
+                    updateFormData("options", field, value)
+                }
                 data={formData.options}
             />
         </>
     );
-}
+};

@@ -7,7 +7,7 @@ export type UnivariateMainType = {
     RandFactor: string | null;
     Covar: string | null;
     WlsWeight: string | null;
-}
+};
 
 export type UnivariateDialogProps = {
     isMainOpen: boolean;
@@ -20,9 +20,15 @@ export type UnivariateDialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof UnivariateMainType,
+        value: string | null
+    ) => void;
     data: UnivariateMainType;
-}
+    globalVariables: string[];
+    onContinue: (mainState: UnivariateMainType) => void;
+    onReset: () => void;
+};
 
 export type UnivariateModelType = {
     NonCust: boolean;
@@ -37,28 +43,34 @@ export type UnivariateModelType = {
     TermText: string | null;
     SumOfSquareMethod: string | null;
     Intercept: boolean;
-}
+};
 
 export type UnivariateModelProps = {
     isModelOpen: boolean;
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateModelType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateModelType,
+        value: string | boolean | null
+    ) => void;
     data: UnivariateModelType;
-}
+};
 
 export type UnivariateContrastType = {
     FactorList: string | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
-}
+};
 
 export type UnivariateContrastProps = {
     isContrastOpen: boolean;
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateContrastType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateContrastType,
+        value: string | boolean | null
+    ) => void;
     data: UnivariateContrastType;
-}
+};
 
 export type UnivariatePlotsType = {
     SrcList: string | null;
@@ -75,14 +87,17 @@ export type UnivariatePlotsType = {
     Multiplier: number | null;
     IncludeRefLineForGrandMean: boolean;
     YAxisStart0: boolean;
-}
+};
 
 export type UnivariatePlotsProps = {
     isPlotsOpen: boolean;
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariatePlotsType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariatePlotsType,
+        value: string | number | boolean | null
+    ) => void;
     data: UnivariatePlotsType;
-}
+};
 
 export type UnivariatePostHocType = {
     SrcList: string | null;
@@ -110,28 +125,34 @@ export type UnivariatePostHocType = {
     Dunt: boolean;
     Games: boolean;
     Dunc: boolean;
-}
+};
 
 export type UnivariatePostHocProps = {
     isPostHocOpen: boolean;
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariatePostHocType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariatePostHocType,
+        value: string | boolean | null
+    ) => void;
     data: UnivariatePostHocType;
-}
+};
 
 export type UnivariateEMMeansType = {
     SrcList: string | null;
     TargetList: string | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
-}
+};
 
 export type UnivariateEMMeansProps = {
     isEMMeansOpen: boolean;
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateEMMeansType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateEMMeansType,
+        value: string | boolean | null
+    ) => void;
     data: UnivariateEMMeansType;
-}
+};
 
 export type UnivariateSaveType = {
     ResWeighted: boolean;
@@ -151,14 +172,17 @@ export type UnivariateSaveType = {
     FilePath: string | null;
     DatasetName: string | null;
     WriteNewDataSet: boolean;
-}
+};
 
 export type UnivariateSaveProps = {
     isSaveOpen: boolean;
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateSaveType, value: string | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateSaveType,
+        value: string | boolean | null
+    ) => void;
     data: UnivariateSaveType;
-}
+};
 
 export type UnivariateOptionsType = {
     DescStats: boolean;
@@ -183,14 +207,17 @@ export type UnivariateOptionsType = {
     HC4: boolean;
     CoefficientMatrix: boolean;
     SigLevel: number | null;
-}
+};
 
 export type UnivariateOptionsProps = {
     isOptionsOpen: boolean;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateOptionsType, value: number | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateOptionsType,
+        value: number | boolean | null
+    ) => void;
     data: UnivariateOptionsType;
-}
+};
 
 export type UnivariateBootstrapType = {
     PerformBootStrapping: boolean;
@@ -204,14 +231,17 @@ export type UnivariateBootstrapType = {
     Stratified: boolean;
     Variables: string | null;
     StrataVariables: string | null;
-}
+};
 
 export type UnivariateBootstrapProps = {
     isBootstrapOpen: boolean;
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof UnivariateBootstrapType, value: string | number | boolean | null) => void;
+    updateFormData: (
+        field: keyof UnivariateBootstrapType,
+        value: string | number | boolean | null
+    ) => void;
     data: UnivariateBootstrapType;
-}
+};
 
 export type UnivariateType = {
     main: UnivariateMainType;
@@ -223,8 +253,8 @@ export type UnivariateType = {
     save: UnivariateSaveType;
     options: UnivariateOptionsType;
     bootstrap: UnivariateBootstrapType;
-}
+};
 
 export type UnivariateContainerProps = {
     onClose: () => void;
-}
+};
