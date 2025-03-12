@@ -44,6 +44,11 @@ export type DiscriminantFinalResultType = {
     boxTestResults: any;
     eigenvaluesTable: any;
     wilksLambdaTable: any;
+    variablesEnteredTable: any;
+    variablesInAnalysisTable: any;
+    variablesNotInAnalysisTable: any;
+    wilksLambdaStepsTable: any;
+    pairwiseGroupComparisonsTable: any;
     stdCoefficientsTable: any;
     structureMatrixTable: any;
     groupCentroidsTable: any;

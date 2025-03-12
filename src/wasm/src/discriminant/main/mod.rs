@@ -2,7 +2,7 @@
 /// Discriminant Analysis Module
 ///
 /// This module provides implementation of discriminant analysis algorithms
-/// and related statistical methods.
+/// and related statistical methods based on the canonical statistical formulas.
 ///
 /// The main entry point is the `DiscriminantAnalysis` struct, which provides
 /// methods for performing various types of discriminant analysis.

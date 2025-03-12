@@ -7,6 +7,9 @@ use super::core::DiscriminantAnalysis;
 
 impl DiscriminantAnalysis {
     /// Compute basic statistics: means, matrices, etc.
+    ///
+    /// # Returns
+    /// * Error if computation fails
     pub fn compute_basic_statistics(&mut self) -> Result<(), DiscriminantError> {
         // 1. Calculate means for each group
         self.compute_group_means()?;
@@ -36,6 +39,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate means for each group
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_group_means(&mut self) -> Result<(), DiscriminantError> {
         for j in 0..self.g {
             for i in 0..self.p {
@@ -58,6 +64,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate overall means for each variable
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_overall_means(&mut self) -> Result<(), DiscriminantError> {
         for i in 0..self.p {
             let mut sum_weighted_values = 0.0;
@@ -79,6 +88,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Within-Groups Sums of Squares and Cross-Product Matrix (W)
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_within_groups_matrix(&mut self) -> Result<(), DiscriminantError> {
         for i in 0..self.p {
             for l in 0..=i {
@@ -115,6 +127,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Total Sums of Squares and Cross-Product Matrix (T)
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_total_matrix(&mut self) -> Result<(), DiscriminantError> {
         for i in 0..self.p {
             for l in 0..=i {
@@ -151,6 +166,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Within-Groups Covariance Matrix (C)
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_within_groups_covariance(&mut self) -> Result<(), DiscriminantError> {
         if self.n <= self.g as f64 {
             return Err(DiscriminantError::InsufficientData);
@@ -166,6 +184,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Individual Group Covariance Matrices
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_group_covariance_matrices(&mut self) -> Result<(), DiscriminantError> {
         for j in 0..self.g {
             for i in 0..self.p {
@@ -198,6 +219,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Within-Groups Correlation Matrix (R)
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_within_groups_correlation(&mut self) -> Result<(), DiscriminantError> {
         for i in 0..self.p {
             for l in 0..=i {
@@ -222,6 +246,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Total Covariance Matrix (T')
+    ///
+    /// # Returns
+    /// * Error if computation fails
     fn compute_total_covariance(&mut self) -> Result<(), DiscriminantError> {
         if self.n <= 1.0 {
             return Err(DiscriminantError::InsufficientData);
@@ -237,6 +264,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate case processing summary
+    ///
+    /// # Returns
+    /// * Case processing summary
     pub fn calculate_case_processing_summary(&self) -> CaseProcessingSummary {
         let valid_count = self.n as usize;
         let excluded_missing_group = self.total_cases - valid_count;
@@ -271,6 +301,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate group statistics
+    ///
+    /// # Returns
+    /// * Group statistics
     pub fn calculate_group_statistics(&self) -> GroupStatistics {
         let mut means = vec![vec![0.0; self.p]; self.g];
         let mut std_deviations = vec![vec![0.0; self.p]; self.g];
@@ -322,6 +355,12 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Wilks' Lambda, F-values for variable equality tests
+    ///
+    /// # Arguments
+    /// * `i` - Variable index
+    ///
+    /// # Returns
+    /// * F-Lambda result for the variable
     pub fn univariate_f_lambda(&self, i: usize) -> Result<FLambdaResult, DiscriminantError> {
         if i >= self.p {
             return Err(DiscriminantError::InvalidInput(format!("Variable index {} out of bounds", i)));
@@ -329,6 +368,13 @@ impl DiscriminantAnalysis {
 
         let t_ii = self.t_matrix[i][i];
         let w_ii = self.w_matrix[i][i];
+
+        // Check for zero variance
+        if t_ii <= 0.0 || w_ii <= 0.0 {
+            return Err(DiscriminantError::ComputationError(format!(
+                "Zero variance for variable {}: t_ii={}, w_ii={}", i, t_ii, w_ii
+            )));
+        }
 
         // F_i = ((t_ii - w_ii) * (n - g)) / (w_ii * (g - 1))
         let f_i = ((t_ii - w_ii) * (self.n - self.g as f64)) / (w_ii * (self.g - 1) as f64);
@@ -352,6 +398,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Perform Box's M test for equality of covariance matrices
+    ///
+    /// # Returns
+    /// * Box's M test result
     pub fn box_m_test(&self) -> Result<BoxMResult, DiscriminantError> {
         // Check number of groups
         if self.g < 2 {
@@ -402,13 +451,17 @@ impl DiscriminantAnalysis {
         let mut group_log_dets = Vec::with_capacity(g_prime);
 
         // Pooled log determinant
-        let c_prime_log_det = log_determinant(&c_prime)
-            .map_err(|_| DiscriminantError::SingularMatrix)?;
+        let c_prime_log_det = match log_determinant(&c_prime) {
+            Ok(det) => det,
+            Err(_) => return Err(DiscriminantError::SingularMatrix),
+        };
 
         // Group log determinants
         for &j in &valid_groups {
-            let c_j_log_det = log_determinant(&self.c_group_matrices[j])
-                .map_err(|_| DiscriminantError::SingularMatrix)?;
+            let c_j_log_det = match log_determinant(&self.c_group_matrices[j]) {
+                Ok(det) => det,
+                Err(_) => return Err(DiscriminantError::SingularMatrix),
+            };
             group_log_dets.push((self.group_values[j], round_to_decimal(c_j_log_det, 3)));
         }
 
@@ -416,8 +469,10 @@ impl DiscriminantAnalysis {
         let mut m = (n_prime - g_prime as f64) * c_prime_log_det;
 
         for (idx, &j) in valid_groups.iter().enumerate() {
-            let c_j_log_det = log_determinant(&self.c_group_matrices[j])
-                .map_err(|_| DiscriminantError::SingularMatrix)?;
+            let c_j_log_det = match log_determinant(&self.c_group_matrices[j]) {
+                Ok(det) => det,
+                Err(_) => return Err(DiscriminantError::SingularMatrix),
+            };
             m -= (valid_n_j[idx] - 1.0) * c_j_log_det;
         }
 

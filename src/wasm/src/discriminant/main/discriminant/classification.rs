@@ -1,12 +1,15 @@
-use  crate::discriminant::main::types::results::{DiscriminantError, ClassificationResult, ClassificationResults};
-use  crate::discriminant::main::matrix::decomposition::matrix_inverse;
-use  crate::discriminant::main::stats::{chi_square_cdf, mahalanobis_distance};
-use  crate::discriminant::main::utils::argmax;
+use crate::discriminant::main::types::results::{DiscriminantError, ClassificationResult, ClassificationResults};
+use crate::discriminant::main::matrix::decomposition::matrix_inverse;
+use crate::discriminant::main::stats::{chi_square_cdf, mahalanobis_distance};
+use crate::discriminant::main::utils::{argmax, round_to_decimal};
 
 use super::core::DiscriminantAnalysis;
 
 impl DiscriminantAnalysis {
     /// Calculate classification function coefficients (Fisher's linear discriminant functions)
+    ///
+    /// # Returns
+    /// * Matrix of classification function coefficients with constant term
     pub fn classification_functions(&self) -> Result<Vec<Vec<f64>>, DiscriminantError> {
         // Calculate inverse of W
         let w_inv = matrix_inverse(&self.w_matrix)
@@ -43,6 +46,12 @@ impl DiscriminantAnalysis {
     }
 
     /// Classify a new case
+    ///
+    /// # Arguments
+    /// * `x` - Features of the case to classify
+    ///
+    /// # Returns
+    /// * Classification result
     pub fn classify(&self, x: &[f64]) -> Result<ClassificationResult, DiscriminantError> {
         if x.len() != self.p {
             return Err(DiscriminantError::InvalidInput(
@@ -72,9 +81,6 @@ impl DiscriminantAnalysis {
         let centroids = self.group_centroids();
         let mut mahalanobis_distances = vec![0.0; self.g];
         let mut chi_square_probs = vec![0.0; self.g];
-
-        // Identity matrix for canonical space
-        let identity = vec![vec![1.0; m]; m];
 
         for j in 0..self.g {
             let mut distance = 0.0;
@@ -140,7 +146,10 @@ impl DiscriminantAnalysis {
         })
     }
 
-    /// Perform cross-validation
+    /// Perform cross-validation (leave-one-out method)
+    ///
+    /// # Returns
+    /// * Cross-validation results
     pub fn cross_validate(&self) -> Result<ClassificationResults, DiscriminantError> {
         // Pre-allocate count matrices
         let mut original_count = vec![vec![0; self.g]; self.g];
@@ -176,6 +185,8 @@ impl DiscriminantAnalysis {
                         continue;
                     }
 
+                    let mut adjusted_distance;
+                    
                     // For non-self groups, use original means
                     if i != j {
                         // Calculate Mahalanobis distance
@@ -183,12 +194,7 @@ impl DiscriminantAnalysis {
 
                         // Adjust for prior probability
                         let prior = if self.priors[i] <= 0.0 { 1e-10 } else { self.priors[i] };
-                        let adjusted_distance = distance - 2.0 * prior.ln();
-
-                        if adjusted_distance < min_distance {
-                            min_distance = adjusted_distance;
-                            cv_predicted = i;
-                        }
+                        adjusted_distance = distance - 2.0 * prior.ln();
                     } else {
                         // For self group, recalculate mean without this case
                         let mut leave_one_out_mean = vec![0.0; self.p];
@@ -216,12 +222,12 @@ impl DiscriminantAnalysis {
 
                         // Adjust for prior probability
                         let prior = if self.priors[i] <= 0.0 { 1e-10 } else { self.priors[i] };
-                        let adjusted_distance = distance - 2.0 * prior.ln();
+                        adjusted_distance = distance - 2.0 * prior.ln();
+                    }
 
-                        if adjusted_distance < min_distance {
-                            min_distance = adjusted_distance;
-                            cv_predicted = i;
-                        }
+                    if adjusted_distance < min_distance {
+                        min_distance = adjusted_distance;
+                        cv_predicted = i;
                     }
                 }
 
@@ -257,11 +263,15 @@ impl DiscriminantAnalysis {
 
         Ok(ClassificationResults {
             original_count,
-            original_percentage: original_pct,
+            original_percentage: original_pct.into_iter().map(|row| 
+                row.into_iter().map(|v| round_to_decimal(v, 1)).collect()
+            ).collect(),
             cross_val_count,
-            cross_val_percentage: cross_val_pct,
-            original_correct_pct,
-            cross_val_correct_pct,
+            cross_val_percentage: cross_val_pct.into_iter().map(|row| 
+                row.into_iter().map(|v| round_to_decimal(v, 1)).collect()
+            ).collect(),
+            original_correct_pct: round_to_decimal(original_correct_pct, 1),
+            cross_val_correct_pct: round_to_decimal(cross_val_correct_pct, 1),
         })
     }
 }

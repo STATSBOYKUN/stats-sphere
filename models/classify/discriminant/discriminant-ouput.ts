@@ -69,6 +69,78 @@ export interface JsonData {
         original_correct_pct: number;
         cross_val_correct_pct: number;
     };
+    stepwise_statistics?: {
+        method: string;
+        criteria: {
+            criteria_type: string;
+            entry: number;
+            removal: number;
+            v_to_enter: number;
+        };
+        display: {
+            summary_steps: boolean;
+            pairwise_distances: boolean;
+        };
+        steps: {
+            step: number;
+            variable_index: number;
+            variable_name: string;
+            action: string;
+            statistic: number;
+            df1: number;
+            df2: number;
+            df3: number;
+            wilks_lambda: number;
+            wilks_df1: number;
+            wilks_df2: number;
+            exact_f: number;
+            exact_f_df1: number;
+            exact_f_df2: number;
+            significance: number;
+        }[];
+        variables_in_analysis: {
+            step: number;
+            variable_index: number;
+            variable_name: string;
+            tolerance: number;
+            f_to_remove: number;
+        }[];
+        variables_not_in_analysis: {
+            step: number;
+            variable_index: number;
+            variable_name: string;
+            tolerance: number;
+            min_tolerance: number;
+            f_to_enter: number;
+            wilks_lambda: number;
+        }[];
+        wilks_lambda_steps: {
+            step: number;
+            variable_index: number;
+            variable_name: string;
+            action: string;
+            statistic: number;
+            df1: number;
+            df2: number;
+            df3: number;
+            wilks_lambda: number;
+            wilks_df1: number;
+            wilks_df2: number;
+            exact_f: number;
+            exact_f_df1: number;
+            exact_f_df2: number;
+            significance: number;
+        }[];
+        pairwise_comparisons: {
+            step: number;
+            group1: number;
+            group2: number;
+            f_value: number;
+            significance: number;
+        }[];
+        max_steps: number;
+        tolerance: number;
+    };
     group_values: number[];
     variable_names: string[];
     group_name: string; // Nama kolom grup (mis. "incbef")
@@ -93,3 +165,21 @@ export interface Table {
 export interface ResultJson {
     tables: Table[];
 }
+
+export interface PairwiseComparison {
+    step: number;
+    group1: number;
+    group2: number;
+    f_value: number;
+    significance: number;
+}
+
+export interface PairwiseValue {
+    f: string | null;
+    sig: string | null;
+}
+
+export type PairwiseDataMap = Record<
+    string,
+    Record<string, Record<string, PairwiseValue>>
+>;

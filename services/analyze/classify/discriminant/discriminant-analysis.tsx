@@ -105,6 +105,29 @@ export async function analyzeDiscriminant({
     });
 
     /*
+     * 📊 Stepwise Statistics (Optional) 📊
+     */
+    const variablesEnteredTable = JSON.stringify({
+        tables: [formattedResults.tables[16]],
+    });
+
+    const variablesInAnalysisTable = JSON.stringify({
+        tables: [formattedResults.tables[17]],
+    });
+
+    const variablesNotInAnalysisTable = JSON.stringify({
+        tables: [formattedResults.tables[18]],
+    });
+
+    const wilksLambdaStepsTable = JSON.stringify({
+        tables: [formattedResults.tables[19]],
+    });
+
+    const pairwiseGroupComparisonsTable = JSON.stringify({
+        tables: [formattedResults.tables[20]],
+    });
+
+    /*
      * 📜 Summary Canonical Process 📜
      */
     const eigenvaluesTable = JSON.stringify({
@@ -161,25 +184,30 @@ export async function analyzeDiscriminant({
     /*
      * 🎉 Final Result Process 🎯
      * */
-    // await resultDiscriminant({
-    //     addLog,
-    //     addAnalytic,
-    //     addStatistic,
-    //     caseProcessingSummary,
-    //     groupStatistics,
-    //     testsOfEquality,
-    //     pooledMatrices,
-    //     covarianceMatrices,
-    //     boxTestLogDeterminants,
-    //     boxTestResults,
-    //     eigenvaluesTable,
-    //     wilksLambdaTable,
-    //     stdCoefficientsTable,
-    //     structureMatrixTable,
-    //     groupCentroidsTable,
-    //     classificationResultsTable,
-    //     classificationSummaryTable,
-    //     priorProbabilitiesTable,
-    //     classificationFunctionCoefficientsTable,
-    // });
+    await resultDiscriminant({
+        addLog,
+        addAnalytic,
+        addStatistic,
+        caseProcessingSummary,
+        groupStatistics,
+        testsOfEquality,
+        pooledMatrices,
+        covarianceMatrices,
+        boxTestLogDeterminants,
+        boxTestResults,
+        eigenvaluesTable,
+        wilksLambdaTable,
+        variablesEnteredTable,
+        variablesInAnalysisTable,
+        variablesNotInAnalysisTable,
+        wilksLambdaStepsTable,
+        pairwiseGroupComparisonsTable,
+        stdCoefficientsTable,
+        structureMatrixTable,
+        groupCentroidsTable,
+        classificationResultsTable,
+        classificationSummaryTable,
+        priorProbabilitiesTable,
+        classificationFunctionCoefficientsTable,
+    });
 }

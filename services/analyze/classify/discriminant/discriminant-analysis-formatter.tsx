@@ -3,6 +3,8 @@ import {
     ResultJson,
     TableRow,
     Table,
+    PairwiseComparison,
+    PairwiseDataMap,
 } from "@/models/classify/discriminant/discriminant-ouput";
 
 // Fungsi utama untuk mengonversi data statistik ke format JSON yang ditentukan
@@ -789,6 +791,257 @@ export function convertStatisticalData(jsonData: JsonData): ResultJson {
         });
 
         resultJson.tables.push(classificationFunctionCoefficientsTable);
+    }
+
+    // 17. Tabel Stepwise Statistics - Variables Entered/Removed
+    if (jsonData.stepwise_statistics) {
+        const variablesEnteredTable: Table = {
+            title: "Stepwise Statistics - Variables Entered/Removed",
+            columnHeaders: [
+                { header: "Step" },
+                { header: "Entered" },
+                { header: "Statistic" },
+                { header: "df1" },
+                { header: "df2" },
+                { header: "df3" },
+                { header: "Wilks' Lambda" },
+                { header: "Exact F" },
+                { header: "Sig." },
+            ],
+            rows: [],
+        };
+
+        // Tambahkan data steps untuk Variables Entered/Removed
+        for (let i = 0; i < jsonData.stepwise_statistics.steps.length; i++) {
+            const step = jsonData.stepwise_statistics.steps[i];
+            variablesEnteredTable.rows.push({
+                rowHeader: [step.step.toString()],
+                Entered: step.variable_name,
+                Statistic: formatDisplayNumber(step.statistic),
+                df1: formatDisplayNumber(step.df1),
+                df2: formatDisplayNumber(step.df2),
+                df3: formatDisplayNumber(step.df3),
+                "Wilks' Lambda": formatDisplayNumber(step.statistic), // sama dengan statistic
+                "Exact F": formatDisplayNumber(step.exact_f),
+                "Sig.": formatDisplayNumber(step.significance),
+            });
+        }
+
+        resultJson.tables.push(variablesEnteredTable);
+
+        // 18. Tabel Stepwise Statistics - Variables in the Analysis
+        const variablesInAnalysisTable: Table = {
+            title: "Variables in the Analysis",
+            columnHeaders: [
+                { header: "Step" },
+                { header: "" },
+                { header: "Tolerance" },
+                { header: "F to Remove" },
+            ],
+            rows: [],
+        };
+
+        // Tambahkan data variables_in_analysis
+        for (
+            let i = 0;
+            i < jsonData.stepwise_statistics.variables_in_analysis.length;
+            i++
+        ) {
+            const varInAnalysis =
+                jsonData.stepwise_statistics.variables_in_analysis[i];
+            variablesInAnalysisTable.rows.push({
+                rowHeader: [
+                    varInAnalysis.step.toString(),
+                    varInAnalysis.variable_name,
+                ],
+                Tolerance: formatDisplayNumber(varInAnalysis.tolerance),
+                "F to Remove": formatDisplayNumber(varInAnalysis.f_to_remove),
+            });
+        }
+
+        resultJson.tables.push(variablesInAnalysisTable);
+
+        // 19. Tabel Stepwise Statistics - Variables Not in the Analysis
+        const variablesNotInAnalysisTable: Table = {
+            title: "Variables Not in the Analysis",
+            columnHeaders: [
+                { header: "Step" },
+                { header: "" },
+                { header: "Tolerance" },
+                { header: "Min. Tolerance" },
+                { header: "F to Enter" },
+                { header: "Wilks' Lambda" },
+            ],
+            rows: [],
+        };
+
+        // Tambahkan data variables_not_in_analysis
+        for (
+            let i = 0;
+            i < jsonData.stepwise_statistics.variables_not_in_analysis.length;
+            i++
+        ) {
+            const varNotInAnalysis =
+                jsonData.stepwise_statistics.variables_not_in_analysis[i];
+            variablesNotInAnalysisTable.rows.push({
+                rowHeader: [
+                    varNotInAnalysis.step.toString(),
+                    varNotInAnalysis.variable_name,
+                ],
+                Tolerance: formatDisplayNumber(varNotInAnalysis.tolerance),
+                "Min. Tolerance": formatDisplayNumber(
+                    varNotInAnalysis.min_tolerance
+                ),
+                "F to Enter": formatDisplayNumber(varNotInAnalysis.f_to_enter),
+                "Wilks' Lambda": formatDisplayNumber(
+                    varNotInAnalysis.wilks_lambda
+                ),
+            });
+        }
+
+        resultJson.tables.push(variablesNotInAnalysisTable);
+
+        // 20. Tabel Stepwise Statistics - Wilks' Lambda
+        const wilksLambdaStepsTable: Table = {
+            title: "Wilks' Lambda",
+            columnHeaders: [
+                { header: "Step" },
+                { header: "Number of Variables" },
+                { header: "Lambda" },
+                { header: "df1" },
+                { header: "df2" },
+                { header: "df3" },
+                { header: "Statistic" },
+                { header: "Exact F df1" },
+                { header: "Exact F df2" },
+                { header: "Sig." },
+            ],
+            rows: [],
+        };
+
+        // Tambahkan data wilks_lambda_steps
+        for (
+            let i = 0;
+            i < jsonData.stepwise_statistics.wilks_lambda_steps.length;
+            i++
+        ) {
+            const wlStep = jsonData.stepwise_statistics.wilks_lambda_steps[i];
+            wilksLambdaStepsTable.rows.push({
+                rowHeader: [wlStep.step.toString()],
+                "Number of Variables": "1", // Assuming one variable per step
+                Lambda: formatDisplayNumber(wlStep.wilks_lambda),
+                df1: formatDisplayNumber(wlStep.df1),
+                df2: formatDisplayNumber(wlStep.df2),
+                df3: formatDisplayNumber(wlStep.df3),
+                Statistic: formatDisplayNumber(wlStep.exact_f),
+                "Exact F df1": formatDisplayNumber(wlStep.exact_f_df1),
+                "Exact F df2": formatDisplayNumber(wlStep.exact_f_df2),
+                "Sig.": formatDisplayNumber(wlStep.significance),
+            });
+        }
+
+        resultJson.tables.push(wilksLambdaStepsTable);
+
+        // 21. Tabel Stepwise Statistics - Pairwise Group Comparisons
+        const pairwiseGroupComparisonsTable: Table = {
+            title: "Pairwise Group Comparisons",
+            columnHeaders: [
+                { header: "Step" },
+                { header: jsonData.group_name },
+                { header: "" },
+                { header: jsonData.group_values[0].toString() },
+                { header: jsonData.group_values[1].toString() },
+                { header: jsonData.group_values[2].toString() },
+            ],
+            rows: [],
+        };
+
+        const pairwiseData: PairwiseDataMap = {};
+
+        for (
+            let i = 0;
+            i < jsonData.stepwise_statistics.pairwise_comparisons.length;
+            i++
+        ) {
+            // Tetapkan tipe yang tepat untuk comparison
+            const comparison: PairwiseComparison =
+                jsonData.stepwise_statistics.pairwise_comparisons[i];
+
+            const step = comparison.step.toString();
+            const group1 = comparison.group1.toString();
+            const group2 = comparison.group2.toString();
+
+            if (!pairwiseData[step]) {
+                pairwiseData[step] = {};
+            }
+
+            if (!pairwiseData[step][group1]) {
+                pairwiseData[step][group1] = {};
+            }
+
+            if (!pairwiseData[step][group2]) {
+                pairwiseData[step][group2] = {};
+            }
+
+            // Store F and Sig values in appropriate cells
+            pairwiseData[step][group1][group2] = {
+                f: formatDisplayNumber(comparison.f_value),
+                sig: formatDisplayNumber(Math.abs(comparison.significance)),
+            };
+
+            pairwiseData[step][group2][group1] = {
+                f: formatDisplayNumber(comparison.f_value),
+                sig: formatDisplayNumber(Math.abs(comparison.significance)),
+            };
+        }
+
+        // Add rows for each group for each step
+        for (const step in pairwiseData) {
+            for (const group of jsonData.group_values) {
+                const groupStr = group.toString();
+
+                // Add F row
+                const fRow: TableRow = {
+                    rowHeader: [
+                        step === Object.keys(pairwiseData)[0] &&
+                        groupStr === jsonData.group_values[0].toString()
+                            ? step
+                            : "",
+                        groupStr,
+                        "F",
+                    ],
+                };
+
+                // Add Sig row
+                const sigRow: TableRow = {
+                    rowHeader: ["", "", "Sig."],
+                };
+
+                // Add values for each column (group)
+                for (const colGroup of jsonData.group_values) {
+                    const colGroupStr = colGroup.toString();
+
+                    if (groupStr === colGroupStr) {
+                        // Don't add values for diagonal cells
+                        continue;
+                    }
+
+                    if (
+                        pairwiseData[step][groupStr] &&
+                        pairwiseData[step][groupStr][colGroupStr]
+                    ) {
+                        const data = pairwiseData[step][groupStr][colGroupStr];
+                        if (data.f) fRow[colGroupStr] = data.f;
+                        if (data.sig) sigRow[colGroupStr] = data.sig;
+                    }
+                }
+
+                pairwiseGroupComparisonsTable.rows.push(fRow);
+                pairwiseGroupComparisonsTable.rows.push(sigRow);
+            }
+        }
+
+        resultJson.tables.push(pairwiseGroupComparisonsTable);
     }
 
     return resultJson;

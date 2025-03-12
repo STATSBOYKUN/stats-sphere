@@ -13,6 +13,11 @@ export async function resultDiscriminant({
     boxTestResults,
     eigenvaluesTable,
     wilksLambdaTable,
+    variablesEnteredTable,
+    variablesInAnalysisTable,
+    variablesNotInAnalysisTable,
+    wilksLambdaStepsTable,
+    pairwiseGroupComparisonsTable,
     stdCoefficientsTable,
     structureMatrixTable,
     groupCentroidsTable,
@@ -144,6 +149,44 @@ export async function resultDiscriminant({
                 log_id: logId,
                 title: `Stepwise Statistics`,
                 note: "",
+            });
+
+            const variablesEnteredTableId = await addStatistic({
+                analytic_id: stepwiseStatisticsId,
+                title: `Variables Entered`,
+                output_data: variablesEnteredTable,
+                components: `Variables Entered`,
+            });
+
+            const variablesInAnalysisTableId = await addStatistic({
+                analytic_id: stepwiseStatisticsId,
+                title: `Variables in the Analysis`,
+                output_data: variablesInAnalysisTable,
+                components: `Variables in the Analysis`,
+            });
+
+            const variablesNotInAnalysisTableId = await addStatistic({
+                analytic_id: stepwiseStatisticsId,
+                title: `Variables Not in the Analysis`,
+                output_data: variablesNotInAnalysisTable,
+                components: `Variables Not in the Analysis`,
+            });
+
+            const wilksLambdaStepsTableId = await addStatistic({
+                analytic_id: stepwiseStatisticsId,
+                title: `Wilks' Lambda Steps`,
+                output_data: wilksLambdaStepsTable,
+                components: `Wilks' Lambda Steps`,
+            });
+
+            /*
+             * 📈 Pairwise Group Comparisons Result 📈
+             * */
+            const pairwiseGroupComparisonsId = await addStatistic({
+                analytic_id: stepwiseStatisticsId,
+                title: `Pairwise Group Comparisons`,
+                output_data: pairwiseGroupComparisonsTable,
+                components: `Pairwise Group Comparisons`,
             });
 
             /*

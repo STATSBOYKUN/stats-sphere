@@ -1,20 +1,24 @@
-use  crate::discriminant::main::types::results::{DiscriminantError, ChiSquareResult, EigenStats};
-use  crate::discriminant::main::matrix::eigen::find_eigenpairs;
-use  crate::discriminant::main::matrix::decomposition::{matrix_inverse, matrix_determinant};
-use  crate::discriminant::main::stats::chi_square_p_value;
-use  crate::discriminant::main::utils::round_to_decimal;
+use crate::discriminant::main::types::results::{DiscriminantError, ChiSquareResult, EigenStats};
+use crate::discriminant::main::matrix::eigen::find_eigenpairs;
+use crate::discriminant::main::matrix::decomposition::{matrix_inverse, matrix_determinant};
+use crate::discriminant::main::stats::chi_square_p_value;
+use crate::discriminant::main::utils::round_to_decimal;
 
 use super::core::DiscriminantAnalysis;
 
 impl DiscriminantAnalysis {
     /// Compute canonical discriminant functions
+    ///
+    /// # Returns
+    /// * Error if computation fails
     pub fn compute_canonical_discriminant_functions(&mut self) -> Result<(), DiscriminantError> {
         // Number of canonical functions is min(p, g-1)
         let m = std::cmp::min(self.q, self.g - 1);
 
         if m == 0 {
             return Err(DiscriminantError::ComputationError(
-                "Cannot compute canonical discriminant functions: min(q, g-1) = 0".into()
+                format!("Cannot compute canonical discriminant functions: min(q={}, g-1={}) = 0", 
+                    self.q, self.g - 1)
             ));
         }
 
@@ -59,7 +63,9 @@ impl DiscriminantAnalysis {
         // Copy eigenvectors to canonical coefficients
         for i in 0..self.p {
             for j in 0..m {
-                self.canonical_coefficients[i][j] = eigenvectors[i][j];
+                if j < eigenvectors[i].len() {
+                    self.canonical_coefficients[i][j] = eigenvectors[i][j];
+                }
             }
         }
 
@@ -67,6 +73,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate standardized canonical discriminant function coefficients
+    ///
+    /// # Returns
+    /// * Matrix of standardized coefficients
     pub fn standardized_coefficients(&self) -> Result<Vec<Vec<f64>>, DiscriminantError> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut standardized = vec![vec![0.0; m]; self.p];
@@ -85,8 +94,10 @@ impl DiscriminantAnalysis {
 
         for i in 0..self.p {
             for j in 0..m {
-                // SPSS standardization formula
-                standardized[i][j] = self.canonical_coefficients[i][j] * within_std_devs[i];
+                if j < self.canonical_coefficients[i].len() {
+                    // SPSS standardization formula
+                    standardized[i][j] = self.canonical_coefficients[i][j] * within_std_devs[i];
+                }
             }
         }
 
@@ -108,6 +119,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate structure matrix (correlations between variables and discriminant functions)
+    ///
+    /// # Returns
+    /// * Structure matrix
     pub fn structure_matrix(&self) -> Result<Vec<Vec<f64>>, DiscriminantError> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut structure = vec![vec![0.0; m]; self.p];
@@ -120,11 +134,15 @@ impl DiscriminantAnalysis {
         for j in 0..self.g {
             for k in 0..self.m[j] {
                 for func in 0..m {
-                    let mut score = 0.0;
-                    for i in 0..self.p {
-                        score += self.canonical_coefficients[i][func] * self.data[j][k][i];
+                    if func < self.canonical_coefficients[0].len() {
+                        let mut score = 0.0;
+                        for i in 0..self.p {
+                            if func < self.canonical_coefficients[i].len() {
+                                score += self.canonical_coefficients[i][func] * self.data[j][k][i];
+                            }
+                        }
+                        scores[score_idx][func] = score;
                     }
-                    scores[score_idx][func] = score;
                 }
                 score_idx += 1;
             }
@@ -148,28 +166,30 @@ impl DiscriminantAnalysis {
         // Calculate correlations between variables and discriminant scores
         for i in 0..self.p {
             for j in 0..m {
-                let mut cov = 0.0;
-                let mut var_ss = 0.0;
-                let mut score_ss = 0.0;
+                if j < score_means.len() {
+                    let mut cov = 0.0;
+                    let mut var_ss = 0.0;
+                    let mut score_ss = 0.0;
 
-                score_idx = 0;
-                for g in 0..self.g {
-                    for k in 0..self.m[g] {
-                        let var_dev = self.data[g][k][i] - var_means[i];
-                        let score_dev = scores[score_idx][j] - score_means[j];
+                    score_idx = 0;
+                    for g in 0..self.g {
+                        for k in 0..self.m[g] {
+                            let var_dev = self.data[g][k][i] - var_means[i];
+                            let score_dev = scores[score_idx][j] - score_means[j];
 
-                        cov += var_dev * score_dev;
-                        var_ss += var_dev * var_dev;
-                        score_ss += score_dev * score_dev;
+                            cov += var_dev * score_dev;
+                            var_ss += var_dev * var_dev;
+                            score_ss += score_dev * score_dev;
 
-                        score_idx += 1;
+                            score_idx += 1;
+                        }
                     }
-                }
 
-                if var_ss > 0.0 && score_ss > 0.0 {
-                    structure[i][j] = cov / (var_ss.sqrt() * score_ss.sqrt());
-                } else {
-                    structure[i][j] = 0.0;
+                    if var_ss > 0.0 && score_ss > 0.0 {
+                        structure[i][j] = cov / (var_ss.sqrt() * score_ss.sqrt());
+                    } else {
+                        structure[i][j] = 0.0;
+                    }
                 }
             }
         }
@@ -178,6 +198,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate canonical correlations
+    ///
+    /// # Returns
+    /// * Vector of canonical correlations
     pub fn canonical_correlations(&self) -> Vec<f64> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut correlations = Vec::with_capacity(m);
@@ -185,7 +208,8 @@ impl DiscriminantAnalysis {
         for k in 0..m {
             if k < self.eigenvalues.len() {
                 let lambda_k = self.eigenvalues[k];
-                correlations.push((lambda_k / (1.0 + lambda_k)).sqrt());
+                let corr = (lambda_k / (1.0 + lambda_k)).sqrt();
+                correlations.push(round_to_decimal(corr, 3));
             }
         }
 
@@ -193,6 +217,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate Wilks' Lambda for the discriminant functions
+    ///
+    /// # Returns
+    /// * Vector of chi-square test results
     pub fn wilks_lambda(&self) -> Vec<ChiSquareResult> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut results = Vec::with_capacity(m);
@@ -223,6 +250,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate eigenvalue statistics
+    ///
+    /// # Returns
+    /// * Vector of eigenvalue statistics
     pub fn eigen_statistics(&self) -> Vec<EigenStats> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut stats = Vec::with_capacity(m);
@@ -254,6 +284,9 @@ impl DiscriminantAnalysis {
     }
 
     /// Calculate group centroids
+    ///
+    /// # Returns
+    /// * Matrix of group centroids in discriminant function space
     pub fn group_centroids(&self) -> Vec<Vec<f64>> {
         let m = std::cmp::min(self.q, self.g - 1);
         let mut centroids = vec![vec![0.0; m]; self.g];
@@ -267,49 +300,61 @@ impl DiscriminantAnalysis {
         // Calculate function values at group means
         for j in 0..self.g {
             for k in 0..m {
-                // Start with constant term
-                let mut sum = unstd_coeffs[self.p][k];
+                if k < unstd_coeffs[0].len() {
+                    // Start with constant term
+                    let mut sum = unstd_coeffs[self.p][k];
 
-                // Add variable terms
-                for i in 0..self.p {
-                    sum += unstd_coeffs[i][k] * self.means_by_group[j][i];
+                    // Add variable terms
+                    for i in 0..self.p {
+                        sum += unstd_coeffs[i][k] * self.means_by_group[j][i];
+                    }
+
+                    centroids[j][k] = sum;
                 }
-
-                centroids[j][k] = sum;
             }
         }
 
         // Ensure centroids are properly centered
         for k in 0..m {
-            // Calculate grand mean of centroids
-            let mut mean = 0.0;
-            for j in 0..self.g {
-                mean += centroids[j][k] * (self.n_j[j] / self.n);
-            }
-
-            // Center the centroids
-            for j in 0..self.g {
-                centroids[j][k] -= mean;
-            }
-
-            // Scale to ensure between-group variance equals 1
-            let mut var = 0.0;
-            for j in 0..self.g {
-                var += (centroids[j][k] * centroids[j][k]) * (self.n_j[j] / self.n);
-            }
-
-            if var > 0.0 {
-                let scaling = 1.0 / var.sqrt();
+            if k < centroids[0].len() {
+                // Calculate grand mean of centroids
+                let mut mean = 0.0;
                 for j in 0..self.g {
-                    centroids[j][k] *= scaling;
+                    mean += centroids[j][k] * (self.n_j[j] / self.n);
+                }
+
+                // Center the centroids
+                for j in 0..self.g {
+                    centroids[j][k] -= mean;
+                }
+
+                // Scale to ensure between-group variance equals 1
+                let mut var = 0.0;
+                for j in 0..self.g {
+                    var += (centroids[j][k] * centroids[j][k]) * (self.n_j[j] / self.n);
+                }
+
+                if var > 0.0 {
+                    let scaling = 1.0 / var.sqrt();
+                    for j in 0..self.g {
+                        centroids[j][k] *= scaling;
+                    }
                 }
             }
         }
+
+        // Round values to 3 decimal places
+        centroids.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|v| *v = round_to_decimal(*v, 3));
+        });
 
         centroids
     }
 
     /// Calculate unstandardized canonical discriminant function coefficients
+    ///
+    /// # Returns
+    /// * Matrix of unstandardized coefficients with constant terms
     pub fn unstandardized_coefficients(&self) -> Result<Vec<Vec<f64>>, DiscriminantError> {
         let m = std::cmp::min(self.q, self.g - 1);
 
@@ -345,6 +390,11 @@ impl DiscriminantAnalysis {
             }
             coeffs[self.p][j] = -sum;
         }
+
+        // Round values to 3 decimal places
+        coeffs.iter_mut().for_each(|row| {
+            row.iter_mut().for_each(|v| *v = round_to_decimal(*v, 3));
+        });
 
         Ok(coeffs)
     }

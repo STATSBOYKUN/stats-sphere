@@ -1,25 +1,47 @@
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Checkbox} from "@/components/ui/checkbox";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
-import {Separator} from "@/components/ui/separator";
-import {DiscriminantClassifyProps, DiscriminantClassifyType} from "@/models/classify/discriminant/discriminant";
-import React, {useEffect, useState} from "react";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+    DiscriminantClassifyProps,
+    DiscriminantClassifyType,
+} from "@/models/classify/discriminant/discriminant";
+import React, { useEffect, useState } from "react";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateFormData, data}: DiscriminantClassifyProps) => {
-    const [classifyState, setClassifyState] = useState<DiscriminantClassifyType>({...data});
+export const DiscriminantClassify = ({
+    isClassifyOpen,
+    setIsClassifyOpen,
+    updateFormData,
+    data,
+}: DiscriminantClassifyProps) => {
+    const [classifyState, setClassifyState] =
+        useState<DiscriminantClassifyType>({ ...data });
 
     useEffect(() => {
         if (!isClassifyOpen) {
-            setClassifyState({...data});
+            setClassifyState({ ...data });
         }
     }, [isClassifyOpen, data]);
 
-    const handleChange = (field: keyof DiscriminantClassifyType, value: CheckedState | number | boolean | null) => {
+    const handleChange = (
+        field: keyof DiscriminantClassifyType,
+        value: CheckedState | number | boolean | null
+    ) => {
         setClassifyState((prev) => ({
             ...prev,
             [field]: value,
@@ -55,9 +77,11 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
             <Dialog open={isClassifyOpen} onOpenChange={setIsClassifyOpen}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Discriminant Analysis: Analysis Classification</DialogTitle>
+                        <DialogTitle>
+                            Discriminant Analysis: Analysis Classification
+                        </DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <ResizablePanelGroup
                         direction="vertical"
                         className="min-h-[250px] max-w-xl rounded-lg border md:min-w-[200px]"
@@ -66,42 +90,74 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                             <ResizablePanelGroup direction="horizontal">
                                 <ResizablePanel defaultSize={60}>
                                     <div className="flex flex-col h-full gap-2 p-2">
-                                        <Label className="font-bold">Prior Probabilities</Label>
+                                        <Label className="font-bold">
+                                            Prior Probabilities
+                                        </Label>
                                         <div className="flex flex-col gap-1">
                                             <RadioGroup
                                                 defaultValue="AllGroupEqual"
-                                                value={classifyState.AllGroupEqual ? "AllGroupEqual" : ""}
+                                                value={
+                                                    classifyState.AllGroupEqual
+                                                        ? "AllGroupEqual"
+                                                        : ""
+                                                }
                                                 onValueChange={handlePriorGrp}
                                             >
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="AllGroupEqual" id="AllGroupEqual"/>
-                                                    <Label htmlFor="AllGroupEqual">All Groups Equal</Label>
+                                                    <RadioGroupItem
+                                                        value="AllGroupEqual"
+                                                        id="AllGroupEqual"
+                                                    />
+                                                    <Label htmlFor="AllGroupEqual">
+                                                        All Groups Equal
+                                                    </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="GroupSize" id="GroupSize"/>
-                                                    <Label htmlFor="GroupSize">Compute from Group Sizes</Label>
+                                                    <RadioGroupItem
+                                                        value="GroupSize"
+                                                        id="GroupSize"
+                                                    />
+                                                    <Label htmlFor="GroupSize">
+                                                        Compute from Group Sizes
+                                                    </Label>
                                                 </div>
                                             </RadioGroup>
                                         </div>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={40}>
                                     <div className="flex flex-col h-full gap-2 p-2">
-                                        <Label className="font-bold">Use Covariance Matrix</Label>
+                                        <Label className="font-bold">
+                                            Use Covariance Matrix
+                                        </Label>
                                         <div className="flex flex-col gap-1">
                                             <RadioGroup
                                                 defaultValue="WithinGroup"
-                                                value={classifyState.WithinGroup ? "WithinGroup" : ""}
+                                                value={
+                                                    classifyState.WithinGroup
+                                                        ? "WithinGroup"
+                                                        : ""
+                                                }
                                                 onValueChange={handleMatrixGrp}
                                             >
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="WithinGroup" id="WithinGroup"/>
-                                                    <Label htmlFor="WithinGroup">Within-groups</Label>
+                                                    <RadioGroupItem
+                                                        value="WithinGroup"
+                                                        id="WithinGroup"
+                                                    />
+                                                    <Label htmlFor="WithinGroup">
+                                                        Within-groups
+                                                    </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="SepGroup" id="SepGroup"/>
-                                                    <Label htmlFor="SepGroup">Separate-groups</Label>
+                                                    <RadioGroupItem
+                                                        value="SepGroup"
+                                                        id="SepGroup"
+                                                    />
+                                                    <Label htmlFor="SepGroup">
+                                                        Separate-groups
+                                                    </Label>
                                                 </div>
                                             </RadioGroup>
                                         </div>
@@ -109,19 +165,30 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                 </ResizablePanel>
                             </ResizablePanelGroup>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={65}>
                             <ResizablePanelGroup direction="horizontal">
                                 <ResizablePanel defaultSize={60}>
                                     <div className="flex flex-col h-full gap-2 p-2">
-                                        <Label className="font-bold">Classify</Label>
+                                        <Label className="font-bold">
+                                            Classify
+                                        </Label>
                                         <div className="flex flex-col gap-1">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="Case"
-                                                        checked={classifyState.Case}
-                                                        onCheckedChange={(checked) => handleChange("Case", checked)}
+                                                        checked={
+                                                            classifyState.Case
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "Case",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="Case"
@@ -133,9 +200,20 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                 <div className="flex items-center pl-4 space-x-2">
                                                     <Checkbox
                                                         id="Limit"
-                                                        checked={classifyState.Limit}
-                                                        disabled={!classifyState.Case}
-                                                        onCheckedChange={(checked) => handleChange("Limit", checked)}
+                                                        checked={
+                                                            classifyState.Limit
+                                                        }
+                                                        disabled={
+                                                            !classifyState.Case
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "Limit",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="Limit"
@@ -148,17 +226,39 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                             id="LimitValue"
                                                             type="number"
                                                             placeholder=""
-                                                            value={classifyState.LimitValue ?? ""}
-                                                            disabled={!classifyState.Limit}
-                                                            onChange={(e) => handleChange("LimitValue", Number(e.target.value))}
+                                                            value={
+                                                                classifyState.LimitValue ??
+                                                                ""
+                                                            }
+                                                            disabled={
+                                                                !classifyState.Limit
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "LimitValue",
+                                                                    Number(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="Summary"
-                                                        checked={classifyState.Summary}
-                                                        onCheckedChange={(checked) => handleChange("Summary", checked)}
+                                                        checked={
+                                                            classifyState.Summary
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "Summary",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="Summary"
@@ -170,30 +270,51 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="Leave"
-                                                        checked={classifyState.Leave}
-                                                        onCheckedChange={(checked) => handleChange("Leave", checked)}
+                                                        checked={
+                                                            classifyState.Leave
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "Leave",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="Leave"
                                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                     >
-                                                        Leave-one-out Classification
+                                                        Leave-one-out
+                                                        Classification
                                                     </label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={40}>
                                     <div className="flex flex-col h-full gap-2 p-2">
-                                        <Label className="font-bold">Plots</Label>
+                                        <Label className="font-bold">
+                                            Plots
+                                        </Label>
                                         <div className="flex flex-col gap-1">
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="Combined"
-                                                    checked={classifyState.Combine}
-                                                    onCheckedChange={(checked) => handleChange("Combine", checked)}
+                                                    checked={
+                                                        classifyState.Combine
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Combine",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Combined"
@@ -205,8 +326,17 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="SepGrp"
-                                                    checked={classifyState.SepGrp}
-                                                    onCheckedChange={(checked) => handleChange("SepGrp", checked)}
+                                                    checked={
+                                                        classifyState.SepGrp
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "SepGrp",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="SepGrp"
@@ -219,7 +349,14 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                                                 <Checkbox
                                                     id="Terr"
                                                     checked={classifyState.Terr}
-                                                    onCheckedChange={(checked) => handleChange("Terr", checked)}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Terr",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Terr"
@@ -238,7 +375,9 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                         <Checkbox
                             id="Replace"
                             checked={classifyState.Replace}
-                            onCheckedChange={(checked) => handleChange("Replace", checked)}
+                            onCheckedChange={(checked) =>
+                                handleChange("Replace", checked)
+                            }
                         />
                         <label
                             htmlFor="Replace"
@@ -248,10 +387,7 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
                         </label>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button
-                            type="button"
-                            onClick={handleContinue}
-                        >
+                        <Button type="button" onClick={handleContinue}>
                             Continue
                         </Button>
                         <Button
@@ -269,4 +405,4 @@ export const DiscriminantClassify = ({isClassifyOpen, setIsClassifyOpen, updateF
             </Dialog>
         </>
     );
-}
+};

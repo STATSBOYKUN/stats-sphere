@@ -5,73 +5,115 @@ use crate::discriminant::main::types::{
     StepwiseMethod, StepwiseCriteria, StepwiseDisplay, StepwiseStatistics,
     results::DiscriminantError, CriteriaType
 };
-use crate::discriminant::main::utils::{extract_first_field_name, extract_field_value};
+use crate::discriminant::main::utils::{extract_first_field_name, extract_field_value, round_to_decimal};
 
 /// Core implementation of discriminant analysis
+///
+/// This struct contains all the data and methods needed to perform discriminant analysis.
+/// It implements the formulas described in the LaTeX document.
+#[derive(Clone)]
 pub struct DiscriminantAnalysis {
-    // Jumlah kelompok
+    /// Number of groups (g)
     pub g: usize,
-    // Jumlah variabel
+    
+    /// Number of variables (p)
     pub p: usize,
-    // Jumlah variabel yang dipilih
+    
+    /// Number of variables selected in stepwise analysis (q)
     pub q: usize,
-    // Data untuk setiap kelompok (g matriks)
-    // Setiap matriks berukuran mj x p, di mana mj adalah jumlah kasus dalam kelompok j
+    
+    /// Data for each group (g matrices)
+    /// Each matrix has dimensions mj x p, where mj is the number of cases in group j
     pub data: Vec<Vec<Vec<f64>>>,
-    // Bobot kasus untuk setiap kelompok
+    
+    /// Weights for each case in each group
     pub weights: Vec<Vec<f64>>,
-    // Jumlah kasus di setiap kelompok
+    
+    /// Number of cases in each group (m)
     pub m: Vec<usize>,
-    // Jumlah bobot kasus di setiap kelompok
+    
+    /// Sum of weights in each group (n_j)
     pub n_j: Vec<f64>,
-    // Jumlah total bobot
+    
+    /// Total sum of weights (n)
     pub n: f64,
-    // Jumlah kasus
+    
+    /// Total number of cases
     pub total_cases: usize,
-    // Means untuk setiap variabel i dalam grup j
+    
+    /// Means for each variable i in group j
     pub means_by_group: Vec<Vec<f64>>,
-    // Means untuk setiap variabel i (keseluruhan)
+    
+    /// Overall means for each variable
     pub means_overall: Vec<f64>,
-    // Within-Groups Sums of Squares and Cross-Product Matrix (W)
+    
+    /// Within-Groups Sums of Squares and Cross-Product Matrix (W)
     pub w_matrix: Vec<Vec<f64>>,
-    // Total Sums of Squares and Cross-Product Matrix (T)
+    
+    /// Total Sums of Squares and Cross-Product Matrix (T)
     pub t_matrix: Vec<Vec<f64>>,
-    // Within-Groups Covariance Matrix
+    
+    /// Within-Groups Covariance Matrix (C)
     pub c_matrix: Vec<Vec<f64>>,
-    // Individual Group Covariance Matrices
+    
+    /// Individual Group Covariance Matrices
     pub c_group_matrices: Vec<Vec<Vec<f64>>>,
-    // Within-Groups Correlation Matrix
+    
+    /// Within-Groups Correlation Matrix (R)
     pub r_matrix: Vec<Vec<f64>>,
-    // Total Covariance Matrix
+    
+    /// Total Covariance Matrix (T')
     pub t_prime_matrix: Vec<Vec<f64>>,
-    // Canonical Discriminant Function Coefficients
+    
+    /// Canonical Discriminant Function Coefficients
     pub canonical_coefficients: Vec<Vec<f64>>,
-    // Eigenvalues
+    
+    /// Eigenvalues
     pub eigenvalues: Vec<f64>,
-    // Prior probabilities
+    
+    /// Prior probabilities for groups
     pub priors: Vec<f64>,
-    // Variable names
+    
+    /// Variable names
     pub variable_names: Vec<String>,
-    // Group variable name
+    
+    /// Group variable name
     pub group_name: String,
-    // Group values (0, 1, etc.)
+    
+    /// Group values (group identifiers)
     pub group_values: Vec<usize>,
-    // Maximum steps for stepwise analysis
+    
+    /// Maximum steps for stepwise analysis
     pub max_steps: usize,
-    // Criteria for stepwise analysis
+    
+    /// Criteria for stepwise analysis
     pub stepwise_criteria: StepwiseCriteria,
-    // Display options for stepwise analysis
+    
+    /// Display options for stepwise analysis
     pub stepwise_display: StepwiseDisplay,
-    // Method for stepwise analysis
+    
+    /// Method for stepwise analysis
     pub stepwise_method: StepwiseMethod,
-    // Tolerance value for stepwise analysis
+    
+    /// Tolerance value for stepwise analysis
     pub tolerance: f64,
-    // Stepwise statistics result
+    
+    /// Stepwise statistics result
     pub stepwise_statistics: Option<StepwiseStatistics>,
 }
 
 impl DiscriminantAnalysis {
     /// Creates a new DiscriminantAnalysis instance
+    ///
+    /// # Arguments
+    /// * `group_data` - Group membership data
+    /// * `independent_data` - Independent variable data
+    /// * `min_range` - Minimum range for group values
+    /// * `max_range` - Maximum range for group values
+    /// * `prior_probs` - Optional prior probabilities for groups
+    ///
+    /// # Returns
+    /// * New DiscriminantAnalysis instance or error
     pub fn new(
         group_data: Vec<Vec<Value>>,
         independent_data: Vec<Vec<Value>>,
@@ -134,7 +176,7 @@ impl DiscriminantAnalysis {
 
         // Determine number of groups
         let g = unique_groups.len();
-        if g == 0 {
+        if g < 2 {
             return Err(DiscriminantError::NotEnoughGroups);
         }
 
@@ -233,15 +275,7 @@ impl DiscriminantAnalysis {
 
                 let field_name = &var_field_names[var_idx];
                 match extract_field_value(&independent_data[var_idx][case_idx], field_name) {
-                    Some(val) => {
-                        // Scale the values to be between min_range and max_range if needed
-                        let scaled_val = if max_range > min_range {
-                            min_range + (val - min_range) * (max_range - min_range) / (max_range - min_range)
-                        } else {
-                            val
-                        };
-                        case_values.push(scaled_val);
-                    },
+                    Some(val) => case_values.push(val),
                     None => {
                         all_values_valid = false;
                         break;
@@ -289,7 +323,6 @@ impl DiscriminantAnalysis {
             },
             None => {
                 // Default priors: 0.5 for each group (equal priors)
-                // This matches the example output where each group has 0.5 prior
                 vec![0.5; g]
             }
         };
@@ -303,7 +336,7 @@ impl DiscriminantAnalysis {
             v_to_enter: 0.0
         };
         let stepwise_display = StepwiseDisplay {
-            pairwise_distances: true,  // Default: don't display pairwise distances
+            pairwise_distances: true,  // Default: show pairwise distances
             summary_steps: true,        // Default: display summary steps
         };
         let stepwise_method = StepwiseMethod::Wilks;  // Default method
@@ -346,5 +379,32 @@ impl DiscriminantAnalysis {
         da.compute_basic_statistics()?;
 
         Ok(da)
+    }
+    
+    /// Gets a summary of the model configuration
+    ///
+    /// # Returns
+    /// * String describing the model configuration
+    pub fn get_model_summary(&self) -> String {
+        let mut summary = String::new();
+        
+        summary.push_str(&format!("Discriminant Analysis Summary\n"));
+        summary.push_str(&format!("--------------------------\n"));
+        summary.push_str(&format!("Number of groups: {}\n", self.g));
+        summary.push_str(&format!("Number of variables: {}\n", self.p));
+        summary.push_str(&format!("Total cases: {}\n", self.total_cases));
+        
+        summary.push_str("\nGroup Information:\n");
+        for (i, &group_val) in self.group_values.iter().enumerate() {
+            summary.push_str(&format!("  Group {}: {} cases (weighted sum: {:.2})\n", 
+                group_val, self.m[i], self.n_j[i]));
+        }
+        
+        summary.push_str("\nVariables:\n");
+        for (i, name) in self.variable_names.iter().enumerate() {
+            summary.push_str(&format!("  {}: {}\n", i+1, name));
+        }
+        
+        summary
     }
 }
