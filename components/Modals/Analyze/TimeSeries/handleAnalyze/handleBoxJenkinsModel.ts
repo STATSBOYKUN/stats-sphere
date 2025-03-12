@@ -7,7 +7,8 @@ export async function handleBoxJenkinsModel(
     timeHeader: (string),
     orderParameter: (number)[],
     forecasting: boolean,
-):Promise<[number[], string, string, string]> {
+    period: number
+):Promise<[number[], string, string, string, number[]]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) ? data : null;
     
@@ -30,7 +31,10 @@ export async function handleBoxJenkinsModel(
         let bic = arima.bic();
         let sbc = arima.sbc();
 
-        let coefName = [`Constant`];
+        let coefName = ['Constant'];
+        // if(orderParameter[1] == 0){
+        //     coefName.push(`Constant`);
+        // }
         if(orderParameter[0] > 0){
             for(let i = 1; i <= orderParameter[0]; i++){
                 coefName.push(`AR(${i})`);
@@ -44,6 +48,14 @@ export async function handleBoxJenkinsModel(
 
         let coefStruct: Record<string, any> = {}; // Menggunakan objek kosong
         // Mengecek panjang seluruh data apakah sama
+        if (se[0] == 0.0) {
+            se = []; zStat = []; pValue = [];
+            for (let i = 0; i < coef.length; i++) {
+                se.push(NaN);
+                zStat.push(NaN);
+                pValue.push(NaN);
+            }
+        }
         if ((coefName.length + coef.length + se.length + zStat.length + pValue.length) % coef.length == 0) {
             for (let i = 0; i < coef.length; i++) {
                 coefStruct[i] = { // Gunakan i sebagai key dalam objek
@@ -71,7 +83,7 @@ export async function handleBoxJenkinsModel(
             }]
         });
 
-        let selectionCriteriaName = [`Ln Likelihood`, `AIC`, `BIC`, `SBC`];
+        let selectionCriteriaName = [`Log-Likelihood`, `Akaike's Information Criterion`, `Bayesian Information Criterion`, `Schwartz's Bayesian Criterion`];
         let selectionCriteriaValue = [lnLikelihood, aic, bic, sbc];
         let selectionCriteriaStruct: Record<string, any> = {}; // Menggunakan objek kosong
         // Mengecek panjang seluruh data apakah sama
@@ -114,11 +126,14 @@ export async function handleBoxJenkinsModel(
                     },
                 ],
             });
+            forecast = Array.from(arima.forecast(data.length + period));
+        } else{
+            forecast = [0];
         }
 
-        return [[0],coefStructJson ,selectionCriteriaStructJson, forecastEvalJson];
+        return [[...coef, ...se],coefStructJson , selectionCriteriaStructJson, forecastEvalJson, forecast];
     } catch (error) {
         let errorMessage = error as Error;
-        return [[0],"" , "",JSON.stringify({ error: errorMessage.message })];
+        return [[0],"" , "",JSON.stringify({ error: errorMessage.message }),[0]];
     }
 }

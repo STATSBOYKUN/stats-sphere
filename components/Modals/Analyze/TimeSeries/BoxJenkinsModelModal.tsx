@@ -6,6 +6,7 @@ import useResultStore from "@/stores/useResultStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label"; 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"; 
 import { DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleBoxJenkinsModel } from "./handleAnalyze/handleBoxJenkinsModel";
@@ -30,6 +31,17 @@ interface BoxJenkinsModelModalProps {
 }
 
 const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) => {
+    const periods = [
+        { value: '7', label: 'Daily in Week', id: 'diw'},
+        { value: '30', label: 'Daily in Month', id: 'dim'},
+        { value: '4', label: 'Weekly in Month', id: 'wim'},
+        { value: '2', label: 'Semi Annual', id: 'sa'},
+        { value: '3', label: 'Four-Monthly', id: 'fm'},
+        { value: '4', label: 'Quarterly', id: 'q'},
+        { value: '12', label: 'Monthly', id: 'm'},
+    ];
+
+    const [selectedPeriod, setSelectedPeriod] = useState<string[]>(['7','Daily in Week']);
     const [maOrder, setMaOrder] = useState<number>(0);
     const [arOrder, setArOrder] = useState<number>(0);
     const [diffOrder, setDiffOrder] = useState<number>(0);
@@ -100,6 +112,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
         setDataVariable([]);
         setTimeVariable([]);
         setHighlightedVariable(null);
+        setSelectedPeriod(['7','Daily in Week']);
     }
     
     const handleAnalyzes = async () => {
@@ -179,7 +192,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                 return;
             }
 
-            let [test, coeficient, criteria, evaluation]: [any[], any, any, any] = await handleBoxJenkinsModel(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, [arOrder, diffOrder, maOrder], checkedForecasting);
+            let [test, coeficient, criteria, evaluation, forecast]: [any[], any, any, any, any[]] = await handleBoxJenkinsModel(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, [arOrder, diffOrder, maOrder], checkedForecasting, Number(selectedPeriod[0]));
             console.log(test);
             console.log(coeficient);
             console.log(criteria);
@@ -221,53 +234,53 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                 });
             }
 
-            // Jika Menyimpan Forecasting Dicentang
-            // if (saveForecasting) {
-            //     // Jika panjang smoothingResult lebih pendek, tambahkan nilai kosong atau nilai default
-            //     if (smoothingResult.length < data.length) {
-            //         const missingRows = data.length - smoothingResult.length;
-            //         const filler = new Array(missingRows).fill(""); // Menambahkan nilai kosong atau sesuai kebutuhan
-            //         smoothingResult = [...smoothingResult, ...filler];
-            //     }
-            //     // Menambahkan nilai dari newStringRow ke setiap baris di data sebagai kolom baru
-            //     const updatedData = data.map((row, index) => {
-            //         // Cari kolom pertama yang kosong
-            //         const updatedRow = [...row];
-            //         for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
-            //             // Jika kolom kosong, masukkan nilai dari smoothingResult
-            //             if (updatedRow[colIndex] === '') {
-            //                 updatedRow[colIndex] = smoothingResult[index].toString(); // Menambahkan nilai ke kolom yang kosong
-            //                 break; // Keluar dari loop setelah mengisi kolom pertama yang kosong
-            //             }
-            //         }
-            //         return updatedRow;
-            //     });
-            //     setData(updatedData);
-            //     const smoothingVariable = {
-            //         name: `${varDefs[0].name} ${selectedMethod[0]}-${variables.length}`,
-            //         columnIndex: variables.length,
-            //         type: 'numeric',
-            //         label: '',
-            //         values: '',
-            //         missing: '',
-            //         measure: 'scale',
-            //         width: 8,
-            //         decimals: 3,
-            //         columns: 200,
-            //         align: 'left',
-            //     };
-            //     await addVariable(smoothingVariable);
-            //     // Perbarui state `variables` di store secara langsung
-            //     const updatedVariables = [...variables, smoothingVariable];
-            //     useVariableStore.setState({ variables: updatedVariables });
-            //     // Simpan hasil smoothing ke IndexDB
-            //     const smoothingCells = smoothingResult.map((value, index) => ({
-            //         x: smoothingVariable.columnIndex, // Kolom baru untuk hasil smoothing
-            //         y: index, // Baris yang sesuai
-            //         value: value.toString(), // Konversi nilai ke string
-            //     }));
-            //     await db.cells.bulkPut(smoothingCells);
-            // }
+            // Jika Forecasting Dicentang
+            if (checkedForecasting) {
+                // Jika panjang forecast lebih pendek, tambahkan nilai kosong atau nilai default
+                if (forecast.length < data.length) {
+                    const missingRows = data.length - forecast.length;
+                    const filler = new Array(missingRows).fill(""); // Menambahkan nilai kosong atau sesuai kebutuhan
+                    forecast = [...forecast, ...filler];
+                }
+                // Menambahkan nilai dari newStringRow ke setiap baris di data sebagai kolom baru
+                const updatedData = data.map((row, index) => {
+                    // Cari kolom pertama yang kosong
+                    const updatedRow = [...row];
+                    for (let colIndex = 0; colIndex < updatedRow.length; colIndex++) {
+                        // Jika kolom kosong, masukkan nilai dari forecast
+                        if (updatedRow[colIndex] === '') {
+                            updatedRow[colIndex] = forecast[index].toString(); // Menambahkan nilai ke kolom yang kosong
+                            break; // Keluar dari loop setelah mengisi kolom pertama yang kosong
+                        }
+                    }
+                    return updatedRow;
+                });
+                setData(updatedData);
+                const forecastVariable = {
+                    name: `${varDefs[0].name} ARIMA (${arOrder},${diffOrder},${maOrder}) ${variables.length}`,
+                    columnIndex: variables.length,
+                    type: 'numeric',
+                    label: '',
+                    values: '',
+                    missing: '',
+                    measure: 'scale',
+                    width: 8,
+                    decimals: 3,
+                    columns: 200,
+                    align: 'left',
+                };
+                await addVariable(forecastVariable);
+                // Perbarui state `variables` di store secara langsung
+                const updatedVariables = [...variables, forecastVariable];
+                useVariableStore.setState({ variables: updatedVariables });
+                // Simpan hasil smoothing ke IndexDB
+                const forecastCells = forecast.map((value, index) => ({
+                    x: forecastVariable.columnIndex, // Kolom baru untuk hasil smoothing
+                    y: index, // Baris yang sesuai
+                    value: value.toString(), // Konversi nilai ke string
+                }));
+                await db.cells.bulkPut(forecastCells);
+            }
 
             setIsCalculating(false);
             onClose();
@@ -432,6 +445,34 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                                 />
                                 <Label>Forecasting Model</Label>
                             </div>
+
+                            {checkedForecasting && (
+                                <div className="flex flex-row gap-2 items-center mx-8">
+                                    <label className="text-sm w-[150px] font-semibold">periodicity: {selectedPeriod[0]}</label>
+                                    <Select
+                                        onValueChange={(value) => {
+                                            const selected = periods.find((period) => period.id === value);
+                                            if (selected) {
+                                                setSelectedPeriod([selected.value, selected.label]);
+                                            }
+                                        }}
+                                        defaultValue={selectedPeriod[1]}>
+                                        <SelectTrigger>
+                                            <SelectValue>{selectedPeriod[1]}</SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {periods.map((period) => (
+                                                <SelectItem
+                                                    key={period.id}
+                                                    value={period.id}
+                                                >
+                                                    {period.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                         </div>
                         {/* Akhir Baris Satu Kolom Tiga */}
                     </div>
@@ -440,6 +481,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
             </div>
             {/* Akhir Fitur Content */}
 
+            {errorMsg && <div className="text-red-600 mb-2 flex justify-center">{errorMsg}</div>}
             <div className="flex justify-center pt-4">
                 <DialogFooter>
                     <Button variant="outline" disabled={isCalculating} onClick={onClose}> Cancel </Button>
