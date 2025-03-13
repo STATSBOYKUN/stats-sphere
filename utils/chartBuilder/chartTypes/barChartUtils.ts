@@ -898,7 +898,7 @@ export const createErrorBarChart = (
     .attr(
       "x1",
       (d: { category: string; value: number; error: number }) =>
-        x(d.category)! + x.bandwidth() / 2 - 5 // Panjang garis horizontal
+        x(d.category)! + x.bandwidth() / 2 - 5
     )
     .attr(
       "x2",
@@ -933,6 +933,212 @@ export const createErrorBarChart = (
           .text("↑ Value")
       );
   }
+
+  return svg.node();
+};
+
+export const createClusteredErrorBarChart = (
+  data: {
+    category: string;
+    subcategory: string;
+    value: number;
+    error: number;
+  }[],
+  width: number,
+  height: number,
+  useAxis: boolean = true
+) => {
+  console.log("Creating chart with data:", data);
+
+  const marginTop = useAxis ? 30 : 0;
+  const marginRight = useAxis ? 30 : 0;
+  const marginBottom = useAxis ? 30 : 0;
+  const marginLeft = useAxis ? 30 : 0;
+
+  const categories = Array.from(new Set(data.map((d) => d.category)));
+  const subcategories = Array.from(new Set(data.map((d) => d.subcategory)));
+
+  const x = d3
+    .scaleBand()
+    .domain(data.map((d) => d.category))
+    .range([marginLeft, width - marginRight])
+    .padding(0.1);
+
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(data, (d) => d.value + d.error) as number])
+    .range([height - marginBottom, marginTop]);
+
+  // Define a color scale for the subcategories
+  const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+
+  const svg = d3
+    .create("svg")
+    .attr("width", width + marginLeft + marginRight)
+    .attr("height", height + marginTop + marginBottom)
+    .attr("viewBox", [
+      0,
+      0,
+      width + marginLeft + marginRight,
+      height + marginTop + marginBottom,
+    ])
+    .attr("style", "max-width: 100%; height: auto;");
+
+  // Menambahkan error bars dengan warna berdasarkan subkategori
+  svg
+    .append("g")
+    .attr("stroke", "black")
+    .selectAll("line")
+    .data(data)
+    .join("line")
+    .attr(
+      "x1",
+      (d: {
+        category: string;
+        subcategory: string;
+        value: number;
+        error: number;
+      }) => x(d.category)! + x.bandwidth() / 2
+    )
+    .attr(
+      "x2",
+      (d: {
+        category: string;
+        subcategory: string;
+        value: number;
+        error: number;
+      }) => x(d.category)! + x.bandwidth() / 2
+    )
+    .attr("y1", (d: { value: number; error: number }) => y(d.value + d.error))
+    .attr("y2", (d: { value: number; error: number }) => y(d.value - d.error))
+    .attr("stroke-width", 2)
+    .attr("stroke", (d: { subcategory: string }) => colorScale(d.subcategory));
+
+  // Menambahkan titik pada setiap kategori untuk menunjukkan nilai dengan warna berdasarkan subkategori
+  svg
+    .append("g")
+    .selectAll("circle")
+    .data(data)
+    .join("circle")
+    .attr(
+      "cx",
+      (d: { category: string; value: number }) =>
+        x(d.category)! + x.bandwidth() / 2
+    )
+    .attr("cy", (d: { value: number }) => y(d.value))
+    .attr("r", 5)
+    .attr("fill", (d: { subcategory: string }) => colorScale(d.subcategory));
+
+  // Menambahkan garis horizontal di ujung atas dan bawah error bar
+  svg
+    .append("g")
+    .attr("stroke", "black")
+    .selectAll(".error-cap-top")
+    .data(data)
+    .join("line")
+    .attr(
+      "x1",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 - 5
+    )
+    .attr(
+      "x2",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 + 5
+    )
+    .attr("y1", (d: { value: number; error: number }) => y(d.value + d.error))
+    .attr("y2", (d: { value: number; error: number }) => y(d.value + d.error))
+    .attr("stroke-width", 2)
+    .attr("stroke", (d: { subcategory: string }) => colorScale(d.subcategory));
+
+  svg
+    .append("g")
+    .attr("stroke", "black")
+    .selectAll(".error-cap-bottom")
+    .data(data)
+    .join("line")
+    .attr(
+      "x1",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 - 5 // Panjang garis horizontal
+    )
+    .attr(
+      "x2",
+      (d: { category: string; value: number; error: number }) =>
+        x(d.category)! + x.bandwidth() / 2 + 5
+    )
+    .attr("y1", (d: { value: number; error: number }) => y(d.value - d.error))
+    .attr("y2", (d: { value: number; error: number }) => y(d.value - d.error))
+    .attr("stroke-width", 2)
+    .attr("stroke", (d: { subcategory: string }) => colorScale(d.subcategory));
+
+  // Jika axis digunakan, tambahkan sumbu X dan Y
+  if (useAxis) {
+    // X-Axis (Horizontal)
+    svg
+      .append("g")
+      .attr("transform", `translate(0, ${height - marginBottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0));
+
+    // Y-Axis (Vertical)
+    svg
+      .append("g")
+      .attr("transform", `translate(${marginLeft}, 0)`)
+      .call(d3.axisLeft(y).tickFormat((y) => (+y * 1).toFixed(0)))
+      .call((g: any) => g.select(".domain").remove())
+      .call((g: any) =>
+        g
+          .append("text")
+          .attr("x", -marginLeft)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text("↑ Value")
+      );
+  }
+
+  // Dynamic Legend
+  const legendGroup = svg
+    .append("g")
+    .attr("font-family", "sans-serif")
+    .attr("font-size", 10)
+    .attr("text-anchor", "start")
+    .attr(
+      "transform",
+      `translate(${marginLeft}, ${height - marginBottom + 60})`
+    );
+
+  const legendItemWidth = 19;
+  const legendItemHeight = 19;
+  const labelOffset = 5;
+  const legendSpacingX = 100;
+  const legendSpacingY = 25;
+  const legendMaxWidth = width - marginLeft - marginRight;
+  const itemsPerRow = Math.floor(legendMaxWidth / legendSpacingX);
+
+  subcategories.forEach((subcategory, index) => {
+    const row = Math.floor(index / itemsPerRow);
+    const col = index % itemsPerRow;
+    const xOffset = col * legendSpacingX;
+    const yOffset = row * legendSpacingY;
+
+    // Menambahkan swatch
+    legendGroup
+      .append("rect")
+      .attr("x", xOffset)
+      .attr("y", yOffset)
+      .attr("width", legendItemWidth)
+      .attr("height", legendItemHeight)
+      .attr("fill", colorScale(subcategory));
+
+    // Menambahkan label teks
+    legendGroup
+      .append("text")
+      .attr("x", xOffset + legendItemWidth + labelOffset)
+      .attr("y", yOffset + legendItemHeight / 2)
+      .attr("dy", "0.35em")
+      .text(subcategory);
+  });
 
   return svg.node();
 };

@@ -253,9 +253,15 @@ export class Smoothing {
   calculate_wma(distance: number): Float64Array;
   calculate_ses(alpha: number): Float64Array;
   calculate_des(alpha: number): Float64Array;
+  calculate_ses(alpha: number): Float64Array;
+  calculate_des(alpha: number): Float64Array;
   calculate_holt(alpha: number, beta: number): Float64Array;
   calculate_winter(alpha: number, beta: number, gamma: number, period: number): Float64Array;
   smoothing_evaluation(forecast: Float64Array): any;
+}
+export class Statistics {
+  private constructor();
+  free(): void;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -502,6 +508,10 @@ export interface InitOutput {
   readonly __wbindgen_export_2: WebAssembly.Table;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_start: () => void;
