@@ -1,11 +1,10 @@
 import React from "react";
 
 export type TreeMainType = {
-    SrcVar: string | null;
     DependentTargetVar: string | null;
-    InDependentTargetVar: string | null;
-    Force: boolean;
+    IndependentTargetVar: string[] | null;
     InfluenceTargetVar: string | null;
+    Force: boolean;
     GrowingMethod: string | null;
 };
 
@@ -20,7 +19,7 @@ export type TreeDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof TreeMainType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: TreeMainType;
     globalVariables: string[];

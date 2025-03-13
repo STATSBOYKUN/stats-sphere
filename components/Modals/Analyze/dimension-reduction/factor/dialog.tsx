@@ -21,6 +21,9 @@ import {
 } from "@/models/dimension-reduction/factor/factor";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const FactorDialog = ({
     isMainOpen,
@@ -38,12 +41,26 @@ export const FactorDialog = ({
     onReset,
 }: FactorDialogProps) => {
     const [mainState, setMainState] = useState<FactorMainType>({ ...data });
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            ...(mainState.TargetVar || []),
+            mainState.ValueTarget,
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof FactorMainType,
@@ -53,6 +70,35 @@ export const FactorDialog = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = [
+                    ...(updatedState.TargetVar || []),
+                    variable,
+                ];
+            } else if (target === "ValueTarget") {
+                updatedState.ValueTarget = variable;
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = (updatedState.TargetVar || []).filter(
+                    (item) => item !== variable
+                );
+            } else if (target === "ValueTarget") {
+                updatedState.ValueTarget = "";
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -86,11 +132,31 @@ export const FactorDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -101,40 +167,123 @@ export const FactorDialog = ({
                                         <Label className="font-bold">
                                             Variables:{" "}
                                         </Label>
-                                        <Input
-                                            id="TargetVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={mainState.TargetVar ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "TargetVar",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "TargetVar",
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.TargetVar &&
+                                                        mainState.TargetVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.TargetVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "TargetVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.TargetVar ?? ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
                                             <Label className="font-bold">
                                                 Selection Variable:{" "}
                                             </Label>
-                                            <Input
-                                                id="ValueTarget"
-                                                type="text"
-                                                className="w-full"
-                                                placeholder=""
-                                                value={
-                                                    mainState.ValueTarget ?? ""
-                                                }
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        "ValueTarget",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
+                                            <div className="flex items-center space-x-2">
+                                                <div
+                                                    className="w-full min-h-[40px] p-2 border rounded"
+                                                    onDrop={(e) => {
+                                                        handleDrop(
+                                                            "ValueTarget",
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            )
+                                                        );
+                                                    }}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                >
+                                                    {mainState.ValueTarget ? (
+                                                        <Badge
+                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                            variant="outline"
+                                                            onClick={() =>
+                                                                handleRemoveVariable(
+                                                                    "ValueTarget"
+                                                                )
+                                                            }
+                                                        >
+                                                            {
+                                                                mainState.ValueTarget
+                                                            }
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        mainState.ValueTarget ??
+                                                        ""
+                                                    }
+                                                    name="ValueTarget"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <Button
@@ -206,7 +355,11 @@ export const FactorDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

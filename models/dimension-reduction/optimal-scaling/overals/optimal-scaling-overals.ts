@@ -1,9 +1,8 @@
 import React from "react";
 
 export type OptScaOveralsMainType = {
-    SrcVariable: string | null;
-    SetTargetVariable: string | null;
-    PlotsTargetVariable: string | null;
+    SetTargetVariable: string[] | null;
+    PlotsTargetVariable: string[] | null;
     Dimensions: number | null;
 };
 
@@ -15,7 +14,7 @@ export type OptScaOveralsDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaOveralsMainType,
-        value: string | number | null
+        value: string[] | string | number | null
     ) => void;
     data: OptScaOveralsMainType;
     globalVariables: string[];

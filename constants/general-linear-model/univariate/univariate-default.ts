@@ -1,12 +1,17 @@
 import {
     UnivariateType,
-    UnivariateBootstrapType, UnivariateContrastType, UnivariateEMMeansType,
+    UnivariateBootstrapType,
+    UnivariateContrastType,
+    UnivariateEMMeansType,
     UnivariateMainType,
-    UnivariateModelType, UnivariateOptionsType, UnivariatePlotsType, UnivariatePostHocType, UnivariateSaveType
+    UnivariateModelType,
+    UnivariateOptionsType,
+    UnivariatePlotsType,
+    UnivariatePostHocType,
+    UnivariateSaveType,
 } from "@/models/general-linear-model/univariate/univariate";
 
 export const UnivariateMainDefault: UnivariateMainType = {
-    SrcVar: null,
     DepVar: null,
     FixFactor: null,
     RandFactor: null,

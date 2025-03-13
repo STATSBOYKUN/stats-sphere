@@ -1,10 +1,12 @@
 import {
-    VarianceCompsMainType, VarianceCompsModelType, VarianceCompsOptionsType, VarianceCompsSaveType,
-    VarianceCompsType
+    VarianceCompsMainType,
+    VarianceCompsModelType,
+    VarianceCompsOptionsType,
+    VarianceCompsSaveType,
+    VarianceCompsType,
 } from "@/models/general-linear-model/variance-components/variance-components";
 
 export const VarianceCompsMainTypeDefault: VarianceCompsMainType = {
-    SrcVar: null,
     DepVar: null,
     FixFactor: null,
     RandFactor: null,

@@ -1,13 +1,17 @@
 import {
     MultivariateType,
     MultivariateBootstrapType,
-    MultivariateContrastType, MultivariateEMMeansType,
+    MultivariateContrastType,
+    MultivariateEMMeansType,
     MultivariateMainType,
-    MultivariateModelType, MultivariateOptionsType, MultivariatePlotsType, MultivariatePostHocType, MultivariateSaveType
+    MultivariateModelType,
+    MultivariateOptionsType,
+    MultivariatePlotsType,
+    MultivariatePostHocType,
+    MultivariateSaveType,
 } from "@/models/general-linear-model/multivariate/multivariate";
 
 export const MultivariateMainDefault: MultivariateMainType = {
-    SrcVar: null,
     DepVar: null,
     FixFactor: null,
     Covar: null,

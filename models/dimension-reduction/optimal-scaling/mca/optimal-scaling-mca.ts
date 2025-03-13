@@ -1,10 +1,9 @@
 import React from "react";
 
 export type OptScaMCAMainType = {
-    SrcVar: string | null;
-    AnalysisVars: string | null;
-    SuppleVars: string | null;
-    LabelingVars: string | null;
+    AnalysisVars: string[] | null;
+    SuppleVars: string[] | null;
+    LabelingVars: string[] | null;
     Dimensions: number | null;
 };
 
@@ -21,7 +20,7 @@ export type OptScaMCADialogProps = {
     setIsVariablePlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCAMainType,
-        value: string | number | null
+        value: string[] | string | number | null
     ) => void;
     data: OptScaMCAMainType;
     globalVariables: string[];

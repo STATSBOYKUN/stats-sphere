@@ -1,12 +1,15 @@
 import {
     FactorType,
-    FactorDescriptivesType, FactorExtractionType,
-    FactorMainType, FactorRotationType, FactorScoresType,
-    FactorValueType, FactorOptionsType
+    FactorDescriptivesType,
+    FactorExtractionType,
+    FactorMainType,
+    FactorRotationType,
+    FactorScoresType,
+    FactorValueType,
+    FactorOptionsType,
 } from "@/models/dimension-reduction/factor/factor";
 
 export const FactorMainDefault: FactorMainType = {
-    SrcVar: null,
     TargetVar: null,
     ValueTarget: null,
 };
@@ -69,7 +72,7 @@ export const FactorOptionsDefault: FactorOptionsType = {
     SortSize: false,
     SuppressValues: false,
     SuppressValuesNum: null,
-}
+};
 
 export const FactorDefault: FactorType = {
     main: FactorMainDefault,

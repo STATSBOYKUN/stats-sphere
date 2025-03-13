@@ -1,15 +1,22 @@
 import {
     TreeType,
-    TreeCategoriesType, TreeCriteriaCHAIDType, TreeCriteriaGrowthType, TreeCriteriaIntervalsType,
-    TreeMainType, TreeOptionsMissCostsType, TreeOptionsProfitsType, TreeOutputRulesType,
+    TreeCategoriesType,
+    TreeCriteriaCHAIDType,
+    TreeCriteriaGrowthType,
+    TreeCriteriaIntervalsType,
+    TreeMainType,
+    TreeOptionsMissCostsType,
+    TreeOptionsProfitsType,
+    TreeOutputRulesType,
     TreeOutputStatsType,
-    TreeOutputTreeType, TreeSaveType, TreeValidationType
+    TreeOutputTreeType,
+    TreeSaveType,
+    TreeValidationType,
 } from "@/models/classify/tree/tree";
 
 export const TreeMainDefault: TreeMainType = {
-    SrcVar: null,
     DependentTargetVar: null,
-    InDependentTargetVar: null,
+    IndependentTargetVar: null,
     Force: false,
     InfluenceTargetVar: null,
     GrowingMethod: null,
@@ -138,9 +145,15 @@ export const TreeOptionsProfitsDefault: TreeOptionsProfitsType = {
 export const TreeDefault: TreeType = {
     main: TreeMainDefault,
     categories: TreeCategoriesDefault,
-    output: TreeOutputTreeDefault && TreeOutputStatsDefault && TreeOutputRulesDefault,
+    output:
+        TreeOutputTreeDefault &&
+        TreeOutputStatsDefault &&
+        TreeOutputRulesDefault,
     validation: TreeValidationDefault,
-    criteria: TreeCriteriaGrowthDefault && TreeCriteriaCHAIDDefault && TreeCriteriaIntervalsDefault,
+    criteria:
+        TreeCriteriaGrowthDefault &&
+        TreeCriteriaCHAIDDefault &&
+        TreeCriteriaIntervalsDefault,
     save: TreeSaveDefault,
     options: TreeOptionsMissCostsDefault && TreeOptionsProfitsDefault,
 };

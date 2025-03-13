@@ -7,14 +7,13 @@ import {
     RepeatedMeasuresPlotsType,
     RepeatedMeasuresPostHocType,
     RepeatedMeasuresSaveType,
-    RepeatedMeasuresType
+    RepeatedMeasuresType,
 } from "@/models/general-linear-model/repeated-measures/repeated-measures";
 
 export const RepeatedMeasuresMainDefault: RepeatedMeasuresMainType = {
-    SrcVar: null,
     SubVar: null,
     FactorsVar: null,
-    Covariates: null
+    Covariates: null,
 };
 
 export const RepeatedMeasuresModelDefault: RepeatedMeasuresModelType = {
@@ -30,14 +29,14 @@ export const RepeatedMeasuresModelDefault: RepeatedMeasuresModelType = {
     CovModel: null,
     BuildTermMethod: null,
     SumOfSquareMethod: null,
-    TermText: null
+    TermText: null,
 };
 
 export const RepeatedMeasuresContrastDefault: RepeatedMeasuresContrastType = {
     FactorList: null,
     ContrastMethod: null,
     Last: false,
-    First: false
+    First: false,
 };
 
 export const RepeatedMeasuresPlotsDefault: RepeatedMeasuresPlotsType = {
@@ -54,7 +53,7 @@ export const RepeatedMeasuresPlotsDefault: RepeatedMeasuresPlotsType = {
     StandardError: false,
     IncludeRefLineForGrandMean: false,
     YAxisStart0: false,
-    Multiplier: null
+    Multiplier: null,
 };
 
 export const RepeatedMeasuresPostHocDefault: RepeatedMeasuresPostHocType = {
@@ -82,14 +81,14 @@ export const RepeatedMeasuresPostHocDefault: RepeatedMeasuresPostHocType = {
     Tam: false,
     Dunt: false,
     Games: false,
-    Dunc: false
+    Dunc: false,
 };
 
 export const RepeatedMeasuresEMMeansDefault: RepeatedMeasuresEMMeansType = {
     SrcList: null,
     TargetList: null,
     CompMainEffect: false,
-    ConfiIntervalMethod: null
+    ConfiIntervalMethod: null,
 };
 
 export const RepeatedMeasuresSaveDefault: RepeatedMeasuresSaveType = {
@@ -107,7 +106,7 @@ export const RepeatedMeasuresSaveDefault: RepeatedMeasuresSaveType = {
     NewDataSet: false,
     FilePath: null,
     DatasetName: null,
-    WriteNewDataSet: false
+    WriteNewDataSet: false,
 };
 
 export const RepeatedMeasuresOptionsDefault: RepeatedMeasuresOptionsType = {
@@ -124,7 +123,7 @@ export const RepeatedMeasuresOptionsDefault: RepeatedMeasuresOptionsType = {
     ResSscpMat: false,
     CoefficientMatrix: false,
     TransformMat: false,
-    SigLevel: null
+    SigLevel: null,
 };
 
 export const RepeatedMeasuresDefault: RepeatedMeasuresType = {

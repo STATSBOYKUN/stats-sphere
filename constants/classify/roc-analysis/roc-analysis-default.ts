@@ -2,12 +2,12 @@ import {
     RocAnalysisDefineGroupsType,
     RocAnalysisDisplayType,
     RocAnalysisMainType,
-    RocAnalysisOptionsType, RocAnalysisType
+    RocAnalysisOptionsType,
+    RocAnalysisType,
 } from "@/models/classify/roc-analysis/roc-analysis";
 
 export const RocAnalysisMainDefault: RocAnalysisMainType = {
     PairedSample: false,
-    SrcVar: null,
     StateTargetVariable: null,
     StateVarVal: null,
     TestTargetVariable: null,

@@ -1,7 +1,6 @@
 import React from "react";
 
 export type CorrespondenceMainType = {
-    SrcVar: string | null;
     RowTargetVar: string | null;
     ColTargetVar: string | null;
 };

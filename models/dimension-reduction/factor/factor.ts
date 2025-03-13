@@ -1,8 +1,7 @@
 import React from "react";
 
 export type FactorMainType = {
-    SrcVar: string | null;
-    TargetVar: string | null;
+    TargetVar: string[] | null;
     ValueTarget: string | null;
 };
 
@@ -15,7 +14,10 @@ export type FactorDialogProps = {
     setIsRotationOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsScoresOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    updateFormData: (field: keyof FactorMainType, value: string | null) => void;
+    updateFormData: (
+        field: keyof FactorMainType,
+        value: string[] | string | null
+    ) => void;
     data: FactorMainType;
     globalVariables: string[];
     onContinue: (mainState: FactorMainType) => void;

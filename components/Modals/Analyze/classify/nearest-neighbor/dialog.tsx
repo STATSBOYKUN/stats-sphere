@@ -23,6 +23,9 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const KNNDialog = ({
     isMainOpen,
@@ -40,12 +43,28 @@ export const KNNDialog = ({
     onReset,
 }: KNNDialogProps) => {
     const [mainState, setMainState] = useState<KNNMainType>({ ...data });
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            mainState.DepVar,
+            ...(mainState.FeatureVar || []),
+            mainState.FocalCaseIdenVar,
+            mainState.CaseIdenVar,
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof KNNMainType,
@@ -57,17 +76,62 @@ export const KNNDialog = ({
         }));
     };
 
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "DepVar") {
+                updatedState.DepVar = variable;
+            } else if (target === "FeatureVar") {
+                updatedState.FeatureVar = [
+                    ...(updatedState.FeatureVar || []),
+                    variable,
+                ];
+            } else if (target === "FocalCaseIdenVar") {
+                updatedState.FocalCaseIdenVar = variable;
+            } else if (target === "CaseIdenVar") {
+                updatedState.CaseIdenVar = variable;
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "DepVar") {
+                updatedState.DepVar = "";
+            } else if (target === "FeatureVar") {
+                updatedState.FeatureVar = (
+                    updatedState.FeatureVar || []
+                ).filter((item) => item !== variable);
+            } else if (target === "FocalCaseIdenVar") {
+                updatedState.FocalCaseIdenVar = "";
+            } else if (target === "CaseIdenVar") {
+                updatedState.CaseIdenVar = "";
+            }
+            return updatedState;
+        });
+    };
+
     const handleContinue = () => {
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof KNNMainType, value);
         });
+
         setIsMainOpen(false);
+
+        onContinue(mainState);
     };
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
             setter(true);
         };
+
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
 
     return (
         <>
@@ -88,11 +152,31 @@ export const KNNDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -103,12 +187,45 @@ export const KNNDialog = ({
                                         <Label className="font-bold">
                                             Target (Optional):
                                         </Label>
-                                        <Input
-                                            id="DepVar"
-                                            type="text"
-                                            className="min-w-2xl w-full"
-                                            placeholder=""
-                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <div
+                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                onDrop={(e) => {
+                                                    handleDrop(
+                                                        "DepVar",
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        )
+                                                    );
+                                                }}
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                            >
+                                                {mainState.DepVar ? (
+                                                    <Badge
+                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleRemoveVariable(
+                                                                "DepVar"
+                                                            )
+                                                        }
+                                                    >
+                                                        {mainState.DepVar}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm font-light text-gray-500">
+                                                        Drop variables here.
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={mainState.DepVar ?? ""}
+                                                name="DepVar"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
                                         <Label className="font-bold">
@@ -143,23 +260,96 @@ export const KNNDialog = ({
                                         <Label className="font-bold">
                                             Focal Case Identifier (Optional):
                                         </Label>
-                                        <Input
-                                            id="FocalCaseIdenVar"
-                                            type="text"
-                                            className="min-w-2xl w-full"
-                                            placeholder=""
-                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <div
+                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                onDrop={(e) => {
+                                                    handleDrop(
+                                                        "FocalCaseIdenVar",
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        )
+                                                    );
+                                                }}
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                            >
+                                                {mainState.FocalCaseIdenVar ? (
+                                                    <Badge
+                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleRemoveVariable(
+                                                                "FocalCaseIdenVar"
+                                                            )
+                                                        }
+                                                    >
+                                                        {
+                                                            mainState.FocalCaseIdenVar
+                                                        }
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm font-light text-gray-500">
+                                                        Drop variables here.
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.FocalCaseIdenVar ??
+                                                    ""
+                                                }
+                                                name="FocalCaseIdenVar"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
                                         <Label className="font-bold">
                                             Case Label (Optional):
                                         </Label>
-                                        <Input
-                                            id="CaseIdenVar"
-                                            type="text"
-                                            className="min-w-2xl w-full"
-                                            placeholder=""
-                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <div
+                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                onDrop={(e) => {
+                                                    handleDrop(
+                                                        "CaseIdenVar",
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        )
+                                                    );
+                                                }}
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                            >
+                                                {mainState.CaseIdenVar ? (
+                                                    <Badge
+                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleRemoveVariable(
+                                                                "CaseIdenVar"
+                                                            )
+                                                        }
+                                                    >
+                                                        {mainState.CaseIdenVar}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm font-light text-gray-500">
+                                                        Drop variables here.
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.CaseIdenVar ?? ""
+                                                }
+                                                name="CaseIdenVar"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </ResizablePanel>
@@ -223,7 +413,11 @@ export const KNNDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

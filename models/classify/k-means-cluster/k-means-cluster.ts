@@ -1,7 +1,7 @@
 import React from "react";
 
 export type KMeansClusterMainType = {
-    TargetVar: string | null;
+    TargetVar: string[] | null;
     CaseTarget: string | null;
     IterateClassify: boolean;
     ClassifyOnly: boolean;
@@ -26,7 +26,7 @@ export type KMeansClusterDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof KMeansClusterMainType,
-        value: string | boolean | number | null
+        value: string[] | string | boolean | number | null
     ) => void;
     data: KMeansClusterMainType;
     globalVariables: string[];

@@ -21,6 +21,9 @@ import {
 } from "@/models/general-linear-model/variance-components/variance-components";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const VarianceCompsDialog = ({
     isMainOpen,
@@ -37,12 +40,29 @@ export const VarianceCompsDialog = ({
     const [mainState, setMainState] = useState<VarianceCompsMainType>({
         ...data,
     });
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            ...(mainState.DepVar || []),
+            ...(mainState.FixFactor || []),
+            ...(mainState.RandFactor || []),
+            ...(mainState.Covar || []),
+            mainState.WlsWeight,
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof VarianceCompsMainType,
@@ -54,17 +74,77 @@ export const VarianceCompsDialog = ({
         }));
     };
 
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "DepVar") {
+                updatedState.DepVar = [
+                    ...(updatedState.DepVar || []),
+                    variable,
+                ];
+            } else if (target === "FixFactor") {
+                updatedState.FixFactor = [
+                    ...(updatedState.FixFactor || []),
+                    variable,
+                ];
+            } else if (target === "Covar") {
+                updatedState.Covar = [...(updatedState.Covar || []), variable];
+            } else if (target === "RandFactor") {
+                updatedState.RandFactor = [
+                    ...(updatedState.RandFactor || []),
+                    variable,
+                ];
+            } else if (target === "WlsWeight") {
+                updatedState.WlsWeight = variable;
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "DepVar") {
+                updatedState.DepVar = (updatedState.DepVar || []).filter(
+                    (item) => item !== variable
+                );
+            } else if (target === "FixFactor") {
+                updatedState.FixFactor = (updatedState.FixFactor || []).filter(
+                    (item) => item !== variable
+                );
+            } else if (target === "Covar") {
+                updatedState.Covar = (updatedState.Covar || []).filter(
+                    (item) => item !== variable
+                );
+            } else if (target === "RandFactor") {
+                updatedState.RandFactor = (
+                    updatedState.RandFactor || []
+                ).filter((item) => item !== variable);
+            } else if (target === "WlsWeight") {
+                updatedState.WlsWeight = "";
+            }
+            return updatedState;
+        });
+    };
+
     const handleContinue = () => {
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof VarianceCompsMainType, value);
         });
+
         setIsMainOpen(false);
+        onContinue(mainState);
     };
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
             setter(true);
         };
+
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
 
     return (
         <>
@@ -100,91 +180,325 @@ export const VarianceCompsDialog = ({
                                         <Label className="font-bold">
                                             Dependent Variables:{" "}
                                         </Label>
-                                        <Input
-                                            id="DepVar"
-                                            type="text"
-                                            className="w-full"
-                                            placeholder=""
-                                            value={mainState.DepVar ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "DepVar",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop("DepVar", variable);
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.DepVar &&
+                                                        mainState.DepVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.DepVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "DepVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={mainState.DepVar ?? ""}
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
                                             Fixed Factor(s):{" "}
                                         </Label>
-                                        <Input
-                                            id="FixFactor"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={mainState.FixFactor ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "FixFactor",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "FixFactor",
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.FixFactor &&
+                                                        mainState.FixFactor
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.FixFactor.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "FixFactor",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.FixFactor ?? ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
                                             Random Factor(s):{" "}
                                         </Label>
-                                        <Input
-                                            id="RandFactor"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={mainState.RandFactor ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "RandFactor",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "RandFactor",
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.RandFactor &&
+                                                        mainState.RandFactor
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.RandFactor.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "RandFactor",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.RandFactor ?? ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
                                             Covariate(s):{" "}
                                         </Label>
-                                        <Input
-                                            id="Covar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={mainState.Covar ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "Covar",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop("Covar", variable);
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.Covar &&
+                                                        mainState.Covar.length >
+                                                            0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.Covar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "Covar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={mainState.Covar ?? ""}
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
                                             WLS Weight:{" "}
                                         </Label>
-                                        <Input
-                                            id="WlsWeight"
-                                            type="text"
-                                            className="w-full"
-                                            placeholder=""
-                                            value={mainState.WlsWeight ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "WlsWeight",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                        <div className="flex items-center space-x-2">
+                                            <div
+                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                onDrop={(e) => {
+                                                    handleDrop(
+                                                        "WlsWeight",
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        )
+                                                    );
+                                                }}
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                            >
+                                                {mainState.WlsWeight ? (
+                                                    <Badge
+                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleRemoveVariable(
+                                                                "WlsWeight"
+                                                            )
+                                                        }
+                                                    >
+                                                        {mainState.WlsWeight}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm font-light text-gray-500">
+                                                        Drop variables here.
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.WlsWeight ?? ""
+                                                }
+                                                name="WlsWeight"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </ResizablePanel>
@@ -224,7 +538,11 @@ export const VarianceCompsDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

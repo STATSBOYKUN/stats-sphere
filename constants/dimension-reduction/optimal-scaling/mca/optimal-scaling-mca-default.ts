@@ -7,11 +7,11 @@ import {
     OptScaMCAOptionsType,
     OptScaMCAOutputType,
     OptScaMCASaveType,
-    OptScaMCAType, OptScaMCAVariablePlotsType
+    OptScaMCAType,
+    OptScaMCAVariablePlotsType,
 } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
 
 export const OptScaMCAMainDefault: OptScaMCAMainType = {
-    SrcVar: null,
     AnalysisVars: null,
     SuppleVars: null,
     LabelingVars: null,

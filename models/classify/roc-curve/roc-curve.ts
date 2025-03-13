@@ -1,10 +1,9 @@
 import React from "react";
 
 export type RocCurveMainType = {
-    SrcVar: string | null;
+    TestTargetVariable: string[] | null;
     StateTargetVariable: string | null;
     StateVarVal: string | null;
-    TestTargetVariable: string | null;
     RocCurve: boolean;
     DiagRef: boolean;
     ErrInterval: boolean;
@@ -17,7 +16,7 @@ export type RocCurveDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RocCurveMainType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: RocCurveMainType;
     globalVariables: string[];

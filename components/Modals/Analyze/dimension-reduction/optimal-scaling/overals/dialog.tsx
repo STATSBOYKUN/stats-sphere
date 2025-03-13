@@ -30,6 +30,9 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const OptScaOveralsDialog = ({
     isMainOpen,
@@ -46,12 +49,26 @@ export const OptScaOveralsDialog = ({
     const [mainState, setMainState] = useState<OptScaOveralsMainType>({
         ...data,
     });
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            ...(mainState.SetTargetVariable || []),
+            ...(mainState.PlotsTargetVariable || []),
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof OptScaOveralsMainType,
@@ -63,17 +80,59 @@ export const OptScaOveralsDialog = ({
         }));
     };
 
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "SetTargetVariable") {
+                updatedState.SetTargetVariable = [
+                    ...(updatedState.SetTargetVariable || []),
+                    variable,
+                ];
+            } else if (target === "PlotsTargetVariable") {
+                updatedState.PlotsTargetVariable = [
+                    ...(updatedState.PlotsTargetVariable || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "SetTargetVariable") {
+                updatedState.SetTargetVariable = (
+                    updatedState.SetTargetVariable || []
+                ).filter((item) => item !== variable);
+            } else if (target === "PlotsTargetVariable") {
+                updatedState.PlotsTargetVariable = (
+                    updatedState.PlotsTargetVariable || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
+    };
+
     const handleContinue = () => {
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof OptScaOveralsMainType, value);
         });
+
         setIsMainOpen(false);
+
+        onContinue(mainState);
     };
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
             setter(true);
         };
+
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
 
     return (
         <>
@@ -96,11 +155,31 @@ export const OptScaOveralsDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -143,22 +222,76 @@ export const OptScaOveralsDialog = ({
                                             <Label className="font-bold">
                                                 Variables:{" "}
                                             </Label>
-                                            <Input
-                                                id="SetTargetVariable"
-                                                type="text"
-                                                className="w-full min-h-[65px]"
-                                                placeholder=""
-                                                value={
-                                                    mainState.SetTargetVariable ??
-                                                    ""
+                                            <div
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
                                                 }
-                                                onChange={(e) =>
-                                                    handleChange(
+                                                onDrop={(e) => {
+                                                    const variable =
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        );
+                                                    handleDrop(
                                                         "SetTargetVariable",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
+                                                        variable
+                                                    );
+                                                }}
+                                            >
+                                                <Label className="font-bold">
+                                                    Independents:
+                                                </Label>
+                                                <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                    <ScrollArea>
+                                                        <div className="w-full h-[100px]">
+                                                            {mainState.SetTargetVariable &&
+                                                            mainState
+                                                                .SetTargetVariable
+                                                                .length > 0 ? (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {mainState.SetTargetVariable.map(
+                                                                        (
+                                                                            variable,
+                                                                            index
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                onClick={() =>
+                                                                                    handleRemoveVariable(
+                                                                                        "SetTargetVariable",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    variable
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-sm font-light text-gray-500">
+                                                                    Drop
+                                                                    variables
+                                                                    here.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        mainState.SetTargetVariable ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <Button
@@ -177,22 +310,76 @@ export const OptScaOveralsDialog = ({
                                             <Label className="font-bold">
                                                 Label Object Score Plot(s) by:{" "}
                                             </Label>
-                                            <Input
-                                                id="PlotsTargetVariable"
-                                                type="text"
-                                                className="w-full min-h-[65px]"
-                                                placeholder=""
-                                                value={
-                                                    mainState.PlotsTargetVariable ??
-                                                    ""
+                                            <div
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
                                                 }
-                                                onChange={(e) =>
-                                                    handleChange(
+                                                onDrop={(e) => {
+                                                    const variable =
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        );
+                                                    handleDrop(
                                                         "PlotsTargetVariable",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
+                                                        variable
+                                                    );
+                                                }}
+                                            >
+                                                <Label className="font-bold">
+                                                    Independents:
+                                                </Label>
+                                                <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                    <ScrollArea>
+                                                        <div className="w-full h-[100px]">
+                                                            {mainState.PlotsTargetVariable &&
+                                                            mainState
+                                                                .PlotsTargetVariable
+                                                                .length > 0 ? (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {mainState.PlotsTargetVariable.map(
+                                                                        (
+                                                                            variable,
+                                                                            index
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                onClick={() =>
+                                                                                    handleRemoveVariable(
+                                                                                        "PlotsTargetVariable",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    variable
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-sm font-light text-gray-500">
+                                                                    Drop
+                                                                    variables
+                                                                    here.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        mainState.PlotsTargetVariable ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <Button
@@ -249,7 +436,11 @@ export const OptScaOveralsDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

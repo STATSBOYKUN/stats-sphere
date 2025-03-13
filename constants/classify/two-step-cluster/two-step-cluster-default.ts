@@ -1,11 +1,11 @@
 import {
     TwoStepClusterMainType,
-    TwoStepClusterOptionsType, TwoStepClusterOutputType,
-    TwoStepClusterType
+    TwoStepClusterOptionsType,
+    TwoStepClusterOutputType,
+    TwoStepClusterType,
 } from "@/models/classify/two-step-cluster/two-step-cluster";
 
 export const TwoStepClusterMainDefault: TwoStepClusterMainType = {
-    SrcVar: null,
     CategoricalVar: null,
     ContinousVar: null,
     Log: false,

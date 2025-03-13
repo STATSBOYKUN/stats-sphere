@@ -22,6 +22,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useModal } from "@/hooks/useModal";
 
 export const TwoStepClusterDialog = ({
     isMainOpen,
@@ -37,12 +40,26 @@ export const TwoStepClusterDialog = ({
     const [mainState, setMainState] = useState<TwoStepClusterMainType>({
         ...data,
     });
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+
+    const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            ...(mainState.CategoricalVar || []),
+            ...(mainState.ContinousVar || []),
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof TwoStepClusterMainType,
@@ -52,6 +69,40 @@ export const TwoStepClusterDialog = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "CategoricalVar") {
+                updatedState.CategoricalVar = [
+                    ...(updatedState.CategoricalVar || []),
+                    variable,
+                ];
+            } else if (target === "ContinousVar") {
+                updatedState.ContinousVar = [
+                    ...(updatedState.ContinousVar || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "CategoricalVar") {
+                updatedState.CategoricalVar = (
+                    updatedState.CategoricalVar || []
+                ).filter((item) => item !== variable);
+            } else if (target === "ContinousVar") {
+                updatedState.ContinousVar = (
+                    updatedState.ContinousVar || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
     };
 
     const handleDistanceGrp = (value: string) => {
@@ -82,13 +133,21 @@ export const TwoStepClusterDialog = ({
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof TwoStepClusterMainType, value);
         });
+
         setIsMainOpen(false);
+
+        onContinue(mainState);
     };
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
             setter(true);
         };
+
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
 
     return (
         <>
@@ -109,11 +168,31 @@ export const TwoStepClusterDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -124,39 +203,146 @@ export const TwoStepClusterDialog = ({
                                         <Label className="font-bold">
                                             Categorical Variables:{" "}
                                         </Label>
-                                        <Input
-                                            id="CategoricalVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={
-                                                mainState.CategoricalVar ?? ""
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                            onChange={(e) =>
-                                                handleChange(
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
                                                     "CategoricalVar",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.CategoricalVar &&
+                                                        mainState.CategoricalVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.CategoricalVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "CategoricalVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.CategoricalVar ??
+                                                    ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
                                             Continous Variables:{" "}
                                         </Label>
-                                        <Input
-                                            id="ContinousVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={mainState.ContinousVar ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "ContinousVar",
-                                                    e.target.value
-                                                )
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                        />
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "ContinousVar",
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Independents:
+                                            </Label>
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[100px]">
+                                                        {mainState.ContinousVar &&
+                                                        mainState.ContinousVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.ContinousVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "ContinousVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.ContinousVar ?? ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </ResizablePanel>
@@ -416,7 +602,11 @@ export const TwoStepClusterDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

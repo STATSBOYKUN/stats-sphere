@@ -1,11 +1,10 @@
 import React from "react";
 
 export type VarianceCompsMainType = {
-    SrcVar: string | null;
-    DepVar: string | null;
-    FixFactor: string | null;
-    RandFactor: string | null;
-    Covar: string | null;
+    DepVar: string[] | null;
+    FixFactor: string[] | null;
+    RandFactor: string[] | null;
+    Covar: string[] | null;
     WlsWeight: string | null;
 };
 
@@ -17,7 +16,7 @@ export type VarianceCompsDialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof VarianceCompsMainType,
-        value: string | null
+        value: string[] | string | null
     ) => void;
     data: VarianceCompsMainType;
     globalVariables: string[];

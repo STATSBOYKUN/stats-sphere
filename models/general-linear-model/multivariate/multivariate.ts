@@ -1,10 +1,9 @@
 import React from "react";
 
 export type MultivariateMainType = {
-    SrcVar: string | null;
-    DepVar: string | null;
-    FixFactor: string | null;
-    Covar: string | null;
+    DepVar: string[] | null;
+    FixFactor: string[] | null;
+    Covar: string[] | null;
     WlsWeight: string | null;
 };
 
@@ -21,7 +20,7 @@ export type MultivariateDialogProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariateMainType,
-        value: string | null
+        value: string[] | string | null
     ) => void;
     data: MultivariateMainType;
     globalVariables: string[];

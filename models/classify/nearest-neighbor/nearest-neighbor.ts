@@ -1,9 +1,8 @@
 import React from "react";
 
 export type KNNMainType = {
-    VariableSrc: string | null;
     DepVar: string | null;
-    FeatureVar: string | null;
+    FeatureVar: string[] | null;
     CaseIdenVar: string | null;
     FocalCaseIdenVar: string | null;
     NormCovar: boolean;
@@ -20,7 +19,7 @@ export type KNNDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof KNNMainType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: KNNMainType;
     globalVariables: string[];

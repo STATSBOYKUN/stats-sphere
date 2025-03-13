@@ -1,10 +1,9 @@
 import React from "react";
 
 export type RepeatedMeasuresMainType = {
-    SrcVar: string | null;
-    SubVar: string | null;
-    FactorsVar: string | null;
-    Covariates: string | null;
+    SubVar: string[] | null;
+    FactorsVar: string[] | null;
+    Covariates: string[] | null;
 };
 
 export type RepeatedMeasuresDialogProps = {
@@ -19,7 +18,7 @@ export type RepeatedMeasuresDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresMainType,
-        value: string | null
+        value: string[] | string | null
     ) => void;
     data: RepeatedMeasuresMainType;
     globalVariables: string[];

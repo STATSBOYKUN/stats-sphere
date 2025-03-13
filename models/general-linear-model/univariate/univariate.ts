@@ -1,11 +1,10 @@
 import React from "react";
 
 export type UnivariateMainType = {
-    SrcVar: string | null;
-    DepVar: string | null;
-    FixFactor: string | null;
-    RandFactor: string | null;
-    Covar: string | null;
+    DepVar: string[] | null;
+    FixFactor: string[] | null;
+    RandFactor: string[] | null;
+    Covar: string[] | null;
     WlsWeight: string | null;
 };
 
@@ -22,7 +21,7 @@ export type UnivariateDialogProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariateMainType,
-        value: string | null
+        value: string[] | string | null
     ) => void;
     data: UnivariateMainType;
     globalVariables: string[];

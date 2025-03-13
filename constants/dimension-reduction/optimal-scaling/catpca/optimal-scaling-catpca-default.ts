@@ -1,35 +1,38 @@
 import {
-    OptScaCatpcaBootstrapType, OptScaCatpcaCategoryPlotsType,
+    OptScaCatpcaBootstrapType,
+    OptScaCatpcaCategoryPlotsType,
     OptScaCatpcaDefineRangeScaleType,
     OptScaCatpcaDefineScaleType,
-    OptScaCatpcaDiscretizeType, OptScaCatpcaLoadingPlotsType,
+    OptScaCatpcaDiscretizeType,
+    OptScaCatpcaLoadingPlotsType,
     OptScaCatpcaMainType,
-    OptScaCatpcaMissingType, OptScaCatpcaObjectPlotsType,
+    OptScaCatpcaMissingType,
+    OptScaCatpcaObjectPlotsType,
     OptScaCatpcaOptionsType,
     OptScaCatpcaOutputType,
     OptScaCatpcaSaveType,
-    OptScaCatpcaType
+    OptScaCatpcaType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
 
 export const OptScaCatpcaMainDefault: OptScaCatpcaMainType = {
-    SrcVar: null,
     AnalysisVars: null,
     SuppleVars: null,
     LabelingVars: null,
     Dimensions: null,
 };
 
-export const OptScaCatpcaDefineRangeScaleDefault: OptScaCatpcaDefineRangeScaleType = {
-    Weight: null,
-    SplineOrdinal: false,
-    SplineNominal: false,
-    MultipleNominal: false,
-    Ordinal: false,
-    Nominal: false,
-    Numeric: false,
-    Degree: null,
-    InteriorKnots: null,
-};
+export const OptScaCatpcaDefineRangeScaleDefault: OptScaCatpcaDefineRangeScaleType =
+    {
+        Weight: null,
+        SplineOrdinal: false,
+        SplineNominal: false,
+        MultipleNominal: false,
+        Ordinal: false,
+        Nominal: false,
+        Numeric: false,
+        Degree: null,
+        InteriorKnots: null,
+    };
 
 export const OptScaCatpcaDefineScaleDefault: OptScaCatpcaDefineScaleType = {
     SplineOrdinal: false,

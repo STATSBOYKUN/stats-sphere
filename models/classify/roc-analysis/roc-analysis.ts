@@ -1,12 +1,11 @@
 import React from "react";
 
 export type RocAnalysisMainType = {
-    PairedSample: boolean;
-    SrcVar: string | null;
+    TestTargetVariable: string[] | null;
     StateTargetVariable: string | null;
     StateVarVal: string | null;
-    TestTargetVariable: string | null;
     TargetGroupVar: string | null;
+    PairedSample: boolean;
 };
 
 export type RocAnalysisDialogProps = {
@@ -17,7 +16,7 @@ export type RocAnalysisDialogProps = {
     setIsDisplayOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RocAnalysisMainType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: RocAnalysisMainType;
     globalVariables: string[];

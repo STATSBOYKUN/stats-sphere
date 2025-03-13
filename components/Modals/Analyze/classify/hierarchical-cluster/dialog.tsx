@@ -25,6 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useModal } from "@/hooks/useModal";
 
 export const HierClusDialog = ({
@@ -47,10 +49,21 @@ export const HierClusDialog = ({
     const { closeModal } = useModal();
 
     useEffect(() => {
-        if (isMainOpen) {
-            setMainState({ ...data });
-        }
-    }, [isMainOpen, data]);
+        setMainState({ ...data });
+        setAvailableVariables(globalVariables);
+    }, [data, globalVariables]);
+
+    useEffect(() => {
+        const usedVariables = [
+            ...(mainState.Variables || []),
+            mainState.LabelCases,
+        ].filter(Boolean);
+
+        const updatedVariables = globalVariables.filter(
+            (variable) => !usedVariables.includes(variable)
+        );
+        setAvailableVariables(updatedVariables);
+    }, [mainState]);
 
     const handleChange = (
         field: keyof HierClusMainType,
@@ -60,6 +73,35 @@ export const HierClusDialog = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "LabelCases") {
+                updatedState.LabelCases = variable;
+            } else if (target === "Variables") {
+                updatedState.Variables = [
+                    ...(updatedState.Variables || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setMainState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "LabelCases") {
+                updatedState.LabelCases = "";
+            } else if (target === "Variables") {
+                updatedState.Variables = (updatedState.Variables || []).filter(
+                    (item) => item !== variable
+                );
+            }
+            return updatedState;
+        });
     };
 
     const handleClusterGrp = (value: string) => {
@@ -74,7 +116,10 @@ export const HierClusDialog = ({
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof HierClusMainType, value);
         });
+
         setIsMainOpen(false);
+
+        onContinue(mainState);
     };
 
     const openDialog =
@@ -82,10 +127,15 @@ export const HierClusDialog = ({
             setter(true);
         };
 
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
+
     return (
         <>
             {/* Main Dialog */}
-            <Dialog open={isMainOpen} onOpenChange={setIsMainOpen}>
+            <Dialog open={isMainOpen} onOpenChange={handleDialog}>
                 <DialogTrigger asChild>
                     <Button variant="outline">Hierarchical Cluster</Button>
                 </DialogTrigger>
@@ -101,33 +151,92 @@ export const HierClusDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-6 p-2">
-                                    <div>
+                                    <div
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={(e) => {
+                                            const variable =
+                                                e.dataTransfer.getData("text");
+                                            handleDrop("Variables", variable);
+                                        }}
+                                    >
                                         <Label className="font-bold">
-                                            Variable(s):
+                                            Independents:
                                         </Label>
-                                        <Input
-                                            id="Variables"
-                                            type="text"
-                                            className="min-w-2xl w-full min-h-[150px]"
-                                            placeholder=""
+                                        <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                            <ScrollArea>
+                                                <div className="w-full h-[100px]">
+                                                    {mainState.Variables &&
+                                                    mainState.Variables.length >
+                                                        0 ? (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {mainState.Variables.map(
+                                                                (
+                                                                    variable,
+                                                                    index
+                                                                ) => (
+                                                                    <Badge
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleRemoveVariable(
+                                                                                "Variables",
+                                                                                variable
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            variable
+                                                                        }
+                                                                    </Badge>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </ScrollArea>
+                                        </div>
+                                        <input
+                                            type="hidden"
                                             value={mainState.Variables ?? ""}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    "Variables",
-                                                    e.target.value
-                                                )
-                                            }
+                                            name="Independents"
                                         />
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
@@ -135,7 +244,50 @@ export const HierClusDialog = ({
                                             <Label className="font-bold">
                                                 Label Cases by:
                                             </Label>
-                                            <Textarea placeholder="" />
+                                            <div className="flex items-center space-x-2">
+                                                <div
+                                                    className="w-full min-h-[40px] p-2 border rounded"
+                                                    onDrop={(e) => {
+                                                        handleDrop(
+                                                            "LabelCases",
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            )
+                                                        );
+                                                    }}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                >
+                                                    {mainState.LabelCases ? (
+                                                        <Badge
+                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                            variant="outline"
+                                                            onClick={() =>
+                                                                handleRemoveVariable(
+                                                                    "LabelCases"
+                                                                )
+                                                            }
+                                                        >
+                                                            {
+                                                                mainState.LabelCases
+                                                            }
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        mainState.LabelCases ??
+                                                        ""
+                                                    }
+                                                    name="LabelCases"
+                                                />
+                                            </div>
                                         </div>
                                         <div>
                                             <Label className="font-bold">
@@ -272,7 +424,11 @@ export const HierClusDialog = ({
                         <Button type="button" onClick={handleContinue}>
                             OK
                         </Button>
-                        <Button type="button" variant="secondary">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onReset}
+                        >
                             Reset
                         </Button>
                         <DialogClose asChild>

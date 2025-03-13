@@ -1,7 +1,7 @@
 import React from "react";
 
 export type HierClusMainType = {
-    Variables: string | null;
+    Variables: string[] | null;
     LabelCases: string | null;
     ClusterCases: boolean;
     ClusterVar: boolean;
@@ -18,7 +18,7 @@ export type HierClusDialogProps = {
     setIsSaveOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof HierClusMainType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: HierClusMainType;
     globalVariables: string[];

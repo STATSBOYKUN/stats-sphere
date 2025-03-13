@@ -1,7 +1,10 @@
-import {RocCurveMainType, RocCurveOptionsType, RocCurveType} from "@/models/classify/roc-curve/roc-curve";
+import {
+    RocCurveMainType,
+    RocCurveOptionsType,
+    RocCurveType,
+} from "@/models/classify/roc-curve/roc-curve";
 
 export const RocCurveMainDefault: RocCurveMainType = {
-    SrcVar: null,
     StateTargetVariable: null,
     StateVarVal: null,
     TestTargetVariable: null,

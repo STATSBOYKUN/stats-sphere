@@ -1,23 +1,26 @@
 import {
-    OptScaOveralsDefineRangeScaleType, OptScaOveralsDefineRangeType,
-    OptScaOveralsMainType, OptScaOveralsOptionsType, OptScaOveralsType
+    OptScaOveralsDefineRangeScaleType,
+    OptScaOveralsDefineRangeType,
+    OptScaOveralsMainType,
+    OptScaOveralsOptionsType,
+    OptScaOveralsType,
 } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
 
 export const OptScaOveralsMainDefault: OptScaOveralsMainType = {
-    SrcVariable: null,
     SetTargetVariable: null,
     PlotsTargetVariable: null,
     Dimensions: null,
 };
 
-export const OptScaOveralsDefineRangeScaleDefault: OptScaOveralsDefineRangeScaleType = {
-    Minimum: null,
-    Maximum: null,
-    Ordinal: false,
-    SingleNominal: false,
-    MultipleNominal: false,
-    DiscreteNumeric: false,
-};
+export const OptScaOveralsDefineRangeScaleDefault: OptScaOveralsDefineRangeScaleType =
+    {
+        Minimum: null,
+        Maximum: null,
+        Ordinal: false,
+        SingleNominal: false,
+        MultipleNominal: false,
+        DiscreteNumeric: false,
+    };
 
 export const OptScaOveralsDefineRangeDefault: OptScaOveralsDefineRangeType = {
     Minimum: null,

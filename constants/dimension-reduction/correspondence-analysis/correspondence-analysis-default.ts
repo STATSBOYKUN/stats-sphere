@@ -2,35 +2,38 @@ import {
     CorrespondenceType,
     CorrespondenceDefineRangeColumnType,
     CorrespondenceDefineRangeRowType,
-    CorrespondenceMainType, CorrespondenceModelType,
-    CorrespondencePlotsType, CorrespondenceStatisticsType
+    CorrespondenceMainType,
+    CorrespondenceModelType,
+    CorrespondencePlotsType,
+    CorrespondenceStatisticsType,
 } from "@/models/dimension-reduction/correspondence-analysis/correspondence-analysis";
 
 export const CorrespondenceMainDefault: CorrespondenceMainType = {
-    SrcVar: null,
     RowTargetVar: null,
     ColTargetVar: null,
 };
 
-export const CorrespondenceDefineRangeRowDefault: CorrespondenceDefineRangeRowType = {
-    MinValue: null,
-    MaxValue: null,
-    ConstraintsList: null,
-    None: false,
-    CategoryEqual: false,
-    CategorySupplemental: false,
-    DefaultListModel: null,
-};
+export const CorrespondenceDefineRangeRowDefault: CorrespondenceDefineRangeRowType =
+    {
+        MinValue: null,
+        MaxValue: null,
+        ConstraintsList: null,
+        None: false,
+        CategoryEqual: false,
+        CategorySupplemental: false,
+        DefaultListModel: null,
+    };
 
-export const CorrespondenceDefineRangeColumnDefault: CorrespondenceDefineRangeColumnType = {
-    MinValue: null,
-    MaxValue: null,
-    ConstraintsList: null,
-    None: false,
-    CategoryEqual: false,
-    CategorySupplemental: false,
-    DefaultListModel: null,
-};
+export const CorrespondenceDefineRangeColumnDefault: CorrespondenceDefineRangeColumnType =
+    {
+        MinValue: null,
+        MaxValue: null,
+        ConstraintsList: null,
+        None: false,
+        CategoryEqual: false,
+        CategorySupplemental: false,
+        DefaultListModel: null,
+    };
 
 export const CorrespondenceModelDefault: CorrespondenceModelType = {
     ChiSquare: false,

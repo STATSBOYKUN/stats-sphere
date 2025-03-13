@@ -1,10 +1,8 @@
 import React from "react";
-import { TreeMainType } from "../tree/tree";
 
 export type TwoStepClusterMainType = {
-    SrcVar: string | null;
-    CategoricalVar: string | null;
-    ContinousVar: string | null;
+    CategoricalVar: string[] | null;
+    ContinousVar: string[] | null;
     Log: boolean;
     Euclidean: boolean;
     Auto: boolean;
@@ -24,11 +22,11 @@ export type TwoStepClusterDialogProps = {
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof TwoStepClusterMainType,
-        value: number | string | boolean | null
+        value: string[] | number | string | boolean | null
     ) => void;
     data: TwoStepClusterMainType;
     globalVariables: string[];
-    onContinue: (mainState: TreeMainType) => void;
+    onContinue: (mainState: TwoStepClusterMainType) => void;
     onReset: () => void;
 };
 
