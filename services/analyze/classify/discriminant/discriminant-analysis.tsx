@@ -3,7 +3,7 @@ import {
     DiscriminantAnalysisSummaryCanonicalType,
     DiscriminantAnalysisType
 } from "@/models/classify/discriminant/discriminant-worker";
-import init, {discriminant_analysis, start_analysis} from "@/src/wasm/pkg/wasm";
+// import init, {discriminant_analysis, start_analysis} from "@/src/wasm/pkg/wasm";
 import {analyzeCase} from "@/services/analyze/classify/discriminant/discriminant-analysis-check-data";
 import {groupStatistics} from "@/services/analyze/classify/discriminant/discriminant-analysis-groups-statistics";
 import {resultDiscriminant} from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
