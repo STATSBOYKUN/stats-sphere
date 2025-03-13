@@ -1,1 +1,0 @@
-&nalgebra::base::matrix::Matrix<_, nalgebra::base::dimension::Dyn, nalgebra::base::dimension::Const<1>, nalgebra::base::vec_storage::VecStorage<_, nalgebra::base::dimension::Dyn, nalgebra::base::dimension::Const<1>>>
