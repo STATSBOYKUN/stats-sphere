@@ -9,9 +9,9 @@ import { Variable } from '@/types/Variable';
 
 registerAllModules();
 
-const getColumnConfig = (variable) => {
+const getColumnConfig = (variable: Variable | { columnIndex: number; name: string; type: "STRING"; columns: number; decimals: number; align: "center"; }) => {
     const baseConfig = {
-        width: variable.columns || 100,
+        width: variable.columns || 64,
         className:
             variable.align === 'right'
                 ? 'htRight'
@@ -37,7 +37,7 @@ const getColumnConfig = (variable) => {
     }
 };
 
-const getDisplayMatrix = (stateData) => {
+const getDisplayMatrix = (stateData: string | any[]) => {
     const defaultRows = 100;
     const defaultCols = 45;
     const stateRows = stateData?.length || 0;
@@ -100,6 +100,7 @@ export default function DataTable() {
         variables,
         getVariableByColumnIndex,
         addVariable,
+        deleteVariable,
         updateVariable
     } = useVariableStore();
 
@@ -111,7 +112,7 @@ export default function DataTable() {
     const colHeaders = useMemo(() => {
         return Array.from({ length: numColumns }, (_, index) => {
             const variable = getVariableByColumnIndex(index);
-            return variable?.name || `var${index + 1}`;
+            return variable?.name || `var`;
         });
     }, [numColumns, variables, getVariableByColumnIndex]);
 
@@ -124,15 +125,15 @@ export default function DataTable() {
                     columnIndex: i,
                     name: '',
                     type: 'STRING',
-                    columns: 100,
-                    decimals: 0,
-                    align: 'center'
+                    columns: 64,
+                    decimals: 2,
+                    align: 'right'
                 };
             return getColumnConfig(variable);
         });
     }, [numColumns, getVariableByColumnIndex]);
 
-    const handleBeforeChange = useCallback((changes, source) => {
+    const handleBeforeChange = useCallback((changes: any[], source: string) => {
         if (source === 'loadData' || !changes || isStatisticProgress) return;
 
         const changesByCol = {};
@@ -153,9 +154,9 @@ export default function DataTable() {
             changesByCol[colNumber].push(change);
         });
 
-        const currentVariables = variables;
         const missingColumns = [];
 
+        // Ensure variables exist for all columns up to the highest one changed
         for (let i = 0; i <= highestColumn; i++) {
             if (!getVariableByColumnIndex(i)) {
                 missingColumns.push(i);
@@ -165,10 +166,6 @@ export default function DataTable() {
         if (missingColumns.length > 0) {
             missingColumns.forEach(colIndex => {
                 const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
-
-                let dataType = 'STRING';
-                let alignment = 'left';
-                let measureType = 'nominal';
 
                 if (hasChanges) {
                     let allNumeric = true;
@@ -180,17 +177,21 @@ export default function DataTable() {
                     });
 
                     if (allNumeric) {
-                        dataType = 'NUMERIC';
-                        alignment = 'right';
-                        measureType = 'scale';
+                        addVariable({
+                            columnIndex: colIndex,
+                            type: 'NUMERIC',
+                        });
+                    } else {
+                        addVariable({
+                            columnIndex: colIndex,
+                            type: 'STRING',
+                        });
                     }
+                } else {
+                    addVariable({
+                        columnIndex: colIndex
+                    });
                 }
-
-                addVariable(colIndex, {
-                    type: dataType,
-                    align: alignment,
-                    measure: measureType
-                });
             });
         }
 
@@ -218,7 +219,7 @@ export default function DataTable() {
                 });
             }
         });
-    }, [getVariableByColumnIndex, updateCell, addVariable, isStatisticProgress, variables]);
+    }, [getVariableByColumnIndex, updateCell, addVariable, isStatisticProgress]);
 
     const handleAfterSelectionEnd = useCallback((row, column) => {
         if (!isSelectionProgrammatic.current) {
@@ -238,21 +239,11 @@ export default function DataTable() {
 
             addColumn(insertIndex);
 
-            const highestVarIndex = variables.length > 0
-                ? Math.max(...variables.map(v => v.columnIndex))
-                : -1;
-
-            if (insertIndex > highestVarIndex + 1) {
-                for (let j = highestVarIndex + 1; j <= insertIndex; j++) {
-                    addVariable(j, {
-                        type: 'STRING',
-                        align: 'left',
-                        measure: 'nominal'
-                    });
-                }
-            }
+            addVariable({
+                columnIndex: insertIndex,
+            });
         }
-    }, [addColumn, addVariable, variables]);
+    }, [addColumn, addVariable]);
 
     const handleAfterRemoveRow = useCallback((index, amount) => {
         for (let i = 0; i < amount; i++) {
@@ -263,8 +254,10 @@ export default function DataTable() {
     const handleAfterRemoveCol = useCallback((index, amount) => {
         for (let i = 0; i < amount; i++) {
             deleteColumn(index);
+
+            deleteVariable(index);
         }
-    }, [deleteColumn]);
+    }, [deleteColumn, deleteVariable]);
 
     const handleAfterColumnResize = useCallback((newSize, column) => {
         const variable = getVariableByColumnIndex(column);
@@ -295,23 +288,19 @@ export default function DataTable() {
         data: displayMatrix,
         colHeaders,
         columns,
-        rowHeaders: true,
         width: '100%',
         height: '100%',
-        autoWrapRow: true,
-        autoWrapCol: true,
         dropdownMenu: true,
         multiColumnSorting: true,
         filters: true,
+        rowHeaders: true,
         manualRowMove: true,
         customBorders: true,
         manualColumnResize: true,
         contextMenu: createContextMenu(),
         licenseKey: 'non-commercial-and-evaluation',
-        minSpareRows: 50,
+        minSpareRows: 1,
         minSpareCols: 1,
-        startRows: 100,
-        startCols: 50,
         copyPaste: true,
         beforeChange: handleBeforeChange,
         afterSelection: handleAfterSelectionEnd,

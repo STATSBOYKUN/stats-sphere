@@ -11,6 +11,17 @@ export type VariableStoreError = {
     originalError?: any;
 };
 
+const inferDefaultValues = (type: Variable['type']): Partial<Variable> => {
+    const numericTypes: Variable['type'][] = ["NUMERIC", "DOT", "COMMA", "SCIENTIFIC"];
+
+    return {
+        decimals: numericTypes.includes(type) ? 2 : 0,
+        align: type === "STRING" ? "left" : "right",
+        measure: "unknown",
+        role: "input"
+    };
+};
+
 const processVariableName = (name: string, existingVariables: Variable[]): {
     isValid: boolean;
     message?: string;
@@ -95,7 +106,7 @@ interface VariableStoreState {
         field: K,
         value: Variable[K]
     ) => Promise<void>;
-    addVariable: (columnIndex?: number, variableData?: Partial<Variable>) => Promise<void>;
+    addVariable: (variableData?: Partial<Variable>) => Promise<void>;
     getVariableByColumnIndex: (columnIndex: number) => Variable | undefined;
     getVariableByName: (name: string) => Variable | undefined;
     loadVariables: () => Promise<void>;
@@ -176,16 +187,24 @@ export const useVariableStore = create<VariableStoreState>()(
                 }
             },
 
-            addVariable: async (columnIndex?, variableData?) => {
-                const targetIndex = columnIndex !== undefined ? columnIndex : get().variables.length;
-
+            addVariable: async (variableData?: Partial<Variable>) => {
                 try {
                     await db.transaction('rw', db.variables, async () => {
                         const existingVariables = [...get().variables];
+
+                       const targetIndex = variableData?.columnIndex !== undefined
+                            ? variableData.columnIndex
+                            : existingVariables.length;
+
                         const defaultVar = createDefaultVariable(targetIndex, existingVariables);
+
+                        const inferredValues = variableData?.type
+                            ? inferDefaultValues(variableData.type)
+                            : {};
 
                         const newVariable: Variable = {
                             ...defaultVar,
+                            ...inferredValues,
                             ...variableData,
                             columnIndex: targetIndex
                         };

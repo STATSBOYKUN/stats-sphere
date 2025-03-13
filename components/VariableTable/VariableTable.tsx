@@ -7,6 +7,7 @@ import "handsontable/dist/handsontable.full.min.css";
 import { colHeaders, columns } from "./tableConfig";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { Variable } from "@/types/Variable";
+import Handsontable from "handsontable";
 
 registerAllModules();
 
