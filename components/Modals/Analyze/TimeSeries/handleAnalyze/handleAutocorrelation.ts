@@ -6,7 +6,7 @@ export async function handleAutocorrelation(
     lag: (number),
     difference: (string),
     seasonal: (number),
-):Promise<[number[], string, string]> {
+):Promise<[number[], string, string, string]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) ? data : null;
     
@@ -94,9 +94,57 @@ export async function handleAutocorrelation(
             }]
         });
 
-        return [test7,acfJSON ,pacfJSON];
+        let bartletLeftACF = Array.from(autocorrelation.calculate_bartlet_left(new Float64Array(acf), new Float64Array(acf_se), 0.05));
+        let bartletRightACF = Array.from(autocorrelation.calculate_bartlet_right(new Float64Array(acf), new Float64Array(acf_se), 0.05));
+        let structureACF: any[] = [];
+        // Validasi panjang array
+        if (acf.length === lag && pacf.length === lag) {
+            for (let i = 0; i < lag; i++) {
+                structureACF.push({
+                    category: `lag ${i + 1}`,
+                    barValue: acf[i],
+                    lineValue: bartletLeftACF[i],
+                });
+                // structureACF.push({
+                //     category: `lag ${i + 1}`,
+                //     subcategory: `bartlet right`,
+                //     value: bartletRightACF[i],
+                // });
+            }
+        } else {
+            throw new Error("Panjang array tidak sama!");
+        }
+        let acfGraphicJSON = JSON.stringify({
+            charts: [
+                {
+                    chartType: "Vertical Bar & Line Chart",
+                    chartMetadata: {
+                        axisInfo: {
+                            category: `lag`,
+                            barValue: `acf`,
+                            lineValue: `bartlet left`,
+                        },
+                        description: `Autocorellation ${dataHeader} using ${lag}`,
+                        notes: `Autocorellation ${dataHeader}`,
+                    },
+                    chartData: structureACF,
+                    config: {
+                        "width": 800,
+                        "height": 600,
+                        "chartColor": ["#4682B4"],
+                        "useLegend": true,
+                        "useAxis": true,
+                    }
+                }
+            ]
+        });
+
+        let bartletLeftPACF = Array.from(autocorrelation.calculate_bartlet_left(new Float64Array(pacf), new Float64Array(pacf_se), 0.05));
+        let bartletRightPACF = Array.from(autocorrelation.calculate_bartlet_right(new Float64Array(pacf), new Float64Array(pacf_se), 0.05));
+
+        return [test7,acfJSON ,pacfJSON, acfGraphicJSON];
     } catch (error) {
         let errorMessage = error as Error;
-        return [[0],"" ,JSON.stringify({ error: errorMessage.message })];
+        return [[0],"" ,JSON.stringify({ error: errorMessage.message }), ""];
     }
 }

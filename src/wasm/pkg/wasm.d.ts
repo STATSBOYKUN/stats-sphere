@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
-export function get_t(): string[];
 export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
+export function get_t(): string[];
 export function get_gamma_0_tab1(): Float64Array;
 export class Arima {
   free(): void;
@@ -19,17 +19,17 @@ export class Arima {
   set_constant(constant: number): void;
   set_ar_coef(ar_coef: Float64Array): void;
   set_ma_coef(ma_coef: Float64Array): void;
-  estimate_coef(): Float64Array;
-  estimate_residual(): Float64Array;
-  res_sum_of_square(): number;
-  res_variance(): number;
-  estimate_se(): Float64Array;
-  forecast(n: number): Float64Array;
   ln_likelihood(): number;
   aic(): number;
   bic(): number;
   sbc(): number;
+  estimate_residual(): Float64Array;
+  res_sum_of_square(): number;
+  res_variance(): number;
   forecasting_evaluation(): any;
+  estimate_se(): Float64Array;
+  estimate_coef(): Float64Array;
+  forecast(n: number): Float64Array;
   z_stat(): Float64Array;
   p_value(): Float64Array;
 }
@@ -89,6 +89,8 @@ export class Autocorrelation {
   calculate_pacf(autocorrelate: Float64Array): Float64Array;
   calculate_pacf_se(partial_autocorelate: Float64Array): Float64Array;
   autocorelate(difference: string, seasonally: number): void;
+  calculate_bartlet_left(r: Float64Array, se: Float64Array, alpha: number): Float64Array;
+  calculate_bartlet_right(r: Float64Array, se: Float64Array, alpha: number): Float64Array;
   calculate_acf(difference: Float64Array): Float64Array;
   calculate_acf_se(autocorelate: Float64Array): Float64Array;
   calculate_ljung_box(autocorrelate: Float64Array): Float64Array;
@@ -97,17 +99,10 @@ export class Autocorrelation {
 }
 export class Decomposition {
   free(): void;
-  calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
-  linear_trend(deseasonalizing: Float64Array): Float64Array;
-  quadratic_trend(deseasonalizing: Float64Array): Float64Array;
-  exponential_trend(deseasonalizing: Float64Array): Float64Array;
-  calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
-  decomposition_evaluation(forecast: Float64Array): any;
-  calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
-  calculate_centered_moving_average(): Float64Array;
   multiplicative_decomposition(trend: string): Float64Array;
   calculate_multiplicative_seasonal_component(centered_ma: Float64Array): Float64Array;
-  additive_decomposition(): Float64Array;
+  decomposition_evaluation(forecast: Float64Array): any;
+  calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
   constructor(data: Float64Array, data_header: string, time: string[], time_header: string, period: number);
   get_data(): Float64Array;
   get_data_header(): string;
@@ -124,6 +119,13 @@ export class Decomposition {
   set_irregular_component(irregular_component: Float64Array): void;
   set_seasonal_indices(seasonal_indices: Float64Array): void;
   set_trend_equation(trend_equation: string): void;
+  calculate_centered_moving_average(): Float64Array;
+  calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
+  linear_trend(deseasonalizing: Float64Array): Float64Array;
+  quadratic_trend(deseasonalizing: Float64Array): Float64Array;
+  exponential_trend(deseasonalizing: Float64Array): Float64Array;
+  additive_decomposition(): Float64Array;
+  calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
 }
 export class DickeyFuller {
   free(): void;
@@ -194,13 +196,13 @@ export class NoInterceptLinearRegression {
 }
 export class QuadraticRegression {
   free(): void;
+  calculate_regression(): void;
   constructor(x: Float64Array, y: Float64Array);
   get_y(): Float64Array;
   get_y_prediction(): Float64Array;
   get_beta(): Float64Array;
   set_y_prediction(y_prediction: Float64Array): void;
   set_beta(beta: Float64Array): void;
-  calculate_regression(): void;
   readonly get_x: Float64Array;
 }
 export class SimpleExponentialRegression {
@@ -262,6 +264,29 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly __wbg_arima_free: (a: number, b: number) => void;
+  readonly arima_new: (a: number, b: number, c: number, d: number, e: number) => number;
+  readonly arima_get_data: (a: number) => [number, number];
+  readonly arima_get_ar_order: (a: number) => number;
+  readonly arima_get_i_order: (a: number) => number;
+  readonly arima_get_ma_order: (a: number) => number;
+  readonly arima_get_res_var: (a: number) => number;
+  readonly arima_get_constant: (a: number) => number;
+  readonly arima_get_ar_coef: (a: number) => [number, number];
+  readonly arima_get_ma_coef: (a: number) => [number, number];
+  readonly arima_set_data: (a: number, b: number, c: number) => void;
+  readonly arima_set_res_var: (a: number, b: number) => void;
+  readonly arima_set_constant: (a: number, b: number) => void;
+  readonly arima_set_ar_coef: (a: number, b: number, c: number) => void;
+  readonly arima_set_ma_coef: (a: number, b: number, c: number) => void;
+  readonly __wbg_nointerceptlinearregression_free: (a: number, b: number) => void;
+  readonly nointerceptlinearregression_new: (a: number, b: number, c: number, d: number) => number;
+  readonly nointerceptlinearregression_get_x: (a: number) => [number, number];
+  readonly nointerceptlinearregression_get_y: (a: number) => [number, number];
+  readonly nointerceptlinearregression_get_y_prediction: (a: number) => [number, number];
+  readonly nointerceptlinearregression_set_y_prediction: (a: number, b: number, c: number) => void;
+  readonly nointerceptlinearregression_get_b: (a: number) => number;
+  readonly nointerceptlinearregression_set_b: (a: number, b: number) => void;
   readonly __wbg_autocorrelation_free: (a: number, b: number) => void;
   readonly autocorrelation_new: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly autocorrelation_get_data: (a: number) => [number, number];
@@ -284,6 +309,12 @@ export interface InitOutput {
   readonly autocorrelation_set_lb: (a: number, b: number, c: number) => void;
   readonly autocorrelation_set_df_lb: (a: number, b: number, c: number) => void;
   readonly autocorrelation_set_pvalue_lb: (a: number, b: number, c: number) => void;
+  readonly partial_kj: (a: number, b: number, c: number, d: number) => number;
+  readonly autocorrelation_calculate_pacf: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_pacf_se: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
+  readonly autocorrelation_calculate_bartlet_left: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
+  readonly autocorrelation_calculate_bartlet_right: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
   readonly get_t: () => [number, number];
   readonly __wbg_multiplelinearregression_free: (a: number, b: number) => void;
   readonly multiplelinearregression_new: (a: any, b: number, c: number) => number;
@@ -293,23 +324,16 @@ export interface InitOutput {
   readonly multiplelinearregression_get_beta: (a: number) => [number, number];
   readonly multiplelinearregression_set_y_prediction: (a: number, b: number, c: number) => void;
   readonly multiplelinearregression_set_beta: (a: number, b: number, c: number) => void;
-  readonly __wbg_quadraticregression_free: (a: number, b: number) => void;
-  readonly quadraticregression_new: (a: number, b: number, c: number, d: number) => number;
-  readonly quadraticregression_get_x: (a: number) => [number, number];
-  readonly quadraticregression_get_y: (a: number) => [number, number];
-  readonly quadraticregression_get_y_prediction: (a: number) => [number, number];
-  readonly quadraticregression_get_beta: (a: number) => [number, number];
-  readonly quadraticregression_set_y_prediction: (a: number, b: number, c: number) => void;
-  readonly quadraticregression_set_beta: (a: number, b: number, c: number) => void;
-  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_quadratic_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
-  readonly partial_kj: (a: number, b: number, c: number, d: number) => number;
-  readonly autocorrelation_calculate_pacf: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_calculate_pacf_se: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
+  readonly multiplelinearregression_calculate_regression: (a: number) => void;
+  readonly multiplelinearregression_calculate_standard_error: (a: number) => [number, number];
+  readonly multiplelinearregression_calculate_t_stat: (a: number) => [number, number];
+  readonly multiplelinearregression_calculate_pvalue: (a: number) => [number, number];
+  readonly multiplelinearregression_calculate_sse: (a: number) => number;
+  readonly multiplelinearregression_calculate_mse: (a: number) => number;
+  readonly multiplelinearregression_calculate_sst: (a: number) => number;
+  readonly multiplelinearregression_calculate_r2: (a: number) => number;
+  readonly multiplelinearregression_calculate_r2_adj: (a: number) => number;
+  readonly quadraticregression_calculate_regression: (a: number) => void;
   readonly __wbg_dickeyfuller_free: (a: number, b: number) => void;
   readonly dickeyfuller_new: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
   readonly dickeyfuller_get_data: (a: number) => [number, number];
@@ -359,6 +383,10 @@ export interface InitOutput {
   readonly augmenteddickeyfuller_calculate_pvalue: (a: number) => number;
   readonly augmenteddickeyfuller_calculate_critical_value: (a: number) => [number, number];
   readonly augmenteddickeyfuller_calculate_test_stat: (a: number) => number;
+  readonly arima_ln_likelihood: (a: number) => number;
+  readonly arima_aic: (a: number) => number;
+  readonly arima_bic: (a: number) => number;
+  readonly arima_sbc: (a: number) => number;
   readonly __wbg_simpleexponentialregression_free: (a: number, b: number) => void;
   readonly simpleexponentialregression_new: (a: number, b: number, c: number, d: number) => number;
   readonly simpleexponentialregression_get_x: (a: number) => [number, number];
@@ -366,7 +394,6 @@ export interface InitOutput {
   readonly simpleexponentialregression_get_y_prediction: (a: number) => [number, number];
   readonly simpleexponentialregression_set_y_prediction: (a: number, b: number, c: number) => void;
   readonly simpleexponentialregression_calculate_regression: (a: number) => void;
-  readonly quadraticregression_calculate_regression: (a: number) => void;
   readonly dickeyfuller_get_b: (a: number) => number;
   readonly dickeyfuller_get_se: (a: number) => number;
   readonly dickeyfuller_get_test_stat: (a: number) => number;
@@ -377,7 +404,24 @@ export interface InitOutput {
   readonly dickeyfuller_set_test_stat: (a: number, b: number) => void;
   readonly simpleexponentialregression_set_b0: (a: number, b: number) => void;
   readonly simpleexponentialregression_set_b1: (a: number, b: number) => void;
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly arima_estimate_residual: (a: number) => [number, number];
+  readonly arima_res_sum_of_square: (a: number) => number;
+  readonly arima_res_variance: (a: number) => number;
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_acf: (a: number, b: number, c: number) => [number, number];
+  readonly autocorrelation_calculate_acf_se: (a: number, b: number, c: number) => [number, number];
+  readonly arima_forecasting_evaluation: (a: number) => any;
   readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
+  readonly __wbg_quadraticregression_free: (a: number, b: number) => void;
+  readonly quadraticregression_new: (a: number, b: number, c: number, d: number) => number;
+  readonly quadraticregression_get_x: (a: number) => [number, number];
+  readonly quadraticregression_get_y: (a: number) => [number, number];
+  readonly quadraticregression_get_y_prediction: (a: number) => [number, number];
+  readonly quadraticregression_get_beta: (a: number) => [number, number];
+  readonly quadraticregression_set_y_prediction: (a: number, b: number, c: number) => void;
+  readonly quadraticregression_set_beta: (a: number, b: number, c: number) => void;
+  readonly arima_estimate_se: (a: number) => [number, number];
   readonly __wbg_smoothing_free: (a: number, b: number) => void;
   readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly smoothing_get_data_header: (a: number) => [number, number];
@@ -396,9 +440,7 @@ export interface InitOutput {
   readonly smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
   readonly smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_calculate_acf: (a: number, b: number, c: number) => [number, number];
-  readonly autocorrelation_calculate_acf_se: (a: number, b: number, c: number) => [number, number];
+  readonly arima_estimate_coef: (a: number) => [number, number];
   readonly __wbg_simplelinearregression_free: (a: number, b: number) => void;
   readonly simplelinearregression_new: (a: number, b: number, c: number, d: number) => number;
   readonly simplelinearregression_get_x: (a: number) => [number, number];
@@ -418,53 +460,8 @@ export interface InitOutput {
   readonly simplelinearregression_calculate_sst: (a: number) => number;
   readonly simplelinearregression_calculate_r2: (a: number) => number;
   readonly simplelinearregression_calculate_r2_adj: (a: number) => number;
-  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly multiplelinearregression_calculate_regression: (a: number) => void;
-  readonly multiplelinearregression_calculate_standard_error: (a: number) => [number, number];
-  readonly multiplelinearregression_calculate_t_stat: (a: number) => [number, number];
-  readonly multiplelinearregression_calculate_pvalue: (a: number) => [number, number];
-  readonly multiplelinearregression_calculate_sse: (a: number) => number;
-  readonly multiplelinearregression_calculate_mse: (a: number) => number;
-  readonly multiplelinearregression_calculate_sst: (a: number) => number;
-  readonly multiplelinearregression_calculate_r2: (a: number) => number;
-  readonly multiplelinearregression_calculate_r2_adj: (a: number) => number;
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
-  readonly __wbg_arima_free: (a: number, b: number) => void;
-  readonly arima_new: (a: number, b: number, c: number, d: number, e: number) => number;
-  readonly arima_get_data: (a: number) => [number, number];
-  readonly arima_get_ar_order: (a: number) => number;
-  readonly arima_get_i_order: (a: number) => number;
-  readonly arima_get_ma_order: (a: number) => number;
-  readonly arima_get_res_var: (a: number) => number;
-  readonly arima_get_constant: (a: number) => number;
-  readonly arima_get_ar_coef: (a: number) => [number, number];
-  readonly arima_get_ma_coef: (a: number) => [number, number];
-  readonly arima_set_data: (a: number, b: number, c: number) => void;
-  readonly arima_set_res_var: (a: number, b: number) => void;
-  readonly arima_set_constant: (a: number, b: number) => void;
-  readonly arima_set_ar_coef: (a: number, b: number, c: number) => void;
-  readonly arima_set_ma_coef: (a: number, b: number, c: number) => void;
-  readonly arima_estimate_coef: (a: number) => [number, number];
-  readonly arima_estimate_residual: (a: number) => [number, number];
-  readonly arima_res_sum_of_square: (a: number) => number;
-  readonly arima_res_variance: (a: number) => number;
-  readonly arima_estimate_se: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
   readonly arima_forecast: (a: number, b: number) => [number, number];
-  readonly arima_ln_likelihood: (a: number) => number;
-  readonly arima_aic: (a: number) => number;
-  readonly arima_bic: (a: number) => number;
-  readonly arima_sbc: (a: number) => number;
-  readonly arima_forecasting_evaluation: (a: number) => any;
-  readonly arima_z_stat: (a: number) => [number, number];
-  readonly arima_p_value: (a: number) => [number, number];
-  readonly __wbg_nointerceptlinearregression_free: (a: number, b: number) => void;
-  readonly nointerceptlinearregression_new: (a: number, b: number, c: number, d: number) => number;
-  readonly nointerceptlinearregression_get_x: (a: number) => [number, number];
-  readonly nointerceptlinearregression_get_y: (a: number) => [number, number];
-  readonly nointerceptlinearregression_get_y_prediction: (a: number) => [number, number];
-  readonly nointerceptlinearregression_set_y_prediction: (a: number, b: number, c: number) => void;
   readonly nointerceptlinearregression_calculate_regression: (a: number) => void;
   readonly nointerceptlinearregression_calculate_standard_error: (a: number) => number;
   readonly nointerceptlinearregression_calculate_t_stat: (a: number) => number;
@@ -474,8 +471,6 @@ export interface InitOutput {
   readonly nointerceptlinearregression_calculate_sst: (a: number) => number;
   readonly nointerceptlinearregression_calculate_r2: (a: number) => number;
   readonly nointerceptlinearregression_calculate_r2_adj: (a: number) => number;
-  readonly nointerceptlinearregression_get_b: (a: number) => number;
-  readonly nointerceptlinearregression_set_b: (a: number, b: number) => void;
   readonly __wbg_decomposition_free: (a: number, b: number) => void;
   readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly decomposition_get_data: (a: number) => [number, number];
@@ -494,6 +489,15 @@ export interface InitOutput {
   readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
   readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
   readonly get_gamma_0_tab1: () => [number, number];
+  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_quadratic_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly arima_z_stat: (a: number) => [number, number];
+  readonly arima_p_value: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
   readonly autocorrelation_calculate_ljung_box: (a: number, b: number, c: number) => [number, number];
   readonly autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
   readonly autocorrelation_df_ljung_box: (a: number) => [number, number];
