@@ -101,7 +101,8 @@ export default function DataTable() {
         getVariableByColumnIndex,
         addVariable,
         deleteVariable,
-        updateVariable
+        updateVariable,
+        addMultipleVariables
     } = useVariableStore();
 
     const { isStatisticProgress } = useModalStore();
@@ -164,7 +165,8 @@ export default function DataTable() {
         }
 
         if (missingColumns.length > 0) {
-            missingColumns.forEach(colIndex => {
+            // Prepare data for batch variable creation
+            const newVariables = missingColumns.map(colIndex => {
                 const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
 
                 if (hasChanges) {
@@ -176,23 +178,19 @@ export default function DataTable() {
                         }
                     });
 
-                    if (allNumeric) {
-                        addVariable({
-                            columnIndex: colIndex,
-                            type: 'NUMERIC',
-                        });
-                    } else {
-                        addVariable({
-                            columnIndex: colIndex,
-                            type: 'STRING',
-                        });
-                    }
-                } else {
-                    addVariable({
-                        columnIndex: colIndex
-                    });
+                    return {
+                        columnIndex: colIndex,
+                        type: allNumeric ? 'NUMERIC' : 'STRING',
+                    };
                 }
+
+                return {
+                    columnIndex: colIndex
+                };
             });
+
+            // Batch creation of variables
+            addMultipleVariables(newVariables);
         }
 
         Object.keys(changesByCol).forEach(colKey => {
@@ -219,7 +217,7 @@ export default function DataTable() {
                 });
             }
         });
-    }, [getVariableByColumnIndex, updateCell, addVariable, isStatisticProgress]);
+    }, [getVariableByColumnIndex, updateCell, addVariable, addMultipleVariables, isStatisticProgress]);
 
     const handleAfterSelectionEnd = useCallback((row, column) => {
         if (!isSelectionProgrammatic.current) {

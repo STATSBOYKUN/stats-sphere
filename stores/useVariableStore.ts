@@ -114,6 +114,7 @@ interface VariableStoreState {
     deleteVariable: (columnIndex: number) => Promise<void>;
     selectVariable: (columnIndex: number | null) => void;
     overwriteVariables: (variables: Variable[]) => Promise<void>;
+    addMultipleVariables: (variablesData: Partial<Variable>[]) => Promise<void>;
 }
 
 export const useVariableStore = create<VariableStoreState>()(
@@ -244,6 +245,95 @@ export const useVariableStore = create<VariableStoreState>()(
                         draft.error = {
                             message: error.message || "Error adding variable",
                             source: "addVariable",
+                            originalError: error
+                        };
+                    });
+
+                    await get().loadVariables();
+                }
+            },
+
+            addMultipleVariables: async (variablesData: Partial<Variable>[]) => {
+                try {
+                    await db.transaction('rw', db.variables, async () => {
+                        const existingVariables = [...get().variables];
+                        const newVariables: Variable[] = [];
+
+                        // First process all the new variable names to ensure uniqueness
+                        for (let i = 0; i < variablesData.length; i++) {
+                            const variableData = variablesData[i];
+                            const targetIndex = variableData.columnIndex !== undefined
+                                ? variableData.columnIndex
+                                : existingVariables.length + i;
+
+                            // Create a default variable, considering both existing and newly created variables
+                            const defaultVar = createDefaultVariable(targetIndex, [
+                                ...existingVariables,
+                                ...newVariables
+                            ]);
+
+                            const inferredValues = variableData.type
+                                ? inferDefaultValues(variableData.type)
+                                : {};
+
+                            const newVariable: Variable = {
+                                ...defaultVar,
+                                ...inferredValues,
+                                ...variableData,
+                                columnIndex: targetIndex
+                            };
+
+                            if (variableData.name) {
+                                // Process name against both existing and newly created variables
+                                const nameResult = processVariableName(
+                                    variableData.name,
+                                    [...existingVariables, ...newVariables]
+                                );
+                                if (nameResult.isValid && nameResult.processedName) {
+                                    newVariable.name = nameResult.processedName;
+                                }
+                            }
+
+                            newVariables.push(newVariable);
+                        }
+
+                        // Shift existing variables if needed
+                        const columnIndices = newVariables.map(v => v.columnIndex).sort((a, b) => a - b);
+                        const lowestNewIndex = columnIndices[0];
+
+                        for (let i = 0; i < existingVariables.length; i++) {
+                            if (existingVariables[i].columnIndex >= lowestNewIndex) {
+                                existingVariables[i].columnIndex += newVariables.length;
+                                await db.variables.put(existingVariables[i]);
+                            }
+                        }
+
+                        // Add all new variables
+                        const ids = await db.variables.bulkAdd(newVariables, { allKeys: true });
+
+                        // Update state
+                        set((draft) => {
+                            for (let i = 0; i < draft.variables.length; i++) {
+                                if (draft.variables[i].columnIndex >= lowestNewIndex) {
+                                    draft.variables[i].columnIndex += newVariables.length;
+                                }
+                            }
+
+                            const variablesWithIds = newVariables.map((v, i) => ({
+                                ...v,
+                                id: ids[i]
+                            }));
+
+                            draft.variables.push(...variablesWithIds);
+                            draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
+                            draft.lastUpdated = new Date();
+                        });
+                    });
+                } catch (error: any) {
+                    set((draft) => {
+                        draft.error = {
+                            message: error.message || "Error adding multiple variables",
+                            source: "addMultipleVariables",
                             originalError: error
                         };
                     });
