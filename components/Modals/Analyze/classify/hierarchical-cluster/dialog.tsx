@@ -43,7 +43,6 @@ export const HierClusDialog = ({
     onReset,
 }: HierClusDialogProps) => {
     const [mainState, setMainState] = useState<HierClusMainType>({ ...data });
-
     const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     const { closeModal } = useModal();

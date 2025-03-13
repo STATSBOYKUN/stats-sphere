@@ -2,6 +2,7 @@ import { useState } from "react";
 import { KNNDialog } from "@/components/Modals/Analyze/classify/nearest-neighbor/dialog";
 import {
     KNNContainerProps,
+    KNNMainType,
     KNNType,
 } from "@/models/classify/nearest-neighbor/nearest-neighbor";
 import { KNNDefault } from "@/constants/classify/nearest-neighbor/nearest-neighbor-default";
@@ -17,6 +18,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeKNN } from "@/services/analyze/classify/nearest-neighbor/nearest-neighbor-analysis";
 
 export const KNNContainer = ({ onClose }: KNNContainerProps) => {
     const variables = useVariableStore(
@@ -51,6 +53,29 @@ export const KNNContainer = ({ onClose }: KNNContainerProps) => {
         }));
     };
 
+    const executeKNN = async (mainData: KNNMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeKNN({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...KNNDefault });
     };
@@ -78,7 +103,7 @@ export const KNNContainer = ({ onClose }: KNNContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeKNN(mainData)}
                     onReset={resetFormData}
                 />
 

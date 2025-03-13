@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     UnivariateContainerProps,
+    UnivariateMainType,
     UnivariateType,
 } from "@/models/general-linear-model/univariate/univariate";
 import { UnivariateDefault } from "@/constants/general-linear-model/univariate/univariate-default";
@@ -19,6 +20,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeUnivariate } from "@/services/analyze/general-linear-model/univariate/univariate-analysis";
 
 export const UnivariateContainer = ({ onClose }: UnivariateContainerProps) => {
     const variables = useVariableStore(
@@ -57,6 +59,29 @@ export const UnivariateContainer = ({ onClose }: UnivariateContainerProps) => {
         }));
     };
 
+    const executeUnivariate = async (mainData: UnivariateMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeUnivariate({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...UnivariateDefault });
     };
@@ -86,7 +111,7 @@ export const UnivariateContainer = ({ onClose }: UnivariateContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeUnivariate(mainData)}
                     onReset={resetFormData}
                 />
 

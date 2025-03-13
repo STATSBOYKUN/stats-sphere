@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     RocCurveContainerProps,
+    RocCurveMainType,
     RocCurveType,
 } from "@/models/classify/roc-curve/roc-curve";
 import { RocCurveDefault } from "@/constants/classify/roc-curve/roc-curve-default";
@@ -12,6 +13,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeRocCurve } from "@/services/analyze/classify/roc-curve/roc-curve-analysis";
 
 export const RocCurveContainer = ({ onClose }: RocCurveContainerProps) => {
     const variables = useVariableStore(
@@ -43,6 +45,29 @@ export const RocCurveContainer = ({ onClose }: RocCurveContainerProps) => {
         }));
     };
 
+    const executeRocCurve = async (mainData: RocCurveMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeRocCurve({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...RocCurveDefault });
     };
@@ -65,7 +90,7 @@ export const RocCurveContainer = ({ onClose }: RocCurveContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeRocCurve(mainData)}
                     onReset={resetFormData}
                 />
 

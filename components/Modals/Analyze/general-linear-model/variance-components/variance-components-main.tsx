@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     VarianceCompsContainerProps,
+    VarianceCompsMainType,
     VarianceCompsType,
 } from "@/models/general-linear-model/variance-components/variance-components";
 import { VarianceCompsDefault } from "@/constants/general-linear-model/variance-components/variance-components-default";
@@ -14,6 +15,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeVarianceComps } from "@/services/analyze/general-linear-model/variance-components/variance-components-analysis";
 
 export const VarianceCompsContainer = ({
     onClose,
@@ -49,6 +51,29 @@ export const VarianceCompsContainer = ({
         }));
     };
 
+    const executeVarianceComps = async (mainData: VarianceCompsMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeVarianceComps({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...VarianceCompsDefault });
     };
@@ -73,7 +98,7 @@ export const VarianceCompsContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeVarianceComps(mainData)}
                     onReset={resetFormData}
                 />
 

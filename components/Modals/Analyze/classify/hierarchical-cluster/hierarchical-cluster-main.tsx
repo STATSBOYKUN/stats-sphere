@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { HierClusDialog } from "@/components/Modals/Analyze/classify/hierarchical-cluster/dialog";
 import {
     HierClusContainerProps,
+    HierClusMainType,
     HierClusType,
 } from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
 import { HierClusDefault } from "@/constants/classify/hierarchical-cluster/hierarchical-cluster-default";
@@ -15,6 +16,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeHierClus } from "@/services/analyze/classify/hierarchical-cluster/hierarchical-cluster-analysis";
 
 export const HierClusContainer = ({ onClose }: HierClusContainerProps) => {
     const variables = useVariableStore(
@@ -49,6 +51,29 @@ export const HierClusContainer = ({ onClose }: HierClusContainerProps) => {
         }));
     };
 
+    const executeHierClus = async (mainData: HierClusMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeHierClus({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...HierClusDefault });
     };
@@ -74,7 +99,7 @@ export const HierClusContainer = ({ onClose }: HierClusContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeHierClus(mainData)}
                     onReset={resetFormData}
                 />
 

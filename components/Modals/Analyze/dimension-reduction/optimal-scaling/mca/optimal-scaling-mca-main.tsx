@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { OptScaMCAType } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
+import {
+    OptScaMCAMainType,
+    OptScaMCAType,
+} from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
 import { OptScaMCADefault } from "@/constants/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-default";
 import { OptScaMCADialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/dialog";
 import { OptScaMCADefineVariable } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/define-variable";
@@ -17,6 +20,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeOptScaMCA } from "@/services/analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-analysis";
 
 export const OptScaMCAContainer = ({
     isOptScaMCA,
@@ -58,6 +62,28 @@ export const OptScaMCAContainer = ({
         }));
     };
 
+    const executeOptScaMCA = async (mainData: OptScaMCAMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeOptScaMCA({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+    };
+
     useEffect(() => {
         if (isOptScaMCA) {
             setIsMainOpen(true);
@@ -87,7 +113,7 @@ export const OptScaMCAContainer = ({
                 }
                 data={formData.main}
                 globalVariables={tempVariables}
-                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onContinue={(mainData) => executeOptScaMCA(mainData)}
                 onReset={resetFormData}
             />
 

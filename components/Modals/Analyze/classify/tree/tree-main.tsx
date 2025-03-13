@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { TreeContainerProps, TreeType } from "@/models/classify/tree/tree";
+import {
+    TreeContainerProps,
+    TreeMainType,
+    TreeType,
+} from "@/models/classify/tree/tree";
 import { TreeDefault } from "@/constants/classify/tree/tree-default";
 import { TreeDialog } from "@/components/Modals/Analyze/classify/tree/dialog";
 import { TreeCategories } from "@/components/Modals/Analyze/classify/tree/categories";
@@ -14,6 +18,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeTree } from "@/services/analyze/classify/tree/tree-analysis";
 
 export const TreeContainer = ({ onClose }: TreeContainerProps) => {
     const variables = useVariableStore(
@@ -48,6 +53,29 @@ export const TreeContainer = ({ onClose }: TreeContainerProps) => {
         }));
     };
 
+    const executeTree = async (mainData: TreeMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeTree({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...TreeDefault });
     };
@@ -75,7 +103,7 @@ export const TreeContainer = ({ onClose }: TreeContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeTree(mainData)}
                     onReset={resetFormData}
                 />
 

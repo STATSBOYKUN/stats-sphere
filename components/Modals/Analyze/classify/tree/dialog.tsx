@@ -141,7 +141,7 @@ export const TreeDialog = ({
     return (
         <>
             {/* Main Dialog */}
-            <Dialog open={isMainOpen} onOpenChange={setIsMainOpen}>
+            <Dialog open={isMainOpen} onOpenChange={handleDialog}>
                 <DialogTrigger asChild>
                     <Button variant="outline">Decision Tree</Button>
                 </DialogTrigger>

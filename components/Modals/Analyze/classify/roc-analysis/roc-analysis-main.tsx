@@ -2,6 +2,7 @@ import { useState } from "react";
 import { RocAnalysisDialog } from "@/components/Modals/Analyze/classify/roc-analysis/dialog";
 import {
     RocAnalysisContainerProps,
+    RocAnalysisMainType,
     RocAnalysisType,
 } from "@/models/classify/roc-analysis/roc-analysis";
 import { RocAnalysisDefault } from "@/constants/classify/roc-analysis/roc-analysis-default";
@@ -14,6 +15,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeRocAnalysis } from "@/services/analyze/classify/roc-analysis/roc-analysis-analysis";
 
 export const RocAnalysisContainer = ({
     onClose,
@@ -49,6 +51,29 @@ export const RocAnalysisContainer = ({
         }));
     };
 
+    const executeRocAnalysis = async (mainData: RocAnalysisMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeRocAnalysis({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...RocAnalysisDefault });
     };
@@ -73,7 +98,7 @@ export const RocAnalysisContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeRocAnalysis(mainData)}
                     onReset={resetFormData}
                 />
 

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { OptScaCatpcaType } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
+import {
+    OptScaCatpcaMainType,
+    OptScaCatpcaType,
+} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
 import { OptScaCatpcaDefault } from "@/constants/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-default";
 import { OptScaCatpcaDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/dialog";
 import { OptScaCatpcaDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-range-scale";
@@ -20,6 +23,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeOptScaCatpca } from "@/services/analyze/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-analysis";
 
 export const OptScaCatpcaContainer = ({
     isOptScaCatpca,
@@ -64,6 +68,28 @@ export const OptScaCatpcaContainer = ({
         }));
     };
 
+    const executeOptScaCatpca = async (mainData: OptScaCatpcaMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeOptScaCatpca({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+    };
+
     useEffect(() => {
         if (isOptScaCatpca) {
             setIsMainOpen(true);
@@ -96,7 +122,7 @@ export const OptScaCatpcaContainer = ({
                 }
                 data={formData.main}
                 globalVariables={tempVariables}
-                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onContinue={(mainData) => executeOptScaCatpca(mainData)}
                 onReset={resetFormData}
             />
 

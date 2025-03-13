@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FactorDialog } from "@/components/Modals/Analyze/dimension-reduction/factor/dialog";
 import {
     FactorContainerProps,
+    FactorMainType,
     FactorType,
 } from "@/models/dimension-reduction/factor/factor";
 import { FactorDefault } from "@/constants/dimension-reduction/factor/factor-default";
@@ -17,6 +18,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeFactor } from "@/services/analyze/dimension-reduction/factor/factor-analysis";
 
 export const FactorContainer = ({ onClose }: FactorContainerProps) => {
     const variables = useVariableStore(
@@ -51,6 +53,29 @@ export const FactorContainer = ({ onClose }: FactorContainerProps) => {
         }));
     };
 
+    const executeFactor = async (mainData: FactorMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeFactor({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...FactorDefault });
     };
@@ -78,7 +103,7 @@ export const FactorContainer = ({ onClose }: FactorContainerProps) => {
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeFactor(mainData)}
                     onReset={resetFormData}
                 />
 

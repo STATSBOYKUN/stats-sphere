@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     TwoStepClusterContainerProps,
+    TwoStepClusterMainType,
     TwoStepClusterType,
 } from "@/models/classify/two-step-cluster/two-step-cluster";
 import { TwoStepClusterDefault } from "@/constants/classify/two-step-cluster/two-step-cluster-default";
@@ -13,6 +14,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeTwoStepCluster } from "@/services/analyze/classify/two-step-cluster/two-step-cluster-analysis";
 
 export const TwoStepClusterContainer = ({
     onClose,
@@ -47,6 +49,29 @@ export const TwoStepClusterContainer = ({
         }));
     };
 
+    const executeTwoStepCluster = async (mainData: TwoStepClusterMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeTwoStepCluster({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...TwoStepClusterDefault });
     };
@@ -70,7 +95,7 @@ export const TwoStepClusterContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeTwoStepCluster(mainData)}
                     onReset={resetFormData}
                 />
 

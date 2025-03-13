@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     CorrespondenceContainerProps,
+    CorrespondenceMainType,
     CorrespondenceType,
 } from "@/models/dimension-reduction/correspondence-analysis/correspondence-analysis";
 import { CorrespondenceDefault } from "@/constants/dimension-reduction/correspondence-analysis/correspondence-analysis-default";
@@ -16,6 +17,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeCorrespondence } from "@/services/analyze/dimension-reduction/correspondence-analysis/correspondence-analysis-analysis";
 
 export const CorrespondenceContainer = ({
     onClose,
@@ -54,6 +56,29 @@ export const CorrespondenceContainer = ({
         }));
     };
 
+    const executeCorrespondence = async (mainData: CorrespondenceMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeCorrespondence({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...CorrespondenceDefault });
     };
@@ -80,7 +105,7 @@ export const CorrespondenceContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeCorrespondence(mainData)}
                     onReset={resetFormData}
                 />
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { KMeansClusterDefault } from "@/constants/classify/k-means-cluster/k-means-cluster-default";
 import {
     KMeansClusterContainerProps,
+    KMeansClusterMainType,
     KMeansClusterType,
 } from "@/models/classify/k-means-cluster/k-means-cluster";
 import { KMeansClusterDialog } from "@/components/Modals/Analyze/classify/k-means-cluster/dialog";
@@ -14,6 +15,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeKMeansCluster } from "@/services/analyze/classify/k-means-cluster/k-means-cluster-analysis";
 
 export const KMeansClusterContainer = ({
     onClose,
@@ -49,6 +51,29 @@ export const KMeansClusterContainer = ({
         }));
     };
 
+    const executeKMeansCluster = async (mainData: KMeansClusterMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeKMeansCluster({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...KMeansClusterDefault });
     };
@@ -73,7 +98,7 @@ export const KMeansClusterContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeKMeansCluster(mainData)}
                     onReset={resetFormData}
                 />
 

@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { OptScaOveralsType } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
+import {
+    OptScaOveralsMainType,
+    OptScaOveralsType,
+} from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
 import { OptScaOveralsDefault } from "@/constants/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-default";
 import { OptScaOveralsDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
 import { OptScaOveralsDefineRange } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
@@ -12,6 +15,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeOptScaOverals } from "@/services/analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-analysis";
 
 export const OptScaOveralsContainer = ({
     isOptScaOverals,
@@ -48,6 +52,28 @@ export const OptScaOveralsContainer = ({
         }));
     };
 
+    const executeOptScaOverals = async (mainData: OptScaOveralsMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeOptScaOverals({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+    };
+
     const resetFormData = () => {
         setFormData({ ...OptScaOveralsDefault });
     };
@@ -72,7 +98,7 @@ export const OptScaOveralsContainer = ({
                 }
                 data={formData.main}
                 globalVariables={tempVariables}
-                onContinue={(mainData) => executeDiscriminant(mainData)}
+                onContinue={(mainData) => executeOptScaOverals(mainData)}
                 onReset={resetFormData}
             />
 

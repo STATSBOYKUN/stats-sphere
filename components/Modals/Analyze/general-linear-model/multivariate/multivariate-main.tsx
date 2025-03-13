@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
     MultivariateContainerProps,
+    MultivariateMainType,
     MultivariateType,
 } from "@/models/general-linear-model/multivariate/multivariate";
 import { MultivariateDefault } from "@/constants/general-linear-model/multivariate/multivariate-default";
@@ -19,6 +20,7 @@ import { useVariableStore } from "@/stores/useVariableStore";
 import { RawData, VariableDef } from "@/lib/db";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
+import { analyzeMultivariate } from "@/services/analyze/general-linear-model/multivariate/multivariate-analysis";
 
 export const MultivariateContainer = ({
     onClose,
@@ -59,6 +61,29 @@ export const MultivariateContainer = ({
         }));
     };
 
+    const executeMultivariate = async (mainData: MultivariateMainType) => {
+        try {
+            const newFormData = {
+                ...formData,
+                main: mainData,
+            };
+
+            await analyzeMultivariate({
+                tempData: newFormData,
+                dataVariables: dataVariables,
+                variables: variables,
+                addLog,
+                addAnalytic,
+                addStatistic,
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        closeModal();
+        onClose();
+    };
+
     const resetFormData = () => {
         setFormData({ ...MultivariateDefault });
     };
@@ -88,7 +113,7 @@ export const MultivariateContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
-                    onContinue={(mainData) => executeDiscriminant(mainData)}
+                    onContinue={(mainData) => executeMultivariate(mainData)}
                     onReset={resetFormData}
                 />
 
