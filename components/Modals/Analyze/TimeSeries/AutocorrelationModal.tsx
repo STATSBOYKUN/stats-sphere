@@ -206,10 +206,11 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                 }
             }
 
-            let [acfValue, acf, pacf, acfGraphicJSON]: [any[],any,any, any] = await handleAutocorrelation(dataValues as number[], varDefs[0].name, maximumLag, selectedDifference[0], seasonally ? Number(selectedPeriod[0]) : 0);
+            let [acfValue, acf, pacf, acfGraphicJSON, pacfGraphicJSON]: [any[],any,any, any, any] = await handleAutocorrelation(dataValues as number[], varDefs[0].name, maximumLag, selectedDifference[0], seasonally ? Number(selectedPeriod[0]) : 0);
             
             console.log(acfValue);
             console.log(acfGraphicJSON);
+            console.log(pacfGraphicJSON);
             // Membuat Log
             const logMsg = `AUTOCORRELATION: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]} ${seasonally ? `with periodicity ${selectedPeriod[1]}` : ""} with maximum lag ${maximumLag}`;
             const logId = await addLog({ log: logMsg });
@@ -243,6 +244,14 @@ const AutocorrelationModal: React.FC<AutocorrelationModalProps> = ({ onClose }) 
                 title: "Partial Autocorrelation Table",
                 output_data: pacf,
                 components: "Partial Autocorrelation Table",
+            });
+
+            // Membuat Grafik ACF
+            const pacfGraphic = await addStatistic({
+                analytic_id: analyticId,
+                title: "Partial Autocorrelation Graphic",
+                output_data: pacfGraphicJSON,
+                components: "Partial Autocorrelation Graphic",
             });
 
             setIsCalculating(false);

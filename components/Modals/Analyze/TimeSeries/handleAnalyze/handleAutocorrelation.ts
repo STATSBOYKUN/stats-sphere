@@ -6,7 +6,7 @@ export async function handleAutocorrelation(
     lag: (number),
     difference: (string),
     seasonal: (number),
-):Promise<[number[], string, string, string]> {
+):Promise<[number[], string, string, string, string]> {
     await init(); // Inisialisasi WebAssembly
     const inputData = Array.isArray(data) ? data : null;
     
@@ -94,8 +94,8 @@ export async function handleAutocorrelation(
             }]
         });
 
-        let bartletLeftACF = Array.from(autocorrelation.calculate_bartlet_left(new Float64Array(acf), new Float64Array(acf_se), 0.05));
-        let bartletRightACF = Array.from(autocorrelation.calculate_bartlet_right(new Float64Array(acf), new Float64Array(acf_se), 0.05));
+        let bartletLeftACF = Array.from(autocorrelation.calculate_bartlet_left (new Float64Array(acf_se), 0.05));
+        let bartletRightACF = Array.from(autocorrelation.calculate_bartlet_right (new Float64Array(acf_se), 0.05));
         let structureACF: any[] = [];
         // Validasi panjang array
         if (acf.length === lag && pacf.length === lag) {
@@ -103,13 +103,8 @@ export async function handleAutocorrelation(
                 structureACF.push({
                     category: `lag ${i + 1}`,
                     barValue: acf[i],
-                    lineValue: bartletLeftACF[i],
+                    lineValue: bartletRightACF[i],
                 });
-                // structureACF.push({
-                //     category: `lag ${i + 1}`,
-                //     subcategory: `bartlet right`,
-                //     value: bartletRightACF[i],
-                // });
             }
         } else {
             throw new Error("Panjang array tidak sama!");
@@ -122,15 +117,15 @@ export async function handleAutocorrelation(
                         axisInfo: {
                             category: `lag`,
                             barValue: `acf`,
-                            lineValue: `bartlet left`,
+                            lineValue: `bartlet right`,
                         },
                         description: `Autocorellation ${dataHeader} using ${lag}`,
                         notes: `Autocorellation ${dataHeader}`,
                     },
                     chartData: structureACF,
                     config: {
-                        "width": 800,
-                        "height": 600,
+                        "width": 600,
+                        "height": 300,
                         "chartColor": ["#4682B4"],
                         "useLegend": true,
                         "useAxis": true,
@@ -139,12 +134,49 @@ export async function handleAutocorrelation(
             ]
         });
 
-        let bartletLeftPACF = Array.from(autocorrelation.calculate_bartlet_left(new Float64Array(pacf), new Float64Array(pacf_se), 0.05));
-        let bartletRightPACF = Array.from(autocorrelation.calculate_bartlet_right(new Float64Array(pacf), new Float64Array(pacf_se), 0.05));
+        let bartletLeftPACF = Array.from(autocorrelation.calculate_bartlet_left(new Float64Array(pacf_se), 0.05));
+        let bartletRightPACF = Array.from(autocorrelation.calculate_bartlet_right(new Float64Array(pacf_se), 0.05));
+        let structurePACF: any[] = [];
+        // Validasi panjang array
+        if (acf.length === lag && pacf.length === lag) {
+            for (let i = 0; i < lag; i++) {
+                structurePACF.push({
+                    category: `lag ${i + 1}`,
+                    barValue: pacf[i],
+                    lineValue: bartletRightPACF[i],
+                });
+            }
+        } else {
+            throw new Error("Panjang array tidak sama!");
+        }
+        let pacfGraphicJSON = JSON.stringify({
+            charts: [
+                {
+                    chartType: "Vertical Bar & Line Chart",
+                    chartMetadata: {
+                        axisInfo: {
+                            category: `lag`,
+                            barValue: `acf`,
+                            lineValue: `bartlet right`,
+                        },
+                        description: `Autocorellation ${dataHeader} using ${lag}`,
+                        notes: `Autocorellation ${dataHeader}`,
+                    },
+                    chartData: structurePACF,
+                    config: {
+                        "width": 600,
+                        "height": 300,
+                        "chartColor": ["#4682B4"],
+                        "useLegend": true,
+                        "useAxis": true,
+                    }
+                }
+            ]
+        });
 
-        return [test7,acfJSON ,pacfJSON, acfGraphicJSON];
+        return [test7,acfJSON ,pacfJSON, acfGraphicJSON, pacfGraphicJSON];
     } catch (error) {
         let errorMessage = error as Error;
-        return [[0],"" ,JSON.stringify({ error: errorMessage.message }), ""];
+        return [[0],"" ,JSON.stringify({ error: errorMessage.message }), "", ""];
     }
 }
