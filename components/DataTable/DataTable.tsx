@@ -1,7 +1,6 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
-import { generateColumnConfig } from './ColumnConfig';
 import { registerAllModules } from 'handsontable/registry';
 import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
@@ -10,7 +9,7 @@ import { Variable } from '@/types/Variable';
 
 registerAllModules();
 
-function getColumnConfig(variable) {
+const getColumnConfig = (variable) => {
     const baseConfig = {
         width: variable.columns || 100,
         className:
@@ -36,9 +35,9 @@ function getColumnConfig(variable) {
         default:
             return { ...baseConfig, type: 'text' };
     }
-}
+};
 
-function getDisplayMatrix(stateData) {
+const getDisplayMatrix = (stateData) => {
     const defaultRows = 100;
     const defaultCols = 45;
     const stateRows = stateData?.length || 0;
@@ -55,116 +54,69 @@ function getDisplayMatrix(stateData) {
         }
         return Array(newCols).fill('');
     });
-}
-
-function generateUniqueVarName() {
-    let varIndex = 1;
-    const { variables } = useVariableStore.getState();
-    while (variables.some(v => v.name.toLowerCase() === `var${varIndex}`)) {
-        varIndex++;
-    }
-    return `var${varIndex}`;
-}
-
-const handleBeforeChange = (changes, source) => {
-    const { isStatisticProgress } = useModalStore.getState();
-    if (source === 'loadData' || !changes || isStatisticProgress) return;
-    const { getVariableByColumnIndex, addVariable } = useVariableStore.getState();
-    const { updateCell } = useDataStore.getState();
-    const changesByCol = {};
-    changes.forEach(change => {
-        if (!change) return;
-        const [row, col, oldValue, newValue] = change;
-        if (newValue === oldValue) return;
-        if (typeof col !== 'number') return;
-        const colNumber = col;
-        if (!changesByCol[colNumber]) {
-            changesByCol[colNumber] = [];
-        }
-        changesByCol[colNumber].push(change);
-    });
-    Object.keys(changesByCol).forEach(colKey => {
-        const col = Number(colKey);
-        const colChanges = changesByCol[col];
-        const variable = getVariableByColumnIndex(col);
-        if (variable && variable.name) {
-            colChanges.forEach(change => {
-                const [row, , oldValue, newValue] = change;
-                if (variable.type === 'NUMERIC') {
-                    if (newValue === '' || !isNaN(Number(newValue))) {
-                        updateCell(row, col, newValue);
-                    }
-                } else if (variable.type === 'STRING') {
-                    let text = newValue ? newValue.toString() : '';
-                    if (text.length > variable.width) {
-                        text = text.substring(0, variable.width);
-                    }
-                    updateCell(row, col, text);
-                } else {
-                    updateCell(row, col, newValue);
-                }
-            });
-        } else {
-            let allNumeric = true;
-            let maxTextLength = 0;
-            colChanges.forEach(change => {
-                const [, , , newValue] = change;
-                const text = newValue ? newValue.toString() : '';
-                maxTextLength = Math.max(maxTextLength, text.length);
-                if (newValue !== '' && isNaN(Number(newValue))) {
-                    allNumeric = false;
-                }
-            });
-            const isNumeric = allNumeric;
-            const width = isNumeric ? 8 : maxTextLength;
-            const newName = generateUniqueVarName();
-            const defaultVariable = {
-                columnIndex: col,
-                name: newName,
-                type: isNumeric ? 'NUMERIC' : 'STRING',
-                width: width,
-                decimals: isNumeric ? 2 : 0,
-                label: '',
-                values: [],
-                missing: [],
-                columns: 200,
-                align: isNumeric ? 'right' : 'left',
-                measure: isNumeric ? 'scale' : 'nominal',
-                role: 'input'
-            };
-            addVariable(defaultVariable);
-            colChanges.forEach(change => {
-                const [row, , oldValue, newValue] = change;
-                if (isNumeric) {
-                    if (newValue === '' || !isNaN(Number(newValue))) {
-                        updateCell(row, col, newValue);
-                    }
-                } else {
-                    let text = newValue ? newValue.toString() : '';
-                    if (text.length > width) {
-                        text = text.substring(0, width);
-                    }
-                    updateCell(row, col, text);
-                }
-            });
-        }
-    });
 };
+
+const createContextMenu = () => ({
+    row_above: { name: 'Insert row above' },
+    row_below: { name: 'Insert row below' },
+    col_left: { name: 'Insert column on the left' },
+    col_right: { name: 'Insert column on the right' },
+    separator1: { name: '---------' },
+    remove_row: { name: 'Remove row' },
+    remove_col: { name: 'Remove column' },
+    separator2: { name: '---------' },
+    alignment: {
+        name: 'Alignment',
+        submenu: {
+            items: [
+                { key: 'alignment:left', name: 'Left' },
+                { key: 'alignment:center', name: 'Center' },
+                { key: 'alignment:right', name: 'Right' }
+            ]
+        }
+    },
+    separator3: { name: '---------' },
+    undo: { name: 'Undo' },
+    redo: { name: 'Redo' }
+});
 
 export default function DataTable() {
     const containerRef = useRef(null);
     const hotInstance = useRef(null);
-    const { data } = useDataStore();
-    const { variables, getVariableByColumnIndex } = useVariableStore();
+    const isSelectionProgrammatic = useRef(false);
+
+    const {
+        data,
+        updateCell,
+        addRow,
+        addColumn,
+        deleteRow,
+        deleteColumn,
+        selectCell,
+        selectedCell
+    } = useDataStore();
+
+    const {
+        variables,
+        getVariableByColumnIndex,
+        addVariable,
+        updateVariable
+    } = useVariableStore();
+
+    const { isStatisticProgress } = useModalStore();
+
     const stateCols = data[0]?.length || 0;
     const numColumns = Math.max(stateCols, 45);
+
     const colHeaders = useMemo(() => {
         return Array.from({ length: numColumns }, (_, index) => {
             const variable = getVariableByColumnIndex(index);
             return variable?.name || `var${index + 1}`;
         });
-    }, [numColumns, variables]);
+    }, [numColumns, variables, getVariableByColumnIndex]);
+
     const displayMatrix = useMemo(() => getDisplayMatrix(data), [data]);
+
     const columns = useMemo(() => {
         return Array.from({ length: numColumns }, (_, i) => {
             const variable =
@@ -178,34 +130,211 @@ export default function DataTable() {
                 };
             return getColumnConfig(variable);
         });
-    }, [numColumns, getVariableByColumnIndex, data]);
-    const settings = useMemo(
-        () => ({
-            data: displayMatrix,
-            colHeaders,
-            columns,
-            rowHeaders: true,
-            width: '100%',
-            height: '100%',
-            autoWrapRow: true,
-            autoWrapCol: true,
-            dropdownMenu: true,
-            multiColumnSorting: true,
-            filters: true,
-            manualRowMove: true,
-            customBorders: true,
-            contextMenu
-                : true,
-            licenseKey: 'non-commercial-and-evaluation',
-            minSpareRows: 50,
-            minSpareCols: 1,
-            startRows: 100,
-            startCols: 50,
-            copyPaste: true,
-            beforeChange: handleBeforeChange
-        }),
-        [displayMatrix, colHeaders, columns]
-    );
+    }, [numColumns, getVariableByColumnIndex]);
+
+    const handleBeforeChange = useCallback((changes, source) => {
+        if (source === 'loadData' || !changes || isStatisticProgress) return;
+
+        const changesByCol = {};
+        let highestColumn = -1;
+
+        changes.forEach(change => {
+            if (!change) return;
+            const [row, col, oldValue, newValue] = change;
+            if (newValue === oldValue) return;
+            if (typeof col !== 'number') return;
+
+            highestColumn = Math.max(highestColumn, col);
+
+            const colNumber = col;
+            if (!changesByCol[colNumber]) {
+                changesByCol[colNumber] = [];
+            }
+            changesByCol[colNumber].push(change);
+        });
+
+        const currentVariables = variables;
+        const missingColumns = [];
+
+        for (let i = 0; i <= highestColumn; i++) {
+            if (!getVariableByColumnIndex(i)) {
+                missingColumns.push(i);
+            }
+        }
+
+        if (missingColumns.length > 0) {
+            missingColumns.forEach(colIndex => {
+                const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
+
+                let dataType = 'STRING';
+                let alignment = 'left';
+                let measureType = 'nominal';
+
+                if (hasChanges) {
+                    let allNumeric = true;
+                    changesByCol[colIndex].forEach(change => {
+                        const [, , , newValue] = change;
+                        if (newValue !== '' && isNaN(Number(newValue))) {
+                            allNumeric = false;
+                        }
+                    });
+
+                    if (allNumeric) {
+                        dataType = 'NUMERIC';
+                        alignment = 'right';
+                        measureType = 'scale';
+                    }
+                }
+
+                addVariable(colIndex, {
+                    type: dataType,
+                    align: alignment,
+                    measure: measureType
+                });
+            });
+        }
+
+        Object.keys(changesByCol).forEach(colKey => {
+            const col = Number(colKey);
+            const colChanges = changesByCol[col];
+            const variable = getVariableByColumnIndex(col);
+
+            if (variable) {
+                colChanges.forEach(change => {
+                    const [row, , , newValue] = change;
+                    if (variable.type === 'NUMERIC') {
+                        if (newValue === '' || !isNaN(Number(newValue))) {
+                            updateCell(row, col, newValue);
+                        }
+                    } else if (variable.type === 'STRING') {
+                        let text = newValue ? newValue.toString() : '';
+                        if (text.length > variable.width) {
+                            text = text.substring(0, variable.width);
+                        }
+                        updateCell(row, col, text);
+                    } else {
+                        updateCell(row, col, newValue);
+                    }
+                });
+            }
+        });
+    }, [getVariableByColumnIndex, updateCell, addVariable, isStatisticProgress, variables]);
+
+    const handleAfterSelectionEnd = useCallback((row, column) => {
+        if (!isSelectionProgrammatic.current) {
+            selectCell(row, column);
+        }
+    }, [selectCell]);
+
+    const handleAfterCreateRow = useCallback((index, amount) => {
+        for (let i = 0; i < amount; i++) {
+            addRow(index + i);
+        }
+    }, [addRow]);
+
+    const handleAfterCreateCol = useCallback((index, amount) => {
+        for (let i = 0; i < amount; i++) {
+            const insertIndex = index + i;
+
+            addColumn(insertIndex);
+
+            const highestVarIndex = variables.length > 0
+                ? Math.max(...variables.map(v => v.columnIndex))
+                : -1;
+
+            if (insertIndex > highestVarIndex + 1) {
+                for (let j = highestVarIndex + 1; j <= insertIndex; j++) {
+                    addVariable(j, {
+                        type: 'STRING',
+                        align: 'left',
+                        measure: 'nominal'
+                    });
+                }
+            }
+        }
+    }, [addColumn, addVariable, variables]);
+
+    const handleAfterRemoveRow = useCallback((index, amount) => {
+        for (let i = 0; i < amount; i++) {
+            deleteRow(index);
+        }
+    }, [deleteRow]);
+
+    const handleAfterRemoveCol = useCallback((index, amount) => {
+        for (let i = 0; i < amount; i++) {
+            deleteColumn(index);
+        }
+    }, [deleteColumn]);
+
+    const handleAfterColumnResize = useCallback((newSize, column) => {
+        const variable = getVariableByColumnIndex(column);
+        if (variable) {
+            updateVariable(column, 'columns', newSize);
+        }
+    }, [getVariableByColumnIndex, updateVariable]);
+
+    const handleAfterContextMenuExecute = useCallback((command, args) => {
+        if (command.startsWith('alignment:')) {
+            const alignment = command.split(':')[1];
+            const selectedRange = hotInstance.current.getSelectedRange();
+
+            if (selectedRange && selectedRange.length > 0) {
+                const { from: { col: startCol }, to: { col: endCol } } = selectedRange[0];
+
+                for (let col = startCol; col <= endCol; col++) {
+                    const variable = getVariableByColumnIndex(col);
+                    if (variable) {
+                        updateVariable(col, 'align', alignment);
+                    }
+                }
+            }
+        }
+    }, [getVariableByColumnIndex, updateVariable]);
+
+    const settings = useMemo(() => ({
+        data: displayMatrix,
+        colHeaders,
+        columns,
+        rowHeaders: true,
+        width: '100%',
+        height: '100%',
+        autoWrapRow: true,
+        autoWrapCol: true,
+        dropdownMenu: true,
+        multiColumnSorting: true,
+        filters: true,
+        manualRowMove: true,
+        customBorders: true,
+        manualColumnResize: true,
+        contextMenu: createContextMenu(),
+        licenseKey: 'non-commercial-and-evaluation',
+        minSpareRows: 50,
+        minSpareCols: 1,
+        startRows: 100,
+        startCols: 50,
+        copyPaste: true,
+        beforeChange: handleBeforeChange,
+        afterSelection: handleAfterSelectionEnd,
+        afterCreateRow: handleAfterCreateRow,
+        afterCreateCol: handleAfterCreateCol,
+        afterRemoveRow: handleAfterRemoveRow,
+        afterRemoveCol: handleAfterRemoveCol,
+        afterColumnResize: handleAfterColumnResize,
+        afterContextMenuExecute: handleAfterContextMenuExecute
+    }), [
+        displayMatrix,
+        colHeaders,
+        columns,
+        handleBeforeChange,
+        handleAfterSelectionEnd,
+        handleAfterCreateRow,
+        handleAfterCreateCol,
+        handleAfterRemoveRow,
+        handleAfterRemoveCol,
+        handleAfterColumnResize,
+        handleAfterContextMenuExecute
+    ]);
+
     useEffect(() => {
         if (containerRef.current) {
             if (!hotInstance.current) {
@@ -215,14 +344,37 @@ export default function DataTable() {
             }
         }
     }, [settings]);
+
+    useEffect(() => {
+        if (hotInstance.current && selectedCell && !hotInstance.current.isDestroyed) {
+            const { row, col } = selectedCell;
+
+            const currentSelection = hotInstance.current.getSelected();
+            const alreadySelected = currentSelection &&
+                currentSelection[0] &&
+                currentSelection[0][0] === row &&
+                currentSelection[0][1] === col;
+
+            if (!alreadySelected) {
+                isSelectionProgrammatic.current = true;
+                hotInstance.current.selectCell(row, col);
+
+                setTimeout(() => {
+                    isSelectionProgrammatic.current = false;
+                }, 0);
+            }
+        }
+    }, [selectedCell]);
+
     useEffect(() => {
         return () => {
-            if (hotInstance.current) {
+            if (hotInstance.current && !hotInstance.current.isDestroyed) {
                 hotInstance.current.destroy();
                 hotInstance.current = null;
             }
         };
     }, []);
+
     return (
         <div className="h-full w-full">
             <div ref={containerRef} className="h-full w-full z-0" />

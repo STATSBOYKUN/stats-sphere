@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import React from "react";
 import ModalContainer from "@/components/Modals/ModalContainer";
 import DataLoader from "@/components/DataLoader";
+import LoadingOverlay from "@/components/LoadingOverlay";
 
 export const metadata: Metadata = {
   title: "Statify",
@@ -25,14 +26,17 @@ export default function DashboardLayout({
           enableSystem
           disableTransitionOnChange
       >
+        <DataLoader />
+
         <div className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden overflow-y-auto">
           <header className="z-50">
             <Header />
           </header>
           <main className="overflow-y-auto">
             <div className="h-full w-full">
-              <DataLoader />
-              {children}
+              <LoadingOverlay>
+                {children}
+              </LoadingOverlay>
               <ModalContainer />
             </div>
           </main>

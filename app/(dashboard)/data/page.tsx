@@ -2,13 +2,16 @@
 
 "use client";
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import DataTable from '../../../components/DataTable/DataTable';
+import {DataTableSkeleton} from "@/components/Skeletons";
 
 export default function DataPage() {
     return (
         <div className="z-0 h-full w-full">
-            <DataTable />
+            <Suspense fallback={<DataTableSkeleton />}>
+                <DataTable />
+            </Suspense>
         </div>
     );
 }

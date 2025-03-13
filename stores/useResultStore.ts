@@ -6,8 +6,16 @@ import { Log } from '@/types/Log';
 import { Analytic } from '@/types/Analytic';
 import { Statistic } from '@/types/Statistic';
 
+export type ResultStoreError = {
+    message: string;
+    source: string;
+    originalError?: any;
+};
+
 export interface ResultState {
     logs: Log[];
+    isLoading: boolean;
+    error: ResultStoreError | null;
 
     fetchLogs: () => Promise<void>;
     getLogById: (id: number) => Promise<Log | undefined>;
@@ -31,15 +39,31 @@ export const useResultStore = create<ResultState>()(
     devtools(
         immer((set) => ({
             logs: [],
+            isLoading: false,
+            error: null,
 
             fetchLogs: async () => {
+                set((draft) => {
+                    draft.isLoading = true;
+                    draft.error = null;
+                });
+
                 try {
                     const logs = await db.getAllLogsWithRelations();
-                    set((state) => {
-                        state.logs = logs;
+                    set((draft) => {
+                        draft.logs = logs;
+                        draft.isLoading = false;
                     });
-                } catch (error) {
+                } catch (error: any) {
                     console.error("Failed to fetch logs:", error);
+                    set((draft) => {
+                        draft.error = {
+                            message: error.message || "Failed to fetch logs",
+                            source: "fetchLogs",
+                            originalError: error
+                        };
+                        draft.isLoading = false;
+                    });
                 }
             },
 

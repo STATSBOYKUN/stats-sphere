@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useRef, useEffect, useMemo } from "react";
-import Handsontable from "handsontable";
+import React, { useRef, useMemo } from "react";
+import { HotTable } from "@handsontable/react";
 import { registerAllModules } from "handsontable/registry";
 import "handsontable/dist/handsontable.full.min.css";
 import { colHeaders, columns } from "./tableConfig";
@@ -69,13 +69,11 @@ const handleBeforeChange = (
     changes: (Handsontable.CellChange | null)[],
     source: Handsontable.ChangeSource
 ): void | boolean => {
-    console.log("[handleBeforeChange] Source:", source);
     if (source === "loadData" || !changes) return;
 
     const { getVariableByColumnIndex, addVariable, updateVariable } = useVariableStore.getState();
     const changesByRow: Record<number, Handsontable.CellChange[]> = {};
 
-    // Kelompokkan perubahan berdasarkan row (indeks variabel)
     changes.forEach(change => {
         if (!change) return;
         const [row, prop, oldValue, newValue] = change;
@@ -84,27 +82,20 @@ const handleBeforeChange = (
         if (!changesByRow[row]) changesByRow[row] = [];
         changesByRow[row].push(change);
     });
-    console.log("[handleBeforeChange] Changes grouped by row:", changesByRow);
 
-    // Proses perubahan per baris
     Object.keys(changesByRow).forEach(rowKey => {
-        const row = Number(rowKey); // row index sebagai columnIndex variabel
+        const row = Number(rowKey);
         const rowChanges = changesByRow[row];
-        console.log(`[handleBeforeChange] Processing row ${row} with changes:`, rowChanges);
         let variable = getVariableByColumnIndex(row);
-        console.log(`[handleBeforeChange] Retrieved variable for row ${row}:`, variable);
 
         if (variable && variable.name.trim() !== "") {
-            // Jika variabel sudah ada, update field-nya
             rowChanges.forEach(change => {
                 const [rowIndex, prop, oldValue, newValue] = change;
                 const field = fieldMapping[Number(prop)] || prop;
                 if (newValue === oldValue) return;
-                console.log(`[handleBeforeChange] Updating variable at row ${rowIndex}, field "${field}" from "${oldValue}" to "${newValue}"`);
                 updateVariable(row, field as keyof Variable, newValue);
             });
         } else {
-            // Jika variabel belum ada, buat variabel baru berdasarkan perubahan di baris ini
             let newName = "";
             let newType: Variable["type"] = "NUMERIC";
             let width = 8;
@@ -112,7 +103,6 @@ const handleBeforeChange = (
             rowChanges.forEach(change => {
                 const [rowIndex, prop, oldValue, newValue] = change;
                 const field = fieldMapping[Number(prop)] || prop;
-                console.log(`[handleBeforeChange] Processing change at row ${rowIndex}, field "${field}": from "${oldValue}" to "${newValue}"`);
                 switch (field) {
                     case "name":
                         newName = newValue.toString().trim();
@@ -130,7 +120,6 @@ const handleBeforeChange = (
             });
             if (newName === "") {
                 newName = generateUniqueVarName();
-                console.log(`[handleBeforeChange] Generated unique variable name: ${newName}`);
             }
             const defaultVariable: Variable = {
                 columnIndex: row,
@@ -146,13 +135,11 @@ const handleBeforeChange = (
                 measure: newType === "NUMERIC" ? "scale" : "nominal",
                 role: "input"
             };
-            console.log(`[handleBeforeChange] Adding new variable at row ${row}:`, defaultVariable);
             addVariable(defaultVariable);
             rowChanges.forEach(change => {
                 const [rowIndex, prop, oldValue, newValue] = change;
                 const field = fieldMapping[Number(prop)] || prop;
                 if (field !== "name") {
-                    console.log(`[handleBeforeChange] Updating new variable at row ${row}, field "${field}" from "${oldValue}" to "${newValue}"`);
                     updateVariable(row, field as keyof Variable, newValue);
                 }
             });
@@ -160,43 +147,31 @@ const handleBeforeChange = (
     });
 };
 
-
-
-
 export default function VariableTable() {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const hotInstance = useRef<Handsontable | null>(null);
+    const hotTableRef = useRef(null);
     const { variables, loadVariables } = useVariableStore();
-    useEffect(() => { loadVariables(); }, [loadVariables]);
-    const settings = useMemo(() => ({
-        data: getDisplayVariable(variables),
-        colHeaders,
-        columns,
-        rowHeaders: true,
-        width: "100%",
-        height: "100%",
-        autoWrapRow: true,
-        autoWrapCol: true,
-        contextMenu: true,
-        licenseKey: "non-commercial-and-evaluation",
-        minSpareRows: 1,
-        beforeChange: handleBeforeChange
-    }), [variables]);
-    useEffect(() => {
-        if (containerRef.current) {
-            if (!hotInstance.current) {
-                hotInstance.current = new Handsontable(containerRef.current, settings);
-            } else if (!hotInstance.current.isDestroyed) {
-                hotInstance.current.updateSettings(settings);
-            }
-        }
-    }, [settings]);
-    useEffect(() => {
-        return () => { if (hotInstance.current) { hotInstance.current.destroy(); hotInstance.current = null; } };
-    }, []);
+
+    const tableData = useMemo(() => getDisplayVariable(variables), [variables]);
+
     return (
-        <div className="h-full w-full">
-            <div ref={containerRef} className="h-full w-full z-0" />
+        <div className="h-full w-full relative z-0">
+            <div className="h-full w-full relative z-0">
+                <HotTable
+                    ref={hotTableRef}
+                    data={tableData}
+                    colHeaders={colHeaders}
+                    columns={columns}
+                    rowHeaders={true}
+                    width="100%"
+                    height="100%"
+                    autoWrapRow={true}
+                    autoWrapCol={true}
+                    contextMenu={true}
+                    licenseKey="non-commercial-and-evaluation"
+                    minSpareRows={1}
+                    beforeChange={handleBeforeChange}
+                />
+            </div>
         </div>
     );
 }

@@ -2,16 +2,21 @@
 
 "use client";
 
-import React from 'react';
+import React, {Suspense} from 'react';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ResultOutput from "@/components/Output/ResultOutput";
+import {ResultsSkeleton, SidebarSkeleton} from "@/components/Skeletons";
 
 export default function ResultPage() { // Ganti nama fungsi menjadi ResultPage untuk menghindari duplikasi
     return (
         <div className="h-full w-full flex">
-            <Sidebar />
+            <Suspense fallback={<SidebarSkeleton />}>
+                <Sidebar />
+            </Suspense>
             <div className="flex-grow h-full overflow-y-auto">
-                <ResultOutput />
+                <Suspense fallback={<ResultsSkeleton />}>
+                    <ResultOutput />
+                </Suspense>
             </div>
         </div>
     );

@@ -1,9 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { ChevronRight, ChevronDown, BarChart2 } from "lucide-react";
+import { ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {useResultStore} from "@/stores/useResultStore";
+import { useResultStore } from "@/stores/useResultStore";
+import { Log } from "@/types/Log";
+import { Analytic } from "@/types/Analytic";
+import { Statistic } from "@/types/Statistic";
 
 interface SidebarItem {
     title: string;
@@ -20,7 +23,7 @@ const SidebarMenuItem: React.FC<{ item: SidebarItem; depth?: number; isOpen: boo
     };
 
     // Define padding based on depth
-    const paddingLeft = depth * 4; // Adjust as needed
+    const paddingLeft = depth * 4;
 
     return (
         <div className="flex flex-col">
@@ -65,59 +68,65 @@ const SidebarMenuItem: React.FC<{ item: SidebarItem; depth?: number; isOpen: boo
     );
 };
 
-function buildSidebarData(analytics: any[], statistics: any[]): SidebarItem[] {
-    return analytics.map((analytic) => {
-        const statsForAnalytic = statistics.filter((stat) => stat.analytic_id === analytic.id);
-        const componentsMap = statsForAnalytic.reduce((acc: Record<string, any[]>, stat) => {
-            const component = stat.components || "General"; // Default component name if not provided
-            if (!acc[component]) acc[component] = [];
-            acc[component].push(stat);
-            return acc;
-        }, {});
+function buildSidebarData(logs: Log[]): SidebarItem[] {
+    const sidebarItems: SidebarItem[] = [];
 
-        const items: SidebarItem[] = [];
+    logs.forEach(log => {
+        if (!log.analytics || log.analytics.length === 0) return;
 
-        Object.keys(componentsMap).forEach((component) => {
-            const stats = componentsMap[component];
-            if (stats.length > 1) {
-                // Komponen dengan lebih dari satu statistik
-                items.push({
-                    title: component,
-                    items: stats.map((stat) => ({
-                        title: stat.title,
-                        url: `#output-${analytic.id}-${stat.id}`
-                    }))
-                });
-            } else if (stats.length === 1) {
-                // Komponen dengan satu statistik, tambahkan langsung tanpa nama komponen
-                items.push({
-                    title: stats[0].title,
-                    url: `#output-${analytic.id}-${stats[0].id}`
+        log.analytics.forEach(analytic => {
+            if (!analytic.statistics || analytic.statistics.length === 0) return;
+
+            const componentsMap = analytic.statistics.reduce((acc: Record<string, Statistic[]>, stat) => {
+                const component = stat.components || "General"; // Default component name if not provided
+                if (!acc[component]) acc[component] = [];
+                acc[component].push(stat);
+                return acc;
+            }, {});
+
+            const analyticItems: SidebarItem[] = [];
+
+            Object.keys(componentsMap).forEach((component) => {
+                const stats = componentsMap[component];
+                if (stats.length > 1) {
+                    // Component with more than one statistic
+                    analyticItems.push({
+                        title: component,
+                        items: stats.map((stat) => ({
+                            title: stat.title,
+                            url: `#output-${analytic.id}-${stat.id}`
+                        }))
+                    });
+                } else if (stats.length === 1) {
+                    // Component with only one statistic, add directly without component name
+                    analyticItems.push({
+                        title: stats[0].title,
+                        url: `#output-${analytic.id}-${stats[0].id}`
+                    });
+                }
+            });
+
+            if (analyticItems.length > 0) {
+                sidebarItems.push({
+                    title: analytic.title,
+                    items: analyticItems
                 });
             }
         });
-
-        return {
-            title: analytic.title,
-            items: items
-        };
     });
+
+    return sidebarItems;
 }
 
 const Sidebar: React.FC = () => {
     const [isOpen, setIsOpen] = useState(true);
-    const { analytics, statistics, fetchAnalytics, fetchStatistics } = useResultStore();
+    const { logs } = useResultStore();
     const [sidebarData, setSidebarData] = useState<SidebarItem[]>([]);
 
     useEffect(() => {
-        fetchAnalytics();
-        fetchStatistics();
-    }, [fetchAnalytics, fetchStatistics]);
-
-    useEffect(() => {
-        const data = buildSidebarData(analytics, statistics);
+        const data = buildSidebarData(logs);
         setSidebarData(data);
-    }, [analytics, statistics]);
+    }, [logs]);
 
     return (
         <div
