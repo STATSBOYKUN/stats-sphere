@@ -375,11 +375,66 @@ const Navbar: React.FC = () => {
               <MenubarSub>
                 <MenubarSubTrigger>General Linear Model</MenubarSubTrigger>
                 <MenubarSubContent>
-                  <MenubarItem>Univariate...</MenubarItem>
-                  <MenubarItem>Multivariate...</MenubarItem>
-                  <MenubarItem>Repeated Measures...</MenubarItem>
-                  <MenubarSeparator />
-                  <MenubarItem>Variance Components...</MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Univariate)}>
+                    Univariate
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Multivariate)}>
+                    Multivariate
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.RepeatedMeasures)}>
+                    Repeated Measures
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.VarianceComponents)}>
+                    Variance Components
+                  </MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+
+              <MenubarSub>
+                <MenubarSubTrigger>Dimension Reduction</MenubarSubTrigger>
+                <MenubarSubContent>
+                  <MenubarItem onClick={() => openModal(ModalType.Factor)}>
+                    Factor
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.CorrespondenceAnalysis)}>
+                    Correspondence Analysis
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.OptimalScaling)}>
+                    Optimal Scaling
+                  </MenubarItem>
+                </MenubarSubContent>
+              </MenubarSub>
+
+              <MenubarSub>
+                <MenubarSubTrigger>Classify</MenubarSubTrigger>
+                <MenubarSubContent>
+                  <MenubarItem onClick={() => openModal(ModalType.TwoStepCluster)}>
+                    TwoStep Cluster
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.KMeansCluster)}>
+                    K-Means Cluster
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.HierarchicalCluster)}>
+                    Hierarchical Cluster
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ClusterSilhouettes)}>
+                    Cluster Silhouettes
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Tree)}>
+                    Tree
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.Discriminant)}>
+                    Discriminant
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.NearestNeighbor)}>
+                    Nearest Neighbor
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ROCCurve)}>
+                    ROC Curve
+                  </MenubarItem>
+                  <MenubarItem onClick={() => openModal(ModalType.ROCAnalysis)}>
+                    ROC Analysis
+                  </MenubarItem>
                 </MenubarSubContent>
               </MenubarSub>
 

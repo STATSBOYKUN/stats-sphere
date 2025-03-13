@@ -365,7 +365,7 @@ export const createGroupedScatterPlot = (
   }
 
   const margin = useAxis
-    ? { top: 30, right: 30, bottom: 50, left: 50 }
+    ? { top: 30, right: 30, bottom: 120, left: 50 }
     : { top: 10, right: 10, bottom: 10, left: 10 };
 
   const innerWidth = width - margin.left - margin.right;
@@ -509,37 +509,46 @@ export const createGroupedScatterPlot = (
     });
 
   if (useAxis) {
-    const legend = svg
+    // Menambahkan legenda secara horizontal di bawah chart
+    const legendGroup = svg
       .append("g")
       .attr("font-family", "sans-serif")
       .attr("font-size", 10)
       .attr("text-anchor", "start")
-      .attr("transform", `translate(${margin.left}, ${margin.top})`);
+      .attr(
+        "transform",
+        `translate(${margin.left}, ${height - margin.bottom + 60})`
+      );
+    const legendItemWidth = 19;
+    const legendItemHeight = 19;
+    const labelOffset = 5;
+    const legendSpacingX = 130;
+    const legendSpacingY = 25;
+    const legendMaxWidth = width - margin.left - margin.right;
+    const itemsPerRow = Math.floor(legendMaxWidth / legendSpacingX);
 
-    const legendItemSize = 15;
-    const legendSpacing = 4;
+    categories.forEach((subcategory, index) => {
+      const row = Math.floor(index / itemsPerRow);
+      const col = index % itemsPerRow;
+      const xOffset = col * legendSpacingX;
+      const yOffset = row * legendSpacingY;
 
-    categories.forEach((category, i) => {
-      const legendRow = legend
-        .append("g")
-        .attr(
-          "transform",
-          `translate(0, ${i * (legendItemSize + legendSpacing)})`
-        );
-
-      legendRow
+      // Menambahkan swatch
+      legendGroup
         .append("rect")
-        .attr("width", legendItemSize)
-        .attr("height", legendItemSize)
-        .attr("fill", colorScale(category) as string)
-        .attr("stroke", "none");
+        .attr("x", xOffset)
+        .attr("y", yOffset)
+        .attr("width", legendItemWidth)
+        .attr("height", legendItemHeight)
+        .attr("fill", colorScale(subcategory));
 
-      legendRow
+      // Menambahkan label teks
+      legendGroup
         .append("text")
-        .attr("x", legendItemSize + legendSpacing)
-        .attr("y", legendItemSize / 2)
+        .attr("x", xOffset + legendItemWidth + labelOffset)
+        .attr("y", yOffset + legendItemHeight / 2)
         .attr("dy", "0.35em")
-        .text(category);
+        .text(subcategory);
     });
   }
 
@@ -547,7 +556,7 @@ export const createGroupedScatterPlot = (
     svg
       .append("text")
       .attr("x", margin.left + innerWidth / 2)
-      .attr("y", height - margin.bottom / 3)
+      .attr("y", height - margin.bottom / 2 - 10)
       .attr("text-anchor", "middle")
       .attr("font-size", "12px")
       .text("X Axis Label");
@@ -564,3 +573,590 @@ export const createGroupedScatterPlot = (
 
   return svg.node();
 };
+
+export const createDotPlot = (
+  data: { category: string; value: number }[],
+  width: number,
+  height: number,
+  useAxis: boolean = true
+) => {
+  console.log("Creating improved stacked dot plot with data:", data);
+
+  const marginTop = useAxis ? 30 : 10;
+  const marginRight = useAxis ? 30 : 10;
+  const marginBottom = useAxis ? 30 : 10;
+  const marginLeft = useAxis ? 30 : 10;
+  const dotRadius = 7;
+  const dotSpacing = dotRadius * 1.8;
+
+  // Skala X: Kategori
+  const x = d3
+    .scaleBand()
+    .domain(data.map((d) => d.category))
+    .range([marginLeft, width - marginRight])
+    .padding(0.5);
+
+  // Skala Y: Nilai dari data
+  const maxValue = d3.max(data, (d) => d.value) || 0;
+  const y = d3
+    .scaleLinear()
+    .domain([0, maxValue])
+    .range([height - marginBottom, marginTop]);
+
+  // Dynamic Y-axis
+  const tickCount = maxValue > 100 ? 10 : maxValue > 50 ? 7 : 5;
+
+  const svg = d3
+    .create("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+  // .attr("style", "max-width: 100%; max-height:50%;");
+
+  // Draw the dots
+  svg
+    .append("g")
+    .attr("fill", "steelblue")
+    .selectAll("g")
+    .data(data)
+    .join("g")
+    .attr("transform", (d) => {
+      const xPos = x(d.category) ?? 0;
+      return `translate(${xPos + x.bandwidth() / 2}, 0)`;
+    })
+    .selectAll("circle")
+    .data((d) => d3.range(d.value))
+    .join("circle")
+    .attr("cx", 0)
+    .attr("cy", (d, i) => y(i + 1))
+    .attr("r", dotRadius);
+
+  // Menambahkan axis
+  if (useAxis) {
+    svg
+      .append("g")
+      .attr("transform", `translate(0, ${height - marginBottom})`)
+      .call(d3.axisBottom(x).tickSizeOuter(0));
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${marginLeft}, 0)`)
+      .call(d3.axisLeft(y).ticks(tickCount))
+      .call((g) => g.select(".domain").remove());
+
+    svg
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("x", width / 2)
+      .attr("y", height - marginBottom + 40)
+      .style("font-size", "14px")
+      .text("Categories");
+
+    svg
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("transform", `rotate(-10)`)
+      .attr("x", -height / 2)
+      .attr("y", marginLeft - 40)
+      .style("font-size", "14px")
+      .text("Count");
+  }
+
+  return svg.node();
+};
+
+export const createScatterPlotMatrix = (
+  data: { [key: string]: any }[],
+  width: number,
+  height: number,
+  useAxis: boolean = true
+) => {
+  const padding = useAxis ? 20 : 5;
+  const columns: string[] = Object.keys(data[0]).filter(
+    (d) => typeof data[0][d] === "number"
+  );
+
+  const marginTop = useAxis ? 30 : 10;
+  const marginRight = useAxis ? 30 : 10;
+  const marginBottom = useAxis ? 30 : 10;
+  const marginLeft = useAxis ? 30 : 10;
+  const matrixSize = Math.min(width, height);
+  const size =
+    (matrixSize - (columns.length + 1) * padding) / columns.length + padding;
+  console.log("Computed size:", size);
+  console.log("data", data);
+
+  const x: d3.ScaleLinear<number, number>[] = columns.map((c) =>
+    d3
+      .scaleLinear()
+      .domain(d3.extent(data, (d) => d[c]) as [number, number])
+      .rangeRound([padding / 2, size - padding / 2])
+  );
+
+  const y: d3.ScaleLinear<number, number>[] = x.map((xScale) =>
+    xScale.copy().range([size - padding / 2, padding / 2])
+  );
+
+  const color = d3
+    .scaleOrdinal<string, string>()
+    .domain(data.map((d) => d.species))
+    .range(d3.schemeCategory10);
+
+  const axisx = d3
+    .axisBottom(d3.scaleLinear())
+    .ticks(4)
+    .tickSize(size * columns.length);
+
+  const axisy = d3
+    .axisLeft(d3.scaleLinear())
+    .ticks(4)
+    .tickSize(-size * columns.length);
+
+  const xAxis = (g: d3.Selection<SVGGElement, any, null, undefined>) => {
+    g.selectAll<SVGGElement, d3.ScaleLinear<number, number>>("g")
+      .data(x)
+      .join("g")
+      .attr("transform", (d, i) => `translate(${i * size}, 0)`)
+      .each(function (d) {
+        d3.select(this as SVGGElement).call(axisx.scale(d));
+      })
+      .call((g) => g.select(".domain").remove())
+      .call((g) => g.selectAll(".tick line").attr("stroke", "#ddd"));
+  };
+
+  const yAxis = (g: d3.Selection<SVGGElement, any, null, undefined>) => {
+    g.selectAll<SVGGElement, d3.ScaleLinear<number, number>>("g")
+      .data(y)
+      .join("g")
+      .attr("transform", (d, i) => `translate(0,${i * size})`)
+      .each(function (d) {
+        d3.select(this as SVGGElement).call(axisy.scale(d));
+      })
+      .call((g) => g.select(".domain").remove())
+      .call((g) => g.selectAll(".tick line").attr("stroke", "#ddd"));
+  };
+  const svg = d3
+    .create("svg")
+    .attr("width", width + marginLeft + marginRight)
+    .attr("height", height + marginTop + marginBottom)
+    .attr("viewBox", [
+      0,
+      0,
+      width + marginLeft + marginRight,
+      height + marginTop + marginBottom,
+    ]);
+
+  svg
+    .append("style")
+    .text(`circle.hidden { fill: #000; fill-opacity: 1; r: 1px; }`);
+  if (useAxis) {
+    svg.append("g").call(xAxis);
+    svg.append("g").call(yAxis);
+  }
+
+  if (useAxis) {
+    svg
+      .append("g")
+      .style("font", "bold 10px sans-serif")
+      .style("pointer-events", "none")
+      .selectAll("text")
+      .data(columns)
+      .join("text")
+      .attr("transform", (d, i) => `translate(${i * size},${i * size})`)
+      .attr("x", padding)
+      .attr("y", padding)
+      .attr("dy", ".71em")
+      .text((d) => d);
+  }
+
+  const cell = svg
+    .append("g")
+    .selectAll("g")
+    .data(d3.cross(d3.range(columns.length), d3.range(columns.length)))
+    .join("g")
+    .attr("transform", ([i, j]) => `translate(${i * size},${j * size})`);
+
+  cell
+    .append("rect")
+    .attr("fill", "none")
+    .attr("stroke", "#aaa")
+    .attr("x", padding / 2 + 0.5)
+    .attr("y", padding / 2 + 0.5)
+    .attr("width", size - padding)
+    .attr("height", size - padding);
+
+  cell.each(function ([i, j]: [number, number]) {
+    d3.select(this)
+      .selectAll<SVGCircleElement, { [key: string]: number }>("circle")
+      .data(data.filter((d) => !isNaN(d[columns[i]]) && !isNaN(d[columns[j]])))
+      .join("circle")
+      .attr("cx", (d) => x[i](d[columns[i]]))
+      .attr("cy", (d) => y[j](d[columns[j]]))
+      .attr("r", 3.5)
+      .attr("fill-opacity", 0.7)
+      .attr("fill", (d) => color(d.species));
+  });
+
+  if (useAxis) {
+    svg
+      .append("g")
+      .style("font", "bold 10px sans-serif")
+      .style("pointer-events", "none")
+      .selectAll("text")
+      .data(columns)
+      .join("text")
+      .attr("transform", (d, i) => `translate(${i * size},${i * size})`)
+      .attr("x", padding)
+      .attr("y", padding)
+      .attr("dy", ".71em")
+      .text((d) => d);
+  }
+
+  return Object.assign(svg.node()!, { scales: { color } });
+};
+
+export const createDropLineChart = (
+  data: { x: string; y: number; category: string }[],
+  width: number,
+  height: number,
+  useAxis: boolean = true
+) => {
+  const validData = data.filter(
+    (d) =>
+      d.x !== null &&
+      d.y !== null &&
+      d.category !== null &&
+      d.x !== undefined &&
+      d.y !== undefined &&
+      d.category !== undefined &&
+      !isNaN(d.y)
+  );
+
+  console.log("Creating drop-line chart with valid data:", validData);
+
+  if (validData.length === 0) {
+    console.error("No valid data available for the drop-line chart");
+    return null;
+  }
+
+  const marginTop = useAxis ? 30 : 10;
+  const marginRight = useAxis ? 30 : 10;
+  const marginBottom = useAxis ? 40 : 10;
+  const marginLeft = useAxis ? 40 : 10;
+
+  const x = d3
+    .scaleBand()
+    .domain(validData.map((d) => d.x))
+    .range([marginLeft, width - marginRight])
+    .padding(0.1);
+
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(validData, (d) => d.y) as number])
+    .nice()
+    .range([height - marginBottom, marginTop]);
+
+  const svg = d3
+    .create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+
+  const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+  if (useAxis) {
+    svg
+      .append("g")
+      .attr("stroke", "#ddd")
+      .attr("stroke-width", 0.5)
+      .call((g) =>
+        g
+          .append("g")
+          .selectAll("line")
+          .data(x.domain())
+          .join("line")
+          .attr("x1", (d) => x(d)!)
+          .attr("x2", (d) => x(d)!)
+          .attr("y1", marginTop)
+          .attr("y2", height - marginBottom)
+      );
+  }
+
+  if (useAxis) {
+    svg
+      .append("g")
+      .attr("stroke", "#ddd")
+      .attr("stroke-width", 0.8)
+      .call((g) =>
+        g
+          .append("g")
+          .selectAll("line")
+          .data(y.ticks())
+          .join("line")
+          .attr("y1", (d) => y(d))
+          .attr("y2", (d) => y(d))
+          .attr("x1", marginLeft)
+          .attr("x2", width - marginRight)
+      );
+  }
+
+  const groupedData = d3.groups(validData, (d) => d.x);
+
+  svg
+    .append("g")
+    .selectAll("line")
+    .data(groupedData)
+    .join("line")
+    .attr("x1", (d) => x(d[0])! + x.bandwidth() / 2)
+    .attr("x2", (d) => x(d[0])! + x.bandwidth() / 2)
+    .attr("y1", (d) => y(d[1][0]?.y || 0))
+    .attr("y2", (d) => y(d[1][d[1].length - 1]?.y || 0))
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5);
+
+  groupedData.forEach((categoryData) => {
+    svg
+      .append("g")
+      .selectAll("line")
+      .data(categoryData[1].slice(1))
+      .join("line")
+      .attr("x1", (d, i) => x(d.x)! + x.bandwidth() / 2)
+      .attr("x2", (d, i) => x(categoryData[1][i].x)! + x.bandwidth() / 2)
+      .attr("y1", (d) => y(d.y))
+      .attr("y2", (d, i) => y(categoryData[1][i].y))
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5);
+  });
+
+  svg
+    .append("g")
+    .selectAll("circle")
+    .data(validData)
+    .join("circle")
+    .attr("cx", (d) => x(d.x)! + x.bandwidth() / 2)
+    .attr("cy", (d) => y(d.y))
+    .attr("r", 6)
+    .attr("fill", (d) => color(d.category));
+
+  if (useAxis) {
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x))
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .append("text")
+          .attr("x", width)
+          .attr("y", marginBottom - 4)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "end")
+          .text("→ Kategori")
+      );
+
+    svg
+      .append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y))
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .append("text")
+          .attr("x", -marginLeft)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text("↑ Nilai")
+      );
+  }
+
+  return svg.node();
+};
+
+export const createSummaryPointPlot = (
+  data: { category: string; value: number }[],
+  width: number,
+  height: number,
+  useAxis: boolean = true,
+  statistic: "mean" | "median" | "mode" | "min" | "max" = "mean" // Pilihan statistik
+) => {
+  // Mengelompokkan data berdasarkan category dan menghitung statistik per kategori
+  const categoryValues = Array.from(
+    d3.group(data, (d) => d.category),
+    ([key, value]) => ({
+      category: key,
+      value: calculateStat(value, statistic),
+    })
+  );
+
+  console.log(
+    `Creating summary point plot with ${statistic} values:`,
+    categoryValues
+  );
+
+  if (categoryValues.length === 0) {
+    console.error("No valid data available for the summary point plot");
+    return null;
+  }
+
+  const marginTop = useAxis ? 30 : 10;
+  const marginRight = useAxis ? 30 : 10;
+  const marginBottom = useAxis ? 70 : 10;
+  const marginLeft = useAxis ? 40 : 10;
+
+  // Skala untuk sumbu X (category)
+  const x = d3
+    .scaleBand()
+    .domain(categoryValues.map((d) => d.category))
+    .range([marginLeft, width - marginRight])
+    .padding(0.1);
+
+  // Skala untuk sumbu Y (statistik nilai)
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(categoryValues, (d) => d.value) as number])
+    .nice()
+    .range([height - marginBottom, marginTop]);
+
+  // Membuat SVG
+  const svg = d3
+    .create("svg")
+    .attr("viewBox", [0, 0, width, height])
+    .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
+
+  // Warna titik (default warna abu-abu untuk semua titik)
+  const color = "#4682B4";
+
+  if (useAxis) {
+    // Menambahkan gridline untuk sumbu X
+    svg
+      .append("g")
+      .attr("stroke", "#ddd")
+      .attr("stroke-width", 0.5)
+      .call((g) =>
+        g
+          .append("g")
+          .selectAll("line")
+          .data(x.domain())
+          .join("line")
+          .attr("x1", (d) => x(d)!)
+          .attr("x2", (d) => x(d)!)
+          .attr("y1", marginTop)
+          .attr("y2", height - marginBottom)
+      );
+  }
+
+  if (useAxis) {
+    // Menambahkan gridline untuk sumbu Y
+    svg
+      .append("g")
+      .attr("stroke", "#ddd")
+      .attr("stroke-width", 0.8)
+      .call((g) =>
+        g
+          .append("g")
+          .selectAll("line")
+          .data(y.ticks())
+          .join("line")
+          .attr("y1", (d) => y(d))
+          .attr("y2", (d) => y(d))
+          .attr("x1", marginLeft)
+          .attr("x2", width - marginRight)
+      );
+  }
+
+  // Menambahkan titik data untuk setiap kategori berdasarkan statistik yang dihitung
+  svg
+    .append("g")
+    .selectAll("circle")
+    .data(categoryValues)
+    .join("circle")
+    .attr("cx", (d) => x(d.category)! + x.bandwidth() / 2)
+    .attr("cy", (d) => y(d.value))
+    .attr("r", 6)
+    .attr("fill", color);
+
+  // Menambahkan teks informasi statistik di bawah grafik
+  svg
+    .append("text")
+    .attr("x", width / 2)
+    .attr("y", height - marginBottom + 40)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "14px")
+    .attr("font-weight", "bold")
+    .text(
+      `Statistik: ${statistic.charAt(0).toUpperCase() + statistic.slice(1)}`
+    );
+
+  if (useAxis) {
+    // Menambahkan sumbu X
+    svg
+      .append("g")
+      .attr("transform", `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x))
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .append("text")
+          .attr("x", width)
+          .attr("y", marginBottom - 4)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "end")
+          .text("→ Kategori")
+      );
+
+    // Menambahkan sumbu Y
+    svg
+      .append("g")
+      .attr("transform", `translate(${marginLeft},0)`)
+      .call(d3.axisLeft(y))
+      .call((g) => g.select(".domain").remove())
+      .call((g) =>
+        g
+          .append("text")
+          .attr("x", -marginLeft)
+          .attr("y", 10)
+          .attr("fill", "currentColor")
+          .attr("text-anchor", "start")
+          .text("↑ Nilai")
+      );
+  }
+
+  return svg.node();
+};
+
+// Fungsi untuk menghitung statistik berdasarkan pilihan
+function calculateStat(
+  data: { value: number }[],
+  statistic: "mean" | "median" | "mode" | "min" | "max"
+): number {
+  switch (statistic) {
+    case "mean":
+      return d3.mean(data, (d) => d.value) as number;
+    case "median":
+      return d3.median(data, (d) => d.value) as number;
+    case "mode":
+      return mode(data);
+    case "min":
+      return d3.min(data, (d) => d.value) as number;
+    case "max":
+      return d3.max(data, (d) => d.value) as number;
+    default:
+      return 0;
+  }
+}
+
+// Fungsi untuk menghitung mode
+function mode(data: { value: number }[]): number {
+  const frequency: { [key: number]: number } = {};
+  let maxFreq = 0;
+  let modeValue = 0;
+  data.forEach((d) => {
+    frequency[d.value] = (frequency[d.value] || 0) + 1;
+    if (frequency[d.value] > maxFreq) {
+      maxFreq = frequency[d.value];
+      modeValue = d.value;
+    }
+  });
+  return modeValue;
+}

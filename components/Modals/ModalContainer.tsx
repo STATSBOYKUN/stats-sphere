@@ -38,6 +38,27 @@ import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEsti
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
 import ModalOptimalScaling from "./Regression/OptimalScaling/ModalOptimalScaling";
 import ChartBuilderModal from "./Graphs/ChartBuilder/ChartBuilderModal";
+import {UnivariateContainer} from "@/components/Modals/Analyze/general-linear-model/univariate/univariate-main";
+import {MultivariateContainer} from "@/components/Modals/Analyze/general-linear-model/multivariate/multivariate-main";
+import {
+  RepeatedMeasuresContainer
+} from "@/components/Modals/Analyze/general-linear-model/repeated-measures/repeated-measures-main";
+import {
+  VarianceCompsContainer
+} from "@/components/Modals/Analyze/general-linear-model/variance-components/variance-components-main";
+import {FactorContainer} from "@/components/Modals/Analyze/dimension-reduction/factor/factor-main";
+import {
+  CorrespondenceContainer
+} from "@/components/Modals/Analyze/dimension-reduction/correspondence-analysis/correspondence-analysis-main";
+import {OptScaContainer} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/optimal-scaling-main";
+import {TwoStepClusterContainer} from "@/components/Modals/Analyze/classify/two-step-cluster/two-step-cluster-main";
+import {KMeansClusterContainer} from "@/components/Modals/Analyze/classify/k-means-cluster/k-means-cluster-main";
+import {HierClusContainer} from "@/components/Modals/Analyze/classify/hierarchical-cluster/hierarchical-cluster-main";
+import {TreeContainer} from "@/components/Modals/Analyze/classify/tree/tree-main";
+import {DiscriminantContainer} from "@/components/Modals/Analyze/classify/discriminant/discriminant-main";
+import {KNNContainer} from "@/components/Modals/Analyze/classify/nearest-neighbor/nearest-neighbor-main";
+import {RocCurveContainer} from "@/components/Modals/Analyze/classify/roc-curve/roc-curve-main";
+import {RocAnalysisContainer} from "@/components/Modals/Analyze/classify/roc-analysis/roc-analysis-main";
 
 const ModalContainer: React.FC = () => {
   const { modals, closeModal } = useModal();
@@ -135,6 +156,44 @@ const ModalContainer: React.FC = () => {
         return (
           <ModalOptimalScaling onClose={closeModal} {...currentModal.props} />
         );
+
+      //   General Linear Model
+      case ModalType.Univariate:
+        return <UnivariateContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Multivariate:
+        return <MultivariateContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.RepeatedMeasures:
+        return <RepeatedMeasuresContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.VarianceComponents:
+        return <VarianceCompsContainer onClose={closeModal} {...currentModal.props} />;
+
+      //   Dimension Reduction
+      case ModalType.Factor:
+        return <FactorContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.CorrespondenceAnalysis:
+        return <CorrespondenceContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.OptimalScaling:
+        return <OptScaContainer onClose={closeModal} {...currentModal.props} />;
+
+      //   Classify
+      case ModalType.TwoStepCluster:
+        return <TwoStepClusterContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.KMeansCluster:
+        return <KMeansClusterContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.HierarchicalCluster:
+        return <HierClusContainer onClose={closeModal} {...currentModal.props} />;
+      // case ModalType.ClusterSilhouettes:
+      //   return <Clust onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Tree:
+        return <TreeContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.Discriminant:
+        return <DiscriminantContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.NearestNeighbor:
+        return <KNNContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ROCCurve:
+        return <RocCurveContainer onClose={closeModal} {...currentModal.props} />;
+      case ModalType.ROCAnalysis:
+        return <RocAnalysisContainer onClose={closeModal} {...currentModal.props} />;
 
       // Time Series
       case ModalType.Smoothing:
