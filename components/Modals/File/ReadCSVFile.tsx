@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import {useDataStore} from "@/stores/useDataStore";
-import {useVariableStore, VariableRow} from "@/stores/useVariableStore";
+import {useVariableStore} from "@/stores/useVariableStore";
 
 interface ReadCSVFileProps {
     onClose: () => void;
@@ -172,8 +172,8 @@ const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) =
                         onChange={(e) => setTextQualifier(e.target.value)}
                         className="border rounded-md p-2"
                     >
-                        <option value="doubleQuote">Double Quote (")</option>
-                        <option value="singleQuote">Single Quote (')</option>
+                        <option value="doubleQuote">Double Quote (&quot;)</option>
+                        <option value="singleQuote">Single Quote (&apos;)</option>
                         <option value="none">None</option>
                     </select>
                 </div>

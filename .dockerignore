@@ -1,0 +1,16 @@
+# Node & build artifacts
+node_modules
+dist
+.next
+
+# Editor / OS
+.idea
+.vscode
+*.swp
+*.DS_Store
+
+# Logs
+*.log
+
+# Env
+.env*

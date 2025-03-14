@@ -1,4 +1,3 @@
-// config/tableConfig.ts
 import Handsontable from 'handsontable';
 import 'handsontable/dist/handsontable.full.min.css';
 
@@ -13,7 +12,7 @@ export const colHeaders = [
     'Columns',
     'Align',
     'Measure',
-    'role'
+    'Role'
 ];
 
 export const columns: Handsontable.GridSettings['columns'] = [
@@ -24,32 +23,9 @@ export const columns: Handsontable.GridSettings['columns'] = [
     },
     {
         data: 1,
-        type: 'dropdown',
-        source: [
-            'NUMERIC',
-            'COMMA',
-            'SCIENTIFIC',
-            'DATE',
-            'ADATE',
-            'EDATE',
-            'SDATE',
-            'JDATE',
-            'QYR',
-            'MOYR',
-            'WKYR',
-            'DATETIME',
-            'TIME',
-            'DTIME',
-            'WKDAY',
-            'MONTH',
-            'DOLLAR',
-            'CUSTOM_CURRENCY',
-            'STRING',
-            'RESTRICTED_NUMERIC',
-        ],
-        strict: true,
-        allowInvalid: false,
+        type: 'text',
         width: 300,
+        readOnly: false,
     },
     {
         data: 2,
@@ -87,13 +63,13 @@ export const columns: Handsontable.GridSettings['columns'] = [
     {
         data: 8,
         type: 'dropdown',
-        source: ['Left', 'Right', 'Center'],
+        source: ['left', 'right', 'center'],
         width: 150,
     },
     {
         data: 9,
         type: 'dropdown',
-        source: ['Scale', 'Ordinal', 'Nominal'],
+        source: ['scale', 'ordinal', 'nominal', 'unknown'],
         strict: true,
         allowInvalid: false,
         width: 150,
@@ -101,7 +77,7 @@ export const columns: Handsontable.GridSettings['columns'] = [
     {
         data: 10,
         type: 'dropdown',
-        source: ['Input', 'Target', 'Both', 'None', 'Partition', 'Split'],
+        source: ['input', 'target', 'both', 'none', 'partition', 'split'],
         strict: true,
         allowInvalid: false,
         width: 150,

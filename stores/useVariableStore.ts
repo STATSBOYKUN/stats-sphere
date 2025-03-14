@@ -88,7 +88,7 @@ const createDefaultVariable = (index: number, existingVariables: Variable[] = []
         missing: [],
         columns: 64,
         align: "right",
-        measure: "scale",
+        measure: "unknown",
         role: "input"
     };
 };
@@ -193,52 +193,80 @@ export const useVariableStore = create<VariableStoreState>()(
                     await db.transaction('rw', db.variables, async () => {
                         const existingVariables = [...get().variables];
 
-                       const targetIndex = variableData?.columnIndex !== undefined
+                        const targetIndex = variableData?.columnIndex !== undefined
                             ? variableData.columnIndex
                             : existingVariables.length;
 
-                        const defaultVar = createDefaultVariable(targetIndex, existingVariables);
+                        // Buat variabel default untuk semua indeks yang hilang sampai targetIndex
+                        const existingIndices = new Set(existingVariables.map(v => v.columnIndex));
+                        const missingIndices = [];
 
-                        const inferredValues = variableData?.type
-                            ? inferDefaultValues(variableData.type)
-                            : {};
-
-                        const newVariable: Variable = {
-                            ...defaultVar,
-                            ...inferredValues,
-                            ...variableData,
-                            columnIndex: targetIndex
-                        };
-
-                        if (variableData?.name) {
-                            const nameResult = processVariableName(variableData.name, existingVariables);
-                            if (nameResult.isValid && nameResult.processedName) {
-                                newVariable.name = nameResult.processedName;
+                        for (let i = 0; i <= targetIndex; i++) {
+                            if (!existingIndices.has(i)) {
+                                missingIndices.push(i);
                             }
                         }
 
-                        const updatedVariables = [...existingVariables];
+                        // Jika indeks target sudah ada, kita hanya perlu update variabel tersebut
+                        if (existingIndices.has(targetIndex) && variableData) {
+                            const varToUpdate = existingVariables.find(v => v.columnIndex === targetIndex);
 
-                        for (let i = 0; i < updatedVariables.length; i++) {
-                            if (updatedVariables[i].columnIndex >= targetIndex) {
-                                updatedVariables[i].columnIndex += 1;
-                                await db.variables.put(updatedVariables[i]);
-                            }
-                        }
-
-                        const id = await db.variables.add(newVariable);
-
-                        set((draft) => {
-                            for (let i = 0; i < draft.variables.length; i++) {
-                                if (draft.variables[i].columnIndex >= targetIndex) {
-                                    draft.variables[i].columnIndex += 1;
+                            if (varToUpdate) {
+                                for (const [key, value] of Object.entries(variableData)) {
+                                    await get().updateVariable(
+                                        targetIndex,
+                                        key as keyof Variable,
+                                        value as any
+                                    );
                                 }
                             }
 
-                            draft.variables.push({...newVariable, id});
-                            draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
-                            draft.lastUpdated = new Date();
-                        });
+                            return;
+                        }
+
+                        const variablesToAdd: Variable[] = [];
+
+                        for (const index of missingIndices) {
+                            const defaultVar = createDefaultVariable(index, [...existingVariables, ...variablesToAdd]);
+
+                            if (index === targetIndex && variableData) {
+                                const inferredValues = variableData.type
+                                    ? inferDefaultValues(variableData.type)
+                                    : {};
+
+                                const newVariable: Variable = {
+                                    ...defaultVar,
+                                    ...inferredValues,
+                                    ...variableData,
+                                    columnIndex: index
+                                };
+
+                                if (variableData.name) {
+                                    const nameResult = processVariableName(
+                                        variableData.name,
+                                        [...existingVariables, ...variablesToAdd]
+                                    );
+                                    if (nameResult.isValid && nameResult.processedName) {
+                                        newVariable.name = nameResult.processedName;
+                                    }
+                                }
+
+                                variablesToAdd.push(newVariable);
+                            } else {
+                                variablesToAdd.push(defaultVar);
+                            }
+                        }
+
+                        if (variablesToAdd.length > 0) {
+                            const ids = await db.variables.bulkAdd(variablesToAdd, { allKeys: true });
+
+                            set((draft) => {
+                                const newVarsWithIds = variablesToAdd.map((v, i) => ({...v, id: ids[i]}));
+                                draft.variables.push(...newVarsWithIds);
+                                draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
+                                draft.lastUpdated = new Date();
+                            });
+                        }
                     });
                 } catch (error: any) {
                     set((draft) => {
@@ -366,24 +394,12 @@ export const useVariableStore = create<VariableStoreState>()(
                     await db.transaction('r', db.variables, async () => {
                         const variablesFromDb = await db.variables.toArray();
 
-                        const normalizedVariables = variablesFromDb
-                            .sort((a, b) => a.columnIndex - b.columnIndex)
-                            .map((variable, index) => ({
-                                ...variable,
-                                columnIndex: index
-                            }));
-
+                        // Hanya mengurutkan berdasarkan columnIndex TANPA menomori ulang
                         set((draft) => {
-                            draft.variables = normalizedVariables;
+                            draft.variables = variablesFromDb.sort((a, b) => a.columnIndex - b.columnIndex);
                             draft.lastUpdated = new Date();
                             draft.isLoading = false;
                         });
-
-                        if (JSON.stringify(variablesFromDb.map(v => v.columnIndex)) !==
-                            JSON.stringify(normalizedVariables.map(v => v.columnIndex))) {
-                            await db.variables.clear();
-                            await db.variables.bulkPut(normalizedVariables);
-                        }
                     });
                 } catch (error: any) {
                     set((draft) => {
