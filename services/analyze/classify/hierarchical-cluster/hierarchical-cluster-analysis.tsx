@@ -33,8 +33,6 @@ export async function analyzeHierClus({
     // const varDefsForCluster = getVarDefs(variables, ClusterVariables);
     // const varDefsForLabelCases = getVarDefs(variables, LabelCasesVariable);
 
-    console.log("Test");
-
     const configData = {
         main: {
             Variables: ["age", "incbef"],

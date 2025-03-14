@@ -167,24 +167,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_4.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-/**
- * Helper function to parse input configuration from JSON
- * @param {any} config_json
- * @returns {any}
- */
-export function parse_clustering_config(config_json) {
-    const ret = wasm.parse_clustering_config(config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
 let cachedFloat64ArrayMemory0 = null;
 
 function getFloat64ArrayMemory0() {
@@ -260,6 +242,51 @@ export function partial_kj(k, j, partial_autocorrelate) {
     return ret;
 }
 
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_4.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+/**
+ * @param {Float64Array} data
+ * @returns {Float64Array}
+ */
+export function first_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.first_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * @param {Float64Array} data
+ * @returns {Float64Array}
+ */
+export function second_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.second_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {number} season
+ * @returns {Float64Array}
+ */
+export function seasonal_difference(data, season) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.seasonal_difference(ptr0, len0, season);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
 /**
  * @param {Float64Array} data
  * @param {Float64Array} forecast
@@ -331,43 +358,16 @@ export function mape(data, forecast) {
 }
 
 /**
- * @param {Float64Array} data
- * @returns {Float64Array}
+ * Parse SPSS-style configuration into our internal format
+ * @param {any} config_json
+ * @returns {any}
  */
-export function first_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.first_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @returns {Float64Array}
- */
-export function second_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.second_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @param {number} season
- * @returns {Float64Array}
- */
-export function seasonal_difference(data, season) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.seasonal_difference(ptr0, len0, season);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
+export function parse_clustering_config(config_json) {
+    const ret = wasm.parse_clustering_config(config_json);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 const AutocorrelationFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -1225,16 +1225,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Create a new hierarchical clustering instance with SPSS-style input format
-     *
-     * # Arguments
-     * * `tempData` - Configuration object with settings
-     * * `slicedDataForCluster` - Array of variable data for clustering
-     * * `slicedDataForLabelCases` - Array of label data for cases
-     * * `varDefsForCluster` - Definitions of variables for clustering
-     * * `varDefsForLabelCases` - Definitions of variables for label cases
-     *
-     * # Returns
-     * * New instance of HierarchicalClusteringWasm
      * @param {any} tempData
      * @param {any} slicedDataForCluster
      * @param {any} slicedDataForLabelCases
@@ -1288,12 +1278,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Get cluster membership for a specific number of clusters
-     *
-     * # Arguments
-     * * `num_clusters` - Number of clusters to extract
-     *
-     * # Returns
-     * * JSON string with cluster membership information
      * @param {number} num_clusters
      * @returns {any}
      */
@@ -1306,13 +1290,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Get cluster memberships for a range of solutions
-     *
-     * # Arguments
-     * * `min_clusters` - Minimum number of clusters
-     * * `max_clusters` - Maximum number of clusters
-     *
-     * # Returns
-     * * JSON string with cluster membership information for each solution
      * @param {number} min_clusters
      * @param {number} max_clusters
      * @returns {any}
@@ -1326,12 +1303,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Evaluate clustering solution
-     *
-     * # Arguments
-     * * `num_clusters` - Number of clusters to evaluate
-     *
-     * # Returns
-     * * JSON string with evaluation metrics
      * @param {number} num_clusters
      * @returns {any}
      */
@@ -1344,9 +1315,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Get complete results
-     *
-     * # Returns
-     * * JSON string with all clustering results
      * @returns {any}
      */
     get_results() {
@@ -1358,9 +1326,6 @@ export class HierarchicalClusteringWasm {
     }
     /**
      * Get dendrogram data for visualization
-     *
-     * # Returns
-     * * JSON string with dendrogram data
      * @returns {any}
      */
     get_dendrogram_data() {
@@ -1665,9 +1630,6 @@ function __wbg_get_imports() {
         const ret = Object.entries(arg0);
         return ret;
     };
-    imports.wbg.__wbg_error_524f506f44df1645 = function(arg0) {
-        console.error(arg0);
-    };
     imports.wbg.__wbg_get_67b2ba62fc30de12 = function() { return handleError(function (arg0, arg1) {
         const ret = Reflect.get(arg0, arg1);
         return ret;
@@ -1777,9 +1739,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_value_cd1ffa7b1ab794f1 = function(arg0) {
         const ret = arg0.value;
         return ret;
-    };
-    imports.wbg.__wbg_warn_4ca3906c248c47c4 = function(arg0) {
-        console.warn(arg0);
     };
     imports.wbg.__wbindgen_bigint_from_i64 = function(arg0) {
         const ret = arg0;

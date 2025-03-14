@@ -6,7 +6,12 @@ use std::fmt;
 macro_rules! ensure {
     ($condition:expr, $error_type:expr, $message:expr) => {
         if !$condition {
-            return Err($error_type(format!($message)));
+            return Err($error_type(format!("{}", $message)));
+        }
+    };
+    ($condition:expr, $error_type:expr, $message:expr, $($args:expr),+) => {
+        if !$condition {
+            return Err($error_type(format!($message, $($args),+)));
         }
     };
 }

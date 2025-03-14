@@ -1,18 +1,10 @@
-pub mod types;
-pub mod distance;
-pub mod standardization;
-pub mod evaluation;
-pub mod utils;
-pub mod hierarchical;
-pub mod wasm;
+mod core;
+mod linkage;
+mod membership;
+mod dendrogram;
 
-// Re-export specific functions needed for the wasm bindings
-pub use self::distance::*;
-pub use self::standardization::*;
-pub use self::evaluation::*;
-pub use self::utils::*;
-pub use self::hierarchical::*;
-
-// Re-export the WebAssembly bindings
-pub use self::wasm::HierarchicalClusteringWasm;
-pub use self::wasm::parse_clustering_config;
+pub use self::core::hierarchical_cluster;
+pub use self::membership::get_cluster_membership;
+pub use self::membership::get_cluster_memberships_range;
+pub(crate) use self::linkage::*;
+pub(crate) use self::dendrogram::create_dendrogram_data;
