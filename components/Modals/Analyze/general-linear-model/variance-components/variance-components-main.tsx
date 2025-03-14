@@ -29,7 +29,7 @@ export const VarianceCompsContainer = ({
     const [formData, setFormData] = useState<VarianceCompsType>({
         ...VarianceCompsDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isSaveOpen, setIsSaveOpen] = useState(false);

@@ -25,7 +25,7 @@ export const RocCurveContainer = ({ onClose }: RocCurveContainerProps) => {
     const [formData, setFormData] = useState<RocCurveType>({
         ...RocCurveDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
     const { closeModal } = useModal();

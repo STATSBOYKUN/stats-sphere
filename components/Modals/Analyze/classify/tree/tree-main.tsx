@@ -28,7 +28,7 @@ export const TreeContainer = ({ onClose }: TreeContainerProps) => {
     const tempVariables = variables.map((variables) => variables.name);
 
     const [formData, setFormData] = useState<TreeType>({ ...TreeDefault });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
     const [isOutputOpen, setIsOutputOpen] = useState(false);
     const [isValidationOpen, setIsValidationOpen] = useState(false);

@@ -29,7 +29,7 @@ export const RocAnalysisContainer = ({
     const [formData, setFormData] = useState<RocAnalysisType>({
         ...RocAnalysisDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineGroupsOpen, setIsDefineGroupsOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);

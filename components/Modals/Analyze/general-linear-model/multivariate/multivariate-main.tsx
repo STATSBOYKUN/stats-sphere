@@ -34,7 +34,7 @@ export const MultivariateContainer = ({
     const [formData, setFormData] = useState<MultivariateType>({
         ...MultivariateDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isContrastOpen, setIsContrastOpen] = useState(false);
     const [isPlotsOpen, setIsPlotsOpen] = useState(false);

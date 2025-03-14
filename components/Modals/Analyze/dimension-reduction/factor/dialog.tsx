@@ -105,13 +105,20 @@ export const FactorDialog = ({
         Object.entries(mainState).forEach(([key, value]) => {
             updateFormData(key as keyof FactorMainType, value);
         });
+
         setIsMainOpen(false);
+        onContinue(mainState);
     };
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
             setter(true);
         };
+
+    const handleDialog = () => {
+        setIsMainOpen(false);
+        closeModal();
+    };
 
     return (
         <>

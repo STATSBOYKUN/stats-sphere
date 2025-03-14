@@ -28,7 +28,7 @@ export const TwoStepClusterContainer = ({
     const [formData, setFormData] = useState<TwoStepClusterType>({
         ...TwoStepClusterDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
     const [isOutputOpen, setIsOutputOpen] = useState(false);
 

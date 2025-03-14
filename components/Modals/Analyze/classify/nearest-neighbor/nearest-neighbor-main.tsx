@@ -28,7 +28,7 @@ export const KNNContainer = ({ onClose }: KNNContainerProps) => {
     const tempVariables = variables.map((variables) => variables.name);
 
     const [formData, setFormData] = useState<KNNType>({ ...KNNDefault });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isNeighborsOpen, setIsNeighborsOpen] = useState(false);
     const [isFeaturesOpen, setIsFeaturesOpen] = useState(false);
     const [isPartitionOpen, setIsPartitionOpen] = useState(false);

@@ -56,13 +56,7 @@ export async function analyzeDiscriminant({
     da.perform_stepwise_analysis();
 
     const results = da.get_results();
-    console.log(results);
     const formattedResults = convertStatisticalData(results);
-    console.log(
-        JSON.stringify({
-            tables: [formattedResults.tables[0]],
-        })
-    );
 
     /*
      * 🧩 Analysis Case Process 🧩

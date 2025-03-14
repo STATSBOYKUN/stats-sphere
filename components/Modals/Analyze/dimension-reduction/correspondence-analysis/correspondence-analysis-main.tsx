@@ -31,7 +31,7 @@ export const CorrespondenceContainer = ({
     const [formData, setFormData] = useState<CorrespondenceType>({
         ...CorrespondenceDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineRangeRowOpen, setIsDefineRangeRowOpen] = useState(false);
     const [isDefineRangeColumnOpen, setIsDefineRangeColumnOpen] =
         useState(false);

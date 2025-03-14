@@ -30,7 +30,7 @@ export const OptScaOveralsContainer = ({
     const [formData, setFormData] = useState<OptScaOveralsType>({
         ...OptScaOveralsDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineRangeScaleOpen, setIsDefineRangeScaleOpen] = useState(false);
     const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);

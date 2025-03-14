@@ -28,7 +28,7 @@ export const HierClusContainer = ({ onClose }: HierClusContainerProps) => {
     const [formData, setFormData] = useState<HierClusType>({
         ...HierClusDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isStatisticsOpen, setIsStatisticsOpen] = useState(false);
     const [isPlotsOpen, setIsPlotsOpen] = useState(false);
     const [isSaveOpen, setIsSaveOpen] = useState(false);

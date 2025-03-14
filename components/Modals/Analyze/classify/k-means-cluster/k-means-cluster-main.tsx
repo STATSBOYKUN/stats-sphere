@@ -29,7 +29,7 @@ export const KMeansClusterContainer = ({
     const [formData, setFormData] = useState<KMeansClusterType>({
         ...KMeansClusterDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isIterateOpen, setIsIterateOpen] = useState(false);
     const [isSaveOpen, setIsSaveOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);

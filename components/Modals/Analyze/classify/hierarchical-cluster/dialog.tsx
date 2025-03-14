@@ -135,9 +135,9 @@ export const HierClusDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Hierarchical Cluster</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Hierarchical Cluster Analysis</DialogTitle>
@@ -182,6 +182,7 @@ export const HierClusDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-6 p-2">
                                     <div
+                                        className="flex flex-col w-full gap-2"
                                         onDragOver={(e) => e.preventDefault()}
                                         onDrop={(e) => {
                                             const variable =
@@ -190,7 +191,7 @@ export const HierClusDialog = ({
                                         }}
                                     >
                                         <Label className="font-bold">
-                                            Independents:
+                                            Variable(s):
                                         </Label>
                                         <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>

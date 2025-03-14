@@ -35,7 +35,7 @@ export const OptScaMCAContainer = ({
     const [formData, setFormData] = useState<OptScaMCAType>({
         ...OptScaMCADefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineVariableOpen, setIsDefineVariableOpen] = useState(false);
     const [isDiscretizeOpen, setIsDiscretizeOpen] = useState(false);
     const [isMissingOpen, setIsMissingOpen] = useState(false);

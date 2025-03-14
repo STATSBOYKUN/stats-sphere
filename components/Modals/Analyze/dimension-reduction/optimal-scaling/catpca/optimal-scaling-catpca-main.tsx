@@ -38,7 +38,7 @@ export const OptScaCatpcaContainer = ({
     const [formData, setFormData] = useState<OptScaCatpcaType>({
         ...OptScaCatpcaDefault,
     });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isDefineRangeScaleOpen, setIsDefineRangeScaleOpen] = useState(false);
     const [isDefineScaleOpen, setIsDefineScaleOpen] = useState(false);
     const [isDiscretizeOpen, setIsDiscretizeOpen] = useState(false);

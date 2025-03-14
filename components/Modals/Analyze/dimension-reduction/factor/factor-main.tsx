@@ -28,7 +28,7 @@ export const FactorContainer = ({ onClose }: FactorContainerProps) => {
     const tempVariables = variables.map((variables) => variables.name);
 
     const [formData, setFormData] = useState<FactorType>({ ...FactorDefault });
-    const [isMainOpen, setIsMainOpen] = useState(false);
+    const [isMainOpen, setIsMainOpen] = useState(true);
     const [isValueOpen, setIsValueOpen] = useState(false);
     const [isDescriptivesOpen, setIsDescriptivesOpen] = useState(false);
     const [isExtractionOpen, setIsExtractionOpen] = useState(false);
