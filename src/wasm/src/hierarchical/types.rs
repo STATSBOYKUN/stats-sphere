@@ -161,6 +161,15 @@ pub enum ClusteringError {
     GeneralError(String),
 }
 
+// Struktur untuk hasil análisis dengan informasi warnings/errors
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AnalysisResult {
+    pub success: bool,
+    pub warnings: Vec<String>,
+    pub error: Option<String>,
+    pub data: Option<HierarchicalClusteringResults>,
+}
+
 impl fmt::Display for ClusteringError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

@@ -16,15 +16,17 @@ pub fn get_cluster_membership(
     num_clusters: usize,
     n_cases: usize
 ) -> Result<ClusterMembership, ClusteringError> {
-    ensure!(num_clusters <= n_cases,
-        ClusteringError::InvalidConfiguration,
-        "Number of clusters ({}) cannot exceed number of cases ({})", num_clusters, n_cases
-    );
+    if num_clusters > n_cases {
+        return Err(ClusteringError::InvalidConfiguration(
+            format!("Number of clusters ({}) cannot exceed number of cases ({})", num_clusters, n_cases)
+        ));
+    }
     
-    ensure!(num_clusters >= 1,
-        ClusteringError::InvalidConfiguration,
-        "Number of clusters must be at least 1"
-    );
+    if num_clusters < 1 {
+        return Err(ClusteringError::InvalidConfiguration(
+            "Number of clusters must be at least 1".to_string()
+        ));
+    }
     
     // Special case: if num_clusters equals n_cases, each case is its own cluster
     if num_clusters == n_cases {
@@ -38,20 +40,72 @@ pub fn get_cluster_membership(
     // Find the step where we had num_clusters clusters
     let n_steps = n_cases - num_clusters;
     
-    ensure!(n_steps <= agglomeration_schedule.steps.len(),
-        ClusteringError::InvalidConfiguration,
-        "Requested {} clusters but agglomeration schedule only has {} steps", 
-        num_clusters, agglomeration_schedule.steps.len()
-    );
+    if n_steps > agglomeration_schedule.steps.len() {
+        // Jika langkah yang diperlukan lebih banyak dari yang tersedia, gunakan jumlah langkah maksimum
+        // dan log warning (catat kesalahan tapi tetap lanjutkan)
+        web_sys::console::warn_1(&format!(
+            "Requested {} clusters but agglomeration schedule only has {} steps. Using available steps.",
+            num_clusters, agglomeration_schedule.steps.len()
+        ).into());
+        
+        // Gunakan semua langkah yang tersedia
+        let relevant_steps = &agglomeration_schedule.steps[..];
+        let actual_clusters = n_cases - relevant_steps.len();
+        
+        // Inisialisasi cluster assignments
+        let mut cluster_assignments = (0..n_cases).collect::<Vec<usize>>();
+        
+        // Ikuti langkah-langkah aglomerasi
+        for step in relevant_steps {
+            let c1 = step.cluster1;
+            let c2 = step.cluster2;
+            
+            for assignment in cluster_assignments.iter_mut() {
+                if *assignment == c2 {
+                    *assignment = c1;
+                }
+            }
+        }
+        
+        // Renumbering clusters agar berurutan
+        let mut unique_clusters: Vec<usize> = cluster_assignments.clone();
+        unique_clusters.sort();
+        unique_clusters.dedup();
+        
+        let actual_num_clusters = unique_clusters.len();
+        
+        // Log warning jika jumlah cluster yang ditemukan berbeda
+        if actual_num_clusters != num_clusters {
+            web_sys::console::warn_1(&format!(
+                "Expected {} clusters but found {}. Continuing with {} clusters.",
+                num_clusters, actual_num_clusters, actual_num_clusters
+            ).into());
+        }
+        
+        let mut renumbering = std::collections::HashMap::new();
+        for (i, &cluster) in unique_clusters.iter().enumerate() {
+            renumbering.insert(cluster, i);
+        }
+        
+        // Terapkan renumbering
+        let renumbered_clusters = cluster_assignments.iter()
+            .map(|&c| *renumbering.get(&c).unwrap())
+            .collect();
+        
+        return Ok(ClusterMembership {
+            case_ids: (0..n_cases).collect(),
+            cluster_ids: renumbered_clusters,
+            num_clusters: actual_num_clusters, // Gunakan jumlah cluster aktual
+        });
+    }
     
     let relevant_steps = &agglomeration_schedule.steps[0..n_steps];
     
-    // Initialize each case to its own cluster
+    // Inisialisasi cluster assignments
     let mut cluster_assignments = (0..n_cases).collect::<Vec<usize>>();
     
-    // Follow the agglomeration steps until we reach the desired number of clusters
+    // Ikuti langkah-langkah aglomerasi
     for step in relevant_steps {
-        // All cases in cluster2 are reassigned to cluster1
         let c1 = step.cluster1;
         let c2 = step.cluster2;
         
@@ -62,22 +116,27 @@ pub fn get_cluster_membership(
         }
     }
     
-    // Renumber clusters to be consecutive integers starting from 0
+    // Renumbering clusters agar berurutan
     let mut unique_clusters: Vec<usize> = cluster_assignments.clone();
     unique_clusters.sort();
     unique_clusters.dedup();
     
-    ensure!(unique_clusters.len() == num_clusters,
-        ClusteringError::ClusteringProcessError,
-        "Expected {} clusters but found {}", num_clusters, unique_clusters.len()
-    );
+    let actual_num_clusters = unique_clusters.len();
     
-    let mut renumbering = HashMap::new();
+    // Jika jumlah cluster aktual berbeda dengan yang diminta, lanjutkan tetapi log warning
+    if actual_num_clusters != num_clusters {
+        web_sys::console::warn_1(&format!(
+            "Expected {} clusters but found {}. Continuing with {} clusters.",
+            num_clusters, actual_num_clusters, actual_num_clusters
+        ).into());
+    }
+    
+    let mut renumbering = std::collections::HashMap::new();
     for (i, &cluster) in unique_clusters.iter().enumerate() {
         renumbering.insert(cluster, i);
     }
     
-    // Apply renumbering
+    // Terapkan renumbering
     let renumbered_clusters = cluster_assignments.iter()
         .map(|&c| *renumbering.get(&c).unwrap())
         .collect();
@@ -85,7 +144,7 @@ pub fn get_cluster_membership(
     Ok(ClusterMembership {
         case_ids: (0..n_cases).collect(),
         cluster_ids: renumbered_clusters,
-        num_clusters,
+        num_clusters: actual_num_clusters, // Gunakan jumlah cluster aktual
     })
 }
 

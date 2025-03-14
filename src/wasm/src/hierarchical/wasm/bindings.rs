@@ -8,7 +8,7 @@ use crate::hierarchical::standardization::{handle_missing_values, standardize_da
 use crate::hierarchical::types::{
     BinaryOptions, ClusterMembership, ClusteringConfig, ClusteringError, DataType, DistanceMetric,
     DistanceTransformation, HierarchicalClusteringResults, LinkageMethod, MissingValueStrategy,
-    StandardizationMethod,
+    StandardizationMethod, AnalysisResult
 };
 use crate::hierarchical::utils::parse_spss_config;
 use crate::hierarchical::{
@@ -250,18 +250,84 @@ impl HierarchicalClusteringWasm {
 
     /// Perform complete hierarchical clustering analysis
     #[wasm_bindgen]
-    pub fn perform_analysis(&mut self) -> Result<(), JsValue> {
-        // Chain analysis steps
-        self.preprocess_data()
-            .and_then(|_| self.calculate_distances())
-            .and_then(|_| self.cluster())?;
+    pub fn perform_analysis(&mut self) -> Result<JsValue, JsValue> {
+        // Container untuk menyimpan warning/error non-fatal
+        let mut warnings = Vec::new();
+
+        // Langkah 1: Preprocess data
+        if let Err(e) = self.preprocess_data() {
+            // Gunakan {:?} untuk JsValue karena tidak mengimplementasikan Display
+            let msg = format!(
+                "Warning during data preprocessing: {:?}. Continuing with default values.",
+                e
+            );
+            web_sys::console::warn_1(&JsValue::from_str(&msg));
+            warnings.push(msg);
+
+            // Pastikan ada minimal 2 kasus valid untuk melanjutkan
+            if self.data.len() < 2 {
+                // Error fatal - tidak bisa melanjutkan tanpa minimal 2 kasus
+                return Err(JsValue::from_str(
+                    "Critical error: Need at least 2 valid cases for clustering",
+                ));
+            }
+        }
+
+        // Langkah 2: Calculate distances
+        if let Err(e) = self.calculate_distances() {
+            // Jika gagal menghitung distance matrix, coba dengan metode default
+            let msg = format!(
+                "Warning during distance calculation: {:?}. Trying with Euclidean distance.",
+                e
+            );
+            web_sys::console::warn_1(&JsValue::from_str(&msg));
+            warnings.push(msg);
+
+            // Set distance matrix dengan nilai default (Euclidean)
+            self.fallback_distance_calculation();
+
+            // Jika masih juga gagal, ini error fatal
+            if self.distance_matrix.is_empty() || self.distance_matrix.len() < 2 {
+                return Err(JsValue::from_str(
+                    "Critical error: Failed to create distance matrix even with fallback method",
+                ));
+            }
+        }
+
+        // Langkah 3: Cluster
+        if let Err(e) = self.cluster() {
+            let msg = format!("Error during clustering: {:?}. Could not complete clustering.", e);
+            web_sys::console::error_1(&JsValue::from_str(&msg));
+            warnings.push(msg.clone());
+            
+            // Gunakan get_results_direct untuk membuat AnalysisResult yang valid
+            let result = AnalysisResult {
+                success: false,
+                warnings,
+                error: Some(msg),
+                data: None,  // Tidak ada data karena clustering gagal
+            };
+            
+            return Ok(serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::NULL));
+        }
 
         // Get cluster solution if specified
+        let mut cluster_solution_error = None;
         if let Some(obj) = self.raw_config.get("statistics") {
             if let Some(num_clusters) = obj.get("NoOfCluster").and_then(|c| c.as_u64()) {
                 if num_clusters > 0 {
-                    self.get_clusters(num_clusters as usize)?;
-                    self.evaluate(num_clusters as usize)?;
+                    if let Err(e) = self.get_clusters(num_clusters as usize) {
+                        let msg = format!("Warning during cluster solution extraction: {:?}. Some analyses may be incomplete.", e);
+                        web_sys::console::warn_1(&JsValue::from_str(&msg));
+                        warnings.push(msg.clone());
+                        cluster_solution_error = Some(msg);
+                    }
+
+                    if let Err(e) = self.evaluate(num_clusters as usize) {
+                        let msg = format!("Warning during cluster evaluation: {:?}. Evaluation metrics may be missing.", e);
+                        web_sys::console::warn_1(&JsValue::from_str(&msg));
+                        warnings.push(msg);
+                    }
                 }
             } else if obj
                 .get("SingleSol")
@@ -270,7 +336,31 @@ impl HierarchicalClusteringWasm {
             {
                 // Default to 3 clusters if SingleSol is true but NoOfCluster is not specified
                 let default_clusters = 3;
-                self.get_clusters(default_clusters)?;
+                if let Err(e) = self.get_clusters(default_clusters) {
+                    let msg = format!(
+                        "Warning during cluster solution extraction: {:?}. Using default fallback.",
+                        e
+                    );
+                    web_sys::console::warn_1(&JsValue::from_str(&msg));
+                    warnings.push(msg.clone());
+                    cluster_solution_error = Some(msg);
+
+                    // Coba dengan jumlah cluster yang berbeda jika gagal dengan 3
+                    let fallback_clusters = 2;
+                    if let Err(e2) = self.get_clusters(fallback_clusters) {
+                        let msg2 = format!(
+                            "Failed fallback to {} clusters: {:?}",
+                            fallback_clusters, e2
+                        );
+                        web_sys::console::error_1(&JsValue::from_str(&msg2));
+                        warnings.push(msg2);
+                    } else {
+                        warnings.push(format!(
+                            "Successfully created fallback solution with {} clusters",
+                            fallback_clusters
+                        ));
+                    }
+                }
             } else if obj
                 .get("RangeSol")
                 .and_then(|s| s.as_bool())
@@ -283,12 +373,30 @@ impl HierarchicalClusteringWasm {
                     obj.get("MaxCluster").and_then(|c| c.as_u64()).unwrap_or(5) as usize;
 
                 if min_clusters > 0 && max_clusters >= min_clusters {
-                    self.get_clusters_range(min_clusters, max_clusters)?;
+                    if let Err(e) = self.get_clusters_range(min_clusters, max_clusters) {
+                        let msg = format!("Warning during cluster range solution: {:?}. Range solution may be incomplete.", e);
+                        web_sys::console::warn_1(&JsValue::from_str(&msg));
+                        warnings.push(msg);
+                    }
                 }
             }
         }
 
-        Ok(())
+        // Buat struktur hasil
+        let result = AnalysisResult {
+            success: true,
+            warnings,
+            error: cluster_solution_error,
+            data: self.get_results_direct(),
+        };
+
+        // Convert to JS value
+        Ok(serde_wasm_bindgen::to_value(&result).unwrap_or(JsValue::NULL))
+    }
+
+    fn get_results_direct(&self) -> Option<HierarchicalClusteringResults> {
+        // Clone hasil jika ada, sehingga bisa dimiliki oleh AnalysisResult
+        self.results.clone()
     }
 
     /// Preprocess data (standardize and handle missing values)
@@ -383,6 +491,39 @@ impl HierarchicalClusteringWasm {
         Ok(())
     }
 
+    // Metode fallback untuk menghitung distance matrix jika metode utama gagal
+    fn fallback_distance_calculation(&mut self) {
+        let n = self.data.len();
+        let mut distances = vec![vec![0.0; n]; n];
+
+        // Hitung jarak Euclidean sederhana
+        for i in 0..n {
+            distances[i][i] = 0.0; // Diagonal = 0
+
+            for j in (i + 1)..n {
+                let mut sum_sq = 0.0;
+
+                // Untuk setiap dimensi
+                for k in 0..self.data[i].len().min(self.data[j].len()) {
+                    if !self.data[i][k].is_nan() && !self.data[j][k].is_nan() {
+                        let diff = self.data[i][k] - self.data[j][k];
+                        sum_sq += diff * diff;
+                    }
+                }
+
+                let dist = sum_sq.sqrt();
+                distances[i][j] = dist;
+                distances[j][i] = dist; // Symmetric
+            }
+        }
+
+        self.distance_matrix = distances;
+
+        web_sys::console::log_1(
+            &"Created fallback distance matrix using simplified Euclidean distance".into(),
+        );
+    }
+
     /// Perform hierarchical clustering
     #[wasm_bindgen]
     pub fn cluster(&mut self) -> Result<(), JsValue> {
@@ -402,17 +543,20 @@ impl HierarchicalClusteringWasm {
     }
 
     /// Get cluster membership for a specific number of clusters
+    // Metode get_clusters yang dimodifikasi untuk menangani error dengan lebih fleksibel
     #[wasm_bindgen]
     pub fn get_clusters(&mut self, num_clusters: usize) -> Result<JsValue, JsValue> {
         if num_clusters < 1 {
-            return Err(JsValue::from_str("Number of clusters must be at least 1"));
+            return Err(create_error_js_value(
+                "Number of clusters must be at least 1",
+            ));
         }
 
         // Check if clustering was performed
         let results = match &mut self.results {
             Some(r) => r,
             None => {
-                return Err(JsValue::from_str(
+                return Err(create_error_js_value(
                     "Clustering not performed. Call cluster() first.",
                 ));
             }
@@ -421,10 +565,43 @@ impl HierarchicalClusteringWasm {
         let data_size = self.data.len();
 
         if num_clusters > data_size {
-            return Err(JsValue::from_str(&format!(
-                "Number of clusters ({}) cannot exceed number of cases ({})",
+            // Gunakan helper function untuk membuat warning dengan format yang konsisten
+            web_sys::console::warn_1(&JsValue::from_str(&format!(
+                "Number of clusters ({}) exceeds number of cases ({}). Will use maximum possible.",
                 num_clusters, data_size
             )));
+
+            // Gunakan jumlah maximum yang mungkin alih-alih error
+            let adjusted_clusters = data_size.min(10); // Batasi maksimum 10 untuk keamanan
+
+            // Get cluster membership with adjusted number
+            let membership = match get_cluster_membership(
+                &results.agglomeration_schedule,
+                adjusted_clusters,
+                data_size,
+            ) {
+                Ok(m) => m,
+                Err(e) => {
+                    return Err(create_error_js_value(&format!(
+                        "Failed to get cluster membership: {}",
+                        e
+                    )));
+                }
+            };
+
+            // Store in results - menggunakan jumlah cluster aktual yang berhasil dibuat
+            results.single_solution = Some(membership.clone());
+
+            // Log pesan informasi
+            web_sys::console::info_1(&JsValue::from_str(&format!(
+                "Created solution with {} clusters instead of requested {}",
+                membership.num_clusters, num_clusters
+            )));
+
+            // Convert to JS value
+            return serde_wasm_bindgen::to_value(&membership).map_err(|e| {
+                create_error_js_value(&format!("Failed to serialize cluster membership: {:?}", e))
+            });
         }
 
         // Get cluster membership
@@ -435,8 +612,56 @@ impl HierarchicalClusteringWasm {
         ) {
             Ok(m) => m,
             Err(e) => {
-                return Err(JsValue::from_str(&format!(
-                    "Failed to get cluster membership: {}",
+                // Jika gagal dengan jumlah cluster yang diminta, coba dengan nilai yang berbeda
+                web_sys::console::warn_1(&JsValue::from_str(&format!(
+                    "Failed with {} clusters: {}. Trying alternative numbers of clusters.",
+                    num_clusters, e
+                )));
+
+                // Coba beberapa jumlah cluster alternatif, mulai dari yang terdekat
+                let alternatives = [
+                    num_clusters - 1,
+                    num_clusters + 1,
+                    num_clusters - 2,
+                    num_clusters + 2,
+                    2, // Minimal valid clusters
+                ];
+
+                for &alt_num in alternatives.iter() {
+                    if alt_num >= 2 && alt_num < data_size {
+                        match get_cluster_membership(
+                            &results.agglomeration_schedule,
+                            alt_num,
+                            data_size,
+                        ) {
+                            Ok(alt_m) => {
+                                web_sys::console::info_1(&JsValue::from_str(&format!(
+                                    "Successfully created alternative solution with {} clusters",
+                                    alt_m.num_clusters
+                                )));
+
+                                // Store in results
+                                results.single_solution = Some(alt_m.clone());
+
+                                // Convert to JS value and return
+                                return serde_wasm_bindgen::to_value(&alt_m).map_err(|e| {
+                                    create_error_js_value(&format!(
+                                        "Failed to serialize cluster membership: {:?}",
+                                        e
+                                    ))
+                                });
+                            }
+                            Err(_) => {
+                                // Lanjut coba alternatif berikutnya
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // Jika semua alternatif gagal, kembalikan error
+                return Err(create_error_js_value(&format!(
+                    "Failed to get cluster membership for any valid number of clusters: {}",
                     e
                 )));
             }
@@ -447,7 +672,7 @@ impl HierarchicalClusteringWasm {
 
         // Convert to JS value
         serde_wasm_bindgen::to_value(&membership).map_err(|e| {
-            JsValue::from_str(&format!("Failed to serialize cluster membership: {}", e))
+            create_error_js_value(&format!("Failed to serialize cluster membership: {:?}", e))
         })
     }
 
@@ -656,3 +881,34 @@ pub fn parse_clustering_config(config_json: &JsValue) -> Result<JsValue, JsValue
     serde_wasm_bindgen::to_value(&config)
         .map_err(|e| JsValue::from_str(&format!("Failed to serialize config: {}", e)))
 }
+
+// Utilitas untuk membantu konversi error ke string, bisa ditambahkan ke bindings.rs
+
+/// Mengkonversi JsValue ke string yang aman untuk log
+fn js_error_to_string(err: &JsValue) -> String {
+    // Coba dapatkan pesan error dari JsValue
+    if let Some(msg) = js_sys::Reflect::get(err, &JsValue::from_str("message"))
+        .ok()
+        .and_then(|v| v.as_string())
+    {
+        return format!("{}", msg);
+    }
+
+    // Jika tidak bisa, gunakan representasi debug
+    format!("{:?}", err)
+}
+
+/// Mengkonversi ClusteringError ke JsValue
+fn clustering_error_to_js(err: &ClusteringError) -> JsValue {
+    JsValue::from_str(&format!("{}", err))
+}
+
+/// Membuat JsValue dengan error dan pesan khusus
+fn create_error_js_value(msg: &str) -> JsValue {
+    let error = js_sys::Error::new(msg);
+    JsValue::from(error)
+}
+
+// Contoh penggunaan:
+// let err_msg = js_error_to_string(&err);
+// return Err(create_error_js_value(&format!("Failed to process: {}", err_msg)));

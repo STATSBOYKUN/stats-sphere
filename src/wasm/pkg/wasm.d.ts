@@ -1,18 +1,18 @@
 /* tslint:disable */
 /* eslint-disable */
-export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
-export function first_difference(data: Float64Array): Float64Array;
-export function second_difference(data: Float64Array): Float64Array;
-export function seasonal_difference(data: Float64Array, season: number): Float64Array;
 export function mse(data: Float64Array, forecast: Float64Array): number;
 export function rmse(data: Float64Array, forecast: Float64Array): number;
 export function mae(data: Float64Array, forecast: Float64Array): number;
 export function mpe(data: Float64Array, forecast: Float64Array): number;
 export function mape(data: Float64Array, forecast: Float64Array): number;
+export function first_difference(data: Float64Array): Float64Array;
+export function second_difference(data: Float64Array): Float64Array;
+export function seasonal_difference(data: Float64Array, season: number): Float64Array;
 /**
  * Parse SPSS-style configuration into our internal format
  */
 export function parse_clustering_config(config_json: any): any;
+export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
 export class Autocorrelation {
   free(): void;
   constructor(data: Float64Array, data_header: string, lag: number);
@@ -201,7 +201,7 @@ export class HierarchicalClusteringWasm {
   /**
    * Perform complete hierarchical clustering analysis
    */
-  perform_analysis(): void;
+  perform_analysis(): any;
   /**
    * Preprocess data (standardize and handle missing values)
    */
@@ -272,6 +272,56 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly mse: (a: number, b: number, c: number, d: number) => number;
+  readonly rmse: (a: number, b: number, c: number, d: number) => number;
+  readonly mae: (a: number, b: number, c: number, d: number) => number;
+  readonly mpe: (a: number, b: number, c: number, d: number) => number;
+  readonly mape: (a: number, b: number, c: number, d: number) => number;
+  readonly first_difference: (a: number, b: number) => [number, number];
+  readonly second_difference: (a: number, b: number) => [number, number];
+  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
+  readonly __wbg_decomposition_free: (a: number, b: number) => void;
+  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly decomposition_get_data: (a: number) => [number, number];
+  readonly decomposition_get_data_header: (a: number) => [number, number];
+  readonly decomposition_get_time: (a: number) => [number, number];
+  readonly decomposition_get_time_header: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
+  readonly decomposition_get_trend_component: (a: number) => [number, number];
+  readonly decomposition_get_irregular_component: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
+  readonly decomposition_get_period: (a: number) => number;
+  readonly decomposition_get_trend_equation: (a: number) => [number, number];
+  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
+  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
+  readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
+  readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
+  readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_preprocess_data: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_calculate_distances: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_cluster: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_get_clusters: (a: number, b: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_clusters_range: (a: number, b: number, c: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_evaluate: (a: number, b: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_results: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_dendrogram_data: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_variable_names: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
+  readonly parse_clustering_config: (a: any) => [number, number, number];
   readonly __wbg_smoothing_free: (a: number, b: number) => void;
   readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly smoothing_get_data_header: (a: number) => [number, number];
@@ -337,56 +387,6 @@ export interface InitOutput {
   readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
   readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
   readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
-  readonly first_difference: (a: number, b: number) => [number, number];
-  readonly second_difference: (a: number, b: number) => [number, number];
-  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
-  readonly __wbg_decomposition_free: (a: number, b: number) => void;
-  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
-  readonly decomposition_get_data: (a: number) => [number, number];
-  readonly decomposition_get_data_header: (a: number) => [number, number];
-  readonly decomposition_get_time: (a: number) => [number, number];
-  readonly decomposition_get_time_header: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
-  readonly decomposition_get_trend_component: (a: number) => [number, number];
-  readonly decomposition_get_irregular_component: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
-  readonly decomposition_get_period: (a: number) => number;
-  readonly decomposition_get_trend_equation: (a: number) => [number, number];
-  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
-  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
-  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
-  readonly mse: (a: number, b: number, c: number, d: number) => number;
-  readonly rmse: (a: number, b: number, c: number, d: number) => number;
-  readonly mae: (a: number, b: number, c: number, d: number) => number;
-  readonly mpe: (a: number, b: number, c: number, d: number) => number;
-  readonly mape: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
-  readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
-  readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_preprocess_data: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_calculate_distances: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_cluster: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_get_clusters: (a: number, b: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_clusters_range: (a: number, b: number, c: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_evaluate: (a: number, b: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_results: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_dendrogram_data: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_variable_names: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
-  readonly parse_clustering_config: (a: any) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
