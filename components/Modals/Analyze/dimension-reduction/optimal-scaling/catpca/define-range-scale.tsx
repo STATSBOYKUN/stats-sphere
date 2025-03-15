@@ -1,32 +1,46 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaCatpcaDefineRangeScaleProps,
-    OptScaCatpcaDefineRangeScaleType
+    OptScaCatpcaDefineRangeScaleType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export const OptScaCatpcaDefineRangeScale = ({
-                                                 isDefineRangeScaleOpen,
-                                                 setIsDefineRangeScaleOpen,
-                                                 updateFormData,
-                                                 data
-                                             }: OptScaCatpcaDefineRangeScaleProps) => {
-    const [defineRangeScaleState, setDefineRangeScaleState] = useState<OptScaCatpcaDefineRangeScaleType>({...data});
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    isDefineRangeScaleOpen,
+    setIsDefineRangeScaleOpen,
+    updateFormData,
+    data,
+}: OptScaCatpcaDefineRangeScaleProps) => {
+    const [defineRangeScaleState, setDefineRangeScaleState] =
+        useState<OptScaCatpcaDefineRangeScaleType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isDefineRangeScaleOpen) {
-            setDefineRangeScaleState({...data});
+            setDefineRangeScaleState({ ...data });
         }
     }, [isDefineRangeScaleOpen, data]);
 
-    const handleChange = (field: keyof OptScaCatpcaDefineRangeScaleType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaCatpcaDefineRangeScaleType,
+        value: number | string | null
+    ) => {
         setDefineRangeScaleState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -47,7 +61,10 @@ export const OptScaCatpcaDefineRangeScale = ({
 
     const handleContinue = () => {
         Object.entries(defineRangeScaleState).forEach(([key, value]) => {
-            updateFormData(key as keyof OptScaCatpcaDefineRangeScaleType, value);
+            updateFormData(
+                key as keyof OptScaCatpcaDefineRangeScaleType,
+                value
+            );
         });
         setIsDefineRangeScaleOpen(false);
     };
@@ -55,22 +72,32 @@ export const OptScaCatpcaDefineRangeScale = ({
     return (
         <>
             {/* Define Range Scale Dialog */}
-            <Dialog open={isDefineRangeScaleOpen} onOpenChange={setIsDefineRangeScaleOpen}>
+            <Dialog
+                open={isDefineRangeScaleOpen}
+                onOpenChange={setIsDefineRangeScaleOpen}
+            >
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>CATPCA: Define Range Scale</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center space-x-2">
-                            <Label className="w-[150px]">Variable Weight:</Label>
+                            <Label className="w-[150px]">
+                                Variable Weight:
+                            </Label>
                             <div className="w-[75px]">
                                 <Input
                                     id="Weight"
                                     type="number"
                                     placeholder=""
                                     value={defineRangeScaleState.Weight ?? ""}
-                                    onChange={(e) => handleChange("Weight", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "Weight",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -80,34 +107,52 @@ export const OptScaCatpcaDefineRangeScale = ({
                         >
                             <ResizablePanel defaultSize={60}>
                                 <div className="flex flex-col gap-2 p-2">
-                                    <Label className="font-bold">Optimal Scaling Level</Label>
+                                    <Label className="font-bold">
+                                        Optimal Scaling Level
+                                    </Label>
                                     <RadioGroup
                                         value={
-                                            defineRangeScaleState.SplineOrdinal ? "SplineOrdinal" :
-                                                defineRangeScaleState.SplineNominal ? "SplineNominal" :
-                                                    defineRangeScaleState.MultipleNominal ? "MultipleNominal" :
-                                                        defineRangeScaleState.Ordinal ? "Ordinal" :
-                                                            defineRangeScaleState.Nominal ? "Nominal" :
-                                                                defineRangeScaleState.Numeric ? "Numeric" : ""
+                                            defineRangeScaleState.SplineOrdinal
+                                                ? "SplineOrdinal"
+                                                : defineRangeScaleState.SplineNominal
+                                                ? "SplineNominal"
+                                                : defineRangeScaleState.MultipleNominal
+                                                ? "MultipleNominal"
+                                                : defineRangeScaleState.Ordinal
+                                                ? "Ordinal"
+                                                : defineRangeScaleState.Nominal
+                                                ? "Nominal"
+                                                : defineRangeScaleState.Numeric
+                                                ? "Numeric"
+                                                : ""
                                         }
                                         onValueChange={handleOptGrp}
                                     >
                                         <div className="grid grid-cols-2 gap-2">
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="SplineOrdinal" id="SplineOrdinal"/>
+                                                    <RadioGroupItem
+                                                        value="SplineOrdinal"
+                                                        id="SplineOrdinal"
+                                                    />
                                                     <Label htmlFor="SplineOrdinal">
                                                         Spline Ordinal
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="SplineNominal" id="SplineNominal"/>
+                                                    <RadioGroupItem
+                                                        value="SplineNominal"
+                                                        id="SplineNominal"
+                                                    />
                                                     <Label htmlFor="SplineNominal">
                                                         Spline Nominal
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="MultipleNominal" id="MultipleNominal"/>
+                                                    <RadioGroupItem
+                                                        value="MultipleNominal"
+                                                        id="MultipleNominal"
+                                                    />
                                                     <Label htmlFor="MultipleNominal">
                                                         Multiple Nominal
                                                     </Label>
@@ -115,19 +160,28 @@ export const OptScaCatpcaDefineRangeScale = ({
                                             </div>
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Ordinal" id="Ordinal"/>
+                                                    <RadioGroupItem
+                                                        value="Ordinal"
+                                                        id="Ordinal"
+                                                    />
                                                     <Label htmlFor="Ordinal">
                                                         Ordinal
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Nominal" id="Nominal"/>
+                                                    <RadioGroupItem
+                                                        value="Nominal"
+                                                        id="Nominal"
+                                                    />
                                                     <Label htmlFor="Nominal">
                                                         Nominal
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Numeric" id="Numeric"/>
+                                                    <RadioGroupItem
+                                                        value="Numeric"
+                                                        id="Numeric"
+                                                    />
                                                     <Label htmlFor="Numeric">
                                                         Numeric
                                                     </Label>
@@ -137,32 +191,56 @@ export const OptScaCatpcaDefineRangeScale = ({
                                     </RadioGroup>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle/>
+                            <ResizableHandle />
                             <ResizablePanel defaultSize={40}>
                                 <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-bold">Spline</Label>
+                                    <Label className="font-bold">Spline</Label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[75px]">Degree:</Label>
+                                            <Label className="w-[75px]">
+                                                Degree:
+                                            </Label>
                                             <div className="w-[75px]">
                                                 <Input
                                                     id="Degree"
                                                     type="number"
                                                     placeholder=""
-                                                    value={defineRangeScaleState.Degree ?? ""}
-                                                    onChange={(e) => handleChange("Degree", Number(e.target.value))}
+                                                    value={
+                                                        defineRangeScaleState.Degree ??
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            "Degree",
+                                                            Number(
+                                                                e.target.value
+                                                            )
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[100px]">Interior Knots:</Label>
+                                            <Label className="w-[100px]">
+                                                Interior Knots:
+                                            </Label>
                                             <div className="w-[75px]">
                                                 <Input
                                                     id="InteriorKnots"
                                                     type="number"
                                                     placeholder=""
-                                                    value={defineRangeScaleState.InteriorKnots ?? ""}
-                                                    onChange={(e) => handleChange("InteriorKnots", Number(e.target.value))}
+                                                    value={
+                                                        defineRangeScaleState.InteriorKnots ??
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            "InteriorKnots",
+                                                            Number(
+                                                                e.target.value
+                                                            )
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
@@ -172,14 +250,22 @@ export const OptScaCatpcaDefineRangeScale = ({
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsDefineRangeScaleOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsDefineRangeScaleOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">
-                        Help
+                            Help
                         </Button>
                     </DialogFooter>
                 </DialogContent>

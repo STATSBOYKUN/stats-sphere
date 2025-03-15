@@ -1,19 +1,35 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaCatpcaDefineScaleProps,
-    OptScaCatpcaDefineScaleType
+    OptScaCatpcaDefineScaleType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 
-export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpen, updateFormData, data }: OptScaCatpcaDefineScaleProps) => {
-    const [defineScaleState, setDefineScaleState] = useState<OptScaCatpcaDefineScaleType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const OptScaCatpcaDefineScale = ({
+    isDefineScaleOpen,
+    setIsDefineScaleOpen,
+    updateFormData,
+    data,
+}: OptScaCatpcaDefineScaleProps) => {
+    const [defineScaleState, setDefineScaleState] =
+        useState<OptScaCatpcaDefineScaleType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isDefineScaleOpen) {
@@ -21,7 +37,10 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
         }
     }, [isDefineScaleOpen, data]);
 
-    const handleChange = (field: keyof OptScaCatpcaDefineScaleType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaCatpcaDefineScaleType,
+        value: number | string | null
+    ) => {
         setDefineScaleState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -50,10 +69,15 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
     return (
         <>
             {/* Define Scale Dialog */}
-            <Dialog open={isDefineScaleOpen} onOpenChange={setIsDefineScaleOpen}>
+            <Dialog
+                open={isDefineScaleOpen}
+                onOpenChange={setIsDefineScaleOpen}
+            >
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
-                        <DialogTitle>Categorical Principal Components: Define Scale</DialogTitle>
+                        <DialogTitle>
+                            Categorical Principal Components: Define Scale
+                        </DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <ResizablePanelGroup
@@ -62,34 +86,52 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                     >
                         <ResizablePanel defaultSize={60}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-bold">Optimal Scaling Level</Label>
+                                <Label className="font-bold">
+                                    Optimal Scaling Level
+                                </Label>
                                 <RadioGroup
                                     value={
-                                        defineScaleState.SplineOrdinal ? "SplineOrdinal" :
-                                            defineScaleState.SplineNominal ? "SplineNominal" :
-                                                defineScaleState.MultipleNominal ? "MultipleNominal" :
-                                                    defineScaleState.Ordinal ? "Ordinal" :
-                                                        defineScaleState.Nominal ? "Nominal" :
-                                                            defineScaleState.Numeric ? "Numeric" : ""
+                                        defineScaleState.SplineOrdinal
+                                            ? "SplineOrdinal"
+                                            : defineScaleState.SplineNominal
+                                            ? "SplineNominal"
+                                            : defineScaleState.MultipleNominal
+                                            ? "MultipleNominal"
+                                            : defineScaleState.Ordinal
+                                            ? "Ordinal"
+                                            : defineScaleState.Nominal
+                                            ? "Nominal"
+                                            : defineScaleState.Numeric
+                                            ? "Numeric"
+                                            : ""
                                     }
                                     onValueChange={handleOptGrp}
                                 >
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="SplineOrdinal" id="SplineOrdinal"/>
+                                                <RadioGroupItem
+                                                    value="SplineOrdinal"
+                                                    id="SplineOrdinal"
+                                                />
                                                 <Label htmlFor="SplineOrdinal">
                                                     Spline Ordinal
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="SplineNominal" id="SplineNominal"/>
+                                                <RadioGroupItem
+                                                    value="SplineNominal"
+                                                    id="SplineNominal"
+                                                />
                                                 <Label htmlFor="SplineNominal">
                                                     Spline Nominal
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="MultipleNominal" id="MultipleNominal"/>
+                                                <RadioGroupItem
+                                                    value="MultipleNominal"
+                                                    id="MultipleNominal"
+                                                />
                                                 <Label htmlFor="MultipleNominal">
                                                     Multiple Nominal
                                                 </Label>
@@ -97,19 +139,28 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Ordinal" id="Ordinal"/>
+                                                <RadioGroupItem
+                                                    value="Ordinal"
+                                                    id="Ordinal"
+                                                />
                                                 <Label htmlFor="Ordinal">
                                                     Ordinal
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Nominal" id="Nominal"/>
+                                                <RadioGroupItem
+                                                    value="Nominal"
+                                                    id="Nominal"
+                                                />
                                                 <Label htmlFor="Nominal">
                                                     Nominal
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Numeric" id="Numeric"/>
+                                                <RadioGroupItem
+                                                    value="Numeric"
+                                                    id="Numeric"
+                                                />
                                                 <Label htmlFor="Numeric">
                                                     Numeric
                                                 </Label>
@@ -119,32 +170,52 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                                 </RadioGroup>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={40}>
                             <div className="flex flex-col gap-2 p-2">
                                 <Label className="font-bold">Spline</Label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="flex items-center space-x-2">
-                                        <Label className="w-[75px]">Degree:</Label>
+                                        <Label className="w-[75px]">
+                                            Degree:
+                                        </Label>
                                         <div className="w-[75px]">
                                             <Input
                                                 id="Degree"
                                                 type="number"
                                                 placeholder=""
-                                                value={defineScaleState.Degree ?? ""}
-                                                onChange={(e) => handleChange("Degree", Number(e.target.value))}
+                                                value={
+                                                    defineScaleState.Degree ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "Degree",
+                                                        Number(e.target.value)
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <Label className="w-[100px]">Interior Knots:</Label>
+                                        <Label className="w-[100px]">
+                                            Interior Knots:
+                                        </Label>
                                         <div className="w-[75px]">
                                             <Input
                                                 id="InteriorKnots"
                                                 type="number"
                                                 placeholder=""
-                                                value={defineScaleState.InteriorKnots ?? ""}
-                                                onChange={(e) => handleChange("InteriorKnots", Number(e.target.value))}
+                                                value={
+                                                    defineScaleState.InteriorKnots ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "InteriorKnots",
+                                                        Number(e.target.value)
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -153,10 +224,18 @@ export const OptScaCatpcaDefineScale = ({ isDefineScaleOpen, setIsDefineScaleOpe
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsDefineScaleOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsDefineScaleOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

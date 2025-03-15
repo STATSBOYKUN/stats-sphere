@@ -1,19 +1,36 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaMCAMissingProps,
-    OptScaMCAMissingType
+    OptScaMCAMissingType,
 } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormData, data }: OptScaMCAMissingProps) => {
-    const [missingState, setMissingState] = useState<OptScaMCAMissingType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const OptScaMCAMissing = ({
+    isMissingOpen,
+    setIsMissingOpen,
+    updateFormData,
+    data,
+}: OptScaMCAMissingProps) => {
+    const [missingState, setMissingState] = useState<OptScaMCAMissingType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isMissingOpen) {
@@ -21,7 +38,10 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
         }
     }, [isMissingOpen, data]);
 
-    const handleChange = (field: keyof OptScaMCAMissingType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaMCAMissingType,
+        value: number | string | null
+    ) => {
         setMissingState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -68,7 +88,9 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
             <Dialog open={isMissingOpen} onOpenChange={setIsMissingOpen}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Multiple Correspondence Analysis: Missing</DialogTitle>
+                        <DialogTitle>
+                            Multiple Correspondence Analysis: Missing
+                        </DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <ResizablePanelGroup
@@ -79,7 +101,9 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                             <ResizablePanelGroup direction="vertical">
                                 <ResizablePanel defaultSize={60}>
                                     <div className="flex flex-col p-2">
-                                        <Label className="font-bold">Missing Value Strategy </Label>
+                                        <Label className="font-bold">
+                                            Missing Value Strategy{" "}
+                                        </Label>
                                         <div className="w-full">
                                             <Label>Analysis Variables: </Label>
                                             <Input
@@ -87,31 +111,49 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                                 type="text"
                                                 className="w-full min-h-[125px]"
                                                 placeholder=""
-                                                value={missingState.AnalysisVariables ?? ""}
-                                                onChange={(e) => handleChange("AnalysisVariables", e.target.value)}
+                                                value={
+                                                    missingState.AnalysisVariables ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "AnalysisVariables",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle withHandle/>
+                                <ResizableHandle withHandle />
                                 <ResizablePanel defaultSize={40}>
                                     <div className="flex flex-col p-2">
                                         <div className="w-full">
-                                            <Label>Supplementary Variables: </Label>
+                                            <Label>
+                                                Supplementary Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="SupplementaryVariables"
                                                 type="text"
                                                 className="w-full min-h-[75px]"
                                                 placeholder=""
-                                                value={missingState.SupplementaryVariables ?? ""}
-                                                onChange={(e) => handleChange("SupplementaryVariables", e.target.value)}
+                                                value={
+                                                    missingState.SupplementaryVariables ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "SupplementaryVariables",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                 </ResizablePanel>
                             </ResizablePanelGroup>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={30}>
                             <div className="flex flex-col gap-2 p-2">
                                 <Label className="font-bold">Strategy</Label>
@@ -120,14 +162,17 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                         missingState.MissingValuesExclude
                                             ? "MissingValuesExclude"
                                             : missingState.MissingValuesImpute
-                                                ? "MissingValuesImpute"
-                                                : "ExcludeObjects"
+                                            ? "MissingValuesImpute"
+                                            : "ExcludeObjects"
                                     }
                                     onValueChange={handleExcludeGrp}
                                 >
                                     <div className="flex flex-col gap-1">
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="MissingValuesExclude" id="MissingValuesExclude"/>
+                                            <RadioGroupItem
+                                                value="MissingValuesExclude"
+                                                id="MissingValuesExclude"
+                                            />
                                             <Label htmlFor="MissingValuesExclude">
                                                 Exclude Missing Values
                                             </Label>
@@ -137,26 +182,37 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                                 missingState.ExcludeMode
                                                     ? "ExcludeMode"
                                                     : missingState.ExcludeExtraCat
-                                                        ? "ExcludeExtraCat"
-                                                        : "ExcludeRandomCat"
+                                                    ? "ExcludeExtraCat"
+                                                    : "ExcludeRandomCat"
                                             }
-                                            onValueChange={handleExcludeMethodGrp}
+                                            onValueChange={
+                                                handleExcludeMethodGrp
+                                            }
                                         >
                                             <div className="grid grid-cols-3 gap-1 pl-6">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ExcludeMode" id="ExcludeMode"/>
+                                                    <RadioGroupItem
+                                                        value="ExcludeMode"
+                                                        id="ExcludeMode"
+                                                    />
                                                     <Label htmlFor="ExcludeMode">
                                                         Mode
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ExcludeExtraCat" id="ExcludeExtraCat"/>
+                                                    <RadioGroupItem
+                                                        value="ExcludeExtraCat"
+                                                        id="ExcludeExtraCat"
+                                                    />
                                                     <Label htmlFor="ExcludeExtraCat">
                                                         Extra
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ExcludeRandomCat" id="ExcludeRandomCat"/>
+                                                    <RadioGroupItem
+                                                        value="ExcludeRandomCat"
+                                                        id="ExcludeRandomCat"
+                                                    />
                                                     <Label htmlFor="ExcludeRandomCat">
                                                         Random
                                                     </Label>
@@ -164,7 +220,10 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                             </div>
                                         </RadioGroup>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="MissingValuesImpute" id="MissingValuesImpute"/>
+                                            <RadioGroupItem
+                                                value="MissingValuesImpute"
+                                                id="MissingValuesImpute"
+                                            />
                                             <Label htmlFor="MissingValuesImpute">
                                                 Impute Missing Values
                                             </Label>
@@ -174,26 +233,37 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                                 missingState.ImputeMode
                                                     ? "ImputeMode"
                                                     : missingState.ImputeExtraCat
-                                                        ? "ImputeExtraCat"
-                                                        : "ImputeRandomCat"
+                                                    ? "ImputeExtraCat"
+                                                    : "ImputeRandomCat"
                                             }
-                                            onValueChange={handleImputeMethodGrp}
+                                            onValueChange={
+                                                handleImputeMethodGrp
+                                            }
                                         >
                                             <div className="grid grid-cols-3 gap-1 pl-6">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ImputeMode" id="ImputeMode"/>
+                                                    <RadioGroupItem
+                                                        value="ImputeMode"
+                                                        id="ImputeMode"
+                                                    />
                                                     <Label htmlFor="ImputeMode">
                                                         Mode
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ImputeExtraCat" id="ImputeExtraCat"/>
+                                                    <RadioGroupItem
+                                                        value="ImputeExtraCat"
+                                                        id="ImputeExtraCat"
+                                                    />
                                                     <Label htmlFor="ImputeExtraCat">
                                                         Extra
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="ImputeRandomCat" id="ImputeRandomCat"/>
+                                                    <RadioGroupItem
+                                                        value="ImputeRandomCat"
+                                                        id="ImputeRandomCat"
+                                                    />
                                                     <Label htmlFor="ImputeRandomCat">
                                                         Random
                                                     </Label>
@@ -201,9 +271,13 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                                             </div>
                                         </RadioGroup>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="ExcludeObjects" id="ExcludeObjects"/>
+                                            <RadioGroupItem
+                                                value="ExcludeObjects"
+                                                id="ExcludeObjects"
+                                            />
                                             <Label htmlFor="ExcludeObjects">
-                                                Exclude Objects with Missing Values
+                                                Exclude Objects with Missing
+                                                Values
                                             </Label>
                                         </div>
                                     </div>
@@ -212,10 +286,18 @@ export const OptScaMCAMissing = ({ isMissingOpen, setIsMissingOpen, updateFormDa
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsMissingOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsMissingOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

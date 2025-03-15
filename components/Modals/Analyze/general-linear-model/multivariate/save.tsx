@@ -1,18 +1,38 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {MultivariateSaveProps, MultivariateSaveType} from "@/models/general-linear-model/multivariate/multivariate";
-import {Label} from "@/components/ui/label";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {Checkbox} from "@/components/ui/checkbox";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    MultivariateSaveProps,
+    MultivariateSaveType,
+} from "@/models/general-linear-model/multivariate/multivariate";
+import { Label } from "@/components/ui/label";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 
-export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: MultivariateSaveProps) => {
-    const [saveState, setSaveState] = useState<MultivariateSaveType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const MultivariateSave = ({
+    isSaveOpen,
+    setIsSaveOpen,
+    updateFormData,
+    data,
+}: MultivariateSaveProps) => {
+    const [saveState, setSaveState] = useState<MultivariateSaveType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isSaveOpen) {
@@ -20,7 +40,10 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
         }
     }, [isSaveOpen, data]);
 
-    const handleChange = (field: keyof MultivariateSaveType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof MultivariateSaveType,
+        value: CheckedState | number | string | null
+    ) => {
         setSaveState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -61,12 +84,23 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                     <ResizablePanelGroup direction="vertical">
                                         <ResizablePanel defaultSize={60}>
                                             <div className="flex flex-col gap-2 p-2">
-                                                <Label className="font-bold">Predicted Values</Label>
+                                                <Label className="font-bold">
+                                                    Predicted Values
+                                                </Label>
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="ResWeighted"
-                                                        checked={saveState.ResWeighted}
-                                                        onCheckedChange={(checked) => handleChange("ResWeighted", checked)}
+                                                        checked={
+                                                            saveState.ResWeighted
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "ResWeighted",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="ResWeighted"
@@ -78,8 +112,17 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="PreWeighted"
-                                                        checked={saveState.PreWeighted}
-                                                        onCheckedChange={(checked) => handleChange("PreWeighted", checked)}
+                                                        checked={
+                                                            saveState.PreWeighted
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "PreWeighted",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="PreWeighted"
@@ -91,8 +134,17 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="StdStatistics"
-                                                        checked={saveState.StdStatistics}
-                                                        onCheckedChange={(checked) => handleChange("StdStatistics", checked)}
+                                                        checked={
+                                                            saveState.StdStatistics
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "StdStatistics",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="StdStatistics"
@@ -103,15 +155,26 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                 </div>
                                             </div>
                                         </ResizablePanel>
-                                        <ResizableHandle/>
+                                        <ResizableHandle />
                                         <ResizablePanel defaultSize={40}>
                                             <div className="flex flex-col gap-2 p-2">
-                                                <Label className="font-bold">Diagnostics</Label>
+                                                <Label className="font-bold">
+                                                    Diagnostics
+                                                </Label>
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="CooksD"
-                                                        checked={saveState.CooksD}
-                                                        onCheckedChange={(checked) => handleChange("CooksD", checked)}
+                                                        checked={
+                                                            saveState.CooksD
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "CooksD",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="CooksD"
@@ -123,8 +186,17 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                 <div className="flex items-center space-x-2">
                                                     <Checkbox
                                                         id="Leverage"
-                                                        checked={saveState.Leverage}
-                                                        onCheckedChange={(checked) => handleChange("Leverage", checked)}
+                                                        checked={
+                                                            saveState.Leverage
+                                                        }
+                                                        onCheckedChange={(
+                                                            checked
+                                                        ) =>
+                                                            handleChange(
+                                                                "Leverage",
+                                                                checked
+                                                            )
+                                                        }
                                                     />
                                                     <label
                                                         htmlFor="Leverage"
@@ -137,15 +209,24 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                         </ResizablePanel>
                                     </ResizablePanelGroup>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={50}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Residuals</Label>
+                                        <Label className="font-bold">
+                                            Residuals
+                                        </Label>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="UnstandardizedRes"
-                                                checked={saveState.UnstandardizedRes}
-                                                onCheckedChange={(checked) => handleChange("UnstandardizedRes", checked)}
+                                                checked={
+                                                    saveState.UnstandardizedRes
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "UnstandardizedRes",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="UnstandardizedRes"
@@ -158,7 +239,12 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                             <Checkbox
                                                 id="WeightedRes"
                                                 checked={saveState.WeightedRes}
-                                                onCheckedChange={(checked) => handleChange("WeightedRes", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "WeightedRes",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="WeightedRes"
@@ -170,8 +256,15 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="StandardizedRes"
-                                                checked={saveState.StandardizedRes}
-                                                onCheckedChange={(checked) => handleChange("StandardizedRes", checked)}
+                                                checked={
+                                                    saveState.StandardizedRes
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "StandardizedRes",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="StandardizedRes"
@@ -183,8 +276,15 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="StudentizedRes"
-                                                checked={saveState.StudentizedRes}
-                                                onCheckedChange={(checked) => handleChange("StudentizedRes", checked)}
+                                                checked={
+                                                    saveState.StudentizedRes
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "StudentizedRes",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="StudentizedRes"
@@ -197,7 +297,12 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                             <Checkbox
                                                 id="DeletedRes"
                                                 checked={saveState.DeletedRes}
-                                                onCheckedChange={(checked) => handleChange("DeletedRes", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "DeletedRes",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="DeletedRes"
@@ -210,15 +315,19 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                 </ResizablePanel>
                             </ResizablePanelGroup>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={45}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-bold">Coefficient Statistics</Label>
+                                <Label className="font-bold">
+                                    Coefficient Statistics
+                                </Label>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="CoeffStats"
                                         checked={saveState.CoeffStats}
-                                        onCheckedChange={(checked) => handleChange("CoeffStats", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange("CoeffStats", checked)
+                                        }
                                     />
                                     <label
                                         htmlFor="CoeffStats"
@@ -228,31 +337,52 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                     </label>
                                 </div>
                                 <RadioGroup
-                                    value={saveState.NewDataSet ? "NewDataSet" : saveState.WriteNewDataSet ? "WriteNewDataSet" : ""}
+                                    value={
+                                        saveState.NewDataSet
+                                            ? "NewDataSet"
+                                            : saveState.WriteNewDataSet
+                                            ? "WriteNewDataSet"
+                                            : ""
+                                    }
                                     onValueChange={handleDestGrp}
                                 >
                                     <div className="flex flex-col gap-1 pl-6">
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="NewDataSet" id="NewDataSet"/>
+                                            <RadioGroupItem
+                                                value="NewDataSet"
+                                                id="NewDataSet"
+                                            />
                                             <Label htmlFor="NewDataSet">
                                                 Create a New Dataset
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2 pl-6">
-                                            <Label className="w-[150px]">Dataset Name:</Label>
+                                            <Label className="w-[150px]">
+                                                Dataset Name:
+                                            </Label>
                                             <div className="w-[150px]">
                                                 <Input
                                                     id="DatasetName"
                                                     type="text"
                                                     placeholder=""
-                                                    value={saveState.DatasetName ?? ""}
-                                                    onChange={(e) => handleChange("DatasetName", e.target.value)}
+                                                    value={
+                                                        saveState.DatasetName ??
+                                                        ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleChange(
+                                                            "DatasetName",
+                                                            e.target.value
+                                                        )
+                                                    }
                                                 />
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="WriteNewDataSet"
-                                                            id="WriteNewDataSet"/>
+                                            <RadioGroupItem
+                                                value="WriteNewDataSet"
+                                                id="WriteNewDataSet"
+                                            />
                                             <Label htmlFor="WriteNewDataSet">
                                                 Write New Dataset File
                                             </Label>
@@ -262,7 +392,12 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                                                 id="FilePath"
                                                 type="file"
                                                 placeholder=""
-                                                onChange={(e) => handleChange("FilePath", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "FilePath",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -271,10 +406,18 @@ export const MultivariateSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, da
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsSaveOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsSaveOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

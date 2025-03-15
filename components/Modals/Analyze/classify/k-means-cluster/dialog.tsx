@@ -204,6 +204,7 @@ export const KMeansClusterDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-2 p-2">
                                     <div
+                                        className="flex flex-col gap-2 w-full"
                                         onDragOver={(e) => e.preventDefault()}
                                         onDrop={(e) => {
                                             const variable =
@@ -212,11 +213,11 @@ export const KMeansClusterDialog = ({
                                         }}
                                     >
                                         <Label className="font-bold">
-                                            Independents:
+                                            Variables:
                                         </Label>
-                                        <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                        <div className="w-full h-[225px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>
-                                                <div className="w-full h-[100px]">
+                                                <div className="w-full h-[225px]">
                                                     {mainState.TargetVar &&
                                                     mainState.TargetVar.length >
                                                         0 ? (

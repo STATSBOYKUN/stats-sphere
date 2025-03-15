@@ -1,20 +1,32 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     RepeatedMeasuresOptionsProps,
-    RepeatedMeasuresOptionsType
+    RepeatedMeasuresOptionsType,
 } from "@/models/general-linear-model/repeated-measures/repeated-measures";
-import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Input} from "@/components/ui/input";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData, data }: RepeatedMeasuresOptionsProps) => {
-    const [optionsState, setOptionsState] = useState<RepeatedMeasuresOptionsType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const RepeatedMeasuresOptions = ({
+    isOptionsOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+}: RepeatedMeasuresOptionsProps) => {
+    const [optionsState, setOptionsState] =
+        useState<RepeatedMeasuresOptionsType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isOptionsOpen) {
@@ -22,7 +34,10 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
         }
     }, [isOptionsOpen, data]);
 
-    const handleChange = (field: keyof RepeatedMeasuresOptionsType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof RepeatedMeasuresOptionsType,
+        value: CheckedState | number | string | null
+    ) => {
         setOptionsState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -58,8 +73,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="DescStats"
-                                                    checked={optionsState.DescStats}
-                                                    onCheckedChange={(checked) => handleChange("DescStats", checked)}
+                                                    checked={
+                                                        optionsState.DescStats
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "DescStats",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="DescStats"
@@ -71,8 +95,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="EstEffectSize"
-                                                    checked={optionsState.EstEffectSize}
-                                                    onCheckedChange={(checked) => handleChange("EstEffectSize", checked)}
+                                                    checked={
+                                                        optionsState.EstEffectSize
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "EstEffectSize",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="EstEffectSize"
@@ -84,8 +117,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="ObsPower"
-                                                    checked={optionsState.ObsPower}
-                                                    onCheckedChange={(checked) => handleChange("ObsPower", checked)}
+                                                    checked={
+                                                        optionsState.ObsPower
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "ObsPower",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="ObsPower"
@@ -97,8 +139,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="ParamEst"
-                                                    checked={optionsState.ParamEst}
-                                                    onCheckedChange={(checked) => handleChange("ParamEst", checked)}
+                                                    checked={
+                                                        optionsState.ParamEst
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "ParamEst",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="ParamEst"
@@ -110,8 +161,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="SscpMat"
-                                                    checked={optionsState.SscpMat}
-                                                    onCheckedChange={(checked) => handleChange("SscpMat", checked)}
+                                                    checked={
+                                                        optionsState.SscpMat
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "SscpMat",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="SscpMat"
@@ -123,8 +183,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="ResSscpMat"
-                                                    checked={optionsState.ResSscpMat}
-                                                    onCheckedChange={(checked) => handleChange("ResSscpMat", checked)}
+                                                    checked={
+                                                        optionsState.ResSscpMat
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "ResSscpMat",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="ResSscpMat"
@@ -138,8 +207,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="HomogenTest"
-                                                    checked={optionsState.HomogenTest}
-                                                    onCheckedChange={(checked) => handleChange("HomogenTest", checked)}
+                                                    checked={
+                                                        optionsState.HomogenTest
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "HomogenTest",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="HomogenTest"
@@ -151,8 +229,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="SprVsLevel"
-                                                    checked={optionsState.SprVsLevel}
-                                                    onCheckedChange={(checked) => handleChange("SprVsLevel", checked)}
+                                                    checked={
+                                                        optionsState.SprVsLevel
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "SprVsLevel",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="SprVsLevel"
@@ -164,8 +251,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="ResPlot"
-                                                    checked={optionsState.ResPlot}
-                                                    onCheckedChange={(checked) => handleChange("ResPlot", checked)}
+                                                    checked={
+                                                        optionsState.ResPlot
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "ResPlot",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="ResPlot"
@@ -177,8 +273,17 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="LackOfFit"
-                                                    checked={optionsState.LackOfFit}
-                                                    onCheckedChange={(checked) => handleChange("LackOfFit", checked)}
+                                                    checked={
+                                                        optionsState.LackOfFit
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "LackOfFit",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="LackOfFit"
@@ -190,14 +295,24 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="GeneralFun"
-                                                    checked={optionsState.GeneralFun}
-                                                    onCheckedChange={(checked) => handleChange("GeneralFun", checked)}
+                                                    checked={
+                                                        optionsState.GeneralFun
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "GeneralFun",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="GeneralFun"
                                                     className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                 >
-                                                    General Estimable Function(s)
+                                                    General Estimable
+                                                    Function(s)
                                                 </label>
                                             </div>
                                         </div>
@@ -206,23 +321,38 @@ export const RepeatedMeasuresOptions = ({ isOptionsOpen, setIsOptionsOpen, updat
                             </ResizablePanel>
                         </ResizablePanelGroup>
                         <div className="flex items-center space-x-2">
-                            <Label className="w-[150px]">Significance Level:</Label>
+                            <Label className="w-[150px]">
+                                Significance Level:
+                            </Label>
                             <div className="w-[75px]">
                                 <Input
                                     id="SigLevel"
                                     type="number"
                                     placeholder=""
                                     value={optionsState.SigLevel ?? ""}
-                                    onChange={(e) => handleChange("SigLevel", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "SigLevel",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsOptionsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsOptionsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

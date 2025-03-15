@@ -1,20 +1,32 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     CorrespondenceStatisticsProps,
-    CorrespondenceStatisticsType
+    CorrespondenceStatisticsType,
 } from "@/models/dimension-reduction/correspondence-analysis/correspondence-analysis";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Checkbox} from "@/components/ui/checkbox";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen, updateFormData, data }: CorrespondenceStatisticsProps) => {
-    const [statisticsState, setStatisticsState] = useState<CorrespondenceStatisticsType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const CorrespondenceStatistics = ({
+    isStatisticsOpen,
+    setIsStatisticsOpen,
+    updateFormData,
+    data,
+}: CorrespondenceStatisticsProps) => {
+    const [statisticsState, setStatisticsState] =
+        useState<CorrespondenceStatisticsType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isStatisticsOpen) {
@@ -22,7 +34,10 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
         }
     }, [isStatisticsOpen, data]);
 
-    const handleChange = (field: keyof CorrespondenceStatisticsType, value: CheckedState | number | null) => {
+    const handleChange = (
+        field: keyof CorrespondenceStatisticsType,
+        value: CheckedState | number | null
+    ) => {
         setStatisticsState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -42,15 +57,19 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
             <Dialog open={isStatisticsOpen} onOpenChange={setIsStatisticsOpen}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Correspondence Analysis: Statistics</DialogTitle>
+                        <DialogTitle>
+                            Correspondence Analysis: Statistics
+                        </DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="CorrTable"
                                 checked={statisticsState.CorrTable}
-                                onCheckedChange={(checked) => handleChange("CorrTable", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("CorrTable", checked)
+                                }
                             />
                             <label
                                 htmlFor="CorrTable"
@@ -63,7 +82,9 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                             <Checkbox
                                 id="RowPoints"
                                 checked={statisticsState.RowPoints}
-                                onCheckedChange={(checked) => handleChange("RowPoints", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("RowPoints", checked)
+                                }
                             />
                             <label
                                 htmlFor="RowPoints"
@@ -76,7 +97,9 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                             <Checkbox
                                 id="ColPoints"
                                 checked={statisticsState.ColPoints}
-                                onCheckedChange={(checked) => handleChange("ColPoints", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("ColPoints", checked)
+                                }
                             />
                             <label
                                 htmlFor="ColPoints"
@@ -89,7 +112,9 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                             <Checkbox
                                 id="PermutationTest"
                                 checked={statisticsState.PermutationTest}
-                                onCheckedChange={(checked) => handleChange("PermutationTest", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("PermutationTest", checked)
+                                }
                             />
                             <label
                                 htmlFor="PermutationTest"
@@ -98,16 +123,22 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                                 Permutation of The Correspondence Table
                             </label>
                         </div>
-                        <div
-                            className="flex items-center space-x-2 pl-6">
-                            <Label className="w-[200px]">Maximum Dimensions:</Label>
+                        <div className="flex items-center space-x-2 pl-6">
+                            <Label className="w-[200px]">
+                                Maximum Dimensions:
+                            </Label>
                             <div className="w-[75px]">
                                 <Input
                                     id="MaxPermutations"
                                     type="number"
                                     placeholder=""
                                     value={statisticsState.MaxPermutations ?? 0}
-                                    onChange={(e) => handleChange("MaxPermutations", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "MaxPermutations",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -115,7 +146,9 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                             <Checkbox
                                 id="RowProfile"
                                 checked={statisticsState.RowProfile}
-                                onCheckedChange={(checked) => handleChange("RowProfile", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("RowProfile", checked)
+                                }
                             />
                             <label
                                 htmlFor="RowProfile"
@@ -128,7 +161,9 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                             <Checkbox
                                 id="ColProfile"
                                 checked={statisticsState.ColProfile}
-                                onCheckedChange={(checked) => handleChange("ColProfile", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("ColProfile", checked)
+                                }
                             />
                             <label
                                 htmlFor="ColProfile"
@@ -143,13 +178,22 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                         >
                             <ResizablePanel defaultSize={100}>
                                 <div className="flex flex-col gap-2 p-2">
-                                    <Label className="font-bold">Correspondence Statistics for</Label>
+                                    <Label className="font-bold">
+                                        Correspondence Statistics for
+                                    </Label>
                                     <div className="grid grid-cols-2 gap-2">
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="StatRowPoints"
-                                                checked={statisticsState.StatRowPoints}
-                                                onCheckedChange={(checked) => handleChange("StatRowPoints", checked)}
+                                                checked={
+                                                    statisticsState.StatRowPoints
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "StatRowPoints",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="StatRowPoints"
@@ -161,8 +205,15 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="StatColPoints"
-                                                checked={statisticsState.StatColPoints}
-                                                onCheckedChange={(checked) => handleChange("StatColPoints", checked)}
+                                                checked={
+                                                    statisticsState.StatColPoints
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "StatColPoints",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="StatColPoints"
@@ -177,10 +228,18 @@ export const CorrespondenceStatistics = ({ isStatisticsOpen, setIsStatisticsOpen
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsStatisticsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsStatisticsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

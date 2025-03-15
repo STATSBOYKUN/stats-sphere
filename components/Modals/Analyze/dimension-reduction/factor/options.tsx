@@ -1,18 +1,38 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {FactorOptionsProps, FactorOptionsType} from "@/models/dimension-reduction/factor/factor";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Input} from "@/components/ui/input";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    FactorOptionsProps,
+    FactorOptionsType,
+} from "@/models/dimension-reduction/factor/factor";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData, data }: FactorOptionsProps) => {
-    const [optionsState, setOptionsState] = useState<FactorOptionsType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const FactorOptions = ({
+    isOptionsOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+}: FactorOptionsProps) => {
+    const [optionsState, setOptionsState] = useState<FactorOptionsType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isOptionsOpen) {
@@ -20,7 +40,10 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
         }
     }, [isOptionsOpen, data]);
 
-    const handleChange = (field: keyof FactorOptionsType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof FactorOptionsType,
+        value: CheckedState | number | string | null
+    ) => {
         setOptionsState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -58,26 +81,43 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                     >
                         <ResizablePanel defaultSize={45}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-bold">Missing Values</Label>
+                                <Label className="font-bold">
+                                    Missing Values
+                                </Label>
                                 <RadioGroup
-                                    value={optionsState.ExcludeListWise ? "ExcludeListWise" : optionsState.ExcludePairWise ? "ExcludePairWise" : "ReplaceMean"}
+                                    value={
+                                        optionsState.ExcludeListWise
+                                            ? "ExcludeListWise"
+                                            : optionsState.ExcludePairWise
+                                            ? "ExcludePairWise"
+                                            : "ReplaceMean"
+                                    }
                                     onValueChange={handleMissGrp}
                                 >
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="ExcludeListWise" id="ExcludeListWise"/>
+                                            <RadioGroupItem
+                                                value="ExcludeListWise"
+                                                id="ExcludeListWise"
+                                            />
                                             <Label htmlFor="ExcludeListWise">
                                                 Exclude Cases List-wise
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="ExcludePairWise" id="ExcludePairWise"/>
+                                            <RadioGroupItem
+                                                value="ExcludePairWise"
+                                                id="ExcludePairWise"
+                                            />
                                             <Label htmlFor="ExcludePairWise">
                                                 Exclude Cases Pair-wise
                                             </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="ReplaceMean" id="ReplaceMean"/>
+                                            <RadioGroupItem
+                                                value="ReplaceMean"
+                                                id="ReplaceMean"
+                                            />
                                             <Label htmlFor="ReplaceMean">
                                                 Replace with Mean
                                             </Label>
@@ -86,15 +126,19 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                                 </RadioGroup>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={55}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-bold">Coefficient Display Format</Label>
+                                <Label className="font-bold">
+                                    Coefficient Display Format
+                                </Label>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="SortSize"
                                         checked={optionsState.SortSize}
-                                        onCheckedChange={(checked) => handleChange("SortSize", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange("SortSize", checked)
+                                        }
                                     />
                                     <label
                                         htmlFor="SortSize"
@@ -107,7 +151,12 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                                     <Checkbox
                                         id="SuppressValues"
                                         checked={optionsState.SuppressValues}
-                                        onCheckedChange={(checked) => handleChange("SuppressValues", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "SuppressValues",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="SuppressValues"
@@ -117,14 +166,24 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                                     </label>
                                 </div>
                                 <div className="flex items-center space-x-2 pl-6">
-                                    <Label className="w-[150px]">Absolute Value below:</Label>
+                                    <Label className="w-[150px]">
+                                        Absolute Value below:
+                                    </Label>
                                     <div className="w-[75px]">
                                         <Input
                                             id="SuppressValuesNum"
                                             type="number"
                                             placeholder=""
-                                            value={optionsState.SuppressValuesNum ?? ""}
-                                            onChange={(e) => handleChange("SuppressValuesNum", Number(e.target.value))}
+                                            value={
+                                                optionsState.SuppressValuesNum ??
+                                                ""
+                                            }
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "SuppressValuesNum",
+                                                    Number(e.target.value)
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -132,10 +191,18 @@ export const FactorOptions = ({ isOptionsOpen, setIsOptionsOpen, updateFormData,
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsOptionsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsOptionsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

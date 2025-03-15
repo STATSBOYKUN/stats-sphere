@@ -1,23 +1,47 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {TreeOptionsMissCostsType, TreeOptionsProfitsType, TreeOptionsProps} from "@/models/classify/tree/tree";
-import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Label} from "@/components/ui/label";
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
-import {ToggleGroupItem} from "@radix-ui/react-toggle-group";
-import {ToggleGroup} from "@/components/ui/toggle-group";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    TreeOptionsMissCostsType,
+    TreeOptionsProfitsType,
+    TreeOptionsProps,
+} from "@/models/classify/tree/tree";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { ToggleGroupItem } from "@radix-ui/react-toggle-group";
+import { ToggleGroup } from "@/components/ui/toggle-group";
 
-export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, data}: TreeOptionsProps) => {
-    const [optionsState, setOptionsState] = useState<TreeOptionsMissCostsType & TreeOptionsProfitsType>({...data});
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const TreeOptions = ({
+    isOptionsOpen,
+    setIsOptionsOpen,
+    updateFormData,
+    data,
+}: TreeOptionsProps) => {
+    const [optionsState, setOptionsState] = useState<
+        TreeOptionsMissCostsType & TreeOptionsProfitsType
+    >({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isOptionsOpen) {
-            setOptionsState({...data});
+            setOptionsState({ ...data });
         }
     }, [isOptionsOpen, data]);
 
@@ -41,7 +65,13 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
 
     const handleContinue = () => {
         Object.entries(optionsState).forEach(([key, value]) => {
-            updateFormData(key as keyof (TreeOptionsMissCostsType | TreeOptionsProfitsType), value);
+            updateFormData(
+                key as keyof (
+                    | TreeOptionsMissCostsType
+                    | TreeOptionsProfitsType
+                ),
+                value
+            );
         });
         setIsOptionsOpen(false);
     };
@@ -54,10 +84,12 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                     <DialogHeader>
                         <DialogTitle>Decision Tree: Options</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <Tabs defaultValue="misscosts" className="sm:min-w-[350px]">
                         <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="misscosts">Missclassification Costs</TabsTrigger>
+                            <TabsTrigger value="misscosts">
+                                Missclassification Costs
+                            </TabsTrigger>
                             <TabsTrigger value="profits">Profits</TabsTrigger>
                         </TabsList>
 
@@ -70,17 +102,29 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                                 <ResizablePanel defaultSize={100}>
                                     <div className="flex flex-col gap-2 p-2">
                                         <RadioGroup
-                                            value={optionsState.EqualCrossCate ? "EqualCrossCate" : optionsState.Custom ? "Custom" : ""}
+                                            value={
+                                                optionsState.EqualCrossCate
+                                                    ? "EqualCrossCate"
+                                                    : optionsState.Custom
+                                                    ? "Custom"
+                                                    : ""
+                                            }
                                             onValueChange={handleMissGrp}
                                         >
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="EqualCrossCate" id="EqualCrossCate"/>
+                                                <RadioGroupItem
+                                                    value="EqualCrossCate"
+                                                    id="EqualCrossCate"
+                                                />
                                                 <Label htmlFor="EqualCrossCate">
                                                     Equal Across Categories
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Custom" id="Custom"/>
+                                                <RadioGroupItem
+                                                    value="Custom"
+                                                    id="Custom"
+                                                />
                                                 <Label htmlFor="Custom">
                                                     Custom
                                                 </Label>
@@ -98,11 +142,15 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                                                     <Table>
                                                         <TableHeader>
                                                             <TableRow>
-                                                                <TableHead>Variables</TableHead>
-                                                                <TableHead className="w-[100px] text-center">Variable
-                                                                    1</TableHead>
-                                                                <TableHead className="w-[100px] text-center">Variable
-                                                                    2</TableHead>
+                                                                <TableHead>
+                                                                    Variables
+                                                                </TableHead>
+                                                                <TableHead className="w-[100px] text-center">
+                                                                    Variable 1
+                                                                </TableHead>
+                                                                <TableHead className="w-[100px] text-center">
+                                                                    Variable 2
+                                                                </TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
@@ -134,24 +182,50 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-2">
-                                            <Label className="font-bold">Fill Matrix</Label>
+                                            <Label className="font-bold">
+                                                Fill Matrix
+                                            </Label>
                                             <ToggleGroup
                                                 type="single"
-                                                value={optionsState.DupLowMatrix ? "DupLowMatrix" : optionsState.DupUppMatrix ? "DupUppMatrix" : "UseAvg"}
+                                                value={
+                                                    optionsState.DupLowMatrix
+                                                        ? "DupLowMatrix"
+                                                        : optionsState.DupUppMatrix
+                                                        ? "DupUppMatrix"
+                                                        : "UseAvg"
+                                                }
                                                 onValueChange={handleMatrixGrp}
                                             >
-                                                <ToggleGroupItem value="DupLowMatrix" aria-label="DupLowMatrix">
-                                                    <Button variant="ghost" size="sm">
+                                                <ToggleGroupItem
+                                                    value="DupLowMatrix"
+                                                    aria-label="DupLowMatrix"
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
                                                         Duplicate Lower Triangle
                                                     </Button>
                                                 </ToggleGroupItem>
-                                                <ToggleGroupItem value="DupUppMatrix" aria-label="DupUppMatrix">
-                                                    <Button variant="ghost" size="sm">
+                                                <ToggleGroupItem
+                                                    value="DupUppMatrix"
+                                                    aria-label="DupUppMatrix"
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
                                                         Duplicate Upper Triangle
                                                     </Button>
                                                 </ToggleGroupItem>
-                                                <ToggleGroupItem value="UseAvg" aria-label="UseAvg">
-                                                    <Button variant="ghost" size="sm">
+                                                <ToggleGroupItem
+                                                    value="UseAvg"
+                                                    aria-label="UseAvg"
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                    >
                                                         Use Average
                                                     </Button>
                                                 </ToggleGroupItem>
@@ -170,17 +244,21 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                             >
                                 <ResizablePanel defaultSize={100}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <RadioGroup
-
-                                        >
+                                        <RadioGroup>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="NoneProfits" id="NoneProfits"/>
+                                                <RadioGroupItem
+                                                    value="NoneProfits"
+                                                    id="NoneProfits"
+                                                />
                                                 <Label htmlFor="NoneProfits">
                                                     None
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="CustomProfits" id="CustomProfits"/>
+                                                <RadioGroupItem
+                                                    value="CustomProfits"
+                                                    id="CustomProfits"
+                                                />
                                                 <Label htmlFor="CustomProfits">
                                                     Custom
                                                 </Label>
@@ -194,10 +272,18 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
-                                                            <TableHead>Variables</TableHead>
-                                                            <TableHead className="w-[100px] text-center">Revenue</TableHead>
-                                                            <TableHead className="w-[100px] text-center">Expense</TableHead>
-                                                            <TableHead className="w-[100px] text-center">Profit</TableHead>
+                                                            <TableHead>
+                                                                Variables
+                                                            </TableHead>
+                                                            <TableHead className="w-[100px] text-center">
+                                                                Revenue
+                                                            </TableHead>
+                                                            <TableHead className="w-[100px] text-center">
+                                                                Expense
+                                                            </TableHead>
+                                                            <TableHead className="w-[100px] text-center">
+                                                                Profit
+                                                            </TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -239,10 +325,18 @@ export const TreeOptions = ({isOptionsOpen, setIsOptionsOpen, updateFormData, da
                         </TabsContent>
                     </Tabs>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsOptionsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsOptionsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

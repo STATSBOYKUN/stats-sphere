@@ -32,7 +32,7 @@ export const HierClusPlots = ({
     const [plotsState, setPlotsState] = useState<HierClusPlotsType>({
         ...data,
     });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isPlotsOpen) {

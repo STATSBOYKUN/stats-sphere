@@ -1,25 +1,44 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {FactorScoresProps, FactorScoresType} from "@/models/dimension-reduction/factor/factor";
-import {Checkbox} from "@/components/ui/checkbox";
-import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    FactorScoresProps,
+    FactorScoresType,
+} from "@/models/dimension-reduction/factor/factor";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const FactorScores = ({isScoresOpen, setIsScoresOpen, updateFormData, data}: FactorScoresProps) => {
-    const [scoresState, setScoresState] = useState<FactorScoresType>({...data});
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const FactorScores = ({
+    isScoresOpen,
+    setIsScoresOpen,
+    updateFormData,
+    data,
+}: FactorScoresProps) => {
+    const [scoresState, setScoresState] = useState<FactorScoresType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isScoresOpen) {
-            setScoresState({...data});
+            setScoresState({ ...data });
         }
     }, [isScoresOpen, data]);
 
-    const handleChange = (field: keyof FactorScoresType, value: CheckedState | null) => {
+    const handleChange = (
+        field: keyof FactorScoresType,
+        value: CheckedState | null
+    ) => {
         setScoresState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -50,13 +69,15 @@ export const FactorScores = ({isScoresOpen, setIsScoresOpen, updateFormData, dat
                     <DialogHeader>
                         <DialogTitle>Factor Analysis: Scores</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="SaveVar"
                                 checked={scoresState.SaveVar}
-                                onCheckedChange={(checked) => handleChange("SaveVar", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("SaveVar", checked)
+                                }
                             />
                             <label
                                 htmlFor="SaveVar"
@@ -72,26 +93,43 @@ export const FactorScores = ({isScoresOpen, setIsScoresOpen, updateFormData, dat
                             >
                                 <ResizablePanel defaultSize={100}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Method</Label>
+                                        <Label className="font-bold">
+                                            Method
+                                        </Label>
                                         <RadioGroup
-                                            value={scoresState.Regression ? "Regression" : scoresState.Bartlett ? "Bartlett" : "Anderson"}
+                                            value={
+                                                scoresState.Regression
+                                                    ? "Regression"
+                                                    : scoresState.Bartlett
+                                                    ? "Bartlett"
+                                                    : "Anderson"
+                                            }
                                             onValueChange={handleMethodGrp}
                                         >
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Regression" id="Regression"/>
+                                                    <RadioGroupItem
+                                                        value="Regression"
+                                                        id="Regression"
+                                                    />
                                                     <Label htmlFor="Regression">
                                                         Regression
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Bartlett" id="Bartlett"/>
+                                                    <RadioGroupItem
+                                                        value="Bartlett"
+                                                        id="Bartlett"
+                                                    />
                                                     <Label htmlFor="Bartlett">
                                                         Bartlett
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Anderson" id="Anderson"/>
+                                                    <RadioGroupItem
+                                                        value="Anderson"
+                                                        id="Anderson"
+                                                    />
                                                     <Label htmlFor="Anderson">
                                                         Anderson
                                                     </Label>
@@ -106,7 +144,9 @@ export const FactorScores = ({isScoresOpen, setIsScoresOpen, updateFormData, dat
                             <Checkbox
                                 id="DisplayFactor"
                                 checked={scoresState.DisplayFactor}
-                                onCheckedChange={(checked) => handleChange("DisplayFactor", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("DisplayFactor", checked)
+                                }
                             />
                             <label
                                 htmlFor="DisplayFactor"
@@ -117,10 +157,18 @@ export const FactorScores = ({isScoresOpen, setIsScoresOpen, updateFormData, dat
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsScoresOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsScoresOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

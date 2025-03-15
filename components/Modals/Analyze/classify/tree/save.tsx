@@ -1,17 +1,32 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {TreeSaveProps, TreeSaveType} from "@/models/classify/tree/tree";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Checkbox} from "@/components/ui/checkbox";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { TreeSaveProps, TreeSaveType } from "@/models/classify/tree/tree";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {Input} from "@/components/ui/input";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Input } from "@/components/ui/input";
 
-export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: TreeSaveProps) => {
+export const TreeSave = ({
+    isSaveOpen,
+    setIsSaveOpen,
+    updateFormData,
+    data,
+}: TreeSaveProps) => {
     const [saveState, setSaveState] = useState<TreeSaveType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isSaveOpen) {
@@ -19,7 +34,10 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
         }
     }, [isSaveOpen, data]);
 
-    const handleChange = (field: keyof TreeSaveType, value: CheckedState | string | number | string | null) => {
+    const handleChange = (
+        field: keyof TreeSaveType,
+        value: CheckedState | string | number | string | null
+    ) => {
         setSaveState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -48,12 +66,19 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                     >
                         <ResizablePanel defaultSize={45}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-semibold">Saved Variables</Label>
+                                <Label className="font-semibold">
+                                    Saved Variables
+                                </Label>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="TerminalNode"
                                         checked={saveState.TerminalNode}
-                                        onCheckedChange={(checked) => handleChange("TerminalNode", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "TerminalNode",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="TerminalNode"
@@ -66,7 +91,12 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                     <Checkbox
                                         id="PredictedValue"
                                         checked={saveState.PredictedValue}
-                                        onCheckedChange={(checked) => handleChange("PredictedValue", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "PredictedValue",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="PredictedValue"
@@ -78,8 +108,15 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="PredictedProbabilities"
-                                        checked={saveState.PredictedProbabilities}
-                                        onCheckedChange={(checked) => handleChange("PredictedProbabilities", checked)}
+                                        checked={
+                                            saveState.PredictedProbabilities
+                                        }
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "PredictedProbabilities",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="PredictedProbabilities"
@@ -92,7 +129,12 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                     <Checkbox
                                         id="SampleAssign"
                                         checked={saveState.SampleAssign}
-                                        onCheckedChange={(checked) => handleChange("SampleAssign", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "SampleAssign",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="SampleAssign"
@@ -103,15 +145,22 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                 </div>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={55}>
                             <div className="flex flex-col gap-2 p-2">
-                                <Label className="font-semibold">Export Tree Model as XML</Label>
+                                <Label className="font-semibold">
+                                    Export Tree Model as XML
+                                </Label>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="TrainingSample"
                                         checked={saveState.TrainingSample}
-                                        onCheckedChange={(checked) => handleChange("TrainingSample", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "TrainingSample",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="TrainingSample"
@@ -126,14 +175,21 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                         id="TrainingFile"
                                         type="file"
                                         placeholder=""
-                                        onChange={(e) => handleChange("TrainingFile", Number(e.target.value))}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                "TrainingFile",
+                                                Number(e.target.value)
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="TestSample"
                                         checked={saveState.TestSample}
-                                        onCheckedChange={(checked) => handleChange("TestSample", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange("TestSample", checked)
+                                        }
                                     />
                                     <label
                                         htmlFor="TestSample"
@@ -148,17 +204,30 @@ export const TreeSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: Tr
                                         id="TestSampleFile"
                                         type="file"
                                         placeholder=""
-                                        onChange={(e) => handleChange("TestSampleFile", Number(e.target.value))}
+                                        onChange={(e) =>
+                                            handleChange(
+                                                "TestSampleFile",
+                                                Number(e.target.value)
+                                            )
+                                        }
                                     />
                                 </div>
                             </div>
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsSaveOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsSaveOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

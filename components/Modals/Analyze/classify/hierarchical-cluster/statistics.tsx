@@ -27,7 +27,7 @@ export const HierClusStatistics = ({
 }: HierClusStatisticsProps) => {
     const [statisticsState, setStatisticsState] =
         useState<HierClusStatisticsType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isStatisticsOpen) {

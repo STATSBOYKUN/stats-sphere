@@ -1,14 +1,29 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {DiscriminantSetValueProps, DiscriminantSetValueType} from "@/models/classify/discriminant/discriminant";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    DiscriminantSetValueProps,
+    DiscriminantSetValueType,
+} from "@/models/classify/discriminant/discriminant";
 
-export const DiscriminantSetValue = ({ isSetValueOpen, setIsSetValueOpen, updateFormData, data }: DiscriminantSetValueProps) => {
-    const [setValueState, setSetValueState] = useState<DiscriminantSetValueType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const DiscriminantSetValue = ({
+    isSetValueOpen,
+    setIsSetValueOpen,
+    updateFormData,
+    data,
+}: DiscriminantSetValueProps) => {
+    const [setValueState, setSetValueState] =
+        useState<DiscriminantSetValueType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isSetValueOpen) {
@@ -22,7 +37,10 @@ export const DiscriminantSetValue = ({ isSetValueOpen, setIsSetValueOpen, update
         setIsContinueDisabled(!Value);
     }, [setValueState]);
 
-    const handleChange = (field: keyof DiscriminantSetValueType, value: number) => {
+    const handleChange = (
+        field: keyof DiscriminantSetValueType,
+        value: number
+    ) => {
         setSetValueState((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -48,15 +66,25 @@ export const DiscriminantSetValue = ({ isSetValueOpen, setIsSetValueOpen, update
                             id="Value"
                             type="number"
                             value={setValueState.Value ?? ""}
-                            onChange={(e) => handleChange("Value", Number(e.target.value))}
+                            onChange={(e) =>
+                                handleChange("Value", Number(e.target.value))
+                            }
                             placeholder=""
                         />
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsSetValueOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsSetValueOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

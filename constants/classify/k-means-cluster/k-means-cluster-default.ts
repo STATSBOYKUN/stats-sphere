@@ -1,15 +1,17 @@
 import {
     KMeansClusterMainType,
-    KMeansClusterIterateType, KMeansClusterOptionsType,
+    KMeansClusterIterateType,
+    KMeansClusterOptionsType,
     KMeansClusterSaveType,
-    KMeansClusterType
+    KMeansClusterType,
 } from "@/models/classify/k-means-cluster/k-means-cluster";
 
 export const KMeansClusterMainDefault: KMeansClusterMainType = {
     TargetVar: null,
     CaseTarget: null,
-    IterateClassify: false,
+    IterateClassify: true,
     ClassifyOnly: false,
+    Cluster: 2,
     OpenDataset: false,
     ExternalDatafile: false,
     NewDataset: false,
@@ -18,14 +20,13 @@ export const KMeansClusterMainDefault: KMeansClusterMainType = {
     WriteFinal: false,
     OpenDatasetMethod: null,
     NewData: null,
-    Cluster: null,
     InitialData: null,
     FinalData: null,
 };
 
 export const KMeansClusterIterateDefault: KMeansClusterIterateType = {
-    MaximumIterations: null,
-    ConvergenceCriterion: null,
+    MaximumIterations: 10,
+    ConvergenceCriterion: 0,
     UseRunningMeans: false,
 };
 
@@ -35,10 +36,10 @@ export const KMeansClusterSaveDefault: KMeansClusterSaveType = {
 };
 
 export const KMeansClusterOptionsDefault: KMeansClusterOptionsType = {
-    InitialCluster: false,
+    InitialCluster: true,
     ANOVA: false,
     ClusterInfo: false,
-    ExcludeListWise: false,
+    ExcludeListWise: true,
     ExcludePairWise: false,
 };
 

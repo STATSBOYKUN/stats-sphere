@@ -1,20 +1,37 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaCatpcaOutputProps,
-    OptScaCatpcaOutputType
+    OptScaCatpcaOutputType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Checkbox} from "@/components/ui/checkbox";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {Input} from "@/components/ui/input";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Input } from "@/components/ui/input";
 
-export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormData, data }: OptScaCatpcaOutputProps) => {
-    const [outputState, setOutputState] = useState<OptScaCatpcaOutputType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const OptScaCatpcaOutput = ({
+    isOutputOpen,
+    setIsOutputOpen,
+    updateFormData,
+    data,
+}: OptScaCatpcaOutputProps) => {
+    const [outputState, setOutputState] = useState<OptScaCatpcaOutputType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isOutputOpen) {
@@ -22,7 +39,10 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
         }
     }, [isOutputOpen, data]);
 
-    const handleChange = (field: keyof OptScaCatpcaOutputType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaCatpcaOutputType,
+        value: CheckedState | number | string | null
+    ) => {
         setOutputState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -42,7 +62,9 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
             <Dialog open={isOutputOpen} onOpenChange={setIsOutputOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Categorical Principal Components: Output</DialogTitle>
+                        <DialogTitle>
+                            Categorical Principal Components: Output
+                        </DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <ResizablePanelGroup
@@ -57,8 +79,15 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="ObjectScores"
-                                                checked={outputState.ObjectScores}
-                                                onCheckedChange={(checked) => handleChange("ObjectScores", checked)}
+                                                checked={
+                                                    outputState.ObjectScores
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "ObjectScores",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="ObjectScores"
@@ -70,8 +99,15 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="ComponentLoadings"
-                                                checked={outputState.ComponentLoadings}
-                                                onCheckedChange={(checked) => handleChange("ComponentLoadings", checked)}
+                                                checked={
+                                                    outputState.ComponentLoadings
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "ComponentLoadings",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="ComponentLoadings"
@@ -84,7 +120,12 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                             <Checkbox
                                                 id="SortBySize"
                                                 checked={outputState.SortBySize}
-                                                onCheckedChange={(checked) => handleChange("SortBySize", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "SortBySize",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="SortBySize"
@@ -96,8 +137,15 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="IterationHistory"
-                                                checked={outputState.IterationHistory}
-                                                onCheckedChange={(checked) => handleChange("IterationHistory", checked)}
+                                                checked={
+                                                    outputState.IterationHistory
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "IterationHistory",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="IterationHistory"
@@ -111,34 +159,55 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="CorreOriginalVars"
-                                                checked={outputState.CorreOriginalVars}
-                                                onCheckedChange={(checked) => handleChange("CorreOriginalVars", checked)}
+                                                checked={
+                                                    outputState.CorreOriginalVars
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "CorreOriginalVars",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="CorreOriginalVars"
                                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                             >
-                                                Correlation of Original Variables
+                                                Correlation of Original
+                                                Variables
                                             </label>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="CorreTransVars"
-                                                checked={outputState.CorreTransVars}
-                                                onCheckedChange={(checked) => handleChange("CorreTransVars", checked)}
+                                                checked={
+                                                    outputState.CorreTransVars
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "CorreTransVars",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="CorreTransVars"
                                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                             >
-                                                Correlation of Transformed Variables
+                                                Correlation of Transformed
+                                                Variables
                                             </label>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="Variance"
                                                 checked={outputState.Variance}
-                                                onCheckedChange={(checked) => handleChange("Variance", checked)}
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "Variance",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="Variance"
@@ -151,20 +220,30 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                 </div>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={70}>
                             <ResizablePanelGroup direction="horizontal">
                                 <ResizablePanel defaultSize={50}>
                                     <div className="flex flex-col gap-8 p-2">
                                         <div className="w-full">
-                                            <Label>Quantified Variables: </Label>
+                                            <Label>
+                                                Quantified Variables:{" "}
+                                            </Label>
                                             <Input
                                                 id="QuantifiedVars"
                                                 type="text"
                                                 className="w-full min-h-[100px]"
                                                 placeholder=""
-                                                value={outputState.QuantifiedVars ?? ""}
-                                                onChange={(e) => handleChange("QuantifiedVars", e.target.value)}
+                                                value={
+                                                    outputState.QuantifiedVars ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "QuantifiedVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="w-full">
@@ -174,58 +253,107 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                                                 type="text"
                                                 className="w-full min-h-[100px]"
                                                 placeholder=""
-                                                value={outputState.LabelingVars ?? ""}
-                                                onChange={(e) => handleChange("LabelingVars", e.target.value)}
+                                                value={
+                                                    outputState.LabelingVars ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "LabelingVars",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={50}>
                                     <div className="flex flex-col gap-2 p-2">
                                         <div className="w-full">
-                                            <Label>Category Quantifications: </Label>
+                                            <Label>
+                                                Category Quantifications:{" "}
+                                            </Label>
                                             <Input
                                                 id="CatQuantifications"
                                                 type="text"
                                                 className="w-full min-h-[35px]"
                                                 placeholder=""
-                                                value={outputState.CatQuantifications ?? ""}
-                                                onChange={(e) => handleChange("CatQuantifications", e.target.value)}
+                                                value={
+                                                    outputState.CatQuantifications ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "CatQuantifications",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <Label>Descriptive Statistics: </Label>
+                                            <Label>
+                                                Descriptive Statistics:{" "}
+                                            </Label>
                                             <Input
                                                 id="DescStats"
                                                 type="text"
                                                 className="w-full min-h-[35px]"
                                                 placeholder=""
-                                                value={outputState.DescStats ?? ""}
-                                                onChange={(e) => handleChange("DescStats", e.target.value)}
+                                                value={
+                                                    outputState.DescStats ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "DescStats",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
-                                        <Label className="font-bold">Object Scores Options</Label>
+                                        <Label className="font-bold">
+                                            Object Scores Options
+                                        </Label>
                                         <div className="w-full">
-                                            <Label>Include Categories of: </Label>
+                                            <Label>
+                                                Include Categories of:{" "}
+                                            </Label>
                                             <Input
                                                 id="ObjScoresIncludeCat"
                                                 type="text"
                                                 className="w-full min-h-[35px]"
                                                 placeholder=""
-                                                value={outputState.ObjScoresIncludeCat ?? ""}
-                                                onChange={(e) => handleChange("ObjScoresIncludeCat", e.target.value)}
+                                                value={
+                                                    outputState.ObjScoresIncludeCat ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "ObjScoresIncludeCat",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                         <div className="w-full">
-                                            <Label>Label Object Scores By: </Label>
+                                            <Label>
+                                                Label Object Scores By:{" "}
+                                            </Label>
                                             <Input
                                                 id="ObjScoresLabelBy"
                                                 type="text"
                                                 className="w-full min-h-[25px]"
                                                 placeholder=""
-                                                value={outputState.ObjScoresLabelBy ?? ""}
-                                                onChange={(e) => handleChange("ObjScoresLabelBy", e.target.value)}
+                                                value={
+                                                    outputState.ObjScoresLabelBy ??
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "ObjScoresLabelBy",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
@@ -234,10 +362,18 @@ export const OptScaCatpcaOutput = ({ isOutputOpen, setIsOutputOpen, updateFormDa
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsOutputOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsOutputOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

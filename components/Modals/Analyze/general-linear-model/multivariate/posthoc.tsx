@@ -1,24 +1,48 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     MultivariatePostHocProps,
-    MultivariatePostHocType
+    MultivariatePostHocType,
 } from "@/models/general-linear-model/multivariate/multivariate";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {BUILDTERMMETHOD} from "@/constants/general-linear-model/multivariate/multivariate-method";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { BUILDTERMMETHOD } from "@/constants/general-linear-model/multivariate/multivariate-method";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFormData, data }: MultivariatePostHocProps) => {
-    const [postHocState, setPostHocState] = useState<MultivariatePostHocType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const MultivariatePostHoc = ({
+    isPostHocOpen,
+    setIsPostHocOpen,
+    updateFormData,
+    data,
+}: MultivariatePostHocProps) => {
+    const [postHocState, setPostHocState] = useState<MultivariatePostHocType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     const capitalize = (str: string) => {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -30,7 +54,10 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
         }
     }, [isPostHocOpen, data]);
 
-    const handleChange = (field: keyof MultivariatePostHocType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof MultivariatePostHocType,
+        value: CheckedState | number | string | null
+    ) => {
         setPostHocState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -70,32 +97,52 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         type="text"
                                                         className="w-full min-h-[175px]"
                                                         placeholder=""
-                                                        value={postHocState.SrcList ?? ""}
-                                                        onChange={(e) => handleChange("SrcList", e.target.value)}
+                                                        value={
+                                                            postHocState.SrcList ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "SrcList",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </ResizablePanel>
-                                            <ResizableHandle withHandle/>
+                                            <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Post Hoc Tests for: </Label>
+                                                    <Label>
+                                                        Post Hoc Tests for:{" "}
+                                                    </Label>
                                                     <Input
                                                         id="FixFactorVars"
                                                         type="text"
                                                         className="w-full min-h-[175px]"
                                                         placeholder=""
-                                                        value={postHocState.FixFactorVars ?? ""}
-                                                        onChange={(e) => handleChange("FixFactorVars", e.target.value)}
+                                                        value={
+                                                            postHocState.FixFactorVars ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "FixFactorVars",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </ResizablePanel>
                                         </ResizablePanelGroup>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={45}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Equal Variances Assumed</Label>
+                                        <Label className="font-bold">
+                                            Equal Variances Assumed
+                                        </Label>
                                         <ResizablePanelGroup direction="horizontal">
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="grid grid-cols-2 gap-2 p-2">
@@ -103,8 +150,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Lsd"
-                                                                checked={postHocState.Lsd}
-                                                                onCheckedChange={(checked) => handleChange("Lsd", checked)}
+                                                                checked={
+                                                                    postHocState.Lsd
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Lsd",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Lsd"
@@ -116,8 +172,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Bonfe"
-                                                                checked={postHocState.Bonfe}
-                                                                onCheckedChange={(checked) => handleChange("Bonfe", checked)}
+                                                                checked={
+                                                                    postHocState.Bonfe
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Bonfe",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Bonfe"
@@ -129,8 +194,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Sidak"
-                                                                checked={postHocState.Sidak}
-                                                                onCheckedChange={(checked) => handleChange("Sidak", checked)}
+                                                                checked={
+                                                                    postHocState.Sidak
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Sidak",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Sidak"
@@ -142,8 +216,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Scheffe"
-                                                                checked={postHocState.Scheffe}
-                                                                onCheckedChange={(checked) => handleChange("Scheffe", checked)}
+                                                                checked={
+                                                                    postHocState.Scheffe
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Scheffe",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Scheffe"
@@ -155,8 +238,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Regwf"
-                                                                checked={postHocState.Regwf}
-                                                                onCheckedChange={(checked) => handleChange("Regwf", checked)}
+                                                                checked={
+                                                                    postHocState.Regwf
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Regwf",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Regwf"
@@ -168,8 +260,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Regwq"
-                                                                checked={postHocState.Regwq}
-                                                                onCheckedChange={(checked) => handleChange("Regwq", checked)}
+                                                                checked={
+                                                                    postHocState.Regwq
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Regwq",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Regwq"
@@ -183,8 +284,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Snk"
-                                                                checked={postHocState.Snk}
-                                                                onCheckedChange={(checked) => handleChange("Snk", checked)}
+                                                                checked={
+                                                                    postHocState.Snk
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Snk",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Snk"
@@ -196,8 +306,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Tu"
-                                                                checked={postHocState.Tu}
-                                                                onCheckedChange={(checked) => handleChange("Tu", checked)}
+                                                                checked={
+                                                                    postHocState.Tu
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Tu",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Tu"
@@ -209,8 +328,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Tub"
-                                                                checked={postHocState.Tub}
-                                                                onCheckedChange={(checked) => handleChange("Tub", checked)}
+                                                                checked={
+                                                                    postHocState.Tub
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Tub",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Tub"
@@ -222,8 +350,17 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Dun"
-                                                                checked={postHocState.Dun}
-                                                                onCheckedChange={(checked) => handleChange("Dun", checked)}
+                                                                checked={
+                                                                    postHocState.Dun
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Dun",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Dun"
@@ -235,21 +372,40 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Hoc"
-                                                                checked={postHocState.Hoc}
-                                                                onCheckedChange={(checked) => handleChange("Hoc", checked)}
+                                                                checked={
+                                                                    postHocState.Hoc
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Hoc",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Hoc"
                                                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                                             >
-                                                                Hochberg&apos;s GT2
+                                                                Hochberg&apos;s
+                                                                GT2
                                                             </label>
                                                         </div>
                                                         <div className="flex items-center space-x-2">
                                                             <Checkbox
                                                                 id="Gabriel"
-                                                                checked={postHocState.Gabriel}
-                                                                onCheckedChange={(checked) => handleChange("Gabriel", checked)}
+                                                                checked={
+                                                                    postHocState.Gabriel
+                                                                }
+                                                                onCheckedChange={(
+                                                                    checked
+                                                                ) =>
+                                                                    handleChange(
+                                                                        "Gabriel",
+                                                                        checked
+                                                                    )
+                                                                }
                                                             />
                                                             <label
                                                                 htmlFor="Gabriel"
@@ -261,14 +417,23 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
-                                            <ResizableHandle/>
+                                            <ResizableHandle />
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <div className="flex items-center space-x-2">
                                                         <Checkbox
                                                             id="Waller"
-                                                            checked={postHocState.Waller}
-                                                            onCheckedChange={(checked) => handleChange("Waller", checked)}
+                                                            checked={
+                                                                postHocState.Waller
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked
+                                                            ) =>
+                                                                handleChange(
+                                                                    "Waller",
+                                                                    checked
+                                                                )
+                                                            }
                                                         />
                                                         <label
                                                             htmlFor="Waller"
@@ -278,22 +443,46 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         </label>
                                                     </div>
                                                     <div className="flex items-center space-x-2 pl-6">
-                                                        <Label className="w-[150px]">Type I/Type II Error Ratio:</Label>
+                                                        <Label className="w-[150px]">
+                                                            Type I/Type II Error
+                                                            Ratio:
+                                                        </Label>
                                                         <div className="w-[75px]">
                                                             <Input
                                                                 id="ErrorRatio"
                                                                 type="number"
                                                                 placeholder=""
-                                                                value={postHocState.ErrorRatio ?? ""}
-                                                                onChange={(e) => handleChange("ErrorRatio", Number(e.target.value))}
+                                                                value={
+                                                                    postHocState.ErrorRatio ??
+                                                                    ""
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleChange(
+                                                                        "ErrorRatio",
+                                                                        Number(
+                                                                            e
+                                                                                .target
+                                                                                .value
+                                                                        )
+                                                                    )
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center space-x-2">
                                                         <Checkbox
                                                             id="Dunnett"
-                                                            checked={postHocState.Dunnett}
-                                                            onCheckedChange={(checked) => handleChange("Dunnett", checked)}
+                                                            checked={
+                                                                postHocState.Dunnett
+                                                            }
+                                                            onCheckedChange={(
+                                                                checked
+                                                            ) =>
+                                                                handleChange(
+                                                                    "Dunnett",
+                                                                    checked
+                                                                )
+                                                            }
                                                         />
                                                         <label
                                                             htmlFor="Dunnett"
@@ -303,45 +492,80 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                         </label>
                                                     </div>
                                                     <div className="flex items-center space-x-2 pl-6">
-                                                        <Label className="w-[150px]">Category Control:</Label>
+                                                        <Label className="w-[150px]">
+                                                            Category Control:
+                                                        </Label>
                                                         <Select
-                                                            value={postHocState.CategoryMethod ?? ""}
-                                                            onValueChange={(value) => handleChange("CategoryMethod", value)}
+                                                            value={
+                                                                postHocState.CategoryMethod ??
+                                                                ""
+                                                            }
+                                                            onValueChange={(
+                                                                value
+                                                            ) =>
+                                                                handleChange(
+                                                                    "CategoryMethod",
+                                                                    value
+                                                                )
+                                                            }
                                                         >
                                                             <SelectTrigger>
-                                                                <SelectValue/>
+                                                                <SelectValue />
                                                             </SelectTrigger>
-                                                            <SelectContent
-                                                                className="w-[150px]"
-                                                            >
+                                                            <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {BUILDTERMMETHOD.map((method, index) => (
-                                                                        <SelectItem key={index}
-                                                                                    value={method}>{capitalize(method) + "'s Method"}</SelectItem>
-                                                                    ))}
+                                                                    {BUILDTERMMETHOD.map(
+                                                                        (
+                                                                            method,
+                                                                            index
+                                                                        ) => (
+                                                                            <SelectItem
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                value={
+                                                                                    method
+                                                                                }
+                                                                            >
+                                                                                {capitalize(
+                                                                                    method
+                                                                                ) +
+                                                                                    "'s Method"}
+                                                                            </SelectItem>
+                                                                        )
+                                                                    )}
                                                                 </SelectGroup>
                                                             </SelectContent>
                                                         </Select>
                                                     </div>
-                                                    <Label className="font-bold">Test</Label>
-                                                    <RadioGroup
-
-                                                    >
+                                                    <Label className="font-bold">
+                                                        Test
+                                                    </Label>
+                                                    <RadioGroup>
                                                         <div className="grid grid-cols-3 gap-2">
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="Twosided" id="Twosided"/>
+                                                                <RadioGroupItem
+                                                                    value="Twosided"
+                                                                    id="Twosided"
+                                                                />
                                                                 <Label htmlFor="Twosided">
                                                                     2-Sided
                                                                 </Label>
                                                             </div>
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="LtControl" id="LtControl"/>
+                                                                <RadioGroupItem
+                                                                    value="LtControl"
+                                                                    id="LtControl"
+                                                                />
                                                                 <Label htmlFor="LtControl">
                                                                     &lt; Control
                                                                 </Label>
                                                             </div>
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="GtControl" id="GtControl"/>
+                                                                <RadioGroupItem
+                                                                    value="GtControl"
+                                                                    id="GtControl"
+                                                                />
                                                                 <Label htmlFor="GtControl">
                                                                     &gt; Control
                                                                 </Label>
@@ -353,16 +577,25 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                         </ResizablePanelGroup>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={10}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Equal Variances Not Assumed</Label>
+                                        <Label className="font-bold">
+                                            Equal Variances Not Assumed
+                                        </Label>
                                         <div className="grid grid-cols-4 gap-2">
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="Tam"
                                                     checked={postHocState.Tam}
-                                                    onCheckedChange={(checked) => handleChange("Tam", checked)}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Tam",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Tam"
@@ -375,7 +608,14 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                 <Checkbox
                                                     id="Dunt"
                                                     checked={postHocState.Dunt}
-                                                    onCheckedChange={(checked) => handleChange("Dunt", checked)}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Dunt",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Dunt"
@@ -388,7 +628,14 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                 <Checkbox
                                                     id="Games"
                                                     checked={postHocState.Games}
-                                                    onCheckedChange={(checked) => handleChange("Games", checked)}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Games",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Games"
@@ -401,7 +648,14 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                                                 <Checkbox
                                                     id="Dunc"
                                                     checked={postHocState.Dunc}
-                                                    onCheckedChange={(checked) => handleChange("Dunc", checked)}
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Dunc",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Dunc"
@@ -417,10 +671,18 @@ export const MultivariatePostHoc = ({ isPostHocOpen, setIsPostHocOpen, updateFor
                         </ScrollArea>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsPostHocOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsPostHocOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

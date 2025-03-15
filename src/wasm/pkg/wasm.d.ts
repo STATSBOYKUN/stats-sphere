@@ -1,15 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
-export function mse(data: Float64Array, forecast: Float64Array): number;
-export function rmse(data: Float64Array, forecast: Float64Array): number;
-export function mae(data: Float64Array, forecast: Float64Array): number;
-export function mpe(data: Float64Array, forecast: Float64Array): number;
-export function mape(data: Float64Array, forecast: Float64Array): number;
-export function start(): void;
 export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
-export function first_difference(data: Float64Array): Float64Array;
-export function second_difference(data: Float64Array): Float64Array;
-export function seasonal_difference(data: Float64Array, season: number): Float64Array;
 /**
  * Perform hierarchical clustering analysis from JavaScript
  *
@@ -21,10 +12,6 @@ export function seasonal_difference(data: Float64Array, season: number): Float64
  * * Result object with analysis data or error
  */
 export function perform_analysis(data_json: any, config_json: any): any;
-/**
- * WASM Binding: Parse SPSS-style configuration into internal format
- */
-export function parse_clustering_config(config_json: any): any;
 /**
  * Standardize data from JavaScript
  *
@@ -59,6 +46,19 @@ export function handle_missing_values(data_json: any, strategy_str: string): any
  * * Imputed data array
  */
 export function impute_missing_values(data_json: any, method: string): any;
+export function start(): void;
+export function mse(data: Float64Array, forecast: Float64Array): number;
+export function rmse(data: Float64Array, forecast: Float64Array): number;
+export function mae(data: Float64Array, forecast: Float64Array): number;
+export function mpe(data: Float64Array, forecast: Float64Array): number;
+export function mape(data: Float64Array, forecast: Float64Array): number;
+export function first_difference(data: Float64Array): Float64Array;
+export function second_difference(data: Float64Array): Float64Array;
+export function seasonal_difference(data: Float64Array, season: number): Float64Array;
+/**
+ * WASM Binding: Parse SPSS-style configuration into internal format
+ */
+export function parse_clustering_config(config_json: any): any;
 export class Autocorrelation {
   free(): void;
   constructor(data: Float64Array, data_header: string, lag: number);
@@ -297,6 +297,166 @@ export class HierarchicalClusteringWasm {
    */
   get_warnings(): any;
 }
+/**
+ * WASM bindings for K-Means clustering.
+ */
+export class KMeansClusteringWasm {
+  free(): void;
+  /**
+   * Create a new K-Means clustering instance.
+   *
+   * # Arguments
+   * * `temp_data` - Configuration settings (JsValue)
+   * * `sliced_data_for_target` - Target data (JsValue)
+   * * `sliced_data_for_case_target` - Case target data (JsValue)
+   * * `var_defs_for_target` - Variable definitions for targets (JsValue)
+   * * `var_defs_for_case_target` - Variable definitions for case targets (JsValue)
+   *
+   * # Returns
+   * * `Result<KMeansClusteringWasm, JsValue>` - New instance or error
+   */
+  constructor(temp_data: any, sliced_data_for_target: any, sliced_data_for_case_target: any, var_defs_for_target: any, var_defs_for_case_target: any);
+  /**
+   * Perform K-Means clustering analysis.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Clustering results as JS object or error
+   */
+  perform_analysis(): any;
+  /**
+   * Get initial cluster centers.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Initial centers as JS array or error
+   */
+  get_initial_centers(): any;
+  /**
+   * Get final cluster centers.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Final centers as JS array or error
+   */
+  get_final_centers(): any;
+  /**
+   * Get iteration history directly using serde_wasm_bindgen.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Iteration changes as JS array using direct conversion
+   */
+  get_iterations_direct(): any;
+  /**
+   * Get iteration history in a more detailed format.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Iteration history with details
+   */
+  get_iterations_detailed(): any;
+  /**
+   * Get iteration history table formatted as in SPSS output.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Iteration table as JS object or error
+   */
+  get_iteration_history_table(): any;
+  /**
+   * Get cluster membership for each data point.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Cluster assignments as JS array or error
+   */
+  get_cluster_membership(): any;
+  /**
+   * Get distances from each point to its cluster center.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Distances as JS array or error
+   */
+  get_distances(): any;
+  /**
+   * Get the number of data points in each cluster.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Cluster sizes as JS array or error
+   */
+  get_cluster_sizes(): any;
+  /**
+   * Get ANOVA statistics if available.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
+   */
+  get_anova_table(): any;
+  /**
+   * Get ANOVA table formatted as in SPSS output.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
+   */
+  get_anova_table_formatted(): any;
+  /**
+   * Get variable names used in clustering.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Variable names as JS array or error
+   */
+  get_variable_names(): any;
+  /**
+   * Get number of iterations performed.
+   *
+   * # Returns
+   * * `usize` - Number of iterations
+   */
+  get_iteration_count(): number;
+  /**
+   * Get count of missing values encountered.
+   *
+   * # Returns
+   * * `usize` - Number of missing values
+   */
+  get_missing_count(): number;
+  /**
+   * Get all warnings accumulated during processing.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Warnings as JS array or error
+   */
+  get_warnings(): any;
+  /**
+   * Get the complete clustering results.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Complete clustering results as JS object or error
+   */
+  get_results(): any;
+  /**
+   * Get the number of cases in each cluster.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Case statistics as JS object or error
+   */
+  get_case_statistics(): any;
+  /**
+   * Get specific case counts table formatted as in SPSS output.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Case counts table as JS object or error
+   */
+  get_case_counts_table(): any;
+  /**
+   * Get cluster membership table formatted as in SPSS output.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Cluster membership table as JS object or error
+   */
+  get_cluster_membership_table(): any;
+  /**
+   * Get distances between final cluster centers formatted as in SPSS output.
+   *
+   * # Returns
+   * * `Result<JsValue, JsValue>` - Distance matrix as JS object or error
+   */
+  get_distance_matrix_table(): any;
+}
 export class Smoothing {
   free(): void;
   constructor(data_header: string, data: Float64Array, time_header: string, time: string[]);
@@ -322,39 +482,6 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_decomposition_free: (a: number, b: number) => void;
-  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
-  readonly decomposition_get_data: (a: number) => [number, number];
-  readonly decomposition_get_data_header: (a: number) => [number, number];
-  readonly decomposition_get_time: (a: number) => [number, number];
-  readonly decomposition_get_time_header: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
-  readonly decomposition_get_trend_component: (a: number) => [number, number];
-  readonly decomposition_get_irregular_component: (a: number) => [number, number];
-  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
-  readonly decomposition_get_period: (a: number) => number;
-  readonly decomposition_get_trend_equation: (a: number) => [number, number];
-  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
-  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
-  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
-  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
-  readonly mse: (a: number, b: number, c: number, d: number) => number;
-  readonly rmse: (a: number, b: number, c: number, d: number) => number;
-  readonly mae: (a: number, b: number, c: number, d: number) => number;
-  readonly mpe: (a: number, b: number, c: number, d: number) => number;
-  readonly mape: (a: number, b: number, c: number, d: number) => number;
-  readonly start: () => void;
   readonly __wbg_smoothing_free: (a: number, b: number) => void;
   readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly smoothing_get_data_header: (a: number) => [number, number];
@@ -404,11 +531,28 @@ export interface InitOutput {
   readonly autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
   readonly autocorrelation_df_ljung_box: (a: number) => [number, number];
   readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
-  readonly first_difference: (a: number, b: number) => [number, number];
-  readonly second_difference: (a: number, b: number) => [number, number];
-  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
-  readonly perform_analysis: (a: any, b: any) => [number, number, number];
-  readonly parse_clustering_config: (a: any) => [number, number, number];
+  readonly __wbg_kmeansclusteringwasm_free: (a: number, b: number) => void;
+  readonly kmeansclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
+  readonly kmeansclusteringwasm_perform_analysis: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_initial_centers: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_final_centers: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iterations_direct: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iterations_detailed: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iteration_history_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_membership: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_distances: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_sizes: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_anova_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_anova_table_formatted: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_variable_names: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iteration_count: (a: number) => number;
+  readonly kmeansclusteringwasm_get_missing_count: (a: number) => number;
+  readonly kmeansclusteringwasm_get_warnings: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_results: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_case_statistics: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_case_counts_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_membership_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_distance_matrix_table: (a: number) => [number, number, number];
   readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
   readonly discriminantanalysiswasm_new: (a: any, b: any, c: number, d: number, e: any) => [number, number, number];
   readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
@@ -425,9 +569,19 @@ export interface InitOutput {
   readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
   readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
   readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
+  readonly perform_analysis: (a: any, b: any) => [number, number, number];
   readonly preprocess_data: (a: any, b: number, c: number, d: number) => [number, number, number];
   readonly handle_missing_values: (a: any, b: number, c: number) => [number, number, number];
   readonly impute_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly start: () => void;
+  readonly mse: (a: number, b: number, c: number, d: number) => number;
+  readonly rmse: (a: number, b: number, c: number, d: number) => number;
+  readonly mae: (a: number, b: number, c: number, d: number) => number;
+  readonly mpe: (a: number, b: number, c: number, d: number) => number;
+  readonly mape: (a: number, b: number, c: number, d: number) => number;
+  readonly first_difference: (a: number, b: number) => [number, number];
+  readonly second_difference: (a: number, b: number) => [number, number];
+  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
   readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
   readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
   readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number, number];
@@ -443,6 +597,34 @@ export interface InitOutput {
   readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
   readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
   readonly hierarchicalclusteringwasm_get_warnings: (a: number) => [number, number, number];
+  readonly __wbg_decomposition_free: (a: number, b: number) => void;
+  readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
+  readonly decomposition_get_data: (a: number) => [number, number];
+  readonly decomposition_get_data_header: (a: number) => [number, number];
+  readonly decomposition_get_time: (a: number) => [number, number];
+  readonly decomposition_get_time_header: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_component: (a: number) => [number, number];
+  readonly decomposition_get_trend_component: (a: number) => [number, number];
+  readonly decomposition_get_irregular_component: (a: number) => [number, number];
+  readonly decomposition_get_seasonal_indices: (a: number) => [number, number];
+  readonly decomposition_get_period: (a: number) => number;
+  readonly decomposition_get_trend_equation: (a: number) => [number, number];
+  readonly decomposition_set_seasonal_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
+  readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
+  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
+  readonly parse_clustering_config: (a: any) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;

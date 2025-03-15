@@ -1,26 +1,47 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {KNNOutputProps, KNNOutputType} from "@/models/classify/nearest-neighbor/nearest-neighbor";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Input} from "@/components/ui/input";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    KNNOutputProps,
+    KNNOutputType,
+} from "@/models/classify/nearest-neighbor/nearest-neighbor";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}: KNNOutputProps) => {
-    const [outputState, setOutputState] = useState<KNNOutputType>({...data});
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const KNNOutput = ({
+    isOutputOpen,
+    setIsOutputOpen,
+    updateFormData,
+    data,
+}: KNNOutputProps) => {
+    const [outputState, setOutputState] = useState<KNNOutputType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isOutputOpen) {
-            setOutputState({...data});
+            setOutputState({ ...data });
         }
     }, [isOutputOpen, data]);
 
-    const handleChange = (field: keyof KNNOutputType, value: CheckedState | undefined | number | boolean | string | null) => {
+    const handleChange = (
+        field: keyof KNNOutputType,
+        value: CheckedState | undefined | number | boolean | string | null
+    ) => {
         setOutputState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -50,19 +71,23 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                     <DialogHeader>
                         <DialogTitle>Output</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <ResizablePanelGroup
                         direction="vertical"
                         className="min-h-[325px] max-w-xl rounded-lg border md:min-w-[200px]"
                     >
                         <ResizablePanel defaultSize={22}>
                             <div className="flex flex-col gap-1 p-2">
-                                <Label className="font-bold">Viewer Output</Label>
+                                <Label className="font-bold">
+                                    Viewer Output
+                                </Label>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
                                         id="CaseSummary"
                                         checked={outputState.CaseSummary}
-                                        onCheckedChange={(checked) => handleChange("CaseSummary", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange("CaseSummary", checked)
+                                        }
                                     />
                                     <label
                                         htmlFor="CaseSummary"
@@ -75,7 +100,12 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                     <Checkbox
                                         id="ChartAndTable"
                                         checked={outputState.ChartAndTable}
-                                        onCheckedChange={(checked) => handleChange("ChartAndTable", checked)}
+                                        onCheckedChange={(checked) =>
+                                            handleChange(
+                                                "ChartAndTable",
+                                                checked
+                                            )
+                                        }
                                     />
                                     <label
                                         htmlFor="ChartAndTable"
@@ -86,7 +116,7 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                 </div>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={78}>
                             <div className="flex flex-col gap-2 p-2">
                                 <Label className="font-bold">Files</Label>
@@ -95,7 +125,12 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                         <Checkbox
                                             id="ExportModelXML"
                                             checked={outputState.ExportModelXML}
-                                            onCheckedChange={(checked) => handleChange("ExportModelXML", checked)}
+                                            onCheckedChange={(checked) =>
+                                                handleChange(
+                                                    "ExportModelXML",
+                                                    checked
+                                                )
+                                            }
                                         />
                                         <label
                                             htmlFor="ExportModelXML"
@@ -108,7 +143,12 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                         <Input
                                             id="XMLFilePath"
                                             type="file"
-                                            onChange={(e) => handleChange("XMLFilePath", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "XMLFilePath",
+                                                    e.target.value
+                                                )
+                                            }
                                             placeholder="Enter file path"
                                         />
                                     </div>
@@ -118,32 +158,48 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                         <Checkbox
                                             id="ExportDistance"
                                             checked={outputState.ExportDistance}
-                                            onCheckedChange={(checked) => handleChange("ExportDistance", checked)}
+                                            onCheckedChange={(checked) =>
+                                                handleChange(
+                                                    "ExportDistance",
+                                                    checked
+                                                )
+                                            }
                                         />
                                         <label
                                             htmlFor="ExportDistance"
                                             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                         >
-                                            Export Distances between Focal Cases and k Nearest Neighbors
+                                            Export Distances between Focal Cases
+                                            and k Nearest Neighbors
                                         </label>
                                     </div>
                                     <div className="pl-6">
                                         <RadioGroup
-                                            value={outputState.CreateDataset ? "CreateDataset" : "WriteDataFile"}
+                                            value={
+                                                outputState.CreateDataset
+                                                    ? "CreateDataset"
+                                                    : "WriteDataFile"
+                                            }
                                             onValueChange={handleExportDistGrp}
                                         >
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="CreateDataset"
-                                                                    id="CreateDataset"/>
-                                                    <Label className="w-[175px]"
-                                                           htmlFor="CreateDataset">
+                                                    <RadioGroupItem
+                                                        value="CreateDataset"
+                                                        id="CreateDataset"
+                                                    />
+                                                    <Label
+                                                        className="w-[175px]"
+                                                        htmlFor="CreateDataset"
+                                                    >
                                                         Create a new dataset
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2 pl-6">
-                                                    <Label className="w-[75px]"
-                                                           htmlFor="DatasetName">
+                                                    <Label
+                                                        className="w-[75px]"
+                                                        htmlFor="DatasetName"
+                                                    >
                                                         Name:
                                                     </Label>
                                                     <Input
@@ -151,15 +207,29 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                                         type="text"
                                                         className="min-w-2xl w-full"
                                                         placeholder=""
-                                                        value={outputState.DatasetName ?? ""}
-                                                        onChange={(e) => handleChange("DatasetName", e.target.value)}
+                                                        value={
+                                                            outputState.DatasetName ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "DatasetName",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="WriteDataFile" id="WriteDataFile"/>
-                                                    <Label className="w-[175px]" htmlFor="WriteDataFile">
+                                                    <RadioGroupItem
+                                                        value="WriteDataFile"
+                                                        id="WriteDataFile"
+                                                    />
+                                                    <Label
+                                                        className="w-[175px]"
+                                                        htmlFor="WriteDataFile"
+                                                    >
                                                         Write a new data file
                                                     </Label>
                                                 </div>
@@ -169,8 +239,16 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                                                         type="file"
                                                         className="min-w-2xl w-full"
                                                         placeholder=""
-                                                        value={outputState.NewDataFilePath ?? ""}
-                                                        onChange={(e) => handleChange("NewDataFilePath", e.target.value)}
+                                                        value={
+                                                            outputState.NewDataFilePath ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "NewDataFilePath",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -181,10 +259,18 @@ export const KNNOutput = ({isOutputOpen, setIsOutputOpen, updateFormData, data}:
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsOutputOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsOutputOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

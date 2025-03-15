@@ -25,7 +25,7 @@ export const HierClusSave = ({
     data,
 }: HierClusSaveProps) => {
     const [saveState, setSaveState] = useState<HierClusSaveType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isSaveOpen) {

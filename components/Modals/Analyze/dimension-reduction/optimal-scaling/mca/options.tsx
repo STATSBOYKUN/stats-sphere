@@ -39,7 +39,7 @@ export const OptScaMCAOptions = ({
     const [optionsState, setOptionsState] = useState<OptScaMCAOptionsType>({
         ...data,
     });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     const capitalize = (str: string) => {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

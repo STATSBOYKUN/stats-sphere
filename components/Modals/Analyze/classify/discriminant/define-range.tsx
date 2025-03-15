@@ -1,14 +1,29 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {DiscriminantDefineRangeProps, DiscriminantDefineRangeType} from "@/models/classify/discriminant/discriminant";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    DiscriminantDefineRangeProps,
+    DiscriminantDefineRangeType,
+} from "@/models/classify/discriminant/discriminant";
 
-export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpen, updateFormData, data }: DiscriminantDefineRangeProps) => {
-    const [defineRangeState, setDefineRangeState] = useState<DiscriminantDefineRangeType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const DiscriminantDefineRange = ({
+    isDefineRangeOpen,
+    setIsDefineRangeOpen,
+    updateFormData,
+    data,
+}: DiscriminantDefineRangeProps) => {
+    const [defineRangeState, setDefineRangeState] =
+        useState<DiscriminantDefineRangeType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isDefineRangeOpen) {
@@ -16,7 +31,10 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
         }
     }, [isDefineRangeOpen, data]);
 
-    const handleChange = (field: keyof DiscriminantDefineRangeType, value: number) => {
+    const handleChange = (
+        field: keyof DiscriminantDefineRangeType,
+        value: number
+    ) => {
         setDefineRangeState((prev) => ({ ...prev, [field]: value }));
     };
 
@@ -30,7 +48,10 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
     return (
         <>
             {/* Define Range Dialog */}
-            <Dialog open={isDefineRangeOpen} onOpenChange={setIsDefineRangeOpen}>
+            <Dialog
+                open={isDefineRangeOpen}
+                onOpenChange={setIsDefineRangeOpen}
+            >
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
                         <DialogTitle>Define Range</DialogTitle>
@@ -43,7 +64,12 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
                                 id="Minimum"
                                 type="number"
                                 value={defineRangeState.minRange ?? ""}
-                                onChange={(e) => handleChange("minRange", Number(e.target.value))}
+                                onChange={(e) =>
+                                    handleChange(
+                                        "minRange",
+                                        Number(e.target.value)
+                                    )
+                                }
                                 placeholder=""
                             />
                         </div>
@@ -53,7 +79,12 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
                                 id="Maximum"
                                 type="number"
                                 value={defineRangeState.maxRange ?? ""}
-                                onChange={(e) => handleChange("maxRange", Number(e.target.value))}
+                                onChange={(e) =>
+                                    handleChange(
+                                        "maxRange",
+                                        Number(e.target.value)
+                                    )
+                                }
                                 placeholder=""
                             />
                         </div>
@@ -62,7 +93,11 @@ export const DiscriminantDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpe
                         <Button type="button" onClick={handleContinue}>
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsDefineRangeOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsDefineRangeOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

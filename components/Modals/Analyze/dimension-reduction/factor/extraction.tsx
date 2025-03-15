@@ -1,25 +1,46 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {FactorExtractionProps, FactorExtractionType} from "@/models/dimension-reduction/factor/factor";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {EXTRACTIONMETHOD} from "@/constants/dimension-reduction/factor/factor-method";
-import {Checkbox} from "@/components/ui/checkbox";
-import {Input} from "@/components/ui/input";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    FactorExtractionProps,
+    FactorExtractionType,
+} from "@/models/dimension-reduction/factor/factor";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { EXTRACTIONMETHOD } from "@/constants/dimension-reduction/factor/factor-method";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 export const FactorExtraction = ({
-                                     isExtractionOpen,
-                                     setIsExtractionOpen,
-                                     updateFormData,
-                                     data
-                                 }: FactorExtractionProps) => {
-    const [extractionState, setExtractionState] = useState<FactorExtractionType>({...data});
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+    isExtractionOpen,
+    setIsExtractionOpen,
+    updateFormData,
+    data,
+}: FactorExtractionProps) => {
+    const [extractionState, setExtractionState] =
+        useState<FactorExtractionType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     const capitalize = (str: string) => {
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -27,11 +48,14 @@ export const FactorExtraction = ({
 
     useEffect(() => {
         if (isExtractionOpen) {
-            setExtractionState({...data});
+            setExtractionState({ ...data });
         }
     }, [isExtractionOpen, data]);
 
-    const handleChange = (field: keyof FactorExtractionType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof FactorExtractionType,
+        value: CheckedState | number | string | null
+    ) => {
         setExtractionState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -69,23 +93,34 @@ export const FactorExtraction = ({
                     <DialogHeader>
                         <DialogTitle>Factor Analysis: Extraction</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex flex-col gap-2">
                         <div className="w-full">
-                            <Label className="font-bold">Growing Method: </Label>
+                            <Label className="font-bold">
+                                Growing Method:{" "}
+                            </Label>
                             <Select
                                 value={extractionState.Method ?? ""}
-                                onValueChange={(value) => handleChange("Method", value)}
+                                onValueChange={(value) =>
+                                    handleChange("Method", value)
+                                }
                             >
                                 <SelectTrigger>
-                                    <SelectValue/>
+                                    <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
-                                        {EXTRACTIONMETHOD.map((method, index) => (
-                                            <SelectItem key={index}
-                                                        value={method}>{capitalize(method) + "'s Method"}</SelectItem>
-                                        ))}
+                                        {EXTRACTIONMETHOD.map(
+                                            (method, index) => (
+                                                <SelectItem
+                                                    key={index}
+                                                    value={method}
+                                                >
+                                                    {capitalize(method) +
+                                                        "'s Method"}
+                                                </SelectItem>
+                                            )
+                                        )}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
@@ -98,19 +133,31 @@ export const FactorExtraction = ({
                                 <ResizablePanelGroup direction="horizontal">
                                     <ResizablePanel defaultSize={50}>
                                         <div className="flex flex-col gap-2 p-2">
-                                            <Label className="font-bold">Analyze</Label>
+                                            <Label className="font-bold">
+                                                Analyze
+                                            </Label>
                                             <RadioGroup
-                                                value={extractionState.Correlation ? "Correlation" : "Covariance"}
+                                                value={
+                                                    extractionState.Correlation
+                                                        ? "Correlation"
+                                                        : "Covariance"
+                                                }
                                                 onValueChange={handleAnalyzeGrp}
                                             >
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Correlation" id="Correlation"/>
+                                                    <RadioGroupItem
+                                                        value="Correlation"
+                                                        id="Correlation"
+                                                    />
                                                     <Label htmlFor="Correlation">
                                                         Correlation Matrix
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="Covariance" id="Covariance"/>
+                                                    <RadioGroupItem
+                                                        value="Covariance"
+                                                        id="Covariance"
+                                                    />
                                                     <Label htmlFor="Covariance">
                                                         Covariance Matrix
                                                     </Label>
@@ -118,15 +165,26 @@ export const FactorExtraction = ({
                                             </RadioGroup>
                                         </div>
                                     </ResizablePanel>
-                                    <ResizableHandle/>
+                                    <ResizableHandle />
                                     <ResizablePanel defaultSize={50}>
                                         <div className="flex flex-col gap-2 p-2">
-                                            <Label className="font-bold">Display</Label>
+                                            <Label className="font-bold">
+                                                Display
+                                            </Label>
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="Unrotated"
-                                                    checked={extractionState.Unrotated}
-                                                    onCheckedChange={(checked) => handleChange("Unrotated", checked)}
+                                                    checked={
+                                                        extractionState.Unrotated
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Unrotated",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Unrotated"
@@ -138,8 +196,17 @@ export const FactorExtraction = ({
                                             <div className="flex items-center space-x-2">
                                                 <Checkbox
                                                     id="Scree"
-                                                    checked={extractionState.Scree}
-                                                    onCheckedChange={(checked) => handleChange("Scree", checked)}
+                                                    checked={
+                                                        extractionState.Scree
+                                                    }
+                                                    onCheckedChange={(
+                                                        checked
+                                                    ) =>
+                                                        handleChange(
+                                                            "Scree",
+                                                            checked
+                                                        )
+                                                    }
                                                 />
                                                 <label
                                                     htmlFor="Scree"
@@ -152,48 +219,84 @@ export const FactorExtraction = ({
                                     </ResizablePanel>
                                 </ResizablePanelGroup>
                             </ResizablePanel>
-                            <ResizableHandle/>
+                            <ResizableHandle />
                             <ResizablePanel defaultSize={67}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <Label className="font-bold">Extract</Label>
                                     <RadioGroup
-                                        value={extractionState.Eigen ? "Eigen" : "Factor"}
+                                        value={
+                                            extractionState.Eigen
+                                                ? "Eigen"
+                                                : "Factor"
+                                        }
                                         onValueChange={handleExtractGrp}
                                     >
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Eigen" id="Eigen"/>
+                                                <RadioGroupItem
+                                                    value="Eigen"
+                                                    id="Eigen"
+                                                />
                                                 <Label htmlFor="Eigen">
                                                     Based on Eigenvalues
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2 pl-6">
-                                                <Label className="w-[150px]">Eigenvalues Greater than:</Label>
+                                                <Label className="w-[150px]">
+                                                    Eigenvalues Greater than:
+                                                </Label>
                                                 <div className="w-[75px]">
                                                     <Input
                                                         id="EigenVal"
                                                         type="number"
                                                         placeholder=""
-                                                        value={extractionState.EigenVal ?? ""}
-                                                        onChange={(e) => handleChange("EigenVal", Number(e.target.value))}
+                                                        value={
+                                                            extractionState.EigenVal ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "EigenVal",
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Factor" id="Factor"/>
+                                                <RadioGroupItem
+                                                    value="Factor"
+                                                    id="Factor"
+                                                />
                                                 <Label htmlFor="Factor">
                                                     Fixed Number of Factors
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2 pl-6">
-                                                <Label className="w-[150px]">Factor to Extract:</Label>
+                                                <Label className="w-[150px]">
+                                                    Factor to Extract:
+                                                </Label>
                                                 <div className="w-[75px]">
                                                     <Input
                                                         id="MaxFactors"
                                                         type="number"
                                                         placeholder=""
-                                                        value={extractionState.MaxFactors ?? ""}
-                                                        onChange={(e) => handleChange("MaxFactors", Number(e.target.value))}
+                                                        value={
+                                                            extractionState.MaxFactors ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "MaxFactors",
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -203,23 +306,38 @@ export const FactorExtraction = ({
                             </ResizablePanel>
                         </ResizablePanelGroup>
                         <div className="flex items-center space-x-2">
-                            <Label className="w-[250px]">Maximum Iterations for Convergence:</Label>
+                            <Label className="w-[250px]">
+                                Maximum Iterations for Convergence:
+                            </Label>
                             <div className="w-[75px]">
                                 <Input
                                     id="MaxIter"
                                     type="number"
                                     placeholder=""
                                     value={extractionState.MaxIter ?? ""}
-                                    onChange={(e) => handleChange("MaxIter", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "MaxIter",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsExtractionOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsExtractionOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

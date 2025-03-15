@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { KMeansClusterAnalysisType } from "@/models/classify/k-means-cluster/k-means-cluster-worker";
-import init from "@/src/wasm/pkg/wasm";
+import init, { KMeansClusteringWasm } from "@/src/wasm/pkg/wasm";
 
 export async function analyzeKMeansCluster({
     tempData,
@@ -31,4 +31,24 @@ export async function analyzeKMeansCluster({
 
     const varDefsForTarget = getVarDefs(variables, TargetVariables);
     const varDefsForCaseTarget = getVarDefs(variables, CaseTargetVariable);
+
+    console.log({
+        tempData,
+        slicedDataForTarget,
+        slicedDataForCaseTarget,
+        varDefsForTarget,
+        varDefsForCaseTarget,
+    });
+
+    const kmeans = new KMeansClusteringWasm(
+        tempData,
+        slicedDataForTarget,
+        slicedDataForCaseTarget,
+        varDefsForTarget,
+        varDefsForCaseTarget
+    );
+
+    kmeans.perform_analysis();
+    const results = kmeans.get_results();
+    console.log(JSON.stringify(results));
 }

@@ -1,17 +1,29 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaOveralsDefineRangeProps,
-    OptScaOveralsDefineRangeType
+    OptScaOveralsDefineRangeType,
 } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
-export const OptScaOveralsDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOpen, updateFormData, data }: OptScaOveralsDefineRangeProps) => {
-    const [defineRangeState, setDefineRangeState] = useState<OptScaOveralsDefineRangeType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const OptScaOveralsDefineRange = ({
+    isDefineRangeOpen,
+    setIsDefineRangeOpen,
+    updateFormData,
+    data,
+}: OptScaOveralsDefineRangeProps) => {
+    const [defineRangeState, setDefineRangeState] =
+        useState<OptScaOveralsDefineRangeType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isDefineRangeOpen) {
@@ -19,7 +31,10 @@ export const OptScaOveralsDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOp
         }
     }, [isDefineRangeOpen, data]);
 
-    const handleChange = (field: keyof OptScaOveralsDefineRangeType, value: number | null) => {
+    const handleChange = (
+        field: keyof OptScaOveralsDefineRangeType,
+        value: number | null
+    ) => {
         setDefineRangeState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -36,7 +51,10 @@ export const OptScaOveralsDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOp
     return (
         <>
             {/* Define Range Dialog */}
-            <Dialog open={isDefineRangeOpen} onOpenChange={setIsDefineRangeOpen}>
+            <Dialog
+                open={isDefineRangeOpen}
+                onOpenChange={setIsDefineRangeOpen}
+            >
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
                         <DialogTitle>OVERALS: Define Range</DialogTitle>
@@ -51,7 +69,12 @@ export const OptScaOveralsDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOp
                                     type="number"
                                     placeholder=""
                                     value={defineRangeState.Minimum || 1}
-                                    onChange={(e) => handleChange("Minimum", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "Minimum",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -63,16 +86,29 @@ export const OptScaOveralsDefineRange = ({ isDefineRangeOpen, setIsDefineRangeOp
                                     type="number"
                                     placeholder=""
                                     value={defineRangeState.Maximum ?? ""}
-                                    onChange={(e) => handleChange("Maximum", Number(e.target.value))}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "Maximum",
+                                            Number(e.target.value)
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsDefineRangeOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsDefineRangeOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

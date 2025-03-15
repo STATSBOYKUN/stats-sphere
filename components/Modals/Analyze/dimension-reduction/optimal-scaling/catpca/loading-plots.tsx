@@ -1,22 +1,38 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     OptScaCatpcaLoadingPlotsProps,
-    OptScaCatpcaLoadingPlotsType
+    OptScaCatpcaLoadingPlotsType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {Checkbox} from "@/components/ui/checkbox";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlotsOpen, updateFormData, data }: OptScaCatpcaLoadingPlotsProps) => {
-    const [loadingPlotsState, setLoadingPlotsState] = useState<OptScaCatpcaLoadingPlotsType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const OptScaCatpcaLoadingPlots = ({
+    isLoadingPlotsOpen,
+    setIsLoadingPlotsOpen,
+    updateFormData,
+    data,
+}: OptScaCatpcaLoadingPlotsProps) => {
+    const [loadingPlotsState, setLoadingPlotsState] =
+        useState<OptScaCatpcaLoadingPlotsType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isLoadingPlotsOpen) {
@@ -24,7 +40,10 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
         }
     }, [isLoadingPlotsOpen, data]);
 
-    const handleChange = (field: keyof OptScaCatpcaLoadingPlotsType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof OptScaCatpcaLoadingPlotsType,
+        value: CheckedState | number | string | null
+    ) => {
         setLoadingPlotsState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -42,8 +61,10 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
     const handleCentrGrp = (value: string) => {
         setLoadingPlotsState((prevState) => ({
             ...prevState,
-            IncludeCentroidsIncludeAllVars: value === "IncludeCentroidsIncludeAllVars",
-            IncludeCentroidsIncludeSelectedVars: value === "IncludeCentroidsIncludeSelectedVars",
+            IncludeCentroidsIncludeAllVars:
+                value === "IncludeCentroidsIncludeAllVars",
+            IncludeCentroidsIncludeSelectedVars:
+                value === "IncludeCentroidsIncludeSelectedVars",
         }));
     };
 
@@ -57,10 +78,15 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
     return (
         <>
             {/* Loading Plots Dialog */}
-            <Dialog open={isLoadingPlotsOpen} onOpenChange={setIsLoadingPlotsOpen}>
+            <Dialog
+                open={isLoadingPlotsOpen}
+                onOpenChange={setIsLoadingPlotsOpen}
+            >
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>Categorical Principal Components: Loading Plots</DialogTitle>
+                        <DialogTitle>
+                            Categorical Principal Components: Loading Plots
+                        </DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <div className="h-[450px] flex flex-col gap-2">
@@ -68,7 +94,9 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                             <Checkbox
                                 id="Variance"
                                 checked={loadingPlotsState.Variance}
-                                onCheckedChange={(checked) => handleChange("Variance", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("Variance", checked)
+                                }
                             />
                             <label
                                 htmlFor="Variance"
@@ -81,7 +109,9 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                             <Checkbox
                                 id="DisplayCompLoadings"
                                 checked={loadingPlotsState.DisplayCompLoadings}
-                                onCheckedChange={(checked) => handleChange("DisplayCompLoadings", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("DisplayCompLoadings", checked)
+                                }
                             />
                             <label
                                 htmlFor="DisplayCompLoadings"
@@ -97,46 +127,73 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                             >
                                 <ResizablePanel defaultSize={50}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Loading Variables</Label>
+                                        <Label className="font-bold">
+                                            Loading Variables
+                                        </Label>
                                         <ResizablePanelGroup direction="horizontal">
                                             <ResizablePanel defaultSize={65}>
                                                 <div className="grid grid-cols-2 gap-2 p-2">
                                                     <div className="flex flex-col gap-2">
-                                                        <Label>Label By: </Label>
+                                                        <Label>
+                                                            Label By:{" "}
+                                                        </Label>
                                                         <RadioGroup
-                                                            value={loadingPlotsState.LoadingIncludeAllVars ? "LoadingIncludeAllVars" : "LoadingIncludeSelectedVars"}
-                                                            onValueChange={handleLoadingGrp}
+                                                            value={
+                                                                loadingPlotsState.LoadingIncludeAllVars
+                                                                    ? "LoadingIncludeAllVars"
+                                                                    : "LoadingIncludeSelectedVars"
+                                                            }
+                                                            onValueChange={
+                                                                handleLoadingGrp
+                                                            }
                                                         >
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="LoadingIncludeAllVars"
-                                                                                id="LoadingIncludeAllVars"/>
+                                                                <RadioGroupItem
+                                                                    value="LoadingIncludeAllVars"
+                                                                    id="LoadingIncludeAllVars"
+                                                                />
                                                                 <Label htmlFor="LoadingIncludeAllVars">
-                                                                    All Variables
+                                                                    All
+                                                                    Variables
                                                                 </Label>
                                                             </div>
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="LoadingIncludeSelectedVars"
-                                                                                id="LoadingIncludeSelectedVars"/>
+                                                                <RadioGroupItem
+                                                                    value="LoadingIncludeSelectedVars"
+                                                                    id="LoadingIncludeSelectedVars"
+                                                                />
                                                                 <Label htmlFor="LoadingIncludeSelectedVars">
-                                                                    Selected Variable
+                                                                    Selected
+                                                                    Variable
                                                                 </Label>
                                                             </div>
                                                         </RadioGroup>
                                                     </div>
                                                     <div className="flex flex-col gap-2">
-                                                        <Label>Available: </Label>
+                                                        <Label>
+                                                            Available:{" "}
+                                                        </Label>
                                                         <Input
                                                             id="LoadingAvailableVars"
                                                             type="text"
                                                             className="w-full min-h-[150px]"
                                                             placeholder=""
-                                                            value={loadingPlotsState.LoadingAvailableVars ?? ""}
-                                                            onChange={(e) => handleChange("LoadingAvailableVars", e.target.value)}
+                                                            value={
+                                                                loadingPlotsState.LoadingAvailableVars ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "LoadingAvailableVars",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
-                                            <ResizableHandle withHandle/>
+                                            <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Selected: </Label>
@@ -145,23 +202,40 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                                                         type="text"
                                                         className="w-full min-h-[150px]"
                                                         placeholder=""
-                                                        value={loadingPlotsState.LoadingSelectedVars ?? ""}
-                                                        onChange={(e) => handleChange("LoadingSelectedVars", e.target.value)}
+                                                        value={
+                                                            loadingPlotsState.LoadingSelectedVars ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "LoadingSelectedVars",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </ResizablePanel>
                                         </ResizablePanelGroup>
                                     </div>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={50}>
                                     <div className="flex flex-col gap-2 p-2">
-                                        <Label className="font-bold">Centroids</Label>
+                                        <Label className="font-bold">
+                                            Centroids
+                                        </Label>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="IncludeCentroids"
-                                                checked={loadingPlotsState.IncludeCentroids}
-                                                onCheckedChange={(checked) => handleChange("IncludeCentroids", checked)}
+                                                checked={
+                                                    loadingPlotsState.IncludeCentroids
+                                                }
+                                                onCheckedChange={(checked) =>
+                                                    handleChange(
+                                                        "IncludeCentroids",
+                                                        checked
+                                                    )
+                                                }
                                             />
                                             <label
                                                 htmlFor="IncludeCentroids"
@@ -174,42 +248,66 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                                             <ResizablePanel defaultSize={65}>
                                                 <div className="grid grid-cols-2 gap-2 p-2">
                                                     <div className="flex flex-col gap-2">
-                                                        <Label>Label By: </Label>
+                                                        <Label>
+                                                            Label By:{" "}
+                                                        </Label>
                                                         <RadioGroup
-                                                            value={loadingPlotsState.IncludeCentroidsIncludeAllVars ? "IncludeCentroidsIncludeAllVars" : "IncludeCentroidsIncludeSelectedVars"}
-                                                            onValueChange={handleCentrGrp}
+                                                            value={
+                                                                loadingPlotsState.IncludeCentroidsIncludeAllVars
+                                                                    ? "IncludeCentroidsIncludeAllVars"
+                                                                    : "IncludeCentroidsIncludeSelectedVars"
+                                                            }
+                                                            onValueChange={
+                                                                handleCentrGrp
+                                                            }
                                                         >
                                                             <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="IncludeCentroidsIncludeAllVars"
-                                                                                id="IncludeCentroidsIncludeAllVars"/>
+                                                                <RadioGroupItem
+                                                                    value="IncludeCentroidsIncludeAllVars"
+                                                                    id="IncludeCentroidsIncludeAllVars"
+                                                                />
                                                                 <Label htmlFor="IncludeCentroidsIncludeAllVars">
-                                                                    All Variables
+                                                                    All
+                                                                    Variables
                                                                 </Label>
                                                             </div>
                                                             <div className="flex items-center space-x-2">
                                                                 <RadioGroupItem
                                                                     value="IncludeCentroidsIncludeSelectedVars"
-                                                                    id="IncludeCentroidsIncludeSelectedVars"/>
+                                                                    id="IncludeCentroidsIncludeSelectedVars"
+                                                                />
                                                                 <Label htmlFor="IncludeCentroidsIncludeSelectedVars">
-                                                                    Selected Variable
+                                                                    Selected
+                                                                    Variable
                                                                 </Label>
                                                             </div>
                                                         </RadioGroup>
                                                     </div>
                                                     <div className="flex flex-col gap-2">
-                                                        <Label>Available: </Label>
+                                                        <Label>
+                                                            Available:{" "}
+                                                        </Label>
                                                         <Input
                                                             id="IncludeCentroidsAvailableVars"
                                                             type="text"
                                                             className="w-full min-h-[150px]"
                                                             placeholder=""
-                                                            value={loadingPlotsState.IncludeCentroidsAvailableVars ?? ""}
-                                                            onChange={(e) => handleChange("IncludeCentroidsAvailableVars", e.target.value)}
+                                                            value={
+                                                                loadingPlotsState.IncludeCentroidsAvailableVars ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "IncludeCentroidsAvailableVars",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
-                                            <ResizableHandle withHandle/>
+                                            <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Selected: </Label>
@@ -218,8 +316,16 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                                                         type="text"
                                                         className="w-full min-h-[150px]"
                                                         placeholder=""
-                                                        value={loadingPlotsState.IncludeCentroidsSelectedVars ?? ""}
-                                                        onChange={(e) => handleChange("IncludeCentroidsSelectedVars", e.target.value)}
+                                                        value={
+                                                            loadingPlotsState.IncludeCentroidsSelectedVars ??
+                                                            ""
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "IncludeCentroidsSelectedVars",
+                                                                e.target.value
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </ResizablePanel>
@@ -230,10 +336,18 @@ export const OptScaCatpcaLoadingPlots = ({ isLoadingPlotsOpen, setIsLoadingPlots
                         </ScrollArea>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsLoadingPlotsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsLoadingPlotsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

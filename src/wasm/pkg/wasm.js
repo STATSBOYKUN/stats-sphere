@@ -208,79 +208,6 @@ function getArrayJsValueFromWasm0(ptr, len) {
     wasm.__externref_drop_slice(ptr, len);
     return result;
 }
-/**
- * @param {Float64Array} data
- * @param {Float64Array} forecast
- * @returns {number}
- */
-export function mse(data, forecast) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.mse(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
- * @param {Float64Array} data
- * @param {Float64Array} forecast
- * @returns {number}
- */
-export function rmse(data, forecast) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.rmse(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
- * @param {Float64Array} data
- * @param {Float64Array} forecast
- * @returns {number}
- */
-export function mae(data, forecast) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.mae(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
- * @param {Float64Array} data
- * @param {Float64Array} forecast
- * @returns {number}
- */
-export function mpe(data, forecast) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.mpe(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-/**
- * @param {Float64Array} data
- * @param {Float64Array} forecast
- * @returns {number}
- */
-export function mape(data, forecast) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-    const len1 = WASM_VECTOR_LEN;
-    const ret = wasm.mape(ptr0, len0, ptr1, len1);
-    return ret;
-}
-
-export function start() {
-    wasm.start();
-}
 
 let cachedUint32ArrayMemory0 = null;
 
@@ -315,46 +242,6 @@ export function partial_kj(k, j, partial_autocorrelate) {
     return ret;
 }
 
-/**
- * @param {Float64Array} data
- * @returns {Float64Array}
- */
-export function first_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.first_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @returns {Float64Array}
- */
-export function second_difference(data) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.second_difference(ptr0, len0);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
-/**
- * @param {Float64Array} data
- * @param {number} season
- * @returns {Float64Array}
- */
-export function seasonal_difference(data, season) {
-    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.seasonal_difference(ptr0, len0, season);
-    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-    return v2;
-}
-
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_4.get(idx);
     wasm.__externref_table_dealloc(idx);
@@ -375,19 +262,6 @@ function takeFromExternrefTable0(idx) {
  */
 export function perform_analysis(data_json, config_json) {
     const ret = wasm.perform_analysis(data_json, config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * WASM Binding: Parse SPSS-style configuration into internal format
- * @param {any} config_json
- * @returns {any}
- */
-export function parse_clustering_config(config_json) {
-    const ret = wasm.parse_clustering_config(config_json);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -459,6 +333,133 @@ export function impute_missing_values(data_json, method) {
     const ptr0 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.impute_missing_values(data_json, ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+export function start() {
+    wasm.start();
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {Float64Array} forecast
+ * @returns {number}
+ */
+export function mse(data, forecast) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mse(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {Float64Array} forecast
+ * @returns {number}
+ */
+export function rmse(data, forecast) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.rmse(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {Float64Array} forecast
+ * @returns {number}
+ */
+export function mae(data, forecast) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mae(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {Float64Array} forecast
+ * @returns {number}
+ */
+export function mpe(data, forecast) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mpe(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {Float64Array} forecast
+ * @returns {number}
+ */
+export function mape(data, forecast) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.mape(ptr0, len0, ptr1, len1);
+    return ret;
+}
+
+/**
+ * @param {Float64Array} data
+ * @returns {Float64Array}
+ */
+export function first_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.first_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * @param {Float64Array} data
+ * @returns {Float64Array}
+ */
+export function second_difference(data) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.second_difference(ptr0, len0);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * @param {Float64Array} data
+ * @param {number} season
+ * @returns {Float64Array}
+ */
+export function seasonal_difference(data, season) {
+    const ptr0 = passArrayF64ToWasm0(data, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.seasonal_difference(ptr0, len0, season);
+    var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+    return v2;
+}
+
+/**
+ * WASM Binding: Parse SPSS-style configuration into internal format
+ * @param {any} config_json
+ * @returns {any}
+ */
+export function parse_clustering_config(config_json) {
+    const ret = wasm.parse_clustering_config(config_json);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }
@@ -1471,6 +1472,328 @@ export class HierarchicalClusteringWasm {
      */
     get_warnings() {
         const ret = wasm.hierarchicalclusteringwasm_get_warnings(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+}
+
+const KMeansClusteringWasmFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_kmeansclusteringwasm_free(ptr >>> 0, 1));
+/**
+ * WASM bindings for K-Means clustering.
+ */
+export class KMeansClusteringWasm {
+
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        KMeansClusteringWasmFinalization.unregister(this);
+        return ptr;
+    }
+
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_kmeansclusteringwasm_free(ptr, 0);
+    }
+    /**
+     * Create a new K-Means clustering instance.
+     *
+     * # Arguments
+     * * `temp_data` - Configuration settings (JsValue)
+     * * `sliced_data_for_target` - Target data (JsValue)
+     * * `sliced_data_for_case_target` - Case target data (JsValue)
+     * * `var_defs_for_target` - Variable definitions for targets (JsValue)
+     * * `var_defs_for_case_target` - Variable definitions for case targets (JsValue)
+     *
+     * # Returns
+     * * `Result<KMeansClusteringWasm, JsValue>` - New instance or error
+     * @param {any} temp_data
+     * @param {any} sliced_data_for_target
+     * @param {any} sliced_data_for_case_target
+     * @param {any} var_defs_for_target
+     * @param {any} var_defs_for_case_target
+     */
+    constructor(temp_data, sliced_data_for_target, sliced_data_for_case_target, var_defs_for_target, var_defs_for_case_target) {
+        const ret = wasm.kmeansclusteringwasm_new(temp_data, sliced_data_for_target, sliced_data_for_case_target, var_defs_for_target, var_defs_for_case_target);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        this.__wbg_ptr = ret[0] >>> 0;
+        KMeansClusteringWasmFinalization.register(this, this.__wbg_ptr, this);
+        return this;
+    }
+    /**
+     * Perform K-Means clustering analysis.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Clustering results as JS object or error
+     * @returns {any}
+     */
+    perform_analysis() {
+        const ret = wasm.kmeansclusteringwasm_perform_analysis(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get initial cluster centers.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Initial centers as JS array or error
+     * @returns {any}
+     */
+    get_initial_centers() {
+        const ret = wasm.kmeansclusteringwasm_get_initial_centers(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get final cluster centers.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Final centers as JS array or error
+     * @returns {any}
+     */
+    get_final_centers() {
+        const ret = wasm.kmeansclusteringwasm_get_final_centers(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get iteration history directly using serde_wasm_bindgen.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Iteration changes as JS array using direct conversion
+     * @returns {any}
+     */
+    get_iterations_direct() {
+        const ret = wasm.kmeansclusteringwasm_get_iterations_direct(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get iteration history in a more detailed format.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Iteration history with details
+     * @returns {any}
+     */
+    get_iterations_detailed() {
+        const ret = wasm.kmeansclusteringwasm_get_iterations_detailed(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get iteration history table formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Iteration table as JS object or error
+     * @returns {any}
+     */
+    get_iteration_history_table() {
+        const ret = wasm.kmeansclusteringwasm_get_iteration_history_table(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get cluster membership for each data point.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Cluster assignments as JS array or error
+     * @returns {any}
+     */
+    get_cluster_membership() {
+        const ret = wasm.kmeansclusteringwasm_get_cluster_membership(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get distances from each point to its cluster center.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Distances as JS array or error
+     * @returns {any}
+     */
+    get_distances() {
+        const ret = wasm.kmeansclusteringwasm_get_distances(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get the number of data points in each cluster.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Cluster sizes as JS array or error
+     * @returns {any}
+     */
+    get_cluster_sizes() {
+        const ret = wasm.kmeansclusteringwasm_get_cluster_sizes(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get ANOVA statistics if available.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
+     * @returns {any}
+     */
+    get_anova_table() {
+        const ret = wasm.kmeansclusteringwasm_get_anova_table(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get ANOVA table formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
+     * @returns {any}
+     */
+    get_anova_table_formatted() {
+        const ret = wasm.kmeansclusteringwasm_get_anova_table_formatted(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get variable names used in clustering.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Variable names as JS array or error
+     * @returns {any}
+     */
+    get_variable_names() {
+        const ret = wasm.kmeansclusteringwasm_get_variable_names(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get number of iterations performed.
+     *
+     * # Returns
+     * * `usize` - Number of iterations
+     * @returns {number}
+     */
+    get_iteration_count() {
+        const ret = wasm.kmeansclusteringwasm_get_iteration_count(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Get count of missing values encountered.
+     *
+     * # Returns
+     * * `usize` - Number of missing values
+     * @returns {number}
+     */
+    get_missing_count() {
+        const ret = wasm.kmeansclusteringwasm_get_missing_count(this.__wbg_ptr);
+        return ret >>> 0;
+    }
+    /**
+     * Get all warnings accumulated during processing.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Warnings as JS array or error
+     * @returns {any}
+     */
+    get_warnings() {
+        const ret = wasm.kmeansclusteringwasm_get_warnings(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get the complete clustering results.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Complete clustering results as JS object or error
+     * @returns {any}
+     */
+    get_results() {
+        const ret = wasm.kmeansclusteringwasm_get_results(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get the number of cases in each cluster.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Case statistics as JS object or error
+     * @returns {any}
+     */
+    get_case_statistics() {
+        const ret = wasm.kmeansclusteringwasm_get_case_statistics(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get specific case counts table formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Case counts table as JS object or error
+     * @returns {any}
+     */
+    get_case_counts_table() {
+        const ret = wasm.kmeansclusteringwasm_get_case_counts_table(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get cluster membership table formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Cluster membership table as JS object or error
+     * @returns {any}
+     */
+    get_cluster_membership_table() {
+        const ret = wasm.kmeansclusteringwasm_get_cluster_membership_table(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get distances between final cluster centers formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - Distance matrix as JS object or error
+     * @returns {any}
+     */
+    get_distance_matrix_table() {
+        const ret = wasm.kmeansclusteringwasm_get_distance_matrix_table(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }

@@ -5,6 +5,7 @@ export type KMeansClusterMainType = {
     CaseTarget: string | null;
     IterateClassify: boolean;
     ClassifyOnly: boolean;
+    Cluster: number | null;
     OpenDataset: boolean;
     ExternalDatafile: boolean;
     NewDataset: boolean;
@@ -13,7 +14,6 @@ export type KMeansClusterMainType = {
     WriteFinal: boolean;
     OpenDatasetMethod: string | null;
     NewData: string | null;
-    Cluster: number | null;
     InitialData: string | null;
     FinalData: string | null;
 };

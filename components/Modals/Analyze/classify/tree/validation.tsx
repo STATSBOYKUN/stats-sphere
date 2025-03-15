@@ -1,16 +1,36 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {TreeValidationProps, TreeValidationType} from "@/models/classify/tree/tree";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    TreeValidationProps,
+    TreeValidationType,
+} from "@/models/classify/tree/tree";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
-export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFormData, data }: TreeValidationProps) => {
-    const [validationState, setValidationState] = useState<TreeValidationType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const TreeValidation = ({
+    isValidationOpen,
+    setIsValidationOpen,
+    updateFormData,
+    data,
+}: TreeValidationProps) => {
+    const [validationState, setValidationState] = useState<TreeValidationType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isValidationOpen) {
@@ -18,7 +38,10 @@ export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFo
         }
     }, [isValidationOpen, data]);
 
-    const handleChange = (field: keyof TreeValidationType, value: number | string | null) => {
+    const handleChange = (
+        field: keyof TreeValidationType,
+        value: number | string | null
+    ) => {
         setValidationState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -67,41 +90,61 @@ export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFo
                     </DialogHeader>
                     <Separator />
                     <RadioGroup
-                        value={validationState.None ? "None" : validationState.CrossValidation ? "CrossValidation" : "SplitSample"}
+                        value={
+                            validationState.None
+                                ? "None"
+                                : validationState.CrossValidation
+                                ? "CrossValidation"
+                                : "SplitSample"
+                        }
                         onValueChange={handleValidationGrp}
                     >
                         <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="None" id="None"/>
-                            <Label htmlFor="None">
-                                None
-                            </Label>
+                            <RadioGroupItem value="None" id="None" />
+                            <Label htmlFor="None">None</Label>
                         </div>
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="CrossValidation" id="CrossValidation"/>
+                                <RadioGroupItem
+                                    value="CrossValidation"
+                                    id="CrossValidation"
+                                />
                                 <Label htmlFor="CrossValidation">
                                     Cross Validation
                                 </Label>
                             </div>
                             <div className="flex items-center space-x-2 pl-6">
-                                <Label className="w-[200px]">Number of Sample Folds:</Label>
+                                <Label className="w-[200px]">
+                                    Number of Sample Folds:
+                                </Label>
                                 <div className="w-[75px]">
                                     <Input
                                         id="NumberOfSample"
                                         type="number"
                                         placeholder=""
-                                        value={validationState.NumberOfSample ?? 0}
-                                        onChange={(e) => handleChange("NumberOfSample", Number(e.target.value))}
+                                        value={
+                                            validationState.NumberOfSample ?? 0
+                                        }
+                                        onChange={(e) =>
+                                            handleChange(
+                                                "NumberOfSample",
+                                                Number(e.target.value)
+                                            )
+                                        }
                                     />
                                 </div>
                             </div>
                             <div className="text-sm text-justify pl-6">
-                                Crossvalidation is not available for CRT and Quest methods if pruning is selected.
+                                Crossvalidation is not available for CRT and
+                                Quest methods if pruning is selected.
                             </div>
                         </div>
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="SplitSample" id="SplitSample"/>
+                                <RadioGroupItem
+                                    value="SplitSample"
+                                    id="SplitSample"
+                                />
                                 <Label htmlFor="SplitSample">
                                     Split Sample Validation
                                 </Label>
@@ -112,59 +155,106 @@ export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFo
                             >
                                 <ResizablePanel defaultSize={75}>
                                     <RadioGroup
-                                        value={validationState.UseRandom ? "UseRandom" : "UseVariable"}
+                                        value={
+                                            validationState.UseRandom
+                                                ? "UseRandom"
+                                                : "UseVariable"
+                                        }
                                         onValueChange={handleCaseGrp}
                                     >
                                         <div className="p-2">
                                             <div className="flex flex-col gap-2">
-                                                <Label className="font-bold">Case Allocation</Label>
+                                                <Label className="font-bold">
+                                                    Case Allocation
+                                                </Label>
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="UseRandom" id="UseRandom"/>
+                                                    <RadioGroupItem
+                                                        value="UseRandom"
+                                                        id="UseRandom"
+                                                    />
                                                     <Label htmlFor="UseRandom">
                                                         Use Random Assignment
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2 pl-6">
-                                                    <Label className="w-[150px]">Training Sample (%):</Label>
+                                                    <Label className="w-[150px]">
+                                                        Training Sample (%):
+                                                    </Label>
                                                     <div className="w-[75px]">
                                                         <Input
                                                             id="TrainingSample"
                                                             type="number"
                                                             placeholder=""
-                                                            value={validationState.TrainingSample ?? 0}
-                                                            onChange={(e) => handleChange("TrainingSample", Number(e.target.value))}
+                                                            value={
+                                                                validationState.TrainingSample ??
+                                                                0
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "TrainingSample",
+                                                                    Number(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col gap-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="UseVariable" id="UseVariable"/>
+                                                    <RadioGroupItem
+                                                        value="UseVariable"
+                                                        id="UseVariable"
+                                                    />
                                                     <Label htmlFor="UseVariable">
                                                         Use Variable
                                                     </Label>
                                                 </div>
                                                 <div className="grid grid-cols-2 pl-6 gap-2">
                                                     <div>
-                                                        <Label>Variables:</Label>
+                                                        <Label>
+                                                            Variables:
+                                                        </Label>
                                                         <Input
                                                             id="SrcVar"
                                                             type="text"
                                                             className="min-h-[75px] w-full"
                                                             placeholder=""
-                                                            value={validationState.SrcVar ?? ""}
-                                                            onChange={(e) => handleChange("SrcVar", e.target.value)}
+                                                            value={
+                                                                validationState.SrcVar ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "SrcVar",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label>Split Sample By:</Label>
+                                                        <Label>
+                                                            Split Sample By:
+                                                        </Label>
                                                         <Input
                                                             id="TargetVar"
                                                             type="text"
                                                             className="w-full"
                                                             placeholder=""
-                                                            value={validationState.TargetVar ?? ""}
-                                                            onChange={(e) => handleChange("TargetVar", e.target.value)}
+                                                            value={
+                                                                validationState.TargetVar ??
+                                                                ""
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "TargetVar",
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -172,22 +262,34 @@ export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFo
                                         </div>
                                     </RadioGroup>
                                 </ResizablePanel>
-                                <ResizableHandle/>
+                                <ResizableHandle />
                                 <ResizablePanel defaultSize={25}>
                                     <RadioGroup
-                                        value={validationState.Training ? "Training" : "TestSample"}
+                                        value={
+                                            validationState.Training
+                                                ? "Training"
+                                                : "TestSample"
+                                        }
                                         onValueChange={handleDisplayGrp}
                                     >
                                         <div className="flex flex-col gap-2 p-2">
-                                            <Label className="font-bold">Display Result For</Label>
+                                            <Label className="font-bold">
+                                                Display Result For
+                                            </Label>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="Training" id="Training"/>
+                                                <RadioGroupItem
+                                                    value="Training"
+                                                    id="Training"
+                                                />
                                                 <Label htmlFor="Training">
                                                     Training and Test Sample
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="TestSample" id="TestSample"/>
+                                                <RadioGroupItem
+                                                    value="TestSample"
+                                                    id="TestSample"
+                                                />
                                                 <Label htmlFor="TestSample">
                                                     Test Sample Only
                                                 </Label>
@@ -199,10 +301,18 @@ export const TreeValidation = ({ isValidationOpen, setIsValidationOpen, updateFo
                         </div>
                     </RadioGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsValidationOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsValidationOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

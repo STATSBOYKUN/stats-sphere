@@ -1,20 +1,33 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
     VarianceCompsSaveProps,
-    VarianceCompsSaveType
+    VarianceCompsSaveType,
 } from "@/models/general-linear-model/variance-components/variance-components";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
-import {Checkbox} from "@/components/ui/checkbox";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
-export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, data }: VarianceCompsSaveProps) => {
-    const [saveState, setSaveState] = useState<VarianceCompsSaveType>({ ...data });
-    const [isContinueDisabled, setIsContinueDisabled] = useState(true);
+export const VarianceCompsSave = ({
+    isSaveOpen,
+    setIsSaveOpen,
+    updateFormData,
+    data,
+}: VarianceCompsSaveProps) => {
+    const [saveState, setSaveState] = useState<VarianceCompsSaveType>({
+        ...data,
+    });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
     useEffect(() => {
         if (isSaveOpen) {
@@ -22,7 +35,10 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
         }
     }, [isSaveOpen, data]);
 
-    const handleChange = (field: keyof VarianceCompsSaveType, value: CheckedState | number | string | null) => {
+    const handleChange = (
+        field: keyof VarianceCompsSaveType,
+        value: CheckedState | number | string | null
+    ) => {
         setSaveState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -34,7 +50,7 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
             ...prevState,
             CovMatrix: value === "CovMatrix",
             CorMatrix: value === "CorMatrix",
-        }))
+        }));
     };
 
     const handleDestGrp = (value: string) => {
@@ -42,7 +58,7 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
             ...prevState,
             CreateNewDataset: value === "CreateNewDataset",
             WriteNewDataFile: value === "WriteNewDataFile",
-        }))
+        }));
     };
 
     const handleContinue = () => {
@@ -66,7 +82,9 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                             <Checkbox
                                 id="VarCompEst"
                                 checked={saveState.VarCompEst}
-                                onCheckedChange={(checked) => handleChange("VarCompEst", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("VarCompEst", checked)
+                                }
                             />
                             <label
                                 htmlFor="VarCompEst"
@@ -80,7 +98,9 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                                 <Checkbox
                                     id="CompCovar"
                                     checked={saveState.CompCovar}
-                                    onCheckedChange={(checked) => handleChange("CompCovar", checked)}
+                                    onCheckedChange={(checked) =>
+                                        handleChange("CompCovar", checked)
+                                    }
                                 />
                                 <label
                                     htmlFor="CompCovar"
@@ -91,19 +111,28 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                             </div>
                             <RadioGroup
                                 value={
-                                    saveState.CovMatrix ? "CovMatrix"
-                                        : saveState.CorMatrix ? "CorMatrix" : ""
+                                    saveState.CovMatrix
+                                        ? "CovMatrix"
+                                        : saveState.CorMatrix
+                                        ? "CorMatrix"
+                                        : ""
                                 }
                                 onValueChange={handleMatrixGrp}
                             >
                                 <div className="flex items-center space-x-2 pl-6">
-                                    <RadioGroupItem value="CovMatrix" id="CovMatrix"/>
+                                    <RadioGroupItem
+                                        value="CovMatrix"
+                                        id="CovMatrix"
+                                    />
                                     <Label htmlFor="CovMatrix">
                                         Covariance Matrix
                                     </Label>
                                 </div>
                                 <div className="flex items-center space-x-2 pl-6">
-                                    <RadioGroupItem value="CorMatrix" id="CorMatrix"/>
+                                    <RadioGroupItem
+                                        value="CorMatrix"
+                                        id="CorMatrix"
+                                    />
                                     <Label htmlFor="CorMatrix">
                                         Correlation Matrix
                                     </Label>
@@ -113,31 +142,51 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                         <div className="flex flex-col gap-2">
                             <Label className="font-bold">Destination</Label>
                             <RadioGroup
-                                value={saveState.CreateNewDataset ? "CreateNewDataset" : saveState.WriteNewDataFile ? "WriteNewDataFile" : ""}
+                                value={
+                                    saveState.CreateNewDataset
+                                        ? "CreateNewDataset"
+                                        : saveState.WriteNewDataFile
+                                        ? "WriteNewDataFile"
+                                        : ""
+                                }
                                 onValueChange={handleDestGrp}
                             >
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="NewDataSet" id="NewDataSet"/>
+                                        <RadioGroupItem
+                                            value="NewDataSet"
+                                            id="NewDataSet"
+                                        />
                                         <Label htmlFor="NewDataSet">
                                             Create a New Dataset
                                         </Label>
                                     </div>
                                     <div className="flex items-center space-x-2 pl-6">
-                                        <Label className="w-[150px]">Dataset Name:</Label>
+                                        <Label className="w-[150px]">
+                                            Dataset Name:
+                                        </Label>
                                         <div className="w-[150px]">
                                             <Input
                                                 id="DatasetName"
                                                 type="text"
                                                 placeholder=""
-                                                value={saveState.DatasetName ?? ""}
-                                                onChange={(e) => handleChange("DatasetName", e.target.value)}
+                                                value={
+                                                    saveState.DatasetName ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "DatasetName",
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="WriteNewDataSet"
-                                                        id="WriteNewDataSet"/>
+                                        <RadioGroupItem
+                                            value="WriteNewDataSet"
+                                            id="WriteNewDataSet"
+                                        />
                                         <Label htmlFor="WriteNewDataSet">
                                             Write New Dataset File
                                         </Label>
@@ -147,7 +196,12 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                                             id="FilePath"
                                             type="file"
                                             placeholder=""
-                                            onChange={(e) => handleChange("FilePath", e.target.value)}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "FilePath",
+                                                    e.target.value
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -155,10 +209,18 @@ export const VarianceCompsSave = ({ isSaveOpen, setIsSaveOpen, updateFormData, d
                         </div>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsSaveOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsSaveOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">
