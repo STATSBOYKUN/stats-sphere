@@ -193,9 +193,9 @@ export const HierClusDialog = ({
                                         <Label className="font-bold">
                                             Variable(s):
                                         </Label>
-                                        <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                        <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>
-                                                <div className="w-full h-[100px]">
+                                                <div className="w-full h-[175px]">
                                                     {mainState.Variables &&
                                                     mainState.Variables.length >
                                                         0 ? (

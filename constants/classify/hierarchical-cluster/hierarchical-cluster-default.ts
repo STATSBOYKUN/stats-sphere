@@ -1,22 +1,25 @@
 import {
-    HierClusMainType, HierClusMethodType,
-    HierClusPlotsType, HierClusSaveType,
-    HierClusStatisticsType, HierClusType
+    HierClusMainType,
+    HierClusMethodType,
+    HierClusPlotsType,
+    HierClusSaveType,
+    HierClusStatisticsType,
+    HierClusType,
 } from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
 
 export const HierClusMainDefault: HierClusMainType = {
     Variables: null,
     LabelCases: null,
-    ClusterCases: false,
+    ClusterCases: true,
     ClusterVar: false,
-    DispStats: false,
-    DispPlots: false,
+    DispStats: true,
+    DispPlots: true,
 };
 
 export const HierClusStatisticsDefault: HierClusStatisticsType = {
-    AgglSchedule: false,
+    AgglSchedule: true,
     ProxMatrix: false,
-    NoneSol: false,
+    NoneSol: true,
     SingleSol: false,
     RangeSol: false,
     NoOfCluster: null,
@@ -26,18 +29,18 @@ export const HierClusStatisticsDefault: HierClusStatisticsType = {
 
 export const HierClusPlotsDefault: HierClusPlotsType = {
     Dendrograms: false,
-    AllClusters: false,
+    AllClusters: true,
     RangeClusters: false,
     NoneClusters: false,
-    StartCluster: null,
+    StartCluster: 1,
     StopCluster: null,
-    StepByCluster: null,
-    VertOrien: false,
+    StepByCluster: 1,
+    VertOrien: true,
     HoriOrien: false,
 };
 
 export const HierClusSaveDefault: HierClusSaveType = {
-    NoneSol: false,
+    NoneSol: true,
     SingleSol: false,
     RangeSol: false,
     NoOfCluster: null,
@@ -46,19 +49,19 @@ export const HierClusSaveDefault: HierClusSaveType = {
 };
 
 export const HierClusMethodDefault: HierClusMethodType = {
-    ClusMethod: null,
-    Interval: false,
-    IntervalMethod: null,
-    Power: null,
-    Root: null,
+    ClusMethod: "AverageBetweenGroups",
+    Interval: true,
+    IntervalMethod: "Euclidean",
+    Power: "2",
+    Root: "2",
     Counts: false,
-    CountsMethod: null,
+    CountsMethod: "CHISQ",
     Binary: false,
-    BinaryMethod: null,
-    Present: null,
-    Absent: null,
-    StandardizeMethod: null,
-    ByVariable: false,
+    BinaryMethod: "BSEUCLID",
+    Present: 1,
+    Absent: 0,
+    StandardizeMethod: "None",
+    ByVariable: true,
     ByCase: false,
     AbsValue: false,
     ChangeSign: false,

@@ -1,17 +1,37 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {HierClusPlotsProps, HierClusPlotsType} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Checkbox} from "@/components/ui/checkbox";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Label} from "@/components/ui/label";
-import {Input} from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    HierClusPlotsProps,
+    HierClusPlotsType,
+} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
-export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, data }: HierClusPlotsProps) => {
-    const [plotsState, setPlotsState] = useState<HierClusPlotsType>({ ...data });
+export const HierClusPlots = ({
+    isPlotsOpen,
+    setIsPlotsOpen,
+    updateFormData,
+    data,
+}: HierClusPlotsProps) => {
+    const [plotsState, setPlotsState] = useState<HierClusPlotsType>({
+        ...data,
+    });
     const [isContinueDisabled, setIsContinueDisabled] = useState(true);
 
     useEffect(() => {
@@ -20,7 +40,10 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
         }
     }, [isPlotsOpen, data]);
 
-    const handleChange = (field: keyof HierClusPlotsType, value: CheckedState | boolean | number | string | null) => {
+    const handleChange = (
+        field: keyof HierClusPlotsType,
+        value: CheckedState | boolean | number | string | null
+    ) => {
         setPlotsState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -57,7 +80,9 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
             <Dialog open={isPlotsOpen} onOpenChange={setIsPlotsOpen}>
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>Hierarchical Cluster Analysis: Plots</DialogTitle>
+                        <DialogTitle>
+                            Hierarchical Cluster Analysis: Plots
+                        </DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <div className="flex flex-col items-start gap-2">
@@ -65,7 +90,9 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                             <Checkbox
                                 id="Dendrograms"
                                 checked={plotsState.Dendrograms}
-                                onCheckedChange={(checked) => handleChange("Dendrograms", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange("Dendrograms", checked)
+                                }
                             />
                             <label
                                 htmlFor="Dendrograms"
@@ -82,21 +109,34 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                                 <div className="flex flex-col gap-2 w-full p-2">
                                     <Label className="font-bold">Icicle</Label>
                                     <RadioGroup
-                                        value={plotsState.AllClusters ? "AllClusters" : plotsState.RangeClusters ? "RangeClusters" : "NoneClusters"}
+                                        value={
+                                            plotsState.AllClusters
+                                                ? "AllClusters"
+                                                : plotsState.RangeClusters
+                                                ? "RangeClusters"
+                                                : "NoneClusters"
+                                        }
                                         onValueChange={handleIcicleGrp}
                                     >
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="AllClusters" id="AllClusters"/>
+                                                <RadioGroupItem
+                                                    value="AllClusters"
+                                                    id="AllClusters"
+                                                />
                                                 <Label htmlFor="AllClusters">
                                                     All Clusters
                                                 </Label>
                                             </div>
                                             <div className="flex flex-col gap-2 space-x-2">
                                                 <div className="flex items-center space-x-2">
-                                                    <RadioGroupItem value="RangeClusters" id="RangeClusters"/>
+                                                    <RadioGroupItem
+                                                        value="RangeClusters"
+                                                        id="RangeClusters"
+                                                    />
                                                     <Label htmlFor="RangeClusters">
-                                                        Specified Range of Clusters
+                                                        Specified Range of
+                                                        Clusters
                                                     </Label>
                                                 </div>
                                                 <div className="flex items-center pl-4 space-x-2">
@@ -111,8 +151,22 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                                                             id="StartCluster"
                                                             type="number"
                                                             placeholder=""
-                                                            value={plotsState.StartCluster ?? ""}
-                                                            onChange={(e) => handleChange("StartCluster", Number(e.target.value))}
+                                                            value={
+                                                                plotsState.StartCluster ??
+                                                                ""
+                                                            }
+                                                            disabled={
+                                                                !plotsState.RangeClusters
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "StartCluster",
+                                                                    Number(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -128,8 +182,22 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                                                             id="StopCluster"
                                                             type="number"
                                                             placeholder=""
-                                                            value={plotsState.StopCluster ?? ""}
-                                                            onChange={(e) => handleChange("StopCluster", Number(e.target.value))}
+                                                            value={
+                                                                plotsState.StopCluster ??
+                                                                ""
+                                                            }
+                                                            disabled={
+                                                                !plotsState.RangeClusters
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "StopCluster",
+                                                                    Number(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
@@ -145,14 +213,31 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                                                             id="StepByCluster"
                                                             type="number"
                                                             placeholder=""
-                                                            value={plotsState.StepByCluster ?? ""}
-                                                            onChange={(e) => handleChange("StepByCluster", Number(e.target.value))}
+                                                            value={
+                                                                plotsState.StepByCluster ??
+                                                                ""
+                                                            }
+                                                            disabled={
+                                                                !plotsState.RangeClusters
+                                                            }
+                                                            onChange={(e) =>
+                                                                handleChange(
+                                                                    "StepByCluster",
+                                                                    Number(
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                )
+                                                            }
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="NoneClusters" id="NoneClusters"/>
+                                                <RadioGroupItem
+                                                    value="NoneClusters"
+                                                    id="NoneClusters"
+                                                />
                                                 <Label htmlFor="NoneClusters">
                                                     None
                                                 </Label>
@@ -161,23 +246,35 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                                     </RadioGroup>
                                 </div>
                             </ResizablePanel>
-                            <ResizableHandle/>
+                            <ResizableHandle />
                             <ResizablePanel defaultSize={25}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <RadioGroup
-                                        value={plotsState.VertOrien ? "VertOrien" : "HoriOrien"}
+                                        value={
+                                            plotsState.VertOrien
+                                                ? "VertOrien"
+                                                : "HoriOrien"
+                                        }
                                         onValueChange={handleOrienGrp}
                                     >
                                         <div className="flex flex-col gap-2">
-                                            <Label className="font-bold">Orientation</Label>
+                                            <Label className="font-bold">
+                                                Orientation
+                                            </Label>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="VertOrien" id="VertOrien"/>
+                                                <RadioGroupItem
+                                                    value="VertOrien"
+                                                    id="VertOrien"
+                                                />
                                                 <Label htmlFor="VertOrien">
                                                     Vertical Orientation
                                                 </Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="HoriOrien" id="HoriOrien"/>
+                                                <RadioGroupItem
+                                                    value="HoriOrien"
+                                                    id="HoriOrien"
+                                                />
                                                 <Label htmlFor="HoriOrien">
                                                     Horizontal Orientation
                                                 </Label>
@@ -189,10 +286,18 @@ export const HierClusPlots = ({ isPlotsOpen, setIsPlotsOpen, updateFormData, dat
                         </ResizablePanelGroup>
                     </div>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsPlotsOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsPlotsOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">

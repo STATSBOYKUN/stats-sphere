@@ -1,25 +1,42 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Separator} from "@/components/ui/separator";
-import {HierClusSaveProps, HierClusSaveType} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
-import {CheckedState} from "@radix-ui/react-checkbox";
-import {ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import {
+    HierClusSaveProps,
+    HierClusSaveType,
+} from "@/models/classify/hierarchical-cluster/hierarchical-cluster";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
 
-export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: HierClusSaveProps) => {
-    const [saveState, setSaveState] = useState<HierClusSaveType>({...data});
+export const HierClusSave = ({
+    isSaveOpen,
+    setIsSaveOpen,
+    updateFormData,
+    data,
+}: HierClusSaveProps) => {
+    const [saveState, setSaveState] = useState<HierClusSaveType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(true);
 
     useEffect(() => {
         if (isSaveOpen) {
-            setSaveState({...data});
+            setSaveState({ ...data });
         }
     }, [isSaveOpen, data]);
 
-    const handleChange = (field: keyof HierClusSaveType, value: CheckedState | boolean | number | string | null) => {
+    const handleChange = (
+        field: keyof HierClusSaveType,
+        value: CheckedState | boolean | number | string | null
+    ) => {
         setSaveState((prevState) => ({
             ...prevState,
             [field]: value,
@@ -48,30 +65,48 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
             <Dialog open={isSaveOpen} onOpenChange={setIsSaveOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Hierarchical Cluster Analysis: Save</DialogTitle>
+                        <DialogTitle>
+                            Hierarchical Cluster Analysis: Save
+                        </DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <ResizablePanelGroup
                         direction="vertical"
                         className="min-h-[250px] max-w-md rounded-lg border md:min-w-[200px]"
                     >
                         <ResizablePanel defaultSize={100}>
                             <div className="flex flex-col gap-2 w-full p-2">
-                                <Label className="font-bold">Cluster Membership</Label>
+                                <Label className="font-bold">
+                                    Cluster Membership
+                                </Label>
                                 <RadioGroup
-                                    value={saveState.NoneSol ? "NoneSol" : saveState.SingleSol ? "SingleSol" : saveState.RangeSol ? "RangeSol" : "NoneSol"}
+                                    value={
+                                        saveState.NoneSol
+                                            ? "NoneSol"
+                                            : saveState.SingleSol
+                                            ? "SingleSol"
+                                            : saveState.RangeSol
+                                            ? "RangeSol"
+                                            : "NoneSol"
+                                    }
                                     onValueChange={handleMembersGrp}
                                 >
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="NoneSol" id="NoneSol"/>
+                                            <RadioGroupItem
+                                                value="NoneSol"
+                                                id="NoneSol"
+                                            />
                                             <Label htmlFor="NoneSol">
                                                 None
                                             </Label>
                                         </div>
                                         <div className="flex flex-col gap-2 space-x-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="SingleSol" id="SingleSol"/>
+                                                <RadioGroupItem
+                                                    value="SingleSol"
+                                                    id="SingleSol"
+                                                />
                                                 <Label htmlFor="SingleSol">
                                                     Single Solution
                                                 </Label>
@@ -88,15 +123,32 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
                                                         id="NoOfCluster"
                                                         type="number"
                                                         placeholder=""
-                                                        value={saveState.NoOfCluster ?? ""}
-                                                        onChange={(e) => handleChange("NoOfCluster", Number(e.target.value))}
+                                                        value={
+                                                            saveState.NoOfCluster ??
+                                                            ""
+                                                        }
+                                                        disabled={
+                                                            !saveState.SingleSol
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "NoOfCluster",
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-2 space-x-2">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="RangeSol" id="RangeSol"/>
+                                                <RadioGroupItem
+                                                    value="RangeSol"
+                                                    id="RangeSol"
+                                                />
                                                 <Label htmlFor="RangeSol">
                                                     Range of Solutions
                                                 </Label>
@@ -113,8 +165,22 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
                                                         id="MinCluster"
                                                         type="number"
                                                         placeholder=""
-                                                        value={saveState.MinCluster ?? ""}
-                                                        onChange={(e) => handleChange("MinCluster", Number(e.target.value))}
+                                                        value={
+                                                            saveState.MinCluster ??
+                                                            ""
+                                                        }
+                                                        disabled={
+                                                            !saveState.RangeSol
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "MinCluster",
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -130,8 +196,22 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
                                                         id="MaxCluster"
                                                         type="number"
                                                         placeholder=""
-                                                        value={saveState.MaxCluster ?? ""}
-                                                        onChange={(e) => handleChange("MaxCluster", Number(e.target.value))}
+                                                        value={
+                                                            saveState.MaxCluster ??
+                                                            ""
+                                                        }
+                                                        disabled={
+                                                            !saveState.RangeSol
+                                                        }
+                                                        onChange={(e) =>
+                                                            handleChange(
+                                                                "MaxCluster",
+                                                                Number(
+                                                                    e.target
+                                                                        .value
+                                                                )
+                                                            )
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -142,10 +222,18 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
                         </ResizablePanel>
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
-                        <Button disabled={isContinueDisabled} type="button" onClick={handleContinue}>
+                        <Button
+                            disabled={isContinueDisabled}
+                            type="button"
+                            onClick={handleContinue}
+                        >
                             Continue
                         </Button>
-                        <Button type="button" variant="secondary" onClick={() => setIsSaveOpen(false)}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsSaveOpen(false)}
+                        >
                             Cancel
                         </Button>
                         <Button type="button" variant="secondary">
@@ -155,6 +243,5 @@ export const HierClusSave = ({isSaveOpen, setIsSaveOpen, updateFormData, data}: 
                 </DialogContent>
             </Dialog>
         </>
-    )
-        ;
+    );
 };
