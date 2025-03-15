@@ -1,24 +1,38 @@
+"use client";
+
 import React, { useRef, useEffect, useMemo, useCallback } from 'react';
-import Handsontable from 'handsontable';
-import 'handsontable/dist/handsontable.full.min.css';
+import { HotTable } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
+import 'handsontable/dist/handsontable.full.min.css';
+import Handsontable from 'handsontable';
+import { ContextMenu } from 'handsontable/plugins/contextMenu';
+
+// Internal imports
 import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
-import { useModalStore } from "@/stores/useModalStore";
 import { Variable } from '@/types/Variable';
 
+// Constants
+const DEFAULT_ROWS = 100;
+const DEFAULT_MIN_COLUMNS = 45;
+const DEFAULT_COLUMN_WIDTH = 64;
+
+// Register all Handsontable modules
 registerAllModules();
 
-const getColumnConfig = (variable: Variable | { columnIndex: number; name: string; type: "STRING"; columns: number; decimals: number; align: "center"; }) => {
+/**
+ * Creates column configuration based on variable type and properties
+ */
+const getColumnConfig = (variable: Variable) => {
     const baseConfig = {
-        width: variable.columns || 64,
-        className:
-            variable.align === 'right'
-                ? 'htRight'
-                : variable.align === 'left'
-                    ? 'htLeft'
-                    : 'htCenter'
+        width: variable.columns || DEFAULT_COLUMN_WIDTH,
+        className: variable.align === 'right'
+            ? 'htRight'
+            : variable.align === 'left'
+                ? 'htLeft'
+                : 'htCenter'
     };
+
     switch (variable.type) {
         case 'NUMERIC':
             return {
@@ -30,20 +44,34 @@ const getColumnConfig = (variable: Variable | { columnIndex: number; name: strin
                 }
             };
         case 'DATE':
-            return { ...baseConfig, type: 'date', dateFormat: 'MM/DD/YYYY' };
+            return {
+                ...baseConfig,
+                type: 'date',
+                dateFormat: 'MM/DD/YYYY'
+            };
         case 'STRING':
         default:
-            return { ...baseConfig, type: 'text' };
+            return {
+                ...baseConfig,
+                type: 'text'
+            };
     }
 };
 
-const getDisplayMatrix = (stateData: string | any[]) => {
-    const defaultRows = 100;
-    const defaultCols = 45;
+/**
+ * Creates a display matrix with proper dimensions based on data and variable count
+ */
+const getDisplayMatrix = (
+    stateData: (string | number)[][],
+    varCount: number
+): (string | number)[][] => {
+    const defaultCols = Math.max(DEFAULT_MIN_COLUMNS, varCount);
     const stateRows = stateData?.length || 0;
-    const stateCols = stateRows ? stateData[0].length : 0;
-    const newRows = Math.max(defaultRows, stateRows);
+    const stateCols = stateRows && stateData[0] ? stateData[0].length : 0;
+
+    const newRows = Math.max(DEFAULT_ROWS, stateRows);
     const newCols = Math.max(defaultCols, stateCols);
+
     return Array.from({ length: newRows }, (_, rowIndex) => {
         if (rowIndex < stateRows) {
             const row = stateData[rowIndex];
@@ -56,35 +84,15 @@ const getDisplayMatrix = (stateData: string | any[]) => {
     });
 };
 
-const createContextMenu = () => ({
-    row_above: { name: 'Insert row above' },
-    row_below: { name: 'Insert row below' },
-    col_left: { name: 'Insert column on the left' },
-    col_right: { name: 'Insert column on the right' },
-    separator1: { name: '---------' },
-    remove_row: { name: 'Remove row' },
-    remove_col: { name: 'Remove column' },
-    separator2: { name: '---------' },
-    alignment: {
-        name: 'Alignment',
-        submenu: {
-            items: [
-                { key: 'alignment:left', name: 'Left' },
-                { key: 'alignment:center', name: 'Center' },
-                { key: 'alignment:right', name: 'Right' }
-            ]
-        }
-    },
-    separator3: { name: '---------' },
-    undo: { name: 'Undo' },
-    redo: { name: 'Redo' }
-});
-
+/**
+ * DataTable component that displays and manages tabular data with Handsontable
+ */
 export default function DataTable() {
-    const containerRef = useRef(null);
-    const hotInstance = useRef(null);
-    const isSelectionProgrammatic = useRef(false);
+    // Refs
+    const hotTableRef = useRef<any>(null);
+    const isSelectionProgrammatic = useRef<boolean>(false);
 
+    // Store hooks
     const {
         data,
         updateCell,
@@ -93,7 +101,9 @@ export default function DataTable() {
         deleteRow,
         deleteColumn,
         selectCell,
-        selectedCell
+        selectedCell,
+        updateBulkCells,
+        ensureMatrixDimensions
     } = useDataStore();
 
     const {
@@ -105,48 +115,63 @@ export default function DataTable() {
         addMultipleVariables
     } = useVariableStore();
 
-    const { isStatisticProgress } = useModalStore();
-
+    // Grid dimensions calculation
     const stateCols = data[0]?.length || 0;
-    const numColumns = Math.max(stateCols, 45);
+    const variableCount = variables.length > 0
+        ? Math.max(...variables.map(v => v.columnIndex)) + 1
+        : 0;
+    const numColumns = Math.max(stateCols, variableCount, DEFAULT_MIN_COLUMNS - 1) + 1;
 
+    // Column headers generation
     const colHeaders = useMemo(() => {
         return Array.from({ length: numColumns }, (_, index) => {
             const variable = getVariableByColumnIndex(index);
-            return variable?.name || `var`;
+            return variable?.name || 'var';
         });
     }, [numColumns, variables, getVariableByColumnIndex]);
 
-    const displayMatrix = useMemo(() => getDisplayMatrix(data), [data]);
+    // Data matrix generation
+    const displayMatrix = useMemo(() =>
+            getDisplayMatrix(data, variableCount),
+        [data, variableCount]);
 
+    // Column configuration generation
     const columns = useMemo(() => {
         return Array.from({ length: numColumns }, (_, i) => {
-            const variable =
-                getVariableByColumnIndex(i) || {
-                    columnIndex: i,
-                    name: '',
-                    type: 'STRING',
-                    columns: 64,
-                    decimals: 2,
-                    align: 'right'
-                };
-            return getColumnConfig(variable);
+            const variable = getVariableByColumnIndex(i);
+            return getColumnConfig(variable || {
+                columnIndex: i,
+                type: 'STRING',
+                align: 'right',
+                decimals: 0,
+                columns: DEFAULT_COLUMN_WIDTH
+            } as Variable);
         });
     }, [numColumns, getVariableByColumnIndex]);
 
-    const handleBeforeChange = useCallback((changes: any[], source: string) => {
-        if (source === 'loadData' || !changes || isStatisticProgress) return;
+    /**
+     * Handles data changes before they're applied to the grid
+     */
+    const handleBeforeChange = useCallback((
+        changes: (Handsontable.CellChange | null)[],
+        source: Handsontable.ChangeSource
+    ): boolean | void => {
+        if (source === 'loadData' || !changes) return;
 
-        const changesByCol = {};
+        const changesByCol: Record<number, Handsontable.CellChange[]> = {};
         let highestColumn = -1;
+        let maxRow = -1;
 
-        changes.forEach(change => {
+        // Group changes by column and find max dimensions
+        changes.forEach((change) => {
             if (!change) return;
+
             const [row, col, oldValue, newValue] = change;
             if (newValue === oldValue) return;
-            if (typeof col !== 'number') return;
+            if (typeof col !== 'number' || typeof row !== 'number') return;
 
             highestColumn = Math.max(highestColumn, col);
+            maxRow = Math.max(maxRow, row);
 
             const colNumber = col;
             if (!changesByCol[colNumber]) {
@@ -155,188 +180,231 @@ export default function DataTable() {
             changesByCol[colNumber].push(change);
         });
 
-        const missingColumns = [];
-
-        // Ensure variables exist for all columns up to the highest one changed
+        // Check for columns without variables
+        const missingColumns: number[] = [];
         for (let i = 0; i <= highestColumn; i++) {
             if (!getVariableByColumnIndex(i)) {
                 missingColumns.push(i);
             }
         }
 
+        // Create missing variables
         if (missingColumns.length > 0) {
-            // Prepare data for batch variable creation
             const newVariables = missingColumns.map(colIndex => {
                 const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
+                let type: Variable['type'] = 'STRING';
 
+                // Try to determine column type
                 if (hasChanges) {
-                    let allNumeric = true;
-                    changesByCol[colIndex].forEach(change => {
+                    const allNumeric = changesByCol[colIndex].every(change => {
+                        if (!change) return true;
                         const [, , , newValue] = change;
-                        if (newValue !== '' && isNaN(Number(newValue))) {
-                            allNumeric = false;
-                        }
+                        return newValue === '' || !isNaN(Number(newValue));
                     });
-
-                    return {
-                        columnIndex: colIndex,
-                        type: allNumeric ? 'NUMERIC' : 'STRING',
-                    };
+                    type = allNumeric ? 'NUMERIC' : 'STRING';
                 }
 
                 return {
-                    columnIndex: colIndex
+                    columnIndex: colIndex,
+                    type: type
                 };
             });
 
-            // Batch creation of variables
-            addMultipleVariables(newVariables);
+            // Handle variable creation asynchronously but don't return a promise
+            addMultipleVariables(newVariables).catch(error => {
+                console.error('Failed to create variables:', error);
+            });
         }
 
-        Object.keys(changesByCol).forEach(colKey => {
+        // Ensure matrix has appropriate dimensions
+        const highestVarIndex = variables.length > 0
+            ? Math.max(...variables.map(v => v.columnIndex))
+            : -1;
+
+        ensureMatrixDimensions(maxRow, Math.max(highestColumn, highestVarIndex));
+
+        // Process cell updates
+        const cellUpdates = [];
+
+        for (const colKey of Object.keys(changesByCol)) {
             const col = Number(colKey);
             const colChanges = changesByCol[col];
             const variable = getVariableByColumnIndex(col);
 
-            if (variable) {
-                colChanges.forEach(change => {
-                    const [row, , , newValue] = change;
-                    if (variable.type === 'NUMERIC') {
-                        if (newValue === '' || !isNaN(Number(newValue))) {
-                            updateCell(row, col, newValue);
-                        }
-                    } else if (variable.type === 'STRING') {
-                        let text = newValue ? newValue.toString() : '';
-                        if (text.length > variable.width) {
-                            text = text.substring(0, variable.width);
-                        }
-                        updateCell(row, col, text);
-                    } else {
-                        updateCell(row, col, newValue);
-                    }
-                });
+            if (!variable) {
+                console.warn(`Variable for column ${col} still not found after creation`);
+                continue;
             }
-        });
-    }, [getVariableByColumnIndex, updateCell, addVariable, addMultipleVariables, isStatisticProgress]);
 
-    const handleAfterSelectionEnd = useCallback((row, column) => {
+            for (const change of colChanges) {
+                if (!change) continue;
+                const [row, , , newValue] = change;
+
+                if (variable.type === 'NUMERIC') {
+                    // Allow empty values or valid numbers
+                    if (newValue === '' || !isNaN(Number(newValue))) {
+                        cellUpdates.push({ row, col, value: newValue });
+                    }
+                } else if (variable.type === 'STRING') {
+                    // Truncate text if exceeds width
+                    let text = newValue ? newValue.toString() : '';
+                    if (text.length > variable.width) {
+                        text = text.substring(0, variable.width);
+                    }
+                    cellUpdates.push({ row, col, value: text });
+                } else {
+                    cellUpdates.push({ row, col, value: newValue });
+                }
+            }
+        }
+
+        // Batch update cells (don't return the promise)
+        if (cellUpdates.length > 0) {
+            updateBulkCells(cellUpdates).catch(error => {
+                console.error('Failed to update cells:', error);
+            });
+        }
+    }, [
+        getVariableByColumnIndex,
+        updateBulkCells,
+        addMultipleVariables,
+        ensureMatrixDimensions,
+        variables
+    ]);
+
+    /**
+     * Handles selection events
+     */
+    const handleAfterSelectionEnd = useCallback((row: number, column: number) => {
         if (!isSelectionProgrammatic.current) {
             selectCell(row, column);
         }
     }, [selectCell]);
 
-    const handleAfterCreateRow = useCallback((index, amount) => {
+    /**
+     * Handles row creation
+     */
+    const handleAfterCreateRow = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             addRow(index + i);
         }
     }, [addRow]);
 
-    const handleAfterCreateCol = useCallback((index, amount) => {
+    /**
+     * Handles column creation
+     */
+    const handleAfterCreateCol = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             const insertIndex = index + i;
-
             addColumn(insertIndex);
-
             addVariable({
-                columnIndex: insertIndex,
+                columnIndex: insertIndex
             });
         }
     }, [addColumn, addVariable]);
 
-    const handleAfterRemoveRow = useCallback((index, amount) => {
+    /**
+     * Handles row deletion
+     */
+    const handleAfterRemoveRow = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             deleteRow(index);
         }
     }, [deleteRow]);
 
-    const handleAfterRemoveCol = useCallback((index, amount) => {
+    /**
+     * Handles column deletion
+     */
+    const handleAfterRemoveCol = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             deleteColumn(index);
-
             deleteVariable(index);
         }
     }, [deleteColumn, deleteVariable]);
 
-    const handleAfterColumnResize = useCallback((newSize, column) => {
+    /**
+     * Handles column resizing
+     */
+    const handleAfterColumnResize = useCallback((newSize: number, column: number) => {
         const variable = getVariableByColumnIndex(column);
         if (variable) {
             updateVariable(column, 'columns', newSize);
         }
     }, [getVariableByColumnIndex, updateVariable]);
 
-    const handleAfterContextMenuExecute = useCallback((command, args) => {
-        if (command.startsWith('alignment:')) {
-            const alignment = command.split(':')[1];
-            const selectedRange = hotInstance.current.getSelectedRange();
+    /**
+     * Handles applying alignment to the selected columns
+     */
+    const applyAlignment = useCallback((alignment: 'left' | 'center' | 'right') => {
+        const hotInstance = hotTableRef.current?.hotInstance;
+        const selectedRange = hotInstance?.getSelectedRange();
 
-            if (selectedRange && selectedRange.length > 0) {
-                const { from: { col: startCol }, to: { col: endCol } } = selectedRange[0];
+        if (selectedRange && selectedRange.length > 0) {
+            const { from: { col: startCol }, to: { col: endCol } } = selectedRange[0];
 
-                for (let col = startCol; col <= endCol; col++) {
-                    const variable = getVariableByColumnIndex(col);
-                    if (variable) {
-                        updateVariable(col, 'align', alignment);
-                    }
+            for (let col = startCol; col <= endCol; col++) {
+                const variable = getVariableByColumnIndex(col);
+                if (variable) {
+                    updateVariable(col, 'align', alignment);
                 }
             }
         }
     }, [getVariableByColumnIndex, updateVariable]);
 
-    const settings = useMemo(() => ({
-        data: displayMatrix,
-        colHeaders,
-        columns,
-        width: '100%',
-        height: '100%',
-        dropdownMenu: true,
-        multiColumnSorting: true,
-        filters: true,
-        rowHeaders: true,
-        manualRowMove: true,
-        customBorders: true,
-        manualColumnResize: true,
-        contextMenu: createContextMenu(),
-        licenseKey: 'non-commercial-and-evaluation',
-        minSpareRows: 1,
-        minSpareCols: 1,
-        copyPaste: true,
-        beforeChange: handleBeforeChange,
-        afterSelection: handleAfterSelectionEnd,
-        afterCreateRow: handleAfterCreateRow,
-        afterCreateCol: handleAfterCreateCol,
-        afterRemoveRow: handleAfterRemoveRow,
-        afterRemoveCol: handleAfterRemoveCol,
-        afterColumnResize: handleAfterColumnResize,
-        afterContextMenuExecute: handleAfterContextMenuExecute
-    }), [
-        displayMatrix,
-        colHeaders,
-        columns,
-        handleBeforeChange,
-        handleAfterSelectionEnd,
-        handleAfterCreateRow,
-        handleAfterCreateCol,
-        handleAfterRemoveRow,
-        handleAfterRemoveCol,
-        handleAfterColumnResize,
-        handleAfterContextMenuExecute
-    ]);
-
-    useEffect(() => {
-        if (containerRef.current) {
-            if (!hotInstance.current) {
-                hotInstance.current = new Handsontable(containerRef.current, settings);
-            } else if (!hotInstance.current.isDestroyed) {
-                hotInstance.current.updateSettings(settings);
+    // Context menu configuration
+    const contextMenuConfig = useMemo(() => {
+        return {
+            items: {
+                row_above: {},
+                row_below: {},
+                col_left: {},
+                col_right: {},
+                separator1: ContextMenu.SEPARATOR,
+                remove_row: {},
+                remove_col: {},
+                separator2: ContextMenu.SEPARATOR,
+                alignment: {
+                    name: 'Alignment',
+                    submenu: {
+                        items: [
+                            {
+                                key: 'alignment:left',
+                                name: 'Left',
+                                callback: function() {
+                                    applyAlignment('left');
+                                }
+                            },
+                            {
+                                key: 'alignment:center',
+                                name: 'Center',
+                                callback: function() {
+                                    applyAlignment('center');
+                                }
+                            },
+                            {
+                                key: 'alignment:right',
+                                name: 'Right',
+                                callback: function() {
+                                    applyAlignment('right');
+                                }
+                            }
+                        ]
+                    }
+                },
+                separator3: ContextMenu.SEPARATOR,
+                copy: {},
+                cut: {}
             }
-        }
-    }, [settings]);
+        };
+    }, [applyAlignment]);
 
+    // Effect to handle selected cell changes
     useEffect(() => {
-        if (hotInstance.current && selectedCell && !hotInstance.current.isDestroyed) {
+        if (hotTableRef.current && selectedCell && hotTableRef.current.hotInstance) {
             const { row, col } = selectedCell;
+            const hotInstance = hotTableRef.current.hotInstance;
 
-            const currentSelection = hotInstance.current.getSelected();
+            const currentSelection = hotInstance.getSelected();
             const alreadySelected = currentSelection &&
                 currentSelection[0] &&
                 currentSelection[0][0] === row &&
@@ -344,8 +412,9 @@ export default function DataTable() {
 
             if (!alreadySelected) {
                 isSelectionProgrammatic.current = true;
-                hotInstance.current.selectCell(row, col);
+                hotInstance.selectCell(row, col);
 
+                // Reset flag after selection is complete
                 setTimeout(() => {
                     isSelectionProgrammatic.current = false;
                 }, 0);
@@ -353,18 +422,35 @@ export default function DataTable() {
         }
     }, [selectedCell]);
 
-    useEffect(() => {
-        return () => {
-            if (hotInstance.current && !hotInstance.current.isDestroyed) {
-                hotInstance.current.destroy();
-                hotInstance.current = null;
-            }
-        };
-    }, []);
-
     return (
-        <div className="h-full w-full">
-            <div ref={containerRef} className="h-full w-full z-0" />
+        <div className="h-full w-full z-0 relative">
+            <HotTable
+                ref={hotTableRef}
+                data={displayMatrix}
+                colHeaders={colHeaders}
+                columns={columns}
+                width="100%"
+                height="100%"
+                dropdownMenu={true}
+                multiColumnSorting={true}
+                filters={true}
+                rowHeaders={true}
+                manualRowMove={true}
+                customBorders={true}
+                manualColumnResize={true}
+                contextMenu={contextMenuConfig}
+                licenseKey="non-commercial-and-evaluation"
+                minSpareRows={1}
+                minSpareCols={1}
+                copyPaste={true}
+                beforeChange={handleBeforeChange}
+                afterSelection={handleAfterSelectionEnd}
+                afterCreateRow={handleAfterCreateRow}
+                afterCreateCol={handleAfterCreateCol}
+                afterRemoveRow={handleAfterRemoveRow}
+                afterRemoveCol={handleAfterRemoveCol}
+                afterColumnResize={handleAfterColumnResize}
+            />
         </div>
     );
 }

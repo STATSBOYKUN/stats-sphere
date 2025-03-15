@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import db from "@/lib/db";
+import { Variable } from "@/types/Variable";
+import { WritableDraft } from "immer";
 
 export type DataRow = (string | number)[];
 export type CellUpdate = { row: number; col: number; value: string | number };
@@ -23,7 +25,7 @@ export interface DataStoreState {
     updateCell: (row: number, col: number, value: string | number) => Promise<void>;
     loadData: () => Promise<void>;
     resetData: () => Promise<void>;
-    getAvailableData: (selectedColumns?: number[]) => Promise<DataRow[]>;
+    getVariableData: (variable: Variable) => Promise<{ variable: Variable, data: (string | number)[] }>;
     updateBulkCells: (updates: CellUpdate[]) => Promise<void>;
     setDataAndSync: (newData: DataRow[]) => Promise<void>;
 
@@ -31,12 +33,15 @@ export interface DataStoreState {
     addColumn: (index?: number) => Promise<void>;
     deleteRow: (index: number) => Promise<void>;
     deleteColumn: (index: number) => Promise<void>;
-    sortData: (columnIndex: number, direction: 'asc' | 'desc') => Promise<void>;
     validateVariableData: (columnIndex: number, type: string, width: number) => Promise<{
         isValid: boolean;
         issues: Array<{ row: number; message: string }>
     }>;
     selectCell: (row: number | null, col: number | null) => void;
+    sortData: (columnIndex: number, direction: 'asc' | 'desc') => Promise<void>;
+    swapRows: (row1: number, row2: number) => Promise<void>;
+    swapColumns: (col1: number, col2: number) => Promise<void>;
+    ensureMatrixDimensions: (maxRow: number, maxCol: number, minColCount?: number) => void;
 }
 
 export const useDataStore = create<DataStoreState>()(
@@ -54,24 +59,52 @@ export const useDataStore = create<DataStoreState>()(
                     state.lastUpdated = new Date();
                 }),
 
-            updateCell: async (row, col, value) => {
+            ensureMatrixDimensions: (maxRow, maxCol, minColCount) => {
                 set((state) => {
-                    if (row >= state.data.length || (state.data.length > 0 && col >= state.data[0].length)) {
-                        const newRows = Math.max(state.data.length, row + 1);
-                        const newCols = state.data.length > 0 ? Math.max(state.data[0].length, col + 1) : col + 1;
-                        const newData = Array.from({ length: newRows }, (_, i) => {
-                            if (i < state.data.length) {
-                                const currentRow = state.data[i];
-                                if (currentRow.length < newCols) {
-                                    return [...currentRow, ...Array(newCols - currentRow.length).fill("")];
-                                }
-                                return [...currentRow];
-                            } else {
-                                return Array(newCols).fill("");
-                            }
-                        });
-                        state.data = newData;
+                    // Ensure minColCount is used if provided
+                    const effectiveMaxCol = minColCount !== undefined ? Math.max(maxCol, minColCount - 1) : maxCol;
+
+                    if (state.data.length === 0 && (maxRow >= 0 || effectiveMaxCol >= 0)) {
+                        const colsCount = effectiveMaxCol + 1;
+                        const rowsCount = maxRow + 1;
+
+                        state.data = Array(rowsCount).fill(0).map(() => Array(colsCount).fill(""));
+                        state.lastUpdated = new Date();
+                        return;
                     }
+
+                    if (maxRow >= state.data.length) {
+                        const colsCount = state.data.length > 0
+                            ? Math.max(state.data[0].length, effectiveMaxCol + 1)
+                            : effectiveMaxCol + 1;
+
+                        for (let i = state.data.length; i <= maxRow; i++) {
+                            state.data.push(Array(colsCount).fill(""));
+                        }
+                    }
+
+                    if (state.data.length > 0 && effectiveMaxCol >= state.data[0].length) {
+                        for (let i = 0; i < state.data.length; i++) {
+                            const additionalCols = Array(effectiveMaxCol + 1 - state.data[i].length).fill("");
+                            state.data[i].push(...additionalCols);
+                        }
+                    }
+
+                    state.lastUpdated = new Date();
+                });
+            },
+
+            updateCell: async (row, col, value) => {
+                const currentData = get().data;
+
+                if (row < currentData.length && col < currentData[0]?.length) {
+                    if (currentData[row][col] === value) {
+                        return;
+                    }
+                }
+
+                set((state) => {
+                    get().ensureMatrixDimensions(row, col);
                     state.data[row][col] = value;
                     state.lastUpdated = new Date();
                 });
@@ -225,36 +258,6 @@ export const useDataStore = create<DataStoreState>()(
                 await get().setDataAndSync(get().data);
             },
 
-            sortData: async (columnIndex: number, direction: 'asc' | 'desc') => {
-                set((state) => {
-                    if (state.data.length === 0) return;
-
-                    state.data = [...state.data].sort((rowA, rowB) => {
-                        const valA = rowA.length > columnIndex ? rowA[columnIndex] : "";
-                        const valB = rowB.length > columnIndex ? rowB[columnIndex] : "";
-
-                        if (typeof valA === 'number' && typeof valB === 'number') {
-                            return direction === 'asc' ? valA - valB : valB - valA;
-                        }
-
-                        const numA = Number(valA);
-                        const numB = Number(valB);
-                        if (!isNaN(numA) && !isNaN(numB)) {
-                            return direction === 'asc' ? numA - numB : numB - numA;
-                        }
-
-                        const strA = String(valA).toLowerCase();
-                        const strB = String(valB).toLowerCase();
-
-                        return direction === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
-                    });
-
-                    state.lastUpdated = new Date();
-                });
-
-                await get().setDataAndSync(get().data);
-            },
-
             validateVariableData: async (columnIndex: number, type: string, width: number) => {
                 const { data } = get();
                 const result = {
@@ -348,58 +351,60 @@ export const useDataStore = create<DataStoreState>()(
                 }
             },
 
-            getAvailableData: async (selectedColumns?: number[]) => {
+            getVariableData: async (variable: Variable) => {
                 if (get().data.length === 0) {
                     await get().loadData();
                 }
+
+                const { columnIndex } = variable;
                 const storedData = get().data;
-                if (!selectedColumns || selectedColumns.length === 0) {
-                    return storedData;
-                } else {
-                    return storedData.map((row) =>
-                        selectedColumns.map((col) => (row[col] !== undefined ? row[col] : ""))
-                    );
-                }
+
+                const columnData = storedData.map(row =>
+                    columnIndex < row.length ? row[columnIndex] : ""
+                );
+
+                return {
+                    variable,
+                    data: columnData
+                };
             },
 
             updateBulkCells: async (updates) => {
                 const { data } = get();
-                let newData = [...data];
-                let maxRows = data.length;
-                let maxCols = data.length > 0 ? data[0].length : 0;
 
-                updates.forEach(({ row, col }) => {
-                    maxRows = Math.max(maxRows, row + 1);
-                    maxCols = Math.max(maxCols, col + 1);
+                const filteredUpdates = updates.filter(({ row, col, value }) => {
+                    if (row < data.length && col < data[row].length) {
+                        return data[row][col] !== value;
+                    }
+                    return true;
                 });
 
-                if (maxRows > data.length || maxCols > (data[0]?.length || 0)) {
-                    newData = Array.from({ length: maxRows }, (_, r) => {
-                        if (r < data.length) {
-                            const currentRow = data[r];
-                            if (currentRow.length < maxCols) {
-                                return [...currentRow, ...Array(maxCols - currentRow.length).fill("")];
-                            }
-                            return [...currentRow];
-                        } else {
-                            return Array(maxCols).fill("");
-                        }
-                    });
+                if (filteredUpdates.length === 0) {
+                    return;
                 }
 
-                updates.forEach(({ row, col, value }) => {
-                    newData[row][col] = value;
-                });
+                let maxRow = 0;
+                let maxCol = 0;
+
+                for (const { row, col } of filteredUpdates) {
+                    maxRow = Math.max(maxRow, row);
+                    maxCol = Math.max(maxCol, col);
+                }
 
                 set((state) => {
-                    state.data = newData;
+                    get().ensureMatrixDimensions(maxRow, maxCol);
+
+                    for (const { row, col, value } of filteredUpdates) {
+                        state.data[row][col] = value;
+                    }
+
                     state.lastUpdated = new Date();
                 });
 
                 try {
                     await db.transaction('rw', db.cells, async () => {
-                        const emptyUpdates = updates.filter(({ value }) => value === "");
-                        const nonEmptyUpdates = updates.filter(({ value }) => value !== "");
+                        const emptyUpdates = filteredUpdates.filter(({ value }) => value === "");
+                        const nonEmptyUpdates = filteredUpdates.filter(({ value }) => value !== "");
 
                         if (emptyUpdates.length > 0) {
                             await Promise.all(
@@ -427,6 +432,12 @@ export const useDataStore = create<DataStoreState>()(
             },
 
             setDataAndSync: async (newData) => {
+                const currentData = get().data;
+
+                if (JSON.stringify(currentData) === JSON.stringify(newData)) {
+                    return;
+                }
+
                 set((state) => {
                     state.data = newData;
                     state.lastUpdated = new Date();
@@ -461,6 +472,88 @@ export const useDataStore = create<DataStoreState>()(
                     await get().loadData();
                 }
             },
+
+            sortData: async (columnIndex: number, direction: 'asc' | 'desc') => {
+                const { data } = get();
+                if (data.length === 0) return;
+
+                const rowsToSort = [...data];
+
+                rowsToSort.sort((rowA, rowB) => {
+                    const valueA = columnIndex < rowA.length ? rowA[columnIndex] : "";
+                    const valueB = columnIndex < rowB.length ? rowB[columnIndex] : "";
+
+                    const isANumeric = typeof valueA === 'number' ||
+                        (typeof valueA === 'string' && valueA !== "" && !isNaN(Number(valueA)));
+                    const isBNumeric = typeof valueB === 'number' ||
+                        (typeof valueB === 'string' && valueB !== "" && !isNaN(Number(valueB)));
+
+                    if (isANumeric && isBNumeric) {
+                        const numA = typeof valueA === 'number' ? valueA : Number(valueA);
+                        const numB = typeof valueB === 'number' ? valueB : Number(valueB);
+                        return direction === 'asc' ? numA - numB : numB - numA;
+                    }
+
+                    if (isANumeric && !isBNumeric) {
+                        return direction === 'asc' ? -1 : 1;
+                    }
+                    if (!isANumeric && isBNumeric) {
+                        return direction === 'asc' ? 1 : -1;
+                    }
+
+                    const strA = String(valueA || '').toLowerCase();
+                    const strB = String(valueB || '').toLowerCase();
+                    return direction === 'asc' ? strA.localeCompare(strB) : strB.localeCompare(strA);
+                });
+
+                set(state => {
+                    state.data = rowsToSort;
+                    state.lastUpdated = new Date();
+                });
+
+                await get().setDataAndSync(rowsToSort);
+            },
+
+            swapRows: async (row1: number, row2: number) => {
+                set((state) => {
+                    if (row1 < 0 || row2 < 0 || row1 >= state.data.length || row2 >= state.data.length) {
+                        state.error = {
+                            message: "Invalid row indices for swapping",
+                            source: "swapRows"
+                        };
+                        return;
+                    }
+
+                    [state.data[row1], state.data[row2]] = [state.data[row2], state.data[row1]];
+                    state.lastUpdated = new Date();
+                });
+
+                const currentData = get().data;
+                await get().setDataAndSync(currentData);
+            },
+
+            swapColumns: async (col1: number, col2: number) => {
+                set((state) => {
+                    if (state.data.length === 0) return;
+
+                    if (col1 < 0 || col2 < 0 || col1 >= state.data[0].length || col2 >= state.data[0].length) {
+                        state.error = {
+                            message: "Invalid column indices for swapping",
+                            source: "swapColumns"
+                        };
+                        return;
+                    }
+
+                    for (let i = 0; i < state.data.length; i++) {
+                        [state.data[i][col1], state.data[i][col2]] = [state.data[i][col2], state.data[i][col1]];
+                    }
+
+                    state.lastUpdated = new Date();
+                });
+
+                const currentData = get().data;
+                await get().setDataAndSync(currentData);
+            }
         }))
     )
 );
