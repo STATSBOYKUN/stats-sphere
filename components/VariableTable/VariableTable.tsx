@@ -265,15 +265,37 @@ export default function VariableTable() {
     /**
      * Updates an existing variable with changes
      */
-    const updateExistingVariable = (row: number, changes: Handsontable.CellChange[]) => {
-        changes.forEach(change => {
-            if (!change) return;
-            const [, prop, oldValue, newValue] = change;
-            if (newValue === oldValue) return;
+    const updateExistingVariable = async (row: number, changes: Handsontable.CellChange[]) => {
+        const variable = useVariableStore.getState().getVariableByColumnIndex(row);
+        if (!variable) return;
 
-            const field = FIELD_MAPPING[Number(prop)] || prop;
+        let isTypeChanged = false;
+        let isWidthChanged = false;
+        let newType = variable.type;
+        let newWidth = variable.width;
+
+        for (const change of changes) {
+            if (!change) continue;
+            const [, prop, oldValue, newValue] = change;
+            if (newValue === oldValue) continue;
+
+            const propIndex = Number(prop);
+            const field = FIELD_MAPPING[propIndex] || prop;
+
+            if (field === 'type') {
+                isTypeChanged = true;
+                newType = newValue as any;
+            } else if (field === 'width') {
+                isWidthChanged = true;
+                newWidth = Number(newValue);
+            }
+
             updateVariable(row, field as keyof Variable, newValue);
-        });
+        }
+
+        if (isTypeChanged || isWidthChanged) {
+            await useDataStore.getState().validateVariableData(row, newType, newWidth);
+        }
     };
 
     /**
@@ -358,7 +380,7 @@ export default function VariableTable() {
     /**
      * Updates variable type properties
      */
-    const handleTypeSelection = (type: string, width: number, decimals: number) => {
+    const handleTypeSelection = async (type: string, width: number, decimals: number) => {
         if (!selectedCell) return;
 
         const { row } = selectedCell;
@@ -368,6 +390,7 @@ export default function VariableTable() {
             updateVariable(row, 'type', type as any);
             updateVariable(row, 'width', width);
             updateVariable(row, 'decimals', decimals);
+            await useDataStore.getState().validateVariableData(row, type, width);
         } else {
             addVariable({
                 columnIndex: row,

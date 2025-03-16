@@ -260,6 +260,7 @@ export const useDataStore = create<DataStoreState>()(
 
             validateVariableData: async (columnIndex: number, type: string, width: number) => {
                 const { data } = get();
+                const updates: CellUpdate[] = [];
                 const result = {
                     isValid: true,
                     issues: [] as Array<{ row: number; message: string }>
@@ -280,6 +281,7 @@ export const useDataStore = create<DataStoreState>()(
                                 message: `Row ${row + 1}: Value "${value}" is not a valid number`
                             });
                             result.isValid = false;
+                            updates.push({ row, col: columnIndex, value: "" });
                             continue;
                         }
 
@@ -292,6 +294,7 @@ export const useDataStore = create<DataStoreState>()(
                                 message: `Row ${row + 1}: Number "${value}" exceeds width (${valueStr.length} digits, max allowed is ${width})`
                             });
                             result.isValid = false;
+                            updates.push({ row, col: columnIndex, value: "" });
                         }
                     } else if (type === "STRING") {
                         const strValue = String(value);
@@ -301,6 +304,7 @@ export const useDataStore = create<DataStoreState>()(
                                 message: `Row ${row + 1}: String "${strValue}" is too long (${strValue.length} chars, max allowed is ${width})`
                             });
                             result.isValid = false;
+                            updates.push({ row, col: columnIndex, value: strValue.substring(0, width) });
                         }
                     } else if (["DATE", "ADATE", "EDATE", "SDATE", "JDATE"].includes(type)) {
                         const dateStr = String(value);
@@ -312,8 +316,13 @@ export const useDataStore = create<DataStoreState>()(
                                 message: `Row ${row + 1}: Value "${dateStr}" is not a valid date`
                             });
                             result.isValid = false;
+                            updates.push({ row, col: columnIndex, value: "" });
                         }
                     }
+                }
+
+                if (updates.length > 0) {
+                    await get().updateBulkCells(updates);
                 }
 
                 return result;

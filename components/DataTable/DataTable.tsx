@@ -41,19 +41,36 @@ const getColumnConfig = (variable: Variable) => {
                 numericFormat: {
                     pattern: `0,0.${'0'.repeat(variable.decimals || 0)}`,
                     culture: 'en-US'
+                },
+                allowInvalid: false, // Reject invalid values
+                validator: (value: any, callback: (valid: boolean) => void) => {
+                    // Accept empty string or valid numbers
+                    const valid = value === '' ||
+                        (typeof value === 'number' && !isNaN(value)) ||
+                        (typeof value === 'string' && !isNaN(Number(value)));
+                    callback(valid);
                 }
             };
         case 'DATE':
             return {
                 ...baseConfig,
                 type: 'date',
-                dateFormat: 'MM/DD/YYYY'
+                dateFormat: 'MM/DD/YYYY',
+                allowInvalid: false, // Reject invalid dates
+                validator: 'date' // Use built-in date validator
             };
         case 'STRING':
         default:
             return {
                 ...baseConfig,
-                type: 'text'
+                type: 'text',
+                // Optional: validate string length if variable has width constraint
+                ...(variable.width && {
+                    validator: (value: any, callback: (valid: boolean) => void) => {
+                        callback(value === '' || String(value).length <= variable.width!);
+                    },
+                    allowInvalid: false
+                })
             };
     }
 };
@@ -156,7 +173,26 @@ export default function DataTable() {
         changes: (Handsontable.CellChange | null)[],
         source: Handsontable.ChangeSource
     ): boolean | void => {
-        if (source === 'loadData' || !changes) return;
+        if (source === 'loadData' || !changes) return true;
+
+        // Filter out invalid changes based on cell type
+        for (let i = changes.length - 1; i >= 0; i--) {
+            const change = changes[i];
+            if (!change) continue;
+
+            const [row, col, oldValue, newValue] = change;
+            if (typeof col !== 'number' || typeof row !== 'number') continue;
+
+            const variable = getVariableByColumnIndex(col);
+            if (!variable) continue;
+
+            // Additional validation check
+            if (variable.type === 'NUMERIC' && newValue !== '' && isNaN(Number(newValue))) {
+                // Remove this change - the validator will also catch this,
+                // but we're doing double verification
+                changes.splice(i, 1);
+            }
+        }
 
         const changesByCol: Record<number, Handsontable.CellChange[]> = {};
         let highestColumn = -1;
@@ -180,6 +216,9 @@ export default function DataTable() {
             changesByCol[colNumber].push(change);
         });
 
+        // Simpan perubahan untuk diproses nanti
+        const pendingChanges = { changesByCol, highestColumn, maxRow };
+
         // Check for columns without variables
         const missingColumns: number[] = [];
         for (let i = 0; i <= highestColumn; i++) {
@@ -188,13 +227,12 @@ export default function DataTable() {
             }
         }
 
-        // Create missing variables
+        // Create missing variables first, then process cell updates separately
         if (missingColumns.length > 0) {
             const newVariables = missingColumns.map(colIndex => {
                 const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
                 let type: Variable['type'] = 'STRING';
 
-                // Try to determine column type
                 if (hasChanges) {
                     const allNumeric = changesByCol[colIndex].every(change => {
                         if (!change) return true;
@@ -210,11 +248,35 @@ export default function DataTable() {
                 };
             });
 
-            // Handle variable creation asynchronously but don't return a promise
-            addMultipleVariables(newVariables).catch(error => {
-                console.error('Failed to create variables:', error);
-            });
+            // Create variables and then process updates when done
+            addMultipleVariables(newVariables)
+                .then(() => {
+                    // Process updates after variables are created
+                    processCellUpdates(pendingChanges);
+                })
+                .catch(error => {
+                    console.error('Failed to create variables:', error);
+                });
+
+            // Return true to allow the UI update but we'll handle persistence separately
+            return true;
+        } else {
+            // Process immediately if no new variables needed
+            processCellUpdates(pendingChanges);
+            return true;
         }
+    }, [
+        getVariableByColumnIndex,
+        addMultipleVariables,
+    ]);
+
+    // Fungsi helper untuk memproses cell updates
+    const processCellUpdates = useCallback((data: {
+        changesByCol: Record<number, Handsontable.CellChange[]>,
+        highestColumn: number,
+        maxRow: number
+    }) => {
+        const { changesByCol, highestColumn, maxRow } = data;
 
         // Ensure matrix has appropriate dimensions
         const highestVarIndex = variables.length > 0
@@ -241,14 +303,12 @@ export default function DataTable() {
                 const [row, , , newValue] = change;
 
                 if (variable.type === 'NUMERIC') {
-                    // Allow empty values or valid numbers
                     if (newValue === '' || !isNaN(Number(newValue))) {
                         cellUpdates.push({ row, col, value: newValue });
                     }
                 } else if (variable.type === 'STRING') {
-                    // Truncate text if exceeds width
                     let text = newValue ? newValue.toString() : '';
-                    if (text.length > variable.width) {
+                    if (variable.width && text.length > variable.width) {
                         text = text.substring(0, variable.width);
                     }
                     cellUpdates.push({ row, col, value: text });
@@ -258,19 +318,37 @@ export default function DataTable() {
             }
         }
 
-        // Batch update cells (don't return the promise)
+        // Batch update cells
         if (cellUpdates.length > 0) {
             updateBulkCells(cellUpdates).catch(error => {
                 console.error('Failed to update cells:', error);
             });
         }
     }, [
+        variables,
+        ensureMatrixDimensions,
         getVariableByColumnIndex,
         updateBulkCells,
-        addMultipleVariables,
-        ensureMatrixDimensions,
-        variables
     ]);
+
+    /**
+     * Custom validator function that can be registered globally
+     */
+    useEffect(() => {
+        // Register custom validator if needed
+        if (Handsontable.validators && typeof Handsontable.validators.registerValidator === 'function') {
+            Handsontable.validators.registerValidator('custom.numeric', (value: any, callback: (valid: boolean) => void) => {
+                const valid = value === '' ||
+                    (typeof value === 'number' && !isNaN(value)) ||
+                    (typeof value === 'string' && !isNaN(Number(value)));
+                callback(valid);
+            });
+        }
+
+        return () => {
+            // Clean up if needed
+        };
+    }, []);
 
     /**
      * Handles selection events
@@ -350,6 +428,16 @@ export default function DataTable() {
             }
         }
     }, [getVariableByColumnIndex, updateVariable]);
+
+    /**
+     * Handles afterValidate event to log validation errors or update UI accordingly
+     */
+    const handleAfterValidate = useCallback((isValid: boolean, value: any, row: number, prop: string | number) => {
+        // You can handle validation results here if needed
+        if (!isValid) {
+            console.log(`Validation failed at row: ${row}, column: ${prop}, value: ${value}`);
+        }
+    }, []);
 
     // Context menu configuration
     const contextMenuConfig = useMemo(() => {
@@ -450,6 +538,9 @@ export default function DataTable() {
                 afterRemoveRow={handleAfterRemoveRow}
                 afterRemoveCol={handleAfterRemoveCol}
                 afterColumnResize={handleAfterColumnResize}
+                afterValidate={handleAfterValidate}
+                invalidCellClassName="htInvalid" // Add custom class for invalid cells
+                allowInvalid={false} // Global setting - can be overridden by individual column settings
             />
         </div>
     );
