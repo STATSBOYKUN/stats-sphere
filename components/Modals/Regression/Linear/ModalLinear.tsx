@@ -433,7 +433,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk perhitungan regresi (squared changes)...");
         worker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         worker.onmessage = async (e) => {
@@ -466,7 +466,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Confidence Interval...");
         confidenceWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         confidenceWorker.onmessage = async (e) => {
@@ -590,7 +590,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Model Durbin...");
         modelDurbinWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         modelDurbinWorker.onmessage = async (e) => {
@@ -690,7 +690,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Coefficient Correlations...");
         coefficientCorrelationsWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         coefficientCorrelationsWorker.onmessage = async (e) => {
@@ -722,7 +722,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Descriptive Statistics...");
         descriptiveWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         descriptiveWorker.onmessage = async (e) => {
@@ -749,7 +749,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Correlations...");
         correlationsWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         correlationsWorker.onmessage = async (e) => {
@@ -782,7 +782,7 @@ variablesEnteredRemovedWorker.onerror = (error) => {
         console.log("[Analyze] Mengirim data ke Worker untuk Model Summary...");
         modelSummaryWorker.postMessage({
           dependent: filteredDependentData,
-          independent: filteredIndependentData[0]
+          independent: filteredIndependentData
         });
   
         modelSummaryWorker.onmessage = async (e) => {

@@ -1,9 +1,6 @@
-// correlations.js
-
 self.onmessage = function(e) {
   const { dependent, independent } = e.data;
-  
-  // Validasi input
+
   if (!dependent || !independent) {
     self.postMessage({ error: "Data dependent dan independent harus disediakan." });
     return;
@@ -12,19 +9,14 @@ self.onmessage = function(e) {
     self.postMessage({ error: "Data dependent dan independent harus berupa array." });
     return;
   }
-  if (dependent.length !== independent.length) {
-    self.postMessage({ error: "Panjang data dependent dan independent harus sama." });
-    return;
-  }
-  
+
+  const numIndependentVars = independent.length;
   const n = dependent.length;
-  
-  // Fungsi untuk menghitung rata-rata
+
   function mean(arr) {
     return arr.reduce((sum, val) => sum + val, 0) / arr.length;
   }
-  
-  // Fungsi untuk menghitung koefisien korelasi Pearson
+
   function correlation(x, y) {
     const n = x.length;
     const meanX = mean(x);
@@ -39,8 +31,7 @@ self.onmessage = function(e) {
     }
     return num / Math.sqrt(denX * denY);
   }
-  
-  // Fungsi log gamma (menggunakan metode dari Numerical Recipes)
+
   function gammln(xx) {
     const cof = [
       76.18009172947146, -86.50532032941677,
@@ -57,8 +48,7 @@ self.onmessage = function(e) {
     }
     return -tmp + Math.log(2.5066282746310005 * ser);
   }
-  
-  // Fungsi betacf untuk evaluasi fungsi beta tak hingga
+
   function betacf(a, b, x) {
     const MAXIT = 100;
     const EPS = 3e-7;
@@ -92,100 +82,105 @@ self.onmessage = function(e) {
     }
     return h;
   }
-  
-  // Fungsi incomplete beta
+
   function betai(a, b, x) {
     if (x < 0 || x > 1) return NaN;
     const bt = (x === 0 || x === 1)
-      ? 0
-      : Math.exp(gammln(a + b) - gammln(a) - gammln(b) + a * Math.log(x) + b * Math.log(1 - x));
+        ? 0
+        : Math.exp(gammln(a + b) - gammln(a) - gammln(b) + a * Math.log(x) + b * Math.log(1 - x));
     if (x < (a + 1) / (a + b + 2)) {
       return bt * betacf(a, b, x) / a;
     } else {
       return 1 - bt * betacf(b, a, 1 - x) / b;
     }
   }
-  
-  // Menghitung nilai korelasi
-  let r = correlation(dependent, independent);
-  
-  // Hitung statistik t untuk uji korelasi
-  const df = n - 2; // derajat kebebasan
-  const t = r * Math.sqrt(df / (1 - r * r));
-  
-  // Hitung p-value 1-tailed.
-  // P-value = 0.5 * betai(df/2, 0.5, df/(t*t+df))
-  let pValue = 0.5 * betai(df / 2, 0.5, df / (t * t + df));
-  
-  // Fungsi pembulatan ke 3 desimal
+
+  function calculatePValue(r, n) {
+    const df = n - 2;
+    const t = r * Math.sqrt(df / (1 - r * r));
+    return 0.5 * betai(df / 2, 0.5, df / (t * t + df));
+  }
+
   function round(num) {
     return Math.round(num * 1000) / 1000;
   }
-  
-  r = round(r);
-  pValue = round(pValue);
-  
+
+  const allVariables = [dependent, ...independent];
+  const variableNames = ["VAR00001"];
+  for (let i = 0; i < numIndependentVars; i++) {
+    variableNames.push(`VAR0000${i+2}`);
+  }
+
+  const numTotalVars = numIndependentVars + 1;
+
+  const columnHeaders = [
+    { header: "" },
+    { header: "" }
+  ];
+
+  for (let i = 0; i < numTotalVars; i++) {
+    columnHeaders.push({ header: variableNames[i] });
+  }
+
+  const correlationRows = [];
+  const sigRows = [];
+  const nRows = [];
+
+  for (let i = 0; i < numTotalVars; i++) {
+    const correlationChildren = {
+      rowHeader: [null, variableNames[i]]
+    };
+
+    const sigChildren = {
+      rowHeader: [null, variableNames[i]]
+    };
+
+    const nChildren = {
+      rowHeader: [null, variableNames[i]]
+    };
+
+    for (let j = 0; j < numTotalVars; j++) {
+      if (i === j) {
+        correlationChildren[variableNames[j]] = 1.000;
+        sigChildren[variableNames[j]] = ".";
+        nChildren[variableNames[j]] = n;
+      } else {
+        const r = correlation(allVariables[i], allVariables[j]);
+        const pValue = calculatePValue(r, n);
+
+        correlationChildren[variableNames[j]] = round(r);
+        sigChildren[variableNames[j]] = round(pValue);
+        nChildren[variableNames[j]] = n;
+      }
+    }
+
+    correlationRows.push(correlationChildren);
+    sigRows.push(sigChildren);
+    nRows.push(nChildren);
+  }
+
   const result = {
     tables: [
       {
         title: "Correlations",
-        columnHeaders: [
-          { header: "" },
-          { header: "" },
-          { header: "VAR00001" },
-          { header: "VAR00002" }
-        ],
+        columnHeaders: columnHeaders,
         rows: [
           {
             rowHeader: ["Pearson Correlation"],
-            children: [
-              {
-                rowHeader: [null, "VAR00001"],
-                VAR00001: 1.000,
-                VAR00002: r
-              },
-              {
-                rowHeader: [null, "VAR00002"],
-                VAR00001: r,
-                VAR00002: 1.000
-              }
-            ]
+            children: correlationRows
           },
           {
             rowHeader: ["Sig. (1-tailed)"],
-            children: [
-              {
-                rowHeader: [null, "VAR00001"],
-                VAR00001: ".",
-                VAR00002: pValue
-              },
-              {
-                rowHeader: [null, "VAR00002"],
-                VAR00001: pValue,
-                VAR00002: "."
-              }
-            ]
+            children: sigRows
           },
           {
             rowHeader: ["N"],
-            children: [
-              {
-                rowHeader: [null, "VAR00001"],
-                VAR00001: n,
-                VAR00002: n
-              },
-              {
-                rowHeader: [null, "VAR00002"],
-                VAR00001: n,
-                VAR00002: n
-              }
-            ]
+            children: nRows
           }
         ]
       }
     ]
   };
-  
-  console.log(result);
+
   self.postMessage(result);
 };

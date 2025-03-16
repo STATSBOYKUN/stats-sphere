@@ -5,54 +5,178 @@ self.onmessage = function (event) {
   const { dependent, independent } = event.data;
 
   // Validasi input
-  if (!Array.isArray(dependent) || !Array.isArray(independent)) {
-    console.error("[Worker] Error: Parameter 'dependent' dan 'independent' harus berupa array.");
-    postMessage({ error: "Parameter 'dependent' dan 'independent' harus berupa array." });
+  if (!Array.isArray(dependent)) {
+    console.error("[Worker] Error: Parameter 'dependent' harus berupa array.");
+    postMessage({ error: "Parameter 'dependent' harus berupa array." });
     return;
   }
-  if (dependent.length !== independent.length) {
-    console.error("[Worker] Error: Array 'dependent' dan 'independent' harus memiliki panjang yang sama.");
-    postMessage({ error: "Array 'dependent' dan 'independent' harus memiliki panjang yang sama." });
+
+  // Periksa apakah independent adalah array of arrays
+  const isArrayOfArrays = Array.isArray(independent) &&
+      (independent.length === 0 || Array.isArray(independent[0]));
+
+  let independentData;
+  if (isArrayOfArrays) {
+    independentData = independent;
+  } else if (Array.isArray(independent)) {
+    independentData = [independent]; // Konversi ke array of arrays
+  } else {
+    console.error("[Worker] Error: Parameter 'independent' harus berupa array atau array of arrays.");
+    postMessage({ error: "Parameter 'independent' harus berupa array atau array of arrays." });
     return;
   }
 
   const n = dependent.length;
-  // Gunakan A untuk data dependen dan B untuk data independen
-  const A = dependent;
-  const B = independent;
+  const k = independentData.length; // Jumlah variabel independen
 
-  // Hitung rata‑rata
-  const meanA = A.reduce((acc, val) => acc + val, 0) / n;
-  const meanB = B.reduce((acc, val) => acc + val, 0) / n;
-  console.log("[Worker] Mean A:", meanA, "Mean B:", meanB);
-
-  // Hitung slope dan intercept
-  let sumXY = 0,
-      sumXX = 0;
-  for (let i = 0; i < n; i++) {
-    sumXY += (B[i] - meanB) * (A[i] - meanA);
-    sumXX += Math.pow(B[i] - meanB, 2);
+  // Validasi semua array memiliki panjang yang sama
+  if (independentData.some(arr => arr.length !== n)) {
+    console.error("[Worker] Error: Semua array independen harus memiliki panjang yang sama dengan dependent.");
+    postMessage({ error: "Semua array independen harus memiliki panjang yang sama dengan dependent." });
+    return;
   }
-  const slope = sumXY / sumXX;
-  const intercept = meanA - slope * meanB;
-  console.log("[Worker] Slope:", slope, "Intercept:", intercept);
+
+  // Fungsi helper untuk operasi matriks
+  function transpose(matrix) {
+    const rows = matrix.length;
+    const cols = matrix[0].length;
+    const result = Array(cols).fill().map(() => Array(rows).fill(0));
+
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        result[j][i] = matrix[i][j];
+      }
+    }
+
+    return result;
+  }
+
+  function multiplyMatrices(a, b) {
+    const aRows = a.length;
+    const aCols = a[0].length;
+    const bCols = b[0].length;
+    const result = Array(aRows).fill().map(() => Array(bCols).fill(0));
+
+    for (let i = 0; i < aRows; i++) {
+      for (let j = 0; j < bCols; j++) {
+        for (let m = 0; m < aCols; m++) {
+          result[i][j] += a[i][m] * b[m][j];
+        }
+      }
+    }
+
+    return result;
+  }
+
+  function inverse(matrix) {
+    const n = matrix.length;
+    const augmented = Array(n).fill().map(() => Array(2 * n).fill(0));
+
+    // Buat matriks augmented [A|I]
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        augmented[i][j] = matrix[i][j];
+      }
+      augmented[i][i + n] = 1;
+    }
+
+    // Eliminasi Gaussian
+    for (let i = 0; i < n; i++) {
+      // Cari pivot
+      let maxRow = i;
+      for (let j = i + 1; j < n; j++) {
+        if (Math.abs(augmented[j][i]) > Math.abs(augmented[maxRow][i])) {
+          maxRow = j;
+        }
+      }
+
+      // Tukar baris
+      if (maxRow !== i) {
+        [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
+      }
+
+      // Periksa singularitas
+      const pivot = augmented[i][i];
+      if (Math.abs(pivot) < 1e-10) {
+        throw new Error("Matriks singular, tidak dapat menghitung invers");
+      }
+
+      // Normalisasi baris pivot
+      for (let j = i; j < 2 * n; j++) {
+        augmented[i][j] /= pivot;
+      }
+
+      // Eliminasi baris lainnya
+      for (let j = 0; j < n; j++) {
+        if (j !== i) {
+          const factor = augmented[j][i];
+          for (let m = i; m < 2 * n; m++) {
+            augmented[j][m] -= factor * augmented[i][m];
+          }
+        }
+      }
+    }
+
+    // Ekstrak invers
+    const result = Array(n).fill().map(() => Array(n).fill(0));
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        result[i][j] = augmented[i][j + n];
+      }
+    }
+
+    return result;
+  }
+
+  // Bangun matriks desain X dengan kolom intercept
+  const X = Array(n).fill().map(() => Array(k + 1).fill(0));
+  for (let i = 0; i < n; i++) {
+    X[i][0] = 1; // Intercept
+    for (let j = 0; j < k; j++) {
+      X[i][j + 1] = independentData[j][i];
+    }
+  }
+
+  // Hitung rata-rata variabel dependen
+  const meanY = dependent.reduce((acc, val) => acc + val, 0) / n;
+  console.log("[Worker] Mean Y:", meanY);
+
+  // Hitung koefisien regresi menggunakan β = (X'X)^(-1)X'y
+  const X_transpose = transpose(X);
+  const X_transpose_X = multiplyMatrices(X_transpose, X);
+  const X_transpose_X_inverse = inverse(X_transpose_X);
+
+  const y_column = dependent.map(val => [val]); // Konversi ke vektor kolom
+  const X_transpose_y = multiplyMatrices(X_transpose, y_column);
+  const beta = multiplyMatrices(X_transpose_X_inverse, X_transpose_y).map(row => row[0]);
+
+  console.log("[Worker] Koefisien regresi:", beta);
+
+  // Hitung nilai prediksi
+  const predicted = Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    predicted[i] = beta[0]; // Intercept
+    for (let j = 0; j < k; j++) {
+      predicted[i] += beta[j + 1] * independentData[j][i];
+    }
+  }
 
   // Hitung SS_total dan SS_reg untuk perhitungan R²
   let ssTotal = 0,
       ssReg = 0;
   for (let i = 0; i < n; i++) {
-    const predicted = intercept + slope * B[i];
-    ssTotal += Math.pow(A[i] - meanA, 2);
-    ssReg += Math.pow(predicted - meanA, 2);
+    ssTotal += Math.pow(dependent[i] - meanY, 2);
+    ssReg += Math.pow(predicted[i] - meanY, 2);
   }
   console.log("[Worker] SS Total:", ssTotal, "SS Regression:", ssReg);
+
   const rSquared = ssReg / ssTotal;
   console.log("[Worker] R Squared:", rSquared);
 
   // Hitung error sum of squares (SS_error) dan Mean Square Error (MSE)
   const ssError = ssTotal - ssReg;
-  const df1 = 1; // derajat kebebasan untuk prediktor
-  const df2 = n - 2; // derajat kebebasan error
+  const df1 = k; // derajat kebebasan untuk prediktor (jumlah variabel independen)
+  const df2 = n - k - 1; // derajat kebebasan error (n - k - 1 untuk multiple regression)
   const mse = ssError / df2;
   console.log("[Worker] SS Error:", ssError, "MSE:", mse);
 
@@ -90,11 +214,11 @@ self.onmessage = function (event) {
     const MAX_ITER = 100;
     const EPS = 3e-7;
     let am = 1,
-      bm = 1,
-      az = 1;
+        bm = 1,
+        az = 1;
     let qab = a + b,
-      qap = a + 1,
-      qam = a - 1;
+        qap = a + 1,
+        qam = a - 1;
     let bz = 1 - (qab * x) / qap;
 
     for (let m = 1; m <= MAX_ITER; m++) {
@@ -127,7 +251,7 @@ self.onmessage = function (event) {
     if (x === 0 || x === 1) return x;
 
     const bt = Math.exp(
-      gammaln(a + b) - gammaln(a) - gammaln(b) + a * Math.log(x) + b * Math.log(1 - x)
+        gammaln(a + b) - gammaln(a) - gammaln(b) + a * Math.log(x) + b * Math.log(1 - x)
     );
     if (x < (a + 1) / (a + b + 2)) {
       return (bt * betacf(x, a, b)) / a;
@@ -153,6 +277,13 @@ self.onmessage = function (event) {
   const rSquareChange = rSquared.toFixed(3).replace(/^0/, "") + "a";
   const fChangeRounded = parseFloat(fChange.toFixed(3));
   const sigFChangeRounded = parseFloat(sigFChange.toFixed(3));
+
+  // Buat catatan kaki untuk prediktor
+  const predictorVariables = [];
+  for (let i = k; i > 0; i--) {
+    predictorVariables.push(`VAR0000${i+1}`);
+  }
+  const footnoteText = `a. Predictors: (Constant), ${predictorVariables.join(', ')}`;
 
   // Susun output JSON sesuai format yang diinginkan
   const result = {
@@ -182,7 +313,7 @@ self.onmessage = function (event) {
             sigFChange: sigFChangeRounded
           }
         ],
-        footnotes: ["a. Predictors: (Constant), VAR00002"]
+        footnotes: [footnoteText]
       }
     ]
   };
