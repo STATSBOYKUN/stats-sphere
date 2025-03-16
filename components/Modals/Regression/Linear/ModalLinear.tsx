@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
+import { useVariableStore } from '@/stores/useVariableStore';
+import { Variable as VariableType } from '@/types/Variable';
 import { useDataStore } from '@/stores/useDataStore';
-import {useResultStore} from '@/stores/useResultStore';
+import { useResultStore } from '@/stores/useResultStore';
 import {
   Select,
   SelectTrigger,
@@ -20,7 +21,7 @@ import { useLinear } from '@/hooks/useLinear';
 
 interface Variable {
   name: string;
-  type: 'numeric' | 'categorical';
+  type: string; // Changed to string to be compatible with Variable.ts
   columnIndex: number;
 }
 
@@ -48,12 +49,12 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   useEffect(() => {
     // Map VariableRow ke Variable, asumsikan VariableRow memiliki 'name', 'type', 'columnIndex'
     const availableVars: Variable[] = variables
-      .filter(v => v.name) // Filter variabel tanpa nama
-      .map((v) => ({
-        name: v.name,
-        type: v.type as 'numeric' | 'categorical',
-        columnIndex: v.columnIndex,
-      }));
+        .filter(v => v.name) // Filter variabel tanpa nama
+        .map((v) => ({
+          name: v.name,
+          type: String(v.type), // Convert to string to ensure type compatibility
+          columnIndex: v.columnIndex,
+        }));
     setAvailableVariables(availableVars);
   }, [variables]);
 
@@ -149,7 +150,7 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
         log_id: logId,
         note: "",
       };
-      const analyticId = await addAnalytic(analytic);
+      const analyticId = await addAnalytic(logId, analytic);
 
       // 3. Lakukan regresi linier
       const allVariables = variables;
@@ -157,11 +158,12 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
 
       // Dapatkan indeks kolom
       const dependentVar = allVariables.find(v => v.name === dependentVarName);
-      const independentVars = independentVarNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as VariableRow[];
+      const independentVars = independentVarNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as VariableType[];
 
       const dependentVarIndex = dependentVar?.columnIndex;
       const independentVarIndices = independentVars.map(v => v.columnIndex);
 
+      // @ts-ignore
       if (dependentVarIndex === undefined || independentVarIndices.includes(undefined)) {
         throw new Error('Variable indices not found.');
       }
@@ -170,9 +172,11 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       const depVarIndex = dependentVarIndex as number;
       const indepVarIndices = independentVarIndices as number[];
 
-      // Dapatkan data untuk variabel
-      const dependentData = dataRows.map(row => parseFloat(row[depVarIndex]));
-      const independentData = indepVarIndices.map(index => dataRows.map(row => parseFloat(row[index])));
+      // Dapatkan data untuk variabel - ensure proper type handling
+      const dependentData = dataRows.map(row => parseFloat(String(row[depVarIndex] || "0")));
+      const independentData = indepVarIndices.map(index =>
+          dataRows.map(row => parseFloat(String(row[index] || "0")))
+      );
 
       // Handle missing data
       const validIndices = dependentData.map((value, idx) => {
@@ -211,14 +215,14 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       };
 
       const variablesEnteredRemovedStat = {
-        analytic_id: analyticId,
         title: "Variables Entered/Removed",
         output_data: JSON.stringify(variablesEnteredRemoved),
         output_type: "table",
         components: "VariablesEnteredRemoved",
+        description: ""
       };
 
-      await addStatistic(variablesEnteredRemovedStat);
+      await addStatistic(analyticId, variablesEnteredRemovedStat);
 
       // Model Summary
       const modelSummary = {
@@ -238,14 +242,14 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       };
 
       const modelSummaryStat = {
-        analytic_id: analyticId,
         title: "Model Summary",
         output_data: JSON.stringify(modelSummary),
         output_type: "table",
         components: "ModelSummary",
+        description: ""
       };
 
-      await addStatistic(modelSummaryStat);
+      await addStatistic(analyticId, modelSummaryStat);
 
       // ANOVA
       const anovaTable = {
@@ -278,14 +282,14 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       };
 
       const anovaStat = {
-        analytic_id: analyticId,
         title: "ANOVA",
         output_data: JSON.stringify(anovaTable),
         output_type: "table",
         components: "ANOVA",
+        description:""
       };
 
-      await addStatistic(anovaStat);
+      await addStatistic(analyticId, anovaStat);
 
       // Coefficients
       const coefficientsData = regressionResults.coefficients.map((coef, idx) => {
@@ -309,14 +313,14 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
       };
 
       const coefficientsStat = {
-        analytic_id: analyticId,
         title: "Coefficients",
         output_data: JSON.stringify(coefficientsTable),
         output_type: "table",
         components: "Coefficients",
+        description: ""
       };
 
-      await addStatistic(coefficientsStat);
+      await addStatistic(analyticId, coefficientsStat);
 
       // Tutup modal
       onClose();
@@ -328,152 +332,152 @@ const ModalLinear: React.FC<ModalLinearProps> = ({ onClose }) => {
   };
 
   return (
-    <DialogContent className="sm:max-w-[900px]">
-      <DialogHeader>
-        <DialogTitle>Linear Regression</DialogTitle>
-      </DialogHeader>
+      <DialogContent className="sm:max-w-[900px]">
+        <DialogHeader>
+          <DialogTitle>Linear Regression</DialogTitle>
+        </DialogHeader>
 
-      <Separator className="my-0" />
+        <Separator className="my-0" />
 
-      <div className="grid grid-cols-12 gap-4 py-4">
-        {/* Kolom Pertama: Daftar Variabel */}
-        <div className="col-span-3 border p-4 rounded-md max-h-[500px] overflow-y-auto">
-          <label className="font-semibold">Variables</label>
-          <ScrollArea className="mt-2 h-[450px]">
-            {availableVariables.map((variable) => (
-              <div
-                key={variable.name}
-                className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
-                  highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
-                }`}
-                onClick={() => handleSelectAvailableVariable(variable)}
-              >
-                {/* Hanya Ikon Pencil */}
-                <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                {variable.name}
-              </div>
-            ))}
-          </ScrollArea>
-        </div>
-
-        {/* Kolom Kedua: Tombol Panah dan Panel Variabel */}
-        <div className="col-span-6 space-y-4">
-          {/* Variabel Dependen */}
-          <div className="flex items-center">
-            {/* Tombol Panah */}
-            <Button
-              variant="outline"
-              onClick={handleMoveToDependent}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2 mt-6"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Dependent Variable</label>
-              <div
-                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
-                onClick={handleRemoveFromDependent}
-              >
-                {selectedDependentVariable ? (
-                  <div className="flex items-center">
-                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                    {selectedDependentVariable.name}
-                  </div>
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Variabel Independen */}
-          <div className="flex items-center">
-            {/* Tombol Panah */}
-            <Button
-              variant="outline"
-              onClick={handleMoveToIndependent}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2 mt-6"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Independent Variables</label>
-              <div className="mt-2 p-2 border rounded-md min-h-[100px]">
-                {selectedIndependentVariables.length > 0 ? (
-                  selectedIndependentVariables.map((variable) => (
-                    <div
+        <div className="grid grid-cols-12 gap-4 py-4">
+          {/* Kolom Pertama: Daftar Variabel */}
+          <div className="col-span-3 border p-4 rounded-md max-h-[500px] overflow-y-auto">
+            <label className="font-semibold">Variables</label>
+            <ScrollArea className="mt-2 h-[450px]">
+              {availableVariables.map((variable) => (
+                  <div
                       key={variable.name}
-                      className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
-                      onClick={() => handleRemoveFromIndependent(variable)}
-                    >
-                      <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                      {variable.name}
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
+                      className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
+                          highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                      }`}
+                      onClick={() => handleSelectAvailableVariable(variable)}
+                  >
+                    {/* Hanya Ikon Pencil */}
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {variable.name}
+                  </div>
+              ))}
+            </ScrollArea>
+          </div>
+
+          {/* Kolom Kedua: Tombol Panah dan Panel Variabel */}
+          <div className="col-span-6 space-y-4">
+            {/* Variabel Dependen */}
+            <div className="flex items-center">
+              {/* Tombol Panah */}
+              <Button
+                  variant="outline"
+                  onClick={handleMoveToDependent}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2 mt-6"
+              >
+                <ArrowRight />
+              </Button>
+              <div className="flex-1">
+                <label className="font-semibold">Dependent Variable</label>
+                <div
+                    className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                    onClick={handleRemoveFromDependent}
+                >
+                  {selectedDependentVariable ? (
+                      <div className="flex items-center">
+                        <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                        {selectedDependentVariable.name}
+                      </div>
+                  ) : (
+                      <span className="text-gray-500">[None]</span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Method */}
-          <div className="flex items-center">
-            <div className="flex-1 ml-[50%]">
-              <label className="font-semibold">Method</label>
-              <Select onValueChange={(value) => setMethod(value)} value={method}>
-                <SelectTrigger className="mt-2 w-full">
-                  <SelectValue placeholder="Select a method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Enter">Enter</SelectItem>
-                  <SelectItem value="Stepwise">Stepwise</SelectItem>
-                  <SelectItem value="Forward">Forward</SelectItem>
-                  <SelectItem value="Backward">Backward</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Variabel Independen */}
+            <div className="flex items-center">
+              {/* Tombol Panah */}
+              <Button
+                  variant="outline"
+                  onClick={handleMoveToIndependent}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2 mt-6"
+              >
+                <ArrowRight />
+              </Button>
+              <div className="flex-1">
+                <label className="font-semibold">Independent Variables</label>
+                <div className="mt-2 p-2 border rounded-md min-h-[100px]">
+                  {selectedIndependentVariables.length > 0 ? (
+                      selectedIndependentVariables.map((variable) => (
+                          <div
+                              key={variable.name}
+                              className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
+                              onClick={() => handleRemoveFromIndependent(variable)}
+                          >
+                            <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                            {variable.name}
+                          </div>
+                      ))
+                  ) : (
+                      <span className="text-gray-500">[None]</span>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Method */}
+            <div className="flex items-center">
+              <div className="flex-1 ml-[50%]">
+                <label className="font-semibold">Method</label>
+                <Select onValueChange={(value) => setMethod(value)} value={method}>
+                  <SelectTrigger className="mt-2 w-full">
+                    <SelectValue placeholder="Select a method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Enter">Enter</SelectItem>
+                    <SelectItem value="Stepwise">Stepwise</SelectItem>
+                    <SelectItem value="Forward">Forward</SelectItem>
+                    <SelectItem value="Backward">Backward</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Variabel lainnya... */}
+
           </div>
 
-          {/* Variabel lainnya... */}
-
+          {/* Kolom Ketiga: Tombol Tambahan */}
+          <div className="col-span-3 space-y-4">
+            <Button variant="outline" className="w-full">
+              Statistics...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Plots...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Save...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Options...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Style...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Bootstrap...
+            </Button>
+          </div>
         </div>
 
-        {/* Kolom Ketiga: Tombol Tambahan */}
-        <div className="col-span-3 space-y-4">
-          <Button variant="outline" className="w-full">
-            Statistics...
+        <DialogFooter className="flex justify-center space-x-4 mt-4">
+          <Button onClick={handleAnalyze}>OK</Button>
+          <Button variant="outline">Paste</Button>
+          <Button variant="outline">Reset</Button>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
           </Button>
-          <Button variant="outline" className="w-full">
-            Plots...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Save...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Options...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Style...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Bootstrap...
-          </Button>
-        </div>
-      </div>
-
-      <DialogFooter className="flex justify-center space-x-4 mt-4">
-        <Button onClick={handleAnalyze}>OK</Button>
-        <Button variant="outline">Paste</Button>
-        <Button variant="outline">Reset</Button>
-        <Button variant="outline" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button variant="outline">Help</Button>
-      </DialogFooter>
-    </DialogContent>
+          <Button variant="outline">Help</Button>
+        </DialogFooter>
+      </DialogContent>
   );
 };
 

@@ -17,7 +17,7 @@ Chart.register(...registerables);
 
 interface Variable {
   name: string;
-  type: 'numeric' | 'categorical';
+  type: string; // Changed to string to be compatible with Variable.ts
   columnIndex: number;
 }
 
@@ -31,8 +31,8 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
   const [selectedIndependentVariables, setSelectedIndependentVariables] = useState<Variable[]>([]);
   const [selectedCaseLabels, setSelectedCaseLabels] = useState<Variable | null>(null);
   const [selectedModels, setSelectedModels] = useState<string[]>(['Linear']);
-  const [includeConstant, setIncludeConstant] = useState<boolean>(true); 
-  const [plotModels, setPlotModels] = useState<boolean>(true); 
+  const [includeConstant, setIncludeConstant] = useState<boolean>(true);
+  const [plotModels, setPlotModels] = useState<boolean>(true);
   const [displayANOVA, setDisplayANOVA] = useState<boolean>(false);
   const [highlightedVariable, setHighlightedVariable] = useState<Variable | null>(null);
   const [upperBound, setUpperBound] = useState<string>('');
@@ -40,27 +40,27 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
   const variables = useVariableStore((state) => state.variables);
   const data = useDataStore((state) => state.data);
 
-  const { 
-    tryLinear, 
-    tryLogarithmic, 
-    tryInverse, 
-    tryQuadratic, 
-    tryCubic, 
-    tryPower, 
-    tryCompound, 
-    trySCurve, 
-    tryGrowth, 
-    tryExponential 
+  const {
+    tryLinear,
+    tryLogarithmic,
+    tryInverse,
+    tryQuadratic,
+    tryCubic,
+    tryPower,
+    tryCompound,
+    trySCurve,
+    tryGrowth,
+    tryExponential
   } = useCurveEstimation();
 
   useEffect(() => {
     const availableVars: Variable[] = variables
-      .filter((v) => v.name)
-      .map((v) => ({
-        name: v.name,
-        type: v.type as 'numeric' | 'categorical',
-        columnIndex: v.columnIndex,
-      }));
+        .filter((v) => v.name)
+        .map((v) => ({
+          name: v.name,
+          type: String(v.type), // Cast to string instead of specific type
+          columnIndex: v.columnIndex,
+        }));
     setAvailableVariables(availableVars);
   }, [variables]);
 
@@ -123,7 +123,7 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
 
   const handleModelChange = (model: string) => {
     setSelectedModels((prev) =>
-      prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
+        prev.includes(model) ? prev.filter((m) => m !== model) : [...prev, model]
     );
   };
 
@@ -138,10 +138,10 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
     const depCol = selectedDependentVariable.columnIndex;
     const indepCols = selectedIndependentVariables.map(iv => iv.columnIndex);
 
-    // Ubah data menjadi number[]
-    const Y = data.map(row => parseFloat(row[depCol])).filter(val => !isNaN(val));
+    // Ubah data menjadi number[] - convert to string first to ensure type safety
+    const Y = data.map(row => parseFloat(String(row[depCol] || "0"))).filter(val => !isNaN(val));
     // Untuk kesederhanaan, gunakan hanya independent variable pertama
-    const X = data.map(row => parseFloat(row[indepCols[0]])).filter(val => !isNaN(val));
+    const X = data.map(row => parseFloat(String(row[indepCols[0]] || "0"))).filter(val => !isNaN(val));
 
     // Pastikan panjang X dan Y sama setelah filter NaN
     const length = Math.min(X.length, Y.length);
@@ -150,7 +150,7 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
 
     // Jalankan model yang dipilih
     selectedModels.forEach((model) => {
-      let result: ReturnType<typeof tryLinear> | ReturnType<typeof tryQuadratic> | null = null;
+      let result: any = null;
       switch (model) {
         case 'Linear':
           result = tryLinear(Xtrim, Ytrim);
@@ -258,211 +258,211 @@ const ModalCurveEstimation: React.FC<ModalCurveEstimationProps> = ({ onClose }) 
   };
 
   return (
-    <DialogContent className="sm:max-w-[1000px]">
-      <DialogHeader>
-        <DialogTitle>Curve Estimation</DialogTitle>
-      </DialogHeader>
+      <DialogContent className="sm:max-w-[1000px]">
+        <DialogHeader>
+          <DialogTitle>Curve Estimation</DialogTitle>
+        </DialogHeader>
 
-      <Separator className="my-2" />
+        <Separator className="my-2" />
 
-      <div className="grid grid-cols-12 gap-4 py-4">
-        {/* Panel Kiri: Daftar Variabel */}
-        <div className="col-span-3 border p-4 rounded-md max-h-[600px] overflow-y-auto">
-          <label className="font-semibold">Variables</label>
-          <ScrollArea className="mt-2 h-[550px]">
-            {availableVariables.map((variable) => (
-              <div
-                key={variable.name}
-                className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
-                  highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
-                }`}
-                onClick={() => handleSelectAvailableVariable(variable)}
-              >
-                <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                {variable.name}
-              </div>
-            ))}
-          </ScrollArea>
-        </div>
-
-        {/* Bagian Tengah */}
-        <div className="col-span-6 space-y-6">
-          {/* Dependent Variable */}
-          <div className="flex items-center">
-            <Button
-              variant="outline"
-              onClick={handleMoveToDependent}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Dependent Variable</label>
-              <div
-                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
-                onClick={handleRemoveFromDependent}
-              >
-                {selectedDependentVariable ? (
-                  <div className="flex items-center">
-                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                    {selectedDependentVariable.name}
-                  </div>
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Independent Variables */}
-          <div className="flex items-center">
-            <Button
-              variant="outline"
-              onClick={handleMoveToIndependent}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Independent Variables</label>
-              <div className="mt-2 p-2 border rounded-md min-h-[100px]">
-                {selectedIndependentVariables.length > 0 ? (
-                  selectedIndependentVariables.map((variable) => (
-                    <div
+        <div className="grid grid-cols-12 gap-4 py-4">
+          {/* Panel Kiri: Daftar Variabel */}
+          <div className="col-span-3 border p-4 rounded-md max-h-[600px] overflow-y-auto">
+            <label className="font-semibold">Variables</label>
+            <ScrollArea className="mt-2 h-[550px]">
+              {availableVariables.map((variable) => (
+                  <div
                       key={variable.name}
-                      className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
-                      onClick={() => handleRemoveFromIndependent(variable)}
-                    >
-                      <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                      {variable.name}
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
-              </div>
-            </div>
+                      className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
+                          highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                      }`}
+                      onClick={() => handleSelectAvailableVariable(variable)}
+                  >
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {variable.name}
+                  </div>
+              ))}
+            </ScrollArea>
           </div>
 
-          {/* Case Labels dan Checkboxes */}
-          <div className="flex items-start">
-            <div className="flex items-center mr-4 w-2/3">
+          {/* Bagian Tengah */}
+          <div className="col-span-6 space-y-6">
+            {/* Dependent Variable */}
+            <div className="flex items-center">
               <Button
-                variant="outline"
-                onClick={handleMoveToCaseLabels}
-                disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-                className="mr-2"
+                  variant="outline"
+                  onClick={handleMoveToDependent}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2"
               >
                 <ArrowRight />
               </Button>
               <div className="flex-1">
-                <label className="font-semibold">Case Labels</label>
+                <label className="font-semibold">Dependent Variable</label>
                 <div
-                  className="mt-2 p-2 border rounded-md min-h-[70px] cursor-pointer"
-                  onClick={handleRemoveFromCaseLabels}
+                    className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                    onClick={handleRemoveFromDependent}
                 >
-                  {selectedCaseLabels ? (
-                    <div className="flex items-center">
-                      <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                      {selectedCaseLabels.name}
-                    </div>
+                  {selectedDependentVariable ? (
+                      <div className="flex items-center">
+                        <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                        {selectedDependentVariable.name}
+                      </div>
                   ) : (
-                    <span className="text-gray-500">[None]</span>
+                      <span className="text-gray-500">[None]</span>
                   )}
                 </div>
               </div>
             </div>
-            <div className="flex flex-col space-y-2 mt-4 w-1/3">
-              <div className="flex items-center">
-                <Checkbox
-                  checked={includeConstant}
-                  onCheckedChange={(checked: boolean) => setIncludeConstant(checked)}
-                />
-                <span className="ml-2">Include constant in equation</span>
-              </div>
-              <div className="flex items-center">
-                <Checkbox
-                  checked={plotModels}
-                  onCheckedChange={(checked: boolean) => setPlotModels(checked)}
-                />
-                <span className="ml-2">Plot models</span>
-              </div>
-            </div>
-          </div>
 
-          {/* Models */}
-          <div>
-            <label className="font-semibold">Models</label>
-            <div className="mt-2 grid grid-cols-4 gap-2">
-              {[
-                'Linear',
-                'Quadratic',
-                'Compound',
-                'Growth',
-                'Logarithmic',
-                'Cubic',
-                'S',
-                'Exponential',
-                'Inverse',
-                'Power',
-                'Logistic',
-              ].map((model) => (
-                <div key={model} className="flex items-center">
-                  <Checkbox
-                    checked={selectedModels.includes(model)}
-                    onCheckedChange={() => handleModelChange(model)}
-                  />
-                  <span className="ml-2">{model}</span>
+            {/* Independent Variables */}
+            <div className="flex items-center">
+              <Button
+                  variant="outline"
+                  onClick={handleMoveToIndependent}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2"
+              >
+                <ArrowRight />
+              </Button>
+              <div className="flex-1">
+                <label className="font-semibold">Independent Variables</label>
+                <div className="mt-2 p-2 border rounded-md min-h-[100px]">
+                  {selectedIndependentVariables.length > 0 ? (
+                      selectedIndependentVariables.map((variable) => (
+                          <div
+                              key={variable.name}
+                              className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
+                              onClick={() => handleRemoveFromIndependent(variable)}
+                          >
+                            <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                            {variable.name}
+                          </div>
+                      ))
+                  ) : (
+                      <span className="text-gray-500">[None]</span>
+                  )}
                 </div>
-              ))}
-            </div>
-            {selectedModels.includes('Logistic') && (
-              <div className="mt-2">
-                <label className="font-semibold">Upper Bound</label>
-                <Input
-                  type="number"
-                  placeholder="Enter upper bound"
-                  value={upperBound}
-                  onChange={(e) => setUpperBound(e.target.value)}
-                  className="mt-1"
-                />
               </div>
-            )}
+            </div>
+
+            {/* Case Labels dan Checkboxes */}
+            <div className="flex items-start">
+              <div className="flex items-center mr-4 w-2/3">
+                <Button
+                    variant="outline"
+                    onClick={handleMoveToCaseLabels}
+                    disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                    className="mr-2"
+                >
+                  <ArrowRight />
+                </Button>
+                <div className="flex-1">
+                  <label className="font-semibold">Case Labels</label>
+                  <div
+                      className="mt-2 p-2 border rounded-md min-h-[70px] cursor-pointer"
+                      onClick={handleRemoveFromCaseLabels}
+                  >
+                    {selectedCaseLabels ? (
+                        <div className="flex items-center">
+                          <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                          {selectedCaseLabels.name}
+                        </div>
+                    ) : (
+                        <span className="text-gray-500">[None]</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col space-y-2 mt-4 w-1/3">
+                <div className="flex items-center">
+                  <Checkbox
+                      checked={includeConstant}
+                      onCheckedChange={(checked: boolean) => setIncludeConstant(checked)}
+                  />
+                  <span className="ml-2">Include constant in equation</span>
+                </div>
+                <div className="flex items-center">
+                  <Checkbox
+                      checked={plotModels}
+                      onCheckedChange={(checked: boolean) => setPlotModels(checked)}
+                  />
+                  <span className="ml-2">Plot models</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Models */}
+            <div>
+              <label className="font-semibold">Models</label>
+              <div className="mt-2 grid grid-cols-4 gap-2">
+                {[
+                  'Linear',
+                  'Quadratic',
+                  'Compound',
+                  'Growth',
+                  'Logarithmic',
+                  'Cubic',
+                  'S',
+                  'Exponential',
+                  'Inverse',
+                  'Power',
+                  'Logistic',
+                ].map((model) => (
+                    <div key={model} className="flex items-center">
+                      <Checkbox
+                          checked={selectedModels.includes(model)}
+                          onCheckedChange={() => handleModelChange(model)}
+                      />
+                      <span className="ml-2">{model}</span>
+                    </div>
+                ))}
+              </div>
+              {selectedModels.includes('Logistic') && (
+                  <div className="mt-2">
+                    <label className="font-semibold">Upper Bound</label>
+                    <Input
+                        type="number"
+                        placeholder="Enter upper bound"
+                        value={upperBound}
+                        onChange={(e) => setUpperBound(e.target.value)}
+                        className="mt-1"
+                    />
+                  </div>
+              )}
+            </div>
+
+            {/* Display ANOVA Table */}
+            <div className="flex items-center">
+              <Checkbox
+                  checked={displayANOVA}
+                  onCheckedChange={(checked: boolean) => setDisplayANOVA(checked)}
+              />
+              <span className="ml-2">Display ANOVA table</span>
+            </div>
           </div>
 
-          {/* Display ANOVA Table */}
-          <div className="flex items-center">
-            <Checkbox
-              checked={displayANOVA}
-              onCheckedChange={(checked: boolean) => setDisplayANOVA(checked)}
-            />
-            <span className="ml-2">Display ANOVA table</span>
+          {/* Panel Kanan: Tombol Save */}
+          <div className="col-span-3 flex flex-col justify-start space-y-4">
+            <Button variant="outline" onClick={() => alert('Save configuration')}>
+              Save
+            </Button>
           </div>
         </div>
 
-        {/* Panel Kanan: Tombol Save */}
-        <div className="col-span-3 flex flex-col justify-start space-y-4">
-          <Button variant="outline" onClick={() => alert('Save configuration')}>
-            Save
+        <DialogFooter className="flex justify-center space-x-4 mt-4">
+          <Button variant="default" onClick={handleRunRegression}>
+            OK
           </Button>
-        </div>
-      </div>
+          <Button variant="default">Paste</Button>
+          <Button variant="default">Reset</Button>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="default">Help</Button>
+        </DialogFooter>
 
-      <DialogFooter className="flex justify-center space-x-4 mt-4">
-        <Button variant="default" onClick={handleRunRegression}>
-          OK
-        </Button>
-        <Button variant="default">Paste</Button>
-        <Button variant="default">Reset</Button>
-        <Button variant="outline" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button variant="default">Help</Button>
-      </DialogFooter>
-
-    </DialogContent>
+      </DialogContent>
   );
 };
 

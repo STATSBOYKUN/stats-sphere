@@ -1,4 +1,3 @@
-// components/Layout/Main/Header.tsx
 "use client";
 
 import React, { useState } from 'react';
@@ -14,7 +13,7 @@ export default function Header() {
     };
 
     return (
-        <div>
+        <div className="w-full bg-white border-b flex-shrink-0">
             <Navbar />
             <Toolbar selectedValue={selectedValue} />
         </div>

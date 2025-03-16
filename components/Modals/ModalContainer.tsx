@@ -15,11 +15,11 @@ import ComputeVariableModal from "@/components/Modals/Transform/ComputeVariableM
 import {Dialog} from "@/components/ui/dialog";
 import SimpleBarModal from "./Graphs/LegacyDialogs/BarModal/SimpleBarModal";
 import FrequenciesModal from "@/components/Modals/Analyze/DescriptiveStatistic/Frequencies/FrequenciesModal";
-import ImportCSV from "@/components/Modals/File/ImportCSV";
+import ImportCSV from "@/components/Modals/File/ImportData/ImportCSV";
 // import OpenData from "@/components/Modals/File/OpenData";
-import ReadCSVFile from "@/components/Modals/File/ReadCSVFile";
-import ImportExcel from "@/components/Modals/File/ImportExcel";
-import ReadExcelFile from "@/components/Modals/File/ReadExcelFile";
+import ReadCSVFile from "@/components/Modals/File/ImportData/ReadCSVFile";
+import ImportExcel from "@/components/Modals/File/ImportData/ImportExcel";
+import ReadExcelFile from "@/components/Modals/File/ImportData/ReadExcelFile";
 import ModalAutomaticLinearModeling
     from "@/components/Modals/Regression/AutomaticLinearModeling/ModalAutomaticLinearModeling";
 import ModalLinear from "./Regression/Linear/ModalLinear";
@@ -31,8 +31,8 @@ import ModalOrdinal from "./Regression/Ordinal/ModalOrdinal";
 import ModalProbit from "./Regression/Probit/ModalProbit";
 import ModalNonlinear from "./Regression/Nonlinear/ModalNonlinear";
 
-import OpenData from "@/components/Modals/File/OpenData";
-import PrintModal from "@/components/Modals/File/Print";
+import OpenData from "@/components/Modals/File/Open/OpenData";
+import PrintModal from "@/components/Modals/File/Print/Print";
 import ModalTwoStageLeastSquares from "./Regression/TwoStageLeastSquares/ModalTwoStageLeastSquares";
 import ModalWeightEstimation from "./Regression/WeightEstimation/ModalWeightEstimation";
 import ModalQuantiles from "./Regression/Quantiles/ModalQuantiles";
@@ -43,7 +43,7 @@ import DefineDateTime from "@/components/Modals/Data/DefineDateTime";
 import SortCases from "@/components/Modals/Data/SortCases";
 import SortVariables from "@/components/Modals/Data/SortVars";
 import Transpose from "@/components/Modals/Data/Transpose";
-import MergeFiles from "@/components/Modals/Data/MergeFiles";
+
 import Restructure from "@/components/Modals/Data/Restructure";
 import SplitFile from "@/components/Modals/Data/SplitFile";
 import WeightCases from "@/components/Modals/Data/WeightCases";

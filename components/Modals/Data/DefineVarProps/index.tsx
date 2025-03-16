@@ -24,50 +24,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useModalStore, ModalType } from "@/stores/useModalStore";
-
-// Interfaces matching db.ts structure
-interface ValueLabel {
-    id?: number;
-    variableName: string;
-    value: number | string;
-    label: string;
-}
-
-interface Variable {
-    id?: number;
-    columnIndex: number;
-    name: string;
-    type:
-        | "NUMERIC"
-        | "COMMA"
-        | "SCIENTIFIC"
-        | "DATE"
-        | "ADATE"
-        | "EDATE"
-        | "SDATE"
-        | "JDATE"
-        | "QYR"
-        | "MOYR"
-        | "WKYR"
-        | "DATETIME"
-        | "TIME"
-        | "DTIME"
-        | "WKDAY"
-        | "MONTH"
-        | "DOLLAR"
-        | "CUSTOM_CURRENCY"
-        | "STRING"
-        | "RESTRICTED_NUMERIC";
-    width: number;
-    decimals: number;
-    label?: string;
-    values: ValueLabel[];
-    missing: (number | string)[];
-    columns: number;
-    align: "right" | "left" | "center";
-    measure: "scale" | "ordinal" | "nominal";
-    role: "input" | "target" | "both" | "none" | "partition" | "split";
-}
+import { Variable } from "@/types/Variable";
 
 interface DefineVariablePropertiesProps {
     onClose: () => void;
@@ -77,16 +34,16 @@ const DefineVariableProperties: FC<DefineVariablePropertiesProps> = ({ onClose }
     const { closeModal, openModal } = useModalStore();
 
     // Get variables from store
-    const getAvailableVariables = useVariableStore((state) => state.getAvailableVariables);
+    const { variables, loadVariables } = useVariableStore();
     const [storeVariables, setStoreVariables] = useState<Variable[]>([]);
 
     useEffect(() => {
-        const loadVariables = async () => {
-            const vars = await getAvailableVariables();
-            setStoreVariables(vars.filter(v => v.name !== ""));
+        const loadVariablesData = async () => {
+            await loadVariables();
+            setStoreVariables(variables.filter(v => v.name !== ""));
         };
-        loadVariables();
-    }, [getAvailableVariables]);
+        loadVariablesData();
+    }, [loadVariables, variables]);
 
     // Variables in the left list (available)
     const [availableVariables, setAvailableVariables] = useState<Variable[]>([]);

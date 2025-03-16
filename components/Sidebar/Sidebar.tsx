@@ -38,8 +38,8 @@ const SidebarMenuItem: React.FC<{ item: SidebarItem; depth?: number; isOpen: boo
                         )}
                         style={{ paddingLeft: `${paddingLeft}px` }}
                     >
-                        <span>{item.title}</span>
-                        <span className="ml-auto">
+                        <span className="truncate">{item.title}</span>
+                        <span className="ml-auto flex-shrink-0">
                             {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                         </span>
                     </button>
@@ -56,12 +56,12 @@ const SidebarMenuItem: React.FC<{ item: SidebarItem; depth?: number; isOpen: boo
                     href={item.url}
                     className={cn(
                         "flex items-center text-sm text-gray-700 rounded hover:bg-gray-100",
-                        "w-full",
+                        "w-full truncate",
                         { "pl-6 py-1": depth > 0, "py-2 px-3": depth === 0 }
                     )}
                     style={{ paddingLeft: `${paddingLeft}px` }}
                 >
-                    <span>{item.title}</span>
+                    <span className="truncate">{item.title}</span>
                 </a>
             )}
         </div>
@@ -135,9 +135,9 @@ const Sidebar: React.FC = () => {
                 isOpen ? "w-64" : "w-20"
             )}
         >
-            <div className="flex items-center justify-between p-3 border-b">
-                {isOpen && <h1 className="text-md font-semibold">Result</h1>}
-                <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+            <div className="flex items-center justify-between p-3 border-b flex-shrink-0">
+                {isOpen && <h1 className="text-md font-semibold truncate">Result</h1>}
+                <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => setIsOpen(!isOpen)}>
                     <ChevronRight
                         className={cn(
                             "w-4 h-4 transform transition-transform",
@@ -146,8 +146,8 @@ const Sidebar: React.FC = () => {
                     />
                 </Button>
             </div>
-            <div className="p-2 flex-grow overflow-y-auto">
-                <nav>
+            <div className="overflow-y-auto flex-grow">
+                <nav className="p-2">
                     {sidebarData.map((item, index) => (
                         <SidebarMenuItem key={index} item={item} isOpen={isOpen} />
                     ))}

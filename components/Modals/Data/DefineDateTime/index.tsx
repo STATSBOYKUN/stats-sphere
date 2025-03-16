@@ -33,7 +33,11 @@ const DefineDatesModal: FC<DefineDatesProps> = ({ onClose }) => {
     // Get store functions
     const { meta, setMeta } = useMetaStore();
     const { variables, addVariable, resetVariables } = useVariableStore();
-    const { updateBulkCells, getMaxRow } = useDataStore();
+    const { updateBulkCells, data } = useDataStore();
+
+    const getMaxRow = () => {
+        return data.length > 0 ? data.length - 1 : 0;
+    };
 
     // State for Cases Are options
     const [casesAreOptions] = useState<string[]>([

@@ -1,4 +1,3 @@
-// components/Layout/Main/Footer.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -33,14 +32,14 @@ export default function Footer() {
     };
 
     return (
-        <footer>
-            <Tabs value={activeTab} onValueChange={handleTabChange} className="py-2">
+        <div className="w-full bg-white py-2 flex-shrink-0">
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="space-x-2">
                     <TabsTrigger value="data">Data View</TabsTrigger>
                     <TabsTrigger value="variable">Variable View</TabsTrigger>
                     <TabsTrigger value="result">Result View</TabsTrigger>
                 </TabsList>
             </Tabs>
-        </footer>
+        </div>
     );
 }

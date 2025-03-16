@@ -22,6 +22,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useMetaStore } from "@/stores/useMetaStore";
+import { Variable } from "@/types/Variable";
 
 interface WeightCasesModalProps {
     onClose: () => void;
@@ -29,9 +30,9 @@ interface WeightCasesModalProps {
 
 const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     // Use variable store to get variables
-    const getAvailableVariables = useVariableStore((state) => state.getAvailableVariables);
-    const [storeVariables, setStoreVariables] = useState([]);
-    const [availableVariables, setAvailableVariables] = useState([]);
+    const { variables, loadVariables } = useVariableStore();
+    const [storeVariables, setStoreVariables] = useState<Variable[]>([]);
+    const [availableVariables, setAvailableVariables] = useState<Variable[]>([]);
 
     // Get meta store for weight information
     const meta = useMetaStore((state) => state.meta);
@@ -42,23 +43,24 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     console.log("Current weight value:", meta.weight, typeof meta.weight);
 
     // State for weight method: "none" or "byVariable"
-    const [weightMethod, setWeightMethod] = useState("none");
+    const [weightMethod, setWeightMethod] = useState<"none" | "byVariable">("none");
 
     // Selected frequency variable
-    const [frequencyVariable, setFrequencyVariable] = useState("");
+    const [frequencyVariable, setFrequencyVariable] = useState<string>("");
 
     // Selected variable for highlighting
-    const [highlightedVariable, setHighlightedVariable] = useState(null);
+    const [highlightedVariable, setHighlightedVariable] = useState<{id: string} | null>(null);
 
     // Error message for invalid selections
-    const [errorMessage, setErrorMessage] = useState(null);
-    const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [errorDialogOpen, setErrorDialogOpen] = useState<boolean>(false);
 
     // Load variables from store
     useEffect(() => {
-        const loadVariables = async () => {
-            const vars = await getAvailableVariables();
-            setStoreVariables(vars.filter(v => v.name !== ""));
+        const loadVariablesData = async () => {
+            await loadVariables();
+            const vars = variables.filter(v => v.name !== "");
+            setStoreVariables(vars);
 
             // If we have a stored weight variable
             if (meta.weight && meta.weight !== "") {
@@ -72,8 +74,8 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
                 }
             }
         };
-        loadVariables();
-    }, [getAvailableVariables, meta.weight]);
+        loadVariablesData();
+    }, [loadVariables, variables, meta.weight]);
 
     // Update available variables when store variables are loaded
     useEffect(() => {
@@ -83,7 +85,7 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     }, [storeVariables]);
 
     // Function to display variable name with label if available
-    const getDisplayName = (variable) => {
+    const getDisplayName = (variable: Variable): string => {
         if (variable.label) {
             return `${variable.label} [${variable.name}]`;
         }
@@ -91,7 +93,7 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     };
 
     // Function to get appropriate icon based on variable type
-    const getVariableIcon = (variable) => {
+    const getVariableIcon = (variable: Variable) => {
         if (!variable) return null;
 
         // Use measure to determine icon
@@ -111,7 +113,7 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     };
 
     // Function to handle variable selection
-    const handleVariableSelect = (columnIndex) => {
+    const handleVariableSelect = (columnIndex: number) => {
         if (highlightedVariable?.id === columnIndex.toString()) {
             setHighlightedVariable(null);
         } else {
@@ -120,7 +122,7 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     };
 
     // Function to select variable as frequency variable
-    const handleSelectFrequencyVariable = (variable) => {
+    const handleSelectFrequencyVariable = (variable: Variable) => {
         // Since we filter for numeric variables only in the list,
         // this check is mostly for safety
         if (variable.type === "STRING") {
@@ -135,7 +137,7 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
     };
 
     // Handle variable double click
-    const handleVariableDoubleClick = (variable) => {
+    const handleVariableDoubleClick = (variable: Variable) => {
         handleSelectFrequencyVariable(variable);
     };
 
@@ -295,7 +297,6 @@ const WeightCasesModal: React.FC<WeightCasesModalProps> = ({ onClose }) => {
                 </DialogFooter>
             </DialogContent>
 
-            {/* Error Dialog */}
             {/* Error Dialog */}
             <Dialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
                 <DialogContent className="max-w-[450px] p-3">
