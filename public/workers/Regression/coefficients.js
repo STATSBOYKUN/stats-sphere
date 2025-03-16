@@ -80,7 +80,6 @@ function calculateCoefficients(dependent, independents, varNames) {
   const n = dependent.length;
   const p = independents.length;
 
-  // For single or multiple regression
   try {
     // Prepare design matrix X with intercept column
     const X = [];
@@ -133,7 +132,7 @@ function calculateCoefficients(dependent, independents, varNames) {
     // Calculate t-values
     const tValues = beta.map((b, i) => b / stdErrors[i]);
 
-    // p-values (two-tailed)
+    // p-values (two-tailed) using t-distribution
     const pValues = tValues.map(t => 2 * (1 - tCDF(Math.abs(t), df)));
 
     // Calculate standardized coefficients (Beta)
@@ -142,7 +141,7 @@ function calculateCoefficients(dependent, independents, varNames) {
 
     const means = independents.map(x => x.reduce((sum, val) => sum + val, 0) / n);
     const sds = independents.map((x, i) =>
-        Math.sqrt(x.reduce((sum, val) => sum + (val - means[i]) ** 2, 0) / (n - 1))
+      Math.sqrt(x.reduce((sum, val) => sum + (val - means[i]) ** 2, 0) / (n - 1))
     );
 
     const standardizedCoefficients = [null]; // Intercept has no standardized coefficient
@@ -190,28 +189,102 @@ function calculateCoefficients(dependent, independents, varNames) {
   }
 }
 
-// Helper function: t-distribution cumulative distribution function
-function tCDF(t, df) {
-  // Simplified approximation
-  // In a real implementation, you'd use a proper statistical library
-  if (t === 0) return 0.5;
+// --------------------
+// Functions for t-distribution p-value calculation
+// --------------------
 
-  const x = df / (df + t * t);
-  return 1 - 0.5 * betaIncomplete(df / 2, 0.5, x);
+// tCDF: Cumulative distribution function for the t-distribution.
+// Menggunakan relasi: CDF_t(t; v) = 1 - 0.5 * I_{v/(t^2+v)}(v/2, 1/2)
+function tCDF(t, df) {
+  if (t === 0) return 0.5;
+  const x = df / (t * t + df);
+  return 1 - 0.5 * incbeta(x, df / 2, 0.5);
 }
 
-// Helper function: Incomplete beta function
-function betaIncomplete(a, b, x) {
-  if (x < 0 || x > 1) return 0;
+// incbeta: Regularized incomplete beta function menggunakan algoritma Lanczos
+function incbeta(x, a, b) {
+  if (x < 0 || x > 1) throw new Error("x out of bounds in incbeta");
   if (x === 0) return 0;
   if (x === 1) return 1;
-
-  // Simple approximation for demo purposes
-  // This should be replaced with a proper implementation
-  return 0.5;
+  const lnBeta = logGamma(a) + logGamma(b) - logGamma(a + b);
+  const bt = Math.exp(a * Math.log(x) + b * Math.log(1 - x) - lnBeta);
+  let result;
+  if (x < (a + 1) / (a + b + 2)) {
+    result = bt * betacf(a, b, x) / a;
+  } else {
+    result = 1 - bt * betacf(b, a, 1 - x) / b;
+  }
+  if (result < 0) result = 0;
+  if (result > 1) result = 1;
+  return result;
 }
 
-// Matrix operation functions
+// logGamma: Log dari fungsi gamma menggunakan algoritma Lanczos standar
+function logGamma(z) {
+  const p = [
+    676.5203681218851,
+    -1259.1392167224028,
+    771.32342877765313,
+    -176.61502916214059,
+    12.507343278686905,
+    -0.13857109526572012,
+    9.9843695780195716e-6,
+    1.5056327351493116e-7
+  ];
+  const g = 7;
+  if (z < 0.5) {
+    return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * z)) - logGamma(1 - z);
+  } else {
+    z -= 1;
+    let x = 0.99999999999980993;
+    for (let i = 0; i < p.length; i++) {
+      x += p[i] / (z + i + 1);
+    }
+    const t = z + g + 0.5;
+    return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
+  }
+}
+
+// betacf: Continued fraction untuk incomplete beta function
+function betacf(a, b, x) {
+  const MAXIT = 100;
+  const EPS = 3e-7;
+  const FPMIN = 1e-30;
+  let m2, aa, c, d, del;
+  let qab = a + b;
+  let qap = a + 1;
+  let qam = a - 1;
+  c = 1;
+  d = 1 - qab * x / qap;
+  if (Math.abs(d) < FPMIN) d = FPMIN;
+  d = 1 / d;
+  let h = d;
+  for (let m = 1; m <= MAXIT; m++) {
+    m2 = 2 * m;
+    aa = m * (b - m) * x / ((qam + m2) * (a + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c;
+    if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d;
+    h *= d * c;
+    aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2));
+    d = 1 + aa * d;
+    if (Math.abs(d) < FPMIN) d = FPMIN;
+    c = 1 + aa / c;
+    if (Math.abs(c) < FPMIN) c = FPMIN;
+    d = 1 / d;
+    del = d * c;
+    h *= del;
+    if (Math.abs(del - 1.0) < EPS) break;
+  }
+  return h;
+}
+
+// --------------------
+// Matrix Operation Functions
+// --------------------
+
 function transposeMatrix(matrix) {
   const rows = matrix.length;
   const cols = matrix[0].length;
@@ -272,7 +345,6 @@ function invertMatrix(matrix) {
 
     // Gaussian elimination
     for (let i = 0; i < n; i++) {
-      // Find pivot
       let maxRow = i;
       for (let j = i + 1; j < n; j++) {
         if (Math.abs(augmented[j][i]) > Math.abs(augmented[maxRow][i])) {
@@ -280,23 +352,19 @@ function invertMatrix(matrix) {
         }
       }
 
-      // Swap rows
       if (maxRow !== i) {
         [augmented[i], augmented[maxRow]] = [augmented[maxRow], augmented[i]];
       }
 
-      // Check for singularity
       if (Math.abs(augmented[i][i]) < 1e-10) {
         throw new Error("Matrix is singular and cannot be inverted");
       }
 
-      // Scale the pivot row
       const pivot = augmented[i][i];
       for (let j = 0; j < 2 * n; j++) {
         augmented[i][j] /= pivot;
       }
 
-      // Eliminate other rows
       for (let j = 0; j < n; j++) {
         if (j !== i) {
           const factor = augmented[j][i];
@@ -307,7 +375,6 @@ function invertMatrix(matrix) {
       }
     }
 
-    // Extract inverse matrix
     const inverse = [];
     for (let i = 0; i < n; i++) {
       inverse[i] = augmented[i].slice(n);
@@ -316,7 +383,6 @@ function invertMatrix(matrix) {
     return inverse;
   } catch (error) {
     console.error("Error inverting matrix:", error);
-    // Return identity matrix as fallback
     const n = matrix.length;
     const identity = [];
     for (let i = 0; i < n; i++) {
