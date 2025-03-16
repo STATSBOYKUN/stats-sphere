@@ -209,65 +209,11 @@ function getArrayJsValueFromWasm0(ptr, len) {
     return result;
 }
 
-let cachedUint32ArrayMemory0 = null;
-
-function getUint32ArrayMemory0() {
-    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
-        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
-    }
-    return cachedUint32ArrayMemory0;
-}
-
-function getArrayU32FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
-}
-
-function passArray32ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 4, 4) >>> 0;
-    getUint32ArrayMemory0().set(arg, ptr / 4);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
-/**
- * @param {number} k
- * @param {number} j
- * @param {Float64Array} partial_autocorrelate
- * @returns {number}
- */
-export function partial_kj(k, j, partial_autocorrelate) {
-    const ptr0 = passArrayF64ToWasm0(partial_autocorrelate, wasm.__wbindgen_malloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.partial_kj(k, j, ptr0, len0);
-    return ret;
-}
-
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_4.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
 }
-/**
- * Perform hierarchical clustering analysis from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `config_json` - Configuration object
- *
- * # Returns
- * * Result object with analysis data or error
- * @param {any} data_json
- * @param {any} config_json
- * @returns {any}
- */
-export function perform_analysis(data_json, config_json) {
-    const ret = wasm.perform_analysis(data_json, config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
 /**
  * Standardize data from JavaScript
  *
@@ -339,8 +285,42 @@ export function impute_missing_values(data_json, method) {
     return takeFromExternrefTable0(ret[0]);
 }
 
+/**
+ * Perform hierarchical clustering analysis from JavaScript
+ *
+ * # Arguments
+ * * `data_json` - JSON data array
+ * * `config_json` - Configuration object
+ *
+ * # Returns
+ * * Result object with analysis data or error
+ * @param {any} data_json
+ * @param {any} config_json
+ * @returns {any}
+ */
+export function perform_analysis(data_json, config_json) {
+    const ret = wasm.perform_analysis(data_json, config_json);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
 export function start() {
     wasm.start();
+}
+
+/**
+ * WASM Binding: Parse SPSS-style configuration into internal format
+ * @param {any} config_json
+ * @returns {any}
+ */
+export function parse_clustering_config(config_json) {
+    const ret = wasm.parse_clustering_config(config_json);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -453,17 +433,37 @@ export function seasonal_difference(data, season) {
     return v2;
 }
 
-/**
- * WASM Binding: Parse SPSS-style configuration into internal format
- * @param {any} config_json
- * @returns {any}
- */
-export function parse_clustering_config(config_json) {
-    const ret = wasm.parse_clustering_config(config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
+let cachedUint32ArrayMemory0 = null;
+
+function getUint32ArrayMemory0() {
+    if (cachedUint32ArrayMemory0 === null || cachedUint32ArrayMemory0.byteLength === 0) {
+        cachedUint32ArrayMemory0 = new Uint32Array(wasm.memory.buffer);
     }
-    return takeFromExternrefTable0(ret[0]);
+    return cachedUint32ArrayMemory0;
+}
+
+function getArrayU32FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
+}
+
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
+}
+/**
+ * @param {number} k
+ * @param {number} j
+ * @param {Float64Array} partial_autocorrelate
+ * @returns {number}
+ */
+export function partial_kj(k, j, partial_autocorrelate) {
+    const ptr0 = passArrayF64ToWasm0(partial_autocorrelate, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.partial_kj(k, j, ptr0, len0);
+    return ret;
 }
 
 const AutocorrelationFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -956,6 +956,25 @@ export class Decomposition {
         return v1;
     }
     /**
+     * @returns {Float64Array}
+     */
+    additive_decomposition() {
+        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {Float64Array} forecast
+     * @returns {any}
+     */
+    decomposition_evaluation(forecast) {
+        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decomposition_decomposition_evaluation(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
      * @param {string} trend
      * @returns {Float64Array}
      */
@@ -1019,15 +1038,6 @@ export class Decomposition {
         return v2;
     }
     /**
-     * @returns {Float64Array}
-     */
-    additive_decomposition() {
-        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
      * @param {Float64Array} centered_ma
      * @returns {Float64Array}
      */
@@ -1050,16 +1060,6 @@ export class Decomposition {
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
-    }
-    /**
-     * @param {Float64Array} forecast
-     * @returns {any}
-     */
-    decomposition_evaluation(forecast) {
-        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_decomposition_evaluation(this.__wbg_ptr, ptr0, len0);
-        return ret;
     }
 }
 
@@ -1568,42 +1568,14 @@ export class KMeansClusteringWasm {
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * Get iteration history directly using serde_wasm_bindgen.
+     * Get iteration history.
      *
      * # Returns
-     * * `Result<JsValue, JsValue>` - Iteration changes as JS array using direct conversion
+     * * `Result<JsValue, JsValue>` - Iteration changes as JS array or error
      * @returns {any}
      */
-    get_iterations_direct() {
-        const ret = wasm.kmeansclusteringwasm_get_iterations_direct(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get iteration history in a more detailed format.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Iteration history with details
-     * @returns {any}
-     */
-    get_iterations_detailed() {
-        const ret = wasm.kmeansclusteringwasm_get_iterations_detailed(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get iteration history table formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Iteration table as JS object or error
-     * @returns {any}
-     */
-    get_iteration_history_table() {
-        const ret = wasm.kmeansclusteringwasm_get_iteration_history_table(this.__wbg_ptr);
+    get_iterations() {
+        const ret = wasm.kmeansclusteringwasm_get_iterations(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -1660,20 +1632,6 @@ export class KMeansClusteringWasm {
      */
     get_anova_table() {
         const ret = wasm.kmeansclusteringwasm_get_anova_table(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get ANOVA table formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
-     * @returns {any}
-     */
-    get_anova_table_formatted() {
-        const ret = wasm.kmeansclusteringwasm_get_anova_table_formatted(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -1780,6 +1738,20 @@ export class KMeansClusteringWasm {
      */
     get_cluster_membership_table() {
         const ret = wasm.kmeansclusteringwasm_get_cluster_membership_table(this.__wbg_ptr);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return takeFromExternrefTable0(ret[0]);
+    }
+    /**
+     * Get ANOVA table formatted as in SPSS output.
+     *
+     * # Returns
+     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
+     * @returns {any}
+     */
+    get_anova_table_formatted() {
+        const ret = wasm.kmeansclusteringwasm_get_anova_table_formatted(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
@@ -1949,6 +1921,16 @@ export class Smoothing {
         return v1;
     }
     /**
+     * @param {Float64Array} forecast
+     * @returns {any}
+     */
+    smoothing_evaluation(forecast) {
+        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.smoothing_smoothing_evaluation(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
      * @param {number} alpha
      * @returns {Float64Array}
      */
@@ -1991,16 +1973,6 @@ export class Smoothing {
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
-    }
-    /**
-     * @param {Float64Array} forecast
-     * @returns {any}
-     */
-    smoothing_evaluation(forecast) {
-        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.smoothing_smoothing_evaluation(this.__wbg_ptr, ptr0, len0);
-        return ret;
     }
 }
 

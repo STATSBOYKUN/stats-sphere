@@ -267,7 +267,8 @@ impl KMeansClustering {
         for (idx, point) in self.data.iter().enumerate() {
             let (cluster_idx, dist) = closest_cluster(point, &self.centers);
             
-            // Update cluster membership and distance
+            // Simpan jarak cluster yang telah dihitung dengan presisi penuh
+            // (pembulatannya dilakukan hanya untuk tampilan)
             self.cluster_membership[idx] = cluster_idx;
             self.distances[idx] = dist;
             
@@ -284,21 +285,21 @@ impl KMeansClustering {
                 for j in 0..new_centers[i].len() {
                     new_centers[i][j] /= counts[i] as f64;
                 }
+            } else {
+                // Jika cluster kosong, pertahankan pusat sebelumnya
+                log_warning(
+                    format!("Cluster {} kosong, mempertahankan pusat sebelumnya", i + 1),
+                    &mut self.warnings
+                );
+                new_centers[i] = self.centers[i].clone();
             }
         }
         
-        // Calculate the change in each center coordinate (not just Euclidean distance)
+        // Calculate the change in each center
         let mut changes = Vec::new();
         for i in 0..num_clusters {
-            // For each dimension, find the maximum absolute change
-            let mut max_coord_change: f64 = 0.0;
-            for j in 0..dim {
-                let coord_change = (self.centers[i][j] - new_centers[i][j]).abs();
-                max_coord_change = max_coord_change.max(coord_change);
-            }
-            
-            // Record the maximum coordinate change for this center
-            changes.push(max_coord_change);
+            let change = euclidean_distance(&self.centers[i], &new_centers[i]);
+            changes.push(change);
         }
         
         // Update centers
@@ -467,7 +468,7 @@ impl KMeansClustering {
     ///
     /// # Returns
     /// * `ClusterDistanceMatrix` - Matrix of distances between cluster centers
-    fn calculate_distance_matrix(&self) -> ClusterDistanceMatrix {
+    fn calculate_distance_matrix(&mut self) -> ClusterDistanceMatrix {
         let num_clusters = self.config.main.cluster;
         let mut distances = vec![vec![0.0; num_clusters]; num_clusters];
         
@@ -475,12 +476,27 @@ impl KMeansClustering {
         for i in 0..num_clusters {
             for j in (i+1)..num_clusters {
                 let dist = euclidean_distance(&self.centers[i], &self.centers[j]);
-                // Round to 3 decimal places for consistency with SPSS output
+                
+                // Format jarak ke 3 desimal seperti di SPSS output (tapi simpan presisi penuh di matrix)
                 let rounded_dist = (dist * 1000.0).round() / 1000.0;
+                
+                // Jarak matrix simetrik (i,j) = (j,i)
                 distances[i][j] = rounded_dist;
-                distances[j][i] = rounded_dist;  // Distance matrix is symmetric
+                distances[j][i] = rounded_dist;
             }
         }
+        
+        // Log jarak untuk debugging
+        let mut distance_info = String::new();
+        for i in 0..num_clusters {
+            for j in 0..num_clusters {
+                if j > i {  // Hanya tampilkan jarak untuk elemen diagonal atas
+                    distance_info.push_str(&format!("Distance between cluster {} and {}: {:.3}\n", 
+                                                i+1, j+1, distances[i][j]));
+                }
+            }
+        }
+        log_warning(format!("Final cluster distances: \n{}", distance_info), &mut self.warnings);
         
         ClusterDistanceMatrix {
             num_clusters,
@@ -550,24 +566,24 @@ impl KMeansClustering {
             );
         }
         
-        // Default convergence criterion to 0.0001 if it's set to 0
+        // Sesuai dokumentasi SPSS: Nilai default untuk n adalah 0. 
+        // Nilai minimum change sama dengan nilai konvergensi (n) dikali jarak minimum antara pusat awal
         let convergence_criterion = if self.config.iterate.convergence_criterion == 0.0 {
-            0.0001 // Typical default value
+            0.0 // Jika 0, berarti hanya berhenti pada maximum iterations
         } else {
             self.config.iterate.convergence_criterion
         };
         
         let convergence_threshold = convergence_criterion * min_dist_initial;
         
-        // Log convergence threshold for debugging
-        log_warning(
-            format!("Convergence threshold: {}, Min distance between initial centers: {}", 
-                    convergence_threshold, min_dist_initial),
-            &mut self.warnings
-        );
-        
         // Step 3: Iteratively assign cases and update centers
         let max_iterations = self.config.iterate.maximum_iterations;
+        
+        // Log informasi kriteria konvergensi untuk debugging
+        log_warning(format!(
+            "Initial centers minimum distance: {:.5}\nConvergence threshold: {:.5}\nMax iterations: {}",
+            min_dist_initial, convergence_threshold, max_iterations
+        ), &mut self.warnings);
         
         for iteration in 0..max_iterations {
             let changes = match self.assign_cases_and_update_centers() {
@@ -583,28 +599,27 @@ impl KMeansClustering {
                 }
             };
             
-            // Round changes to 3 decimal places for consistency with SPSS
-            let rounded_changes: Vec<f64> = changes.iter()
-                .map(|&change| (change * 1000.0).round() / 1000.0)
-                .collect();
-            
-            self.iterations.push(rounded_changes.clone());
+            self.iterations.push(changes.clone());
             self.iteration_count = iteration + 1;
             
-            // Get maximum change for convergence check
-            let max_change = rounded_changes
-                .iter()
-                .fold(0.0f64, |max: f64, &change| max.max(change));
-            
-            // Log iteration information for debugging
-            log_warning(
-                format!("Iteration {}: Max change = {}, Threshold = {}", 
-                       iteration + 1, max_change, convergence_threshold),
-                &mut self.warnings
-            );
-            
             // Check for convergence
-            if max_change <= convergence_threshold {
+            let max_change = changes
+                .iter()
+                .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
+                .unwrap_or(&0.0);
+            
+            // Log perubahan untuk debugging
+            log_warning(format!(
+                "Iteration {}: Max change = {:.5}, Convergence threshold = {:.5}",
+                iteration + 1, max_change, convergence_threshold
+            ), &mut self.warnings);
+            
+            if *max_change <= convergence_threshold {
+                log_warning(
+                    format!("Convergence achieved at iteration {} with max change {:.5} <= threshold {:.5}",
+                            iteration + 1, max_change, convergence_threshold),
+                    &mut self.warnings
+                );
                 break;
             }
         }
@@ -643,8 +658,8 @@ impl KMeansClustering {
         
         // Calculate additional statistics
         let case_statistics = self.calculate_case_statistics();
-        let distance_matrix = self.calculate_distance_matrix();
         let membership_info = self.prepare_membership_info(case_target_data.clone());
+        let distance_matrix = self.calculate_distance_matrix();
         
         // Get a copy of warnings to return
         let warnings_copy = self.warnings.clone();

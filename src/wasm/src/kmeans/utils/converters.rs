@@ -1,9 +1,8 @@
 use crate::kmeans::types::{config::*, data::*};
 use crate::kmeans::utils::error::{KMeansError, KMeansResult};
-use crate::kmeans::types::data::{KMeansInput};
 use wasm_bindgen::prelude::*;
 use serde::{Deserialize, Serialize};
-use serde_json::{from_value, to_value, Value};
+use serde_json::{from_value, to_value, Value, Map};
 use crate::ensure_kmeans;
 
 /// Convert a JsValue to a Rust type using serde deserialization.
@@ -25,6 +24,7 @@ where
 }
 
 /// Convert a Rust type to a JsValue using serde serialization.
+/// Ensures maps are serialized as JavaScript objects instead of Map.
 ///
 /// # Arguments
 /// * `value` - The Rust value to convert
@@ -35,11 +35,37 @@ pub fn to_js_value<T>(value: &T) -> KMeansResult<JsValue>
 where
     T: Serialize,
 {
+    // Serialize to serde_json::Value first
     let json = to_value(value)
         .map_err(|e| KMeansError::SerializationError(format!("Failed to convert Rust type to JSON: {}", e)))?;
     
-    Ok(serde_wasm_bindgen::to_value(&json)
-        .map_err(|e| KMeansError::SerializationError(format!("Failed to serialize to JS value: {}", e)))?)
+    // Ensure any Map<String, Value> is converted to Object
+    let processed_json = convert_maps_to_objects(json);
+    
+    // Now convert to JsValue
+    serde_wasm_bindgen::to_value(&processed_json)
+        .map_err(|e| KMeansError::SerializationError(format!("Failed to serialize to JS value: {}", e)))
+}
+
+/// Recursively converts Map<String, Value> to Object in a serde_json::Value
+fn convert_maps_to_objects(value: Value) -> Value {
+    match value {
+        Value::Object(obj) => {
+            let mut new_obj = Map::new();
+            for (k, v) in obj {
+                new_obj.insert(k, convert_maps_to_objects(v));
+            }
+            Value::Object(new_obj)
+        },
+        Value::Array(arr) => {
+            let new_arr: Vec<Value> = arr.into_iter()
+                .map(convert_maps_to_objects)
+                .collect();
+            Value::Array(new_arr)
+        },
+        // Untuk tipe lain, kembalikan begitu saja
+        _ => value,
+    }
 }
 
 /// Parse all input data for K-Means clustering from JavaScript values.

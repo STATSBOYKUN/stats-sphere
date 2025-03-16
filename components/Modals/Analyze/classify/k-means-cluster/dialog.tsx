@@ -446,6 +446,9 @@ export const KMeansClusterDialog = ({
                                                                         ? "OpenDataset"
                                                                         : "ExternalDatafile"
                                                                 }
+                                                                disabled={
+                                                                    !mainState.ReadInitial
+                                                                }
                                                                 onValueChange={
                                                                     handleReadGrp
                                                                 }
@@ -471,6 +474,9 @@ export const KMeansClusterDialog = ({
                                                                             value={
                                                                                 mainState.OpenDatasetMethod ??
                                                                                 ""
+                                                                            }
+                                                                            disabled={
+                                                                                !mainState.OpenDataset
                                                                             }
                                                                             onChange={(
                                                                                 e
@@ -506,6 +512,9 @@ export const KMeansClusterDialog = ({
                                                                             value={
                                                                                 mainState.InitialData ??
                                                                                 ""
+                                                                            }
+                                                                            disabled={
+                                                                                !mainState.ExternalDatafile
                                                                             }
                                                                             onChange={(
                                                                                 e
@@ -553,6 +562,9 @@ export const KMeansClusterDialog = ({
                                                                         ? "NewDataset"
                                                                         : "DataFile"
                                                                 }
+                                                                disabled={
+                                                                    !mainState.WriteFinal
+                                                                }
                                                                 onValueChange={
                                                                     handleWriteGrp
                                                                 }
@@ -578,6 +590,9 @@ export const KMeansClusterDialog = ({
                                                                             value={
                                                                                 mainState.NewData ??
                                                                                 ""
+                                                                            }
+                                                                            disabled={
+                                                                                !mainState.NewDataset
                                                                             }
                                                                             onChange={(
                                                                                 e
@@ -613,6 +628,9 @@ export const KMeansClusterDialog = ({
                                                                             value={
                                                                                 mainState.FinalData ??
                                                                                 ""
+                                                                            }
+                                                                            disabled={
+                                                                                !mainState.DataFile
                                                                             }
                                                                             onChange={(
                                                                                 e

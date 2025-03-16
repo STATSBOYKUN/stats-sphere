@@ -14,4 +14,11 @@ export type KMeansClusterFinalResultType = {
     addLog: (log: Omit<Log, "id">) => Promise<number>;
     addAnalytic: (analytic: Omit<Analytic, "id">) => Promise<number>;
     addStatistic: (stat: Omit<Statistic, "id">) => Promise<number>;
+    initialClusterCentersTable: any;
+    iterationHistoryTable: any;
+    finalClusterCentersTable: any;
+    numberOfCasesTable: any;
+    clusterMembershipTable: any;
+    clusterStatisticsTable: any;
+    distancesFromClusterCentersTable: any;
 };
