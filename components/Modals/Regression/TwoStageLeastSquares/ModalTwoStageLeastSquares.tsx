@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
+import { useVariableStore } from '@/stores/useVariableStore';
 import { useDataStore } from '@/stores/useDataStore';
 import {
   Select,

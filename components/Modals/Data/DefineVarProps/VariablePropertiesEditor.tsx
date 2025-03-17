@@ -54,7 +54,11 @@ interface Variable {
         | "WKDAY"
         | "MONTH"
         | "DOLLAR"
-        | "CUSTOM_CURRENCY"
+        | "CCA"
+        | "CCB"
+        | "CCC"
+        | "CCD"
+        | "CCE"
         | "STRING"
         | "RESTRICTED_NUMERIC";
     width: number;
@@ -73,7 +77,7 @@ const ROLE_OPTIONS = ["input", "target", "both", "none", "partition", "split"];
 const MEASURE_OPTIONS = ["scale", "ordinal", "nominal"];
 const TYPE_OPTIONS = [
     "NUMERIC", "COMMA", "DOT", "SCIENTIFIC", "DATE", "DOLLAR",
-    "CUSTOM_CURRENCY", "PERCENT", "STRING", "RESTRICTED_NUMERIC"
+    "CCA", "CCB", "CCC", "CCD", "CCE", "PERCENT", "STRING", "RESTRICTED_NUMERIC"
 ];
 
 // Date format specifications
@@ -452,6 +456,12 @@ const VariablePropertiesEditor: FC<VariablePropertiesEditorProps> = ({
         return dateTypes.includes(type);
     };
 
+    // Check if type is a currency type
+    const isCurrencyType = (type: string): boolean => {
+        const currencyTypes = ["CCA", "CCB", "CCC", "CCD", "CCE", "DOLLAR"];
+        return currencyTypes.includes(type);
+    };
+
     // Get formatted type display name
     const getFormattedTypeName = (type: string): string => {
         switch (type) {
@@ -461,7 +471,11 @@ const VariablePropertiesEditor: FC<VariablePropertiesEditorProps> = ({
             case "SCIENTIFIC": return "Scientific";
             case "DATE": return "Date";
             case "DOLLAR": return "Dollar";
-            case "CUSTOM_CURRENCY": return "Currency";
+            case "CCA": return "Currency A";
+            case "CCB": return "Currency B";
+            case "CCC": return "Currency C";
+            case "CCD": return "Currency D";
+            case "CCE": return "Currency E";
             case "PERCENT": return "Percent";
             case "STRING": return "String";
             case "RESTRICTED_NUMERIC": return "Restricted Numeric";

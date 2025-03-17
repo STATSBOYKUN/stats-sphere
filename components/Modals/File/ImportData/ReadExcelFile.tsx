@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useDataStore } from "@/stores/useDataStore";
-import { useVariableStore, VariableRow } from "@/stores/useVariableStore";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { Variable } from "@/types/Variable";
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/react";
 
@@ -74,25 +75,26 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
             const maxLength = isNumeric ? 8 : Math.max(...colData.map((val) => val.length));
             const variableName = firstLineContains && headerRow ? headerRow[colIndex] : `VAR${colIndex + 1}`;
 
-            const variable: VariableRow = {
+            const variable: Variable = {
                 columnIndex: colIndex,
                 name: variableName,
-                type: isNumeric ? "Numeric" : "String",
+                type: isNumeric ? "NUMERIC" : "STRING",
                 width: isNumeric ? 8 : maxLength,
                 decimals: isNumeric ? 2 : 0,
                 label: "",
-                values: "None",
-                missing: "None",
+                values: [],
+                missing: [],
                 columns: 200,
-                align: "Right",
-                measure: "Nominal",
+                align: "right",
+                measure: "nominal",
+                role: "input",
             };
 
             const existingVariable = getVariableByColumnIndex(colIndex);
             if (existingVariable) {
                 const rowIndex = variables.findIndex((v) => v.columnIndex === colIndex);
                 if (rowIndex !== -1) {
-                    const keys = Object.keys(variable) as (keyof VariableRow)[];
+                    const keys = Object.keys(variable) as (keyof Variable)[];
                     for (const field of keys) {
                         await updateVariable(rowIndex, field, variable[field]);
                     }
@@ -103,14 +105,13 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
         }
 
         previewData.forEach((row, rowIndex) => {
-            row.forEach((value, colIndex) => {
+            row.forEach((value: string | number, colIndex: number) => {
                 updateCell(rowIndex, colIndex, value);
             });
         });
 
         onClose();
     };
-
 
     const handleReset = () => {
         setWorksheet("");
@@ -140,13 +141,13 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
         setWorksheet(sheetNames[0]);
 
         const sheet = wb.Sheets[sheetNames[0]];
-        const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        const sheetData = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
 
         const rowCount = sheetData.length;
-        const colCount = sheetData[0]?.length || 0;
+        const colCount = Array.isArray(sheetData[0]) ? sheetData[0].length : 0;
         setRange(`A1:${String.fromCharCode(65 + colCount - 1)}${rowCount}`);
 
-        setData(sheetData.slice(0, 100).map((row: any[]) => row.slice(0, 50)));
+        setData(sheetData.slice(0, 100).map((row: any[]) => Array.isArray(row) ? row.slice(0, 50) : []));
     }, [fileContent]);
 
     const handleWorksheetChange = (newWorksheet: string) => {
@@ -205,7 +206,7 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
                     onChange={(e) => handleWorksheetChange(e.target.value)}
                     className="w-full px-2 py-1 border rounded-md"
                 >
-                    {workbook && workbook.SheetNames.map((sheetName, index) => (
+                    {workbook && workbook.SheetNames.map((sheetName: string, index: number) => (
                         <option key={index} value={sheetName}>
                             {sheetName}
                         </option>
@@ -256,29 +257,28 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
                     <span>Remove trailing spaces from string values</span>
                 </label>
             </div>
-                <strong className="text-sm">Preview (first 100 rows, 50 columns):</strong>
-                <HotTable
-                    data={data}
-                    colHeaders={columnHeaders}
-                    columns={data[0]?.map((_, i) => ({
-                        data: i,
-                        readOnly: true
-                    }))}
-                    width="100%"
-                    height="200px"
-                    stretchH="all"
-                    licenseKey="non-commercial-and-evaluation"
-                    className="handsontable-preview"
-                    afterChange={(changes) => {
-                        // Handle live updates here
-                        if (changes) {
-                            changes.forEach(([row, col, oldValue, newValue]) => {
-                                console.log(`Cell at [${row}, ${col}] changed from ${oldValue} to ${newValue}`);
-                                updateCell(row, col, newValue); // Update state/store with the new value
-                            });
-                        }
-                    }}
-                />
+            <strong className="text-sm">Preview (first 100 rows, 50 columns):</strong>
+            <HotTable
+                data={data}
+                colHeaders={columnHeaders}
+                columns={data[0]?.map((_: any, i: number) => ({
+                    data: i,
+                    readOnly: true
+                }))}
+                width="100%"
+                height="200px"
+                stretchH="all"
+                licenseKey="non-commercial-and-evaluation"
+                className="handsontable-preview"
+                afterChange={(changes) => {
+                    if (changes) {
+                        changes.forEach(([row, col, oldValue, newValue]) => {
+                            console.log(`Cell at [${row}, ${col}] changed from ${oldValue} to ${newValue}`);
+                            updateCell(row as number, col as number, String(newValue));
+                        });
+                    }
+                }}
+            />
             <p className="text-xs text-gray-500">
                 Disclaimer: Preview hanya menampilkan 100 baris pertama dan 50 kolom pertama.
             </p>
@@ -289,7 +289,6 @@ const ReadExcelFile: FC<ReadExcelFileProps> = ({ onClose, fileName, fileContent 
                 <Button variant="outline" onClick={handleHelp} size="sm">Help</Button>
             </DialogFooter>
         </DialogContent>
-
     );
 };
 

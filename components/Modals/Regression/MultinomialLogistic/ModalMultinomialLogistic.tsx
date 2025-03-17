@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ArrowRight, Pencil } from 'lucide-react';
-import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
+import { useVariableStore } from '@/stores/useVariableStore';
 import { useDataStore } from '@/stores/useDataStore';
 import {useResultStore} from '@/stores/useResultStore';
 // Import komponen UI lainnya sesuai kebutuhan

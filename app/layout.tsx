@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import '@/app/globals.css'
 import Header from "@/components/Header/Dashboard/Header";
 import Footer from "@/components/Footer/Dashboard/Footer";
-import { ThemeProvider } from "@/components/theme-provider";
 import React from "react";
 import ModalContainer from "@/components/Modals/ModalContainer";
 

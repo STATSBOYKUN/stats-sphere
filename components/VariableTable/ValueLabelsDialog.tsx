@@ -255,7 +255,7 @@ export const ValueLabelsDialog: React.FC<ValueLabelsDialogProps> = ({
                                 className={`p-1 cursor-pointer ${selectedIndex === index ? 'bg-yellow-100' : 'hover:bg-gray-100'}`}
                                 onClick={() => handleSelect(index)}
                             >
-                                {item.value === " " ? "[Space]" : item.value} = "{item.label}"
+                                {item.value === " " ? "[Space]" : item.value} = &quot;{item.label}&quot;
                             </div>
                         ))}
                     </div>

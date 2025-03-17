@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "@/app/globals.css";
 import Header from "@/components/Header/Dashboard/Header";
 import Footer from "@/components/Footer/Dashboard/Footer";
-import { ThemeProvider } from "@/components/theme-provider";
 import React from "react";
 import ModalContainer from "@/components/Modals/ModalContainer";
 import DataLoader from "@/components/DataLoader";
@@ -20,12 +19,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-      <ThemeProvider
-          attribute="class"
-          defaultTheme=""
-          enableSystem
-          disableTransitionOnChange
-      >
+      <>
         <DataLoader />
 
         <div className="h-screen w-full flex flex-col overflow-hidden">
@@ -42,6 +36,6 @@ export default function DashboardLayout({
             <Footer />
           </footer>
         </div>
-      </ThemeProvider>
+      </>
   );
 }

@@ -79,24 +79,7 @@ export const VariableTypeDialog: React.FC<VariableTypeDialogProps> = ({
     const [dollarFormat, setDollarFormat] = useState<string>("$### ###,###.##");
     const [selectedCurrencyFormat, setSelectedCurrencyFormat] = useState<string>("CCA");
 
-    useEffect(() => {
-        const defaultDateFormat = dateFormats.find(f => f.value === "dd-mmm-yyyy");
-        if (defaultDateFormat) {
-            if (selectedType === "DATE") {
-                setWidth(defaultDateFormat.width);
-            }
-        }
-
-        const defaultDollarFormat = dollarFormats.find(f => f.value === "$### ###,###.##");
-        if (defaultDollarFormat) {
-            if (selectedType === "DOLLAR") {
-                setWidth(defaultDollarFormat.width);
-                setDecimals(defaultDollarFormat.decimals);
-            }
-        }
-    }, []);
-
-    const dateFormats: DateFormatOption[] = [
+    const dateFormats = React.useMemo<DateFormatOption[]>(() => [
         { value: "dd-mmm-yyyy", label: "dd-mmm-yyyy", type: "DATE", width: 11 },
         { value: "dd-mmm-yy", label: "dd-mmm-yy", type: "DATE", width: 9 },
         { value: "mm/dd/yyyy", label: "mm/dd/yyyy", type: "ADATE", width: 10 },
@@ -131,10 +114,10 @@ export const VariableTypeDialog: React.FC<VariableTypeDialogProps> = ({
         { value: "Mon, Tue, Wed, ...", label: "Mon, Tue, Wed, ...", type: "WKDAY", width: 3 },
         { value: "January, February, ...", label: "January, February, ...", type: "MONTH", width: 9 },
         { value: "Jan, Feb, Mar, ...", label: "Jan, Feb, Mar, ...", type: "MONTH", width: 3 }
-    ];
+    ], []);
 
     // Dollar format options
-    const dollarFormats: DollarFormatOption[] = [
+    const dollarFormats = React.useMemo<DollarFormatOption[]>(() => [
         { value: "$# ###", label: "$# ###", width: 6, decimals: 0 },
         { value: "$# ###.##", label: "$# ###.##", width: 9, decimals: 2 },
         { value: "$###,###", label: "$###,###", width: 8, decimals: 0 },
@@ -143,7 +126,24 @@ export const VariableTypeDialog: React.FC<VariableTypeDialogProps> = ({
         { value: "$### ###.##", label: "$### ###.##", width: 11, decimals: 2 },
         { value: "$### ###,###", label: "$### ###,###", width: 12, decimals: 0 },
         { value: "$### ###,###.##", label: "$### ###,###.##", width: 15, decimals: 2 }
-    ];
+    ], []);
+
+    useEffect(() => {
+        const defaultDateFormat = dateFormats.find(f => f.value === "dd-mmm-yyyy");
+        if (defaultDateFormat) {
+            if (selectedType === "DATE") {
+                setWidth(defaultDateFormat.width);
+            }
+        }
+
+        const defaultDollarFormat = dollarFormats.find(f => f.value === "$### ###,###.##");
+        if (defaultDollarFormat) {
+            if (selectedType === "DOLLAR") {
+                setWidth(defaultDollarFormat.width);
+                setDecimals(defaultDollarFormat.decimals);
+            }
+        }
+    }, [selectedType, dateFormats, dollarFormats]);
 
     // Set default values based on type
     useEffect(() => {
@@ -182,7 +182,7 @@ export const VariableTypeDialog: React.FC<VariableTypeDialogProps> = ({
                 setDecimals(2);
             }
         }
-    }, [selectedType, dateFormat, dollarFormat]);
+    }, [selectedType, dateFormat, dollarFormat, initialType, dateFormats, dollarFormats]);
 
     // Handle date format change
     const handleDateFormatChange = (value: string) => {

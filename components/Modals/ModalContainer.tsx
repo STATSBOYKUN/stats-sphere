@@ -135,8 +135,6 @@ const ModalContainer: React.FC = () => {
                 return <SortVariables onClose={closeModal} {...currentModal.props} />;
             case ModalType.Transpose:
                 return <Transpose onClose={closeModal} {...currentModal.props} />;
-            case ModalType.MergeFiles:
-                return <MergeFiles onClose={closeModal} {...currentModal.props} />;
             case ModalType.Restructure:
                 return <Restructure onClose={closeModal} {...currentModal.props} />;
             case ModalType.SplitFile:

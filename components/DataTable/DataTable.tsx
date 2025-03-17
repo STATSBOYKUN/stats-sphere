@@ -145,7 +145,7 @@ export default function DataTable() {
             const variable = getVariableByColumnIndex(index);
             return variable?.name || 'var';
         });
-    }, [numColumns, variables, getVariableByColumnIndex]);
+    }, [getVariableByColumnIndex, numColumns]);
 
     // Data matrix generation
     const displayMatrix = useMemo(() =>
@@ -164,7 +164,68 @@ export default function DataTable() {
                 columns: DEFAULT_COLUMN_WIDTH
             } as Variable);
         });
-    }, [numColumns, getVariableByColumnIndex]);
+    }, [getVariableByColumnIndex, numColumns]);
+
+    // Fungsi helper untuk memproses cell updates
+    const processCellUpdates = useCallback((data: {
+        changesByCol: Record<number, Handsontable.CellChange[]>,
+        highestColumn: number,
+        maxRow: number
+    }) => {
+        const { changesByCol, highestColumn, maxRow } = data;
+
+        // Ensure matrix has appropriate dimensions
+        const highestVarIndex = variables.length > 0
+            ? Math.max(...variables.map(v => v.columnIndex))
+            : -1;
+
+        ensureMatrixDimensions(maxRow, Math.max(highestColumn, highestVarIndex));
+
+        // Process cell updates
+        const cellUpdates = [];
+
+        for (const colKey of Object.keys(changesByCol)) {
+            const col = Number(colKey);
+            const colChanges = changesByCol[col];
+            const variable = getVariableByColumnIndex(col);
+
+            if (!variable) {
+                console.warn(`Variable for column ${col} still not found after creation`);
+                continue;
+            }
+
+            for (const change of colChanges) {
+                if (!change) continue;
+                const [row, , , newValue] = change;
+
+                if (variable.type === 'NUMERIC') {
+                    if (newValue === '' || !isNaN(Number(newValue))) {
+                        cellUpdates.push({ row, col, value: newValue });
+                    }
+                } else if (variable.type === 'STRING') {
+                    let text = newValue ? newValue.toString() : '';
+                    if (variable.width && text.length > variable.width) {
+                        text = text.substring(0, variable.width);
+                    }
+                    cellUpdates.push({ row, col, value: text });
+                } else {
+                    cellUpdates.push({ row, col, value: newValue });
+                }
+            }
+        }
+
+        // Batch update cells
+        if (cellUpdates.length > 0) {
+            updateBulkCells(cellUpdates).catch(error => {
+                console.error('Failed to update cells:', error);
+            });
+        }
+    }, [
+        variables,
+        ensureMatrixDimensions,
+        getVariableByColumnIndex,
+        updateBulkCells,
+    ]);
 
     /**
      * Handles data changes before they're applied to the grid
@@ -265,71 +326,7 @@ export default function DataTable() {
             processCellUpdates(pendingChanges);
             return true;
         }
-    }, [
-        getVariableByColumnIndex,
-        addMultipleVariables,
-    ]);
-
-    // Fungsi helper untuk memproses cell updates
-    const processCellUpdates = useCallback((data: {
-        changesByCol: Record<number, Handsontable.CellChange[]>,
-        highestColumn: number,
-        maxRow: number
-    }) => {
-        const { changesByCol, highestColumn, maxRow } = data;
-
-        // Ensure matrix has appropriate dimensions
-        const highestVarIndex = variables.length > 0
-            ? Math.max(...variables.map(v => v.columnIndex))
-            : -1;
-
-        ensureMatrixDimensions(maxRow, Math.max(highestColumn, highestVarIndex));
-
-        // Process cell updates
-        const cellUpdates = [];
-
-        for (const colKey of Object.keys(changesByCol)) {
-            const col = Number(colKey);
-            const colChanges = changesByCol[col];
-            const variable = getVariableByColumnIndex(col);
-
-            if (!variable) {
-                console.warn(`Variable for column ${col} still not found after creation`);
-                continue;
-            }
-
-            for (const change of colChanges) {
-                if (!change) continue;
-                const [row, , , newValue] = change;
-
-                if (variable.type === 'NUMERIC') {
-                    if (newValue === '' || !isNaN(Number(newValue))) {
-                        cellUpdates.push({ row, col, value: newValue });
-                    }
-                } else if (variable.type === 'STRING') {
-                    let text = newValue ? newValue.toString() : '';
-                    if (variable.width && text.length > variable.width) {
-                        text = text.substring(0, variable.width);
-                    }
-                    cellUpdates.push({ row, col, value: text });
-                } else {
-                    cellUpdates.push({ row, col, value: newValue });
-                }
-            }
-        }
-
-        // Batch update cells
-        if (cellUpdates.length > 0) {
-            updateBulkCells(cellUpdates).catch(error => {
-                console.error('Failed to update cells:', error);
-            });
-        }
-    }, [
-        variables,
-        ensureMatrixDimensions,
-        getVariableByColumnIndex,
-        updateBulkCells,
-    ]);
+    }, [getVariableByColumnIndex, addMultipleVariables, processCellUpdates]);
 
     /**
      * Custom validator function that can be registered globally

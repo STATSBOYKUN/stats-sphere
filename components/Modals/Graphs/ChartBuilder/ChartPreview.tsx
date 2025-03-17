@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { useDataStore } from "@/stores/useDataStore"; // Mengambil data dari useDataStore
 import { useVariableStore } from "@/stores/useVariableStore"; // Mengambil variabel dari useVariableStore
 import { chartUtils } from "@/utils/chartBuilder/chartTypes/chartUtils";
@@ -96,7 +96,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
     };
 
     // Fungsi untuk mengambil data chart
-    const getDataForChart = (): ChartData[] => {
+    const getDataForChart = useCallback((): ChartData[] => {
         const bottomIndex = variables.findIndex(
             (variable) => variable.name === bottomVariables[0]
         );
@@ -168,7 +168,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
 
             return results;
         }
-    };
+    }, [variables, data, bottomVariables, sideVariables]);
 
     useEffect(() => {
         if (svgRef.current) {
@@ -673,6 +673,7 @@ const ChartPreview: React.FC<ChartPreviewProps> = ({
         width,
         height,
         variables,
+        getDataForChart
     ]);
 
     return (

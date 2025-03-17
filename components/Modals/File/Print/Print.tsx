@@ -9,11 +9,15 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useDataStore } from "@/stores/useDataStore";
+import { useDataStore, DataRow } from "@/stores/useDataStore";
 import { useVariableStore } from "@/stores/useVariableStore";
-import {useResultStore} from "@/stores/useResultStore";
+import { useResultStore } from "@/stores/useResultStore";
 import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
+import { Variable } from "@/types/Variable";
+import { Log } from "@/types/Log";
+import { Analytic } from "@/types/Analytic";
+import { Statistic } from "@/types/Statistic";
 
 interface ColumnHeader {
     header: string;
@@ -52,7 +56,7 @@ const getMaxDepth = (columns: ColumnHeader[]): number => {
 const buildColumnLevels = (columns: ColumnHeader[]): ColumnHeader[][] => {
     const maxLevel = getMaxDepth(columns);
     const levels: ColumnHeader[][] = Array.from({ length: maxLevel }, () => []);
-    const traverse = (cols: ColumnHeader[], level: number) => {
+    const traverse = (cols: ColumnHeader[], level: number): void => {
         cols.forEach(col => {
             levels[level].push(col);
             if (col.children && col.children.length > 0) {
@@ -64,21 +68,25 @@ const buildColumnLevels = (columns: ColumnHeader[]): ColumnHeader[][] => {
     return levels;
 };
 
-const getLeafColumnKeys = (cols: ColumnHeader[]): string[] => {
-    const keys: string[] = [];
-    const traverse = (col: ColumnHeader) => {
-        if (!col.children || col.children.length === 0) {
-            keys.push(col.key ? col.key : col.header);
-        } else {
-            col.children.forEach(child => traverse(child));
-        }
-    };
-    cols.forEach(c => traverse(c));
-    return keys;
-};
+// Define halign and valign types to match jspdf-autotable's requirements
+type HAlignType = 'left' | 'center' | 'right' | 'justify';
+type VAlignType = 'top' | 'middle' | 'bottom';
 
-const mergeHeaderRowCells = (headerRow: { content: string; colSpan: number; rowSpan: number }[]) => {
-    const merged: { content: string; colSpan: number; rowSpan: number }[] = [];
+interface TableStyles {
+    halign: HAlignType;
+    valign: VAlignType;
+    fillColor?: [number, number, number];
+}
+
+interface HeaderCell {
+    content: string;
+    colSpan: number;
+    rowSpan: number;
+    styles: TableStyles;
+}
+
+const mergeHeaderRowCells = (headerRow: HeaderCell[]): HeaderCell[] => {
+    const merged: HeaderCell[] = [];
     let i = 0;
     while (i < headerRow.length) {
         const cell = headerRow[i];
@@ -88,10 +96,90 @@ const mergeHeaderRowCells = (headerRow: { content: string; colSpan: number; rowS
             totalColSpan += headerRow[j].colSpan;
             j++;
         }
-        merged.push({ ...cell, colSpan: totalColSpan });
+        merged.push({
+            content: cell.content,
+            colSpan: totalColSpan,
+            rowSpan: cell.rowSpan,
+            styles: { ...cell.styles }
+        });
         i = j;
     }
     return merged;
+};
+
+// 2. In the generateAutoTableData function, we need to properly type the halign and valign values:
+const generateAutoTableData = (data: string): AutoTableResult => {
+    let parsedData: { tables: TableData[] };
+    try {
+        parsedData = JSON.parse(data);
+    } catch {
+        return { tables: [] };
+    }
+    if (!parsedData.tables || !Array.isArray(parsedData.tables)) return { tables: [] };
+    const resultTables: AutoTableResult['tables'] = [];
+    parsedData.tables.forEach((table) => {
+        const { title, columnHeaders, rows } = table;
+        const levels = buildColumnLevels(columnHeaders);
+        const maxLevel = levels.length;
+        let headerRows = levels.map((cols, level) =>
+            cols.map((col) => {
+                const colSpan = getLeafColumnCount(col);
+                const hasChildren = col.children && col.children.length > 0;
+                const rowSpan = hasChildren ? 1 : maxLevel - level;
+                return {
+                    content: col.header || "",
+                    colSpan,
+                    rowSpan,
+                    styles: {
+                        halign: "center" as HAlignType,
+                        valign: "middle" as VAlignType
+                    }
+                };
+            })
+        );
+        headerRows = headerRows.map(row => mergeHeaderRowCells(row));
+        const flatRows = flattenRows(rows);
+        if (flatRows.length === 0) return;
+        const rowHeaderCount = computeMaxRowHeaderDepth(flatRows);
+        const allLeafCols = getLeafColumnKeys(columnHeaders);
+        const leafCols = allLeafCols.slice(rowHeaderCount);
+        const mergedRowHeaders = generateMergedRowHeaders(flatRows, rowHeaderCount);
+        const body: CellDef[][] = [];
+        for (let i = 0; i < flatRows.length; i++) {
+            const row = flatRows[i];
+            const allDataNull = leafCols.every(k => row[k] == null);
+            if (allDataNull && row.rowHeader.every(h => h !== "")) continue;
+            const rowCells: CellDef[] = [];
+            mergedRowHeaders[i].forEach(cell => {
+                if (cell) rowCells.push(cell);
+            });
+            leafCols.forEach(key => {
+                rowCells.push({
+                    content: row[key] ?? "",
+                    styles: {
+                        halign: "center" as HAlignType,
+                        valign: "middle" as VAlignType
+                    }
+                });
+            });
+            body.push(rowCells);
+        }
+        resultTables.push({ title, head: headerRows as CellDef[][], body });
+    });
+    return { tables: resultTables };
+};
+
+const getLeafColumnKeys = (cols: ColumnHeader[]): string[] => {
+    const keys: string[] = [];
+    const traverse = (col: ColumnHeader): void => {
+        if (!col.children || col.children.length === 0) {
+            keys.push(col.key ? col.key : col.header);
+        } else {
+            col.children.forEach(child => traverse(child));
+        }
+    };
+    cols.forEach(c => traverse(c));
+    return keys;
 };
 
 const computeMaxRowHeaderDepth = (rows: TableRowData[]): number => {
@@ -110,7 +198,7 @@ const propagateHeaders = (row: TableRowData, accumulated: (string | null)[]): Ta
     }
     if (row.children && row.children.length > 0) {
         let results: TableRowData[] = [];
-        for (let child of row.children) {
+        for (const child of row.children) {
             results.push(...propagateHeaders(child, combined));
         }
         return results;
@@ -122,17 +210,26 @@ const propagateHeaders = (row: TableRowData, accumulated: (string | null)[]): Ta
 
 const flattenRows = (rows: TableRowData[]): TableRowData[] => {
     let result: TableRowData[] = [];
-    for (let row of rows) {
+    for (const row of rows) {
         result.push(...propagateHeaders(row, []));
     }
     return result;
 };
 
-const generateMergedRowHeaders = (flatRows: TableRowData[], rowHeaderCount: number): any[][] => {
-    const merged: any[][] = [];
+interface MergedCell {
+    content: string;
+    rowSpan: number;
+    colSpan: number;
+    styles: TableStyles;
+}
+
+type MergedRowHeaders = (MergedCell | null)[][];
+
+const generateMergedRowHeaders = (flatRows: TableRowData[], rowHeaderCount: number): (MergedCell | null)[][] => {
+    const merged: (MergedCell | null)[][] = [];
     for (let rowIndex = 0; rowIndex < flatRows.length; rowIndex++) {
         const row = flatRows[rowIndex];
-        const mergedRow: any[] = [];
+        const mergedRow: (MergedCell | null)[] = [];
         if (rowHeaderCount === 2 && row.rowHeader.filter(h => h !== "").length === 1) {
             const colIdx = 0;
             const current = row.rowHeader[colIdx] || "";
@@ -148,7 +245,7 @@ const generateMergedRowHeaders = (flatRows: TableRowData[], rowHeaderCount: numb
                     content: current,
                     rowSpan,
                     colSpan: 2,
-                    styles: { halign: "left", valign: "middle" }
+                    styles: { halign: "left" as HAlignType, valign: "middle" as VAlignType }
                 });
             } else {
                 mergedRow.push(null);
@@ -168,7 +265,7 @@ const generateMergedRowHeaders = (flatRows: TableRowData[], rowHeaderCount: numb
                         content: current,
                         rowSpan,
                         colSpan: 1,
-                        styles: { halign: "center", valign: "middle" }
+                        styles: { halign: "center" as HAlignType, valign: "middle" as VAlignType }
                     });
                 } else {
                     mergedRow.push(null);
@@ -180,139 +277,129 @@ const generateMergedRowHeaders = (flatRows: TableRowData[], rowHeaderCount: numb
     return merged;
 };
 
-const generateAutoTableData = (data: string) => {
-    let parsedData: { tables: TableData[] };
-    try {
-        parsedData = JSON.parse(data);
-    } catch {
-        return { tables: [] };
-    }
-    if (!parsedData.tables || !Array.isArray(parsedData.tables)) return { tables: [] };
-    const resultTables: { title: string; head: any[][]; body: any[][] }[] = [];
-    parsedData.tables.forEach((table) => {
-        const { title, columnHeaders, rows } = table;
-        const levels = buildColumnLevels(columnHeaders);
-        const maxLevel = levels.length;
-        let headerRows = levels.map((cols, level) =>
-            cols.map((col) => {
-                const colSpan = getLeafColumnCount(col);
-                const hasChildren = col.children && col.children.length > 0;
-                const rowSpan = hasChildren ? 1 : maxLevel - level;
-                return {
-                    content: col.header || "",
-                    colSpan,
-                    rowSpan,
-                    styles: { halign: "center", valign: "middle" }
-                };
-            })
-        );
-        headerRows = headerRows.map(row => mergeHeaderRowCells(row));
-        const flatRows = flattenRows(rows);
-        if (flatRows.length === 0) return;
-        const rowHeaderCount = computeMaxRowHeaderDepth(flatRows);
-        const allLeafCols = getLeafColumnKeys(columnHeaders);
-        const leafCols = allLeafCols.slice(rowHeaderCount);
-        const mergedRowHeaders = generateMergedRowHeaders(flatRows, rowHeaderCount);
-        const body: any[][] = [];
-        for (let i = 0; i < flatRows.length; i++) {
-            const row = flatRows[i];
-            const allDataNull = leafCols.every(k => row[k] == null);
-            if (allDataNull && row.rowHeader.every(h => h !== "")) continue;
-            const rowCells: any[] = [];
-            mergedRowHeaders[i].forEach(cell => {
-                if (cell) rowCells.push(cell);
-            });
-            leafCols.forEach(key => {
-                rowCells.push({
-                    content: row[key] ?? "",
-                    styles: { halign: "center", valign: "middle" }
-                });
-            });
-            body.push(rowCells);
-        }
-        resultTables.push({ title, head: headerRows, body });
-    });
-    return { tables: resultTables };
-};
+interface CellDef {
+    content: string;
+    styles?: TableStyles;
+    rowSpan?: number;
+    colSpan?: number;
+}
+
+interface AutoTableResult {
+    tables: {
+        title: string;
+        head: CellDef[][];
+        body: CellDef[][];
+    }[];
+}
+
 
 interface PrintModalProps {
     onClose: () => void;
 }
 
+interface SelectedOptions {
+    data: boolean;
+    variable: boolean;
+    result: boolean;
+}
+
+type PaperSize = "a4" | "a3" | "letter" | "legal";
+
 const PrintModal: FC<PrintModalProps> = ({ onClose }) => {
-    const [fileName, setFileName] = useState("");
-    const [selectedOptions, setSelectedOptions] = useState({
+    const [fileName, setFileName] = useState<string>("");
+    const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
         data: false,
         variable: false,
         result: false
     });
-    const [paperSize, setPaperSize] = useState("a4");
-    const [availableData, setAvailableData] = useState<any[]>([]);
-    const [availableVariables, setAvailableVariables] = useState<any[]>([]);
-    const logs = useResultStore((state) => state.logs);
-    const analytics = useResultStore((state) => state.analytics);
-    const statistics = useResultStore((state) => state.statistics);
+    const [paperSize, setPaperSize] = useState<PaperSize>("a4");
+    const [availableData, setAvailableData] = useState<DataRow[]>([]);
+    const [availableVariables, setAvailableVariables] = useState<Variable[]>([]);
+
+    const dataStore = useDataStore();
+    const variableStore = useVariableStore();
+    const resultStore = useResultStore();
+
+    const logs: Log[] = resultStore.logs || [];
 
     useEffect(() => {
-        (async () => {
-            const data = await useDataStore.getState().getAvailableData();
-            const variables = await useVariableStore.getState().getAvailableVariables();
-            useResultStore.getState().fetchLogs();
-            useResultStore.getState().fetchAnalytics();
-            useResultStore.getState().fetchStatistics();
-            setAvailableData(data);
-            setAvailableVariables(variables);
-        })();
-    }, []);
-    const handleOptionChange = (option: keyof typeof selectedOptions) => {
+        const loadData = async (): Promise<void> => {
+            try {
+                // Get data and variables directly from the stores
+                const data = dataStore.data || [];
+                const variables = variableStore.variables || [];
+
+                setAvailableData(data);
+                setAvailableVariables(variables);
+            } catch (error) {
+                console.error("Error loading data for print:", error);
+            }
+        };
+
+        loadData();
+    }, [dataStore, variableStore]);
+
+    const handleOptionChange = (option: keyof SelectedOptions): void => {
         setSelectedOptions((prev) => ({ ...prev, [option]: !prev[option] }));
     };
-    const handlePrint = async () => {
-        const doc = new jsPDF({ format: paperSize });
+
+    const handlePrint = async (): Promise<void> => {
+        // Cast to make TypeScript happy with the missing properties
+        const doc = new jsPDF({ format: paperSize }) as any;
         let currentY = 10;
-        const namedVariables = availableVariables.filter(
-            (v) => String(v.name).trim() !== ""
+
+        const namedVariables = (availableVariables || []).filter(
+            (v) => String(v.name || "").trim() !== ""
         );
+
         const activeColumns = namedVariables
             .filter((v) =>
-                availableData.some((row) => String(row[v.columnIndex] ?? "").trim() !== "")
+                (availableData || []).some((row) => String(row[v.columnIndex] ?? "").trim() !== "")
             )
             .map((v) => v.columnIndex)
             .sort((a, b) => a - b);
+
         const filteredData = availableData.filter((row) =>
             activeColumns.some((col) => String(row[col] ?? "").trim() !== "")
         );
+
         if (selectedOptions.data && activeColumns.length > 0) {
             doc.setFontSize(14);
             doc.text("Data", 14, currentY, { align: "left" });
             currentY += 6;
             doc.setFontSize(8);
+
             const dataTableColumns = activeColumns.map((col) => {
                 const variable = availableVariables.find((v) => v.columnIndex === col);
                 return variable?.name || `Kolom ${col + 1}`;
             });
+
             const dataTableBody = filteredData.map((row) =>
                 activeColumns.map((col) => row[col] || "")
             );
+
             autoTable(doc, {
                 head: [dataTableColumns],
                 body: dataTableBody,
                 startY: currentY,
                 theme: "grid",
                 styles: { fontSize: 8, cellWidth: "wrap" },
-                headStyles: { fillColor: [211, 211, 211], halign: "center", valign: "middle" },
+                headStyles: { fillColor: [211, 211, 211], halign: "center" as HAlignType, valign: "middle" as VAlignType },
                 margin: { left: 14, right: 14 },
                 tableWidth: doc.internal.pageSize.getWidth() - 28
             });
-            if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+
+            if (doc.lastAutoTable) {
                 currentY = doc.lastAutoTable.finalY + 10;
             }
         }
+
         if (selectedOptions.variable) {
             doc.setFontSize(14);
             doc.text("Variables", 14, currentY, { align: "left" });
             currentY += 6;
             doc.setFontSize(8);
+
             const variableData = availableVariables
                 .filter((v) => activeColumns.includes(v.columnIndex))
                 .map((variable, idx) => [
@@ -321,60 +408,72 @@ const PrintModal: FC<PrintModalProps> = ({ onClose }) => {
                     variable.type,
                     variable.columnIndex + 1
                 ]);
+
             autoTable(doc, {
                 head: [["No", "Nama", "Tipe", "Kolom"]],
                 body: variableData,
                 startY: currentY,
                 styles: { fontSize: 8, cellWidth: "wrap" },
-                headStyles: { fillColor: [211, 211, 211], halign: "center", valign: "middle" },
+                headStyles: { fillColor: [211, 211, 211], halign: "center" as HAlignType, valign: "middle" as VAlignType },
                 margin: { left: 14, right: 14 },
                 tableWidth: doc.internal.pageSize.getWidth() - 28
             });
-            if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+
+            if (doc.lastAutoTable) {
                 currentY = doc.lastAutoTable.finalY + 10;
             }
         }
-        if (selectedOptions.result) {
+
+        if (selectedOptions.result && logs && logs.length > 0) {
             doc.setFontSize(14);
             doc.text("Results", 14, currentY, { align: "left" });
             currentY += 6;
             doc.setFontSize(8);
+
             logs.forEach((log) => {
                 doc.setFontSize(8);
                 doc.text(`Log ${log.id}: ${log.log}`, 14, currentY, { align: "left" });
                 currentY += 6;
-                analytics
-                    .filter((a) => a.log_id === log.id)
-                    .forEach((analytic) => {
+
+                // Analytics are inside the log object
+                if (log.analytics && log.analytics.length > 0) {
+                    log.analytics.forEach((analytic) => {
                         doc.setFontSize(12);
                         doc.text(analytic.title, doc.internal.pageSize.getWidth() / 2, currentY, { align: "center" });
                         currentY += 6;
-                        statistics
-                            .filter((s) => s.analytic_id === analytic.id)
-                            .forEach((stat) => {
+
+                        // Statistics are inside the analytic object
+                        if (analytic.statistics && analytic.statistics.length > 0) {
+                            analytic.statistics.forEach((stat) => {
                                 const { tables } = generateAutoTableData(stat.output_data);
+
                                 tables.forEach((tbl) => {
                                     doc.setFontSize(8);
                                     doc.text(tbl.title, 14, currentY, { align: "left" });
                                     currentY += 6;
+
                                     autoTable(doc, {
                                         head: tbl.head,
                                         body: tbl.body,
                                         startY: currentY,
                                         theme: "grid",
                                         styles: { fontSize: 8, cellWidth: "wrap" },
-                                        headStyles: { fillColor: [211, 211, 211], halign: "center", valign: "middle" },
+                                        headStyles: { fillColor: [211, 211, 211], halign: "center" as HAlignType, valign: "middle" as VAlignType },
                                         margin: { left: 14, right: 14 },
                                         tableWidth: doc.internal.pageSize.getWidth() - 28
                                     });
-                                    if (doc.lastAutoTable && doc.lastAutoTable.finalY) {
+
+                                    if (doc.lastAutoTable) {
                                         currentY = doc.lastAutoTable.finalY + 10;
                                     }
                                 });
-                            });
-                    });
+                            })
+                        }
+                    })
+                }
             });
         }
+
         try {
             doc.save(`${fileName || "print_output"}.pdf`);
             onClose();
@@ -382,7 +481,9 @@ const PrintModal: FC<PrintModalProps> = ({ onClose }) => {
             console.error("Error generating PDF:", error);
         }
     };
+
     const isPrintDisabled = !Object.values(selectedOptions).some(Boolean);
+
     return (
         <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
@@ -413,7 +514,7 @@ const PrintModal: FC<PrintModalProps> = ({ onClose }) => {
                                     type="checkbox"
                                     checked={checked}
                                     onChange={() =>
-                                        handleOptionChange(option as keyof typeof selectedOptions)
+                                        handleOptionChange(option as keyof SelectedOptions)
                                     }
                                     className="w-4 h-4"
                                 />
@@ -429,7 +530,7 @@ const PrintModal: FC<PrintModalProps> = ({ onClose }) => {
                     <select
                         id="paperSize"
                         value={paperSize}
-                        onChange={(e) => setPaperSize(e.target.value)}
+                        onChange={(e) => setPaperSize(e.target.value as PaperSize)}
                         className="col-span-3 border p-2 rounded"
                     >
                         {["a4", "a3", "letter", "legal"].map((size) => (

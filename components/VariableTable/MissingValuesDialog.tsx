@@ -268,7 +268,7 @@ export const MissingValuesDialog: React.FC<MissingValuesDialogProps> = ({
                                 <div className="pl-6 text-xs text-gray-500">
                                     Tip: Enter a single space to define blank values as missing.
                                     <br />
-                                    A "Space" indicator will appear when a space is entered.
+                                    A &quot;Space&quot;indicator will appear when a space is entered.
                                 </div>
                             )}
                         </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useVariableStore, VariableRow } from '@/stores/useVariableStore';
+import { useVariableStore } from '@/stores/useVariableStore';
 import { useDataStore } from '@/stores/useDataStore';
 import {useResultStore} from '@/stores/useResultStore';
 import {
@@ -17,12 +17,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Pencil, ArrowRight } from 'lucide-react';
 import { useLinear } from '@/hooks/useLinear';
-
-interface Variable {
-  name: string;
-  type: 'numeric' | 'categorical';
-  columnIndex: number;
-}
+import { Variable } from '@/types/Variable';
 
 interface ModalBinaryLogisticProps {
   onClose: () => void;
@@ -48,12 +43,21 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
   useEffect(() => {
     // Inisialisasi variabel yang tersedia
     const availableVars: Variable[] = variables
-      .filter(v => v.name) // Filter variabel tanpa nama
-      .map((v) => ({
-        name: v.name,
-        type: v.type as 'numeric' | 'categorical',
-        columnIndex: v.columnIndex,
-      }));
+        .filter(v => v.name) // Filter variabel tanpa nama
+        .map((v) => ({
+          name: v.name,
+          type: v.type,
+          columnIndex: v.columnIndex,
+          width: v.width,
+          decimals: v.decimals,
+          label: v.label || '',
+          values: v.values,
+          missing: v.missing,
+          columns: v.columns,
+          align: v.align,
+          measure: v.measure,
+          role: v.role
+        }));
     setAvailableVariables(availableVars);
   }, [variables]);
 
@@ -165,7 +169,7 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
         log_id: logId,
         note: "",
       };
-      const analyticId = await addAnalytic(analytic);
+      const analyticId = await addAnalytic(logId, analytic);
 
       // 3. Lakukan regresi logistik biner
       const allVariables = variables;
@@ -173,12 +177,12 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
 
       // Dapatkan indeks kolom
       const dependentVar = allVariables.find(v => v.name === dependentVarName);
-      const covariates = covariateNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as VariableRow[];
+      const covariates = covariateNames.map(name => allVariables.find(v => v.name === name)).filter(v => v) as Variable[];
 
       const dependentVarIndex = dependentVar?.columnIndex;
       const covarIndices = covariates.map(v => v.columnIndex);
 
-      if (dependentVarIndex === undefined || covarIndices.includes(undefined)) {
+      if (dependentVarIndex === undefined || covarIndices.includes(0)) {
         throw new Error('Indeks variabel tidak ditemukan.');
       }
 
@@ -224,14 +228,14 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
       };
 
       const variablesEnteredRemovedStat = {
-        analytic_id: analyticId,
         title: "Variables Entered/Removed",
         output_data: JSON.stringify(variablesEnteredRemoved),
         output_type: "table",
         components: "VariablesEnteredRemoved",
+        description: ""
       };
 
-      await addStatistic(variablesEnteredRemovedStat);
+      await addStatistic(analyticId, variablesEnteredRemovedStat);
 
       // Model Summary
       const modelSummary = {
@@ -251,14 +255,14 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
       };
 
       const modelSummaryStat = {
-        analytic_id: analyticId,
         title: "Model Summary",
         output_data: JSON.stringify(modelSummary),
         output_type: "table",
         components: "ModelSummary",
+        description: ""
       };
 
-      await addStatistic(modelSummaryStat);
+      await addStatistic(analyticId, modelSummaryStat);
 
       // Classification Table
       const classificationTable = {
@@ -278,14 +282,14 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
       };
 
       const classificationStat = {
-        analytic_id: analyticId,
         title: "Classification Table",
         output_data: JSON.stringify(classificationTable),
         output_type: "table",
         components: "ClassificationTable",
+        description: ""
       };
 
-      await addStatistic(classificationStat);
+      await addStatistic(analyticId, classificationStat);
 
       // Coefficients
       const coefficientsData = regressionResults.coefficients.map((coef, idx) => {
@@ -310,14 +314,14 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
       };
 
       const coefficientsStat = {
-        analytic_id: analyticId,
         title: "Coefficients",
         output_data: JSON.stringify(coefficientsTable),
         output_type: "table",
         components: "Coefficients",
+        description: ""
       };
 
-      await addStatistic(coefficientsStat);
+      await addStatistic(analyticId, coefficientsStat);
 
       // Tutup modal
       onClose();
@@ -329,214 +333,214 @@ const ModalBinaryLogistic: React.FC<ModalBinaryLogisticProps> = ({ onClose }) =>
   };
 
   return (
-    <DialogContent className="sm:max-w-[900px]">
-      <DialogHeader>
-        <DialogTitle>Binary Logistic Regression</DialogTitle>
-      </DialogHeader>
+      <DialogContent className="sm:max-w-[900px]">
+        <DialogHeader>
+          <DialogTitle>Binary Logistic Regression</DialogTitle>
+        </DialogHeader>
 
-      <Separator className="my-0" />
+        <Separator className="my-0" />
 
-      <div className="grid grid-cols-12 gap-4 py-4">
-        {/* Panel Kiri: Daftar Variabel */}
-        <div className="col-span-3 border p-4 rounded-md max-h-[500px] overflow-y-auto">
-          <label className="font-semibold">Variable List</label>
-          <ScrollArea className="mt-2 h-[450px]">
-            {availableVariables.map((variable) => (
-              <div
-                key={variable.name}
-                className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
-                  highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
-                }`}
-                onClick={() => handleSelectAvailableVariable(variable)}
-              >
-                <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                {variable.name}
-              </div>
-            ))}
-          </ScrollArea>
-        </div>
-
-        {/* Panel Tengah: Konfigurasi Utama */}
-        <div className="col-span-6 space-y-6">
-          {/* Variabel Dependen */}
-          <div className="flex items-center">
-            {/* Tombol Panah */}
-            <Button
-              variant="outline"
-              onClick={handleMoveToDependent}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2 mt-6"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Dependent Variable</label>
-              <div
-                className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
-                onClick={handleRemoveFromDependent}
-              >
-                {selectedDependentVariable ? (
-                  <div className="flex items-center">
-                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                    {selectedDependentVariable.name}
-                  </div>
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Block Structure */}
-          <div className="flex items-center">
-            <label className="font-semibold mr-4">Block Structure:</label>
-            <span>Block {selectedBlock} of {totalBlocks}</span>
-            <div className="ml-4 space-x-2">
-              <Button
-                variant="outline"
-                onClick={handleRemoveBlock}
-                disabled={selectedBlock === 1}
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleAddBlock}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-
-          {/* Kovariat */}
-          <div className="flex items-start">
-            {/* Tombol Panah */}
-            <Button
-              variant="outline"
-              onClick={handleMoveToCovariates}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2 mt-2"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1">
-              <label className="font-semibold">Covariates</label>
-              <div className="mt-2 p-2 border rounded-md min-h-[100px]">
-                {selectedCovariates.length > 0 ? (
-                  selectedCovariates.map((variable) => (
-                    <div
+        <div className="grid grid-cols-12 gap-4 py-4">
+          {/* Panel Kiri: Daftar Variabel */}
+          <div className="col-span-3 border p-4 rounded-md max-h-[500px] overflow-y-auto">
+            <label className="font-semibold">Variable List</label>
+            <ScrollArea className="mt-2 h-[450px]">
+              {availableVariables.map((variable) => (
+                  <div
                       key={variable.name}
-                      className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
-                      onClick={() => handleRemoveFromCovariates(variable)}
-                    >
-                      <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                      {variable.name}
-                    </div>
-                  ))
-                ) : (
-                  <span className="text-gray-500">[None]</span>
-                )}
-              </div>
-              {/* Tombol Interaksi */}
+                      className={`flex items-center p-2 border cursor-pointer rounded-md hover:bg-gray-100 ${
+                          highlightedVariable?.name === variable.name ? 'bg-blue-100 border-blue-500' : 'border-gray-300'
+                      }`}
+                      onClick={() => handleSelectAvailableVariable(variable)}
+                  >
+                    <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                    {variable.name}
+                  </div>
+              ))}
+            </ScrollArea>
+          </div>
+
+          {/* Panel Tengah: Konfigurasi Utama */}
+          <div className="col-span-6 space-y-6">
+            {/* Variabel Dependen */}
+            <div className="flex items-center">
+              {/* Tombol Panah */}
               <Button
-                variant="outline"
-                className="mt-2"
-                onClick={handleAddInteractionTerm}
+                  variant="outline"
+                  onClick={handleMoveToDependent}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2 mt-6"
               >
-                a &gt; b &gt;
+                <ArrowRight />
               </Button>
-            </div>
-          </div>
-
-          {/* Method Dropdown */}
-          <div className="flex items-center">
-            <label className="font-semibold mr-4">Method:</label>
-            <Select onValueChange={(value) => setMethod(value)} value={method}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select a method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Enter">Enter</SelectItem>
-                <SelectItem value="Stepwise">Stepwise</SelectItem>
-                <SelectItem value="Forward">Forward</SelectItem>
-                <SelectItem value="Backward">Backward</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Selection Variable */}
-          <div className="flex items-center">
-            {/* Tombol Panah */}
-            <Button
-              variant="outline"
-              onClick={handleMoveToSelectionVariables}
-              disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
-              className="mr-2 mt-1"
-            >
-              <ArrowRight />
-            </Button>
-            <div className="flex-1 flex items-center">
               <div className="flex-1">
-                <label className="font-semibold">Selection Variable</label>
-                <div className="mt-2 p-2 border rounded-md min-h-[50px]">
-                  {selectedSelectionVariables.length > 0 ? (
-                    selectedSelectionVariables.map((variable) => (
-                      <div
-                        key={variable.name}
-                        className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
-                        onClick={() => handleRemoveFromSelectionVariables(variable)}
-                      >
+                <label className="font-semibold">Dependent Variable</label>
+                <div
+                    className="mt-2 p-2 border rounded-md min-h-[50px] cursor-pointer"
+                    onClick={handleRemoveFromDependent}
+                >
+                  {selectedDependentVariable ? (
+                      <div className="flex items-center">
                         <Pencil className="h-5 w-5 mr-2 text-gray-600" />
-                        {variable.name}
+                        {selectedDependentVariable.name}
                       </div>
-                    ))
                   ) : (
-                    <span className="text-gray-500">[None]</span>
+                      <span className="text-gray-500">[None]</span>
                   )}
                 </div>
               </div>
-              {/* Tombol Rule... */}
-              <Button
-                variant="outline"
-                className="ml-2 mt-6"
-                onClick={handleRule}
-              >
-                Rule...
-              </Button>
             </div>
+
+            {/* Block Structure */}
+            <div className="flex items-center">
+              <label className="font-semibold mr-4">Block Structure:</label>
+              <span>Block {selectedBlock} of {totalBlocks}</span>
+              <div className="ml-4 space-x-2">
+                <Button
+                    variant="outline"
+                    onClick={handleRemoveBlock}
+                    disabled={selectedBlock === 1}
+                >
+                  Previous
+                </Button>
+                <Button
+                    variant="outline"
+                    onClick={handleAddBlock}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+
+            {/* Kovariat */}
+            <div className="flex items-start">
+              {/* Tombol Panah */}
+              <Button
+                  variant="outline"
+                  onClick={handleMoveToCovariates}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2 mt-2"
+              >
+                <ArrowRight />
+              </Button>
+              <div className="flex-1">
+                <label className="font-semibold">Covariates</label>
+                <div className="mt-2 p-2 border rounded-md min-h-[100px]">
+                  {selectedCovariates.length > 0 ? (
+                      selectedCovariates.map((variable) => (
+                          <div
+                              key={variable.name}
+                              className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
+                              onClick={() => handleRemoveFromCovariates(variable)}
+                          >
+                            <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                            {variable.name}
+                          </div>
+                      ))
+                  ) : (
+                      <span className="text-gray-500">[None]</span>
+                  )}
+                </div>
+                {/* Tombol Interaksi */}
+                <Button
+                    variant="outline"
+                    className="mt-2"
+                    onClick={handleAddInteractionTerm}
+                >
+                  a &gt; b &gt;
+                </Button>
+              </div>
+            </div>
+
+            {/* Method Dropdown */}
+            <div className="flex items-center">
+              <label className="font-semibold mr-4">Method:</label>
+              <Select onValueChange={(value) => setMethod(value)} value={method}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Select a method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Enter">Enter</SelectItem>
+                  <SelectItem value="Stepwise">Stepwise</SelectItem>
+                  <SelectItem value="Forward">Forward</SelectItem>
+                  <SelectItem value="Backward">Backward</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Selection Variable */}
+            <div className="flex items-center">
+              {/* Tombol Panah */}
+              <Button
+                  variant="outline"
+                  onClick={handleMoveToSelectionVariables}
+                  disabled={!highlightedVariable || !availableVariables.includes(highlightedVariable)}
+                  className="mr-2 mt-1"
+              >
+                <ArrowRight />
+              </Button>
+              <div className="flex-1 flex items-center">
+                <div className="flex-1">
+                  <label className="font-semibold">Selection Variable</label>
+                  <div className="mt-2 p-2 border rounded-md min-h-[50px]">
+                    {selectedSelectionVariables.length > 0 ? (
+                        selectedSelectionVariables.map((variable) => (
+                            <div
+                                key={variable.name}
+                                className="flex items-center p-1 cursor-pointer hover:bg-gray-100 rounded-md"
+                                onClick={() => handleRemoveFromSelectionVariables(variable)}
+                            >
+                              <Pencil className="h-5 w-5 mr-2 text-gray-600" />
+                              {variable.name}
+                            </div>
+                        ))
+                    ) : (
+                        <span className="text-gray-500">[None]</span>
+                    )}
+                  </div>
+                </div>
+                {/* Tombol Rule... */}
+                <Button
+                    variant="outline"
+                    className="ml-2 mt-6"
+                    onClick={handleRule}
+                >
+                  Rule...
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Panel Kanan: Opsi Tambahan */}
+          <div className="col-span-3 space-y-4">
+            <Button variant="outline" className="w-full">
+              Categorical...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Save...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Options...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Style...
+            </Button>
+            <Button variant="outline" className="w-full">
+              Bootstrap...
+            </Button>
           </div>
         </div>
 
-        {/* Panel Kanan: Opsi Tambahan */}
-        <div className="col-span-3 space-y-4">
-          <Button variant="outline" className="w-full">
-            Categorical...
+        <DialogFooter className="flex justify-center space-x-4 mt-4">
+          <Button onClick={handleAnalyze}>OK</Button>
+          <Button variant="outline">Paste</Button>
+          <Button variant="outline">Reset</Button>
+          <Button variant="outline" onClick={handleClose}>
+            Cancel
           </Button>
-          <Button variant="outline" className="w-full">
-            Save...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Options...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Style...
-          </Button>
-          <Button variant="outline" className="w-full">
-            Bootstrap...
-          </Button>
-        </div>
-      </div>
-
-      <DialogFooter className="flex justify-center space-x-4 mt-4">
-        <Button onClick={handleAnalyze}>OK</Button>
-        <Button variant="outline">Paste</Button>
-        <Button variant="outline">Reset</Button>
-        <Button variant="outline" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button variant="outline">Help</Button>
-      </DialogFooter>
-    </DialogContent>
+          <Button variant="outline">Help</Button>
+        </DialogFooter>
+      </DialogContent>
   );
 };
 

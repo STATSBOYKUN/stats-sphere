@@ -1,4 +1,3 @@
-// components/Modals/File/ReadCSVFile.tsx
 "use client";
 
 import React, { useState, FC } from "react";
@@ -11,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import {useDataStore} from "@/stores/useDataStore";
 import {useVariableStore} from "@/stores/useVariableStore";
+import { Variable } from "@/types/Variable";
 
 interface ReadCSVFileProps {
     onClose: () => void;
@@ -64,25 +64,26 @@ const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) =
                 ? headerRow[colIndex]
                 : `VAR${colIndex + 1}`;
 
-            const variable: VariableRow = {
+            const variable: Variable = {
                 columnIndex: colIndex,
                 name: variableName,
-                type: isNumeric ? 'Numeric' : 'String',
+                type: isNumeric ? 'NUMERIC' : 'STRING',
                 width: isNumeric ? 8 : maxLength,
                 decimals: isNumeric ? 2 : 0,
                 label: '',
-                values: 'None',
-                missing: 'None',
+                values: [],
+                missing: [],
                 columns: 200,
-                align: 'Right',
-                measure: 'Nominal',
+                align: 'right',
+                measure: 'nominal',
+                role: 'input'
             };
 
             const existingVariable = getVariableByColumnIndex(colIndex);
             if (existingVariable) {
                 const rowIndex = variables.findIndex(v => v.columnIndex === colIndex);
                 if (rowIndex !== -1) {
-                    const keys = Object.keys(variable) as (keyof VariableRow)[];
+                    const keys = Object.keys(variable) as (keyof Variable)[];
                     for (const field of keys) {
                         await updateVariable(rowIndex, field, variable[field]);
                     }
@@ -100,9 +101,9 @@ const ReadCSVFile: FC<ReadCSVFileProps> = ({ onClose, fileName, fileContent }) =
 
         onClose();
     };
-    const handleReset = () => { /* Proses Reset */ };
+    const handleReset = () => { };
     const handleCancel = () => { onClose(); };
-    const handleHelp = () => { /* Proses Help */ };
+    const handleHelp = () => { };
 
     return (
         <DialogContent className="sm:max-w-[700px]">
