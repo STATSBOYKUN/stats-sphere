@@ -143,6 +143,9 @@ export const KNNOutput = ({
                                         <Input
                                             id="XMLFilePath"
                                             type="file"
+                                            disabled={
+                                                !outputState.ExportModelXML
+                                            }
                                             onChange={(e) =>
                                                 handleChange(
                                                     "XMLFilePath",
@@ -180,6 +183,9 @@ export const KNNOutput = ({
                                                     ? "CreateDataset"
                                                     : "WriteDataFile"
                                             }
+                                            disabled={
+                                                !outputState.ExportDistance
+                                            }
                                             onValueChange={handleExportDistGrp}
                                         >
                                             <div className="flex flex-col gap-2">
@@ -210,6 +216,9 @@ export const KNNOutput = ({
                                                         value={
                                                             outputState.DatasetName ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !outputState.CreateDataset
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(
@@ -242,6 +251,9 @@ export const KNNOutput = ({
                                                         value={
                                                             outputState.NewDataFilePath ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !outputState.WriteDataFile
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(

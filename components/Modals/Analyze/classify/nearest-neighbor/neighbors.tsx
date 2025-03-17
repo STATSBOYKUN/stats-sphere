@@ -133,6 +133,9 @@ export const KNNNeighbors = ({
                                                             neighborsState.SpecifyK ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !neighborsState.Specify
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "SpecifyK",
@@ -171,6 +174,9 @@ export const KNNNeighbors = ({
                                                             neighborsState.MinK ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !neighborsState.AutoSelection
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "MinK",
@@ -195,6 +201,9 @@ export const KNNNeighbors = ({
                                                         value={
                                                             neighborsState.MaxK ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !neighborsState.AutoSelection
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(

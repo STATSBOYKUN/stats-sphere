@@ -14,32 +14,32 @@ export const KNNMainDefault: KNNMainType = {
     FeatureVar: null,
     CaseIdenVar: null,
     FocalCaseIdenVar: null,
-    NormCovar: false,
+    NormCovar: true,
 };
 
 export const KNNNeighborsDefault: KNNNeighborsType = {
-    Specify: false,
+    Specify: true,
     AutoSelection: false,
-    SpecifyK: null,
-    MinK: null,
-    MaxK: null,
-    MetricEucli: false,
+    SpecifyK: 3,
+    MinK: 3,
+    MaxK: 5,
+    MetricEucli: true,
     MetricManhattan: false,
     Weight: false,
-    PredictionsMean: false,
+    PredictionsMean: true,
     PredictionsMedian: false,
 };
 
 export const KNNFeaturesDefault: KNNFeaturesType = {
     ForwardSelection: null,
     ForcedEntryVar: null,
-    FeaturesToEvaluate: null,
-    ForcedFeatures: null,
+    FeaturesToEvaluate: 0,
+    ForcedFeatures: 0,
     PerformSelection: false,
-    MaxReached: false,
+    MaxReached: true,
     BelowMin: false,
     MaxToSelect: null,
-    MinChange: null,
+    MinChange: 0.01,
 };
 
 export const KNNPartitionDefault: KNNPartitionType = {
@@ -50,14 +50,14 @@ export const KNNPartitionDefault: KNNPartitionType = {
     VFoldPartitioningVariable: null,
     VFoldUseRandomly: false,
     VFoldUsePartitioningVar: false,
-    NumPartition: null,
-    TrainingNumber: null,
+    TrainingNumber: 70,
+    NumPartition: 10,
     SetSeed: false,
     Seed: null,
 };
 
 export const KNNSaveDefault: KNNSaveType = {
-    AutoName: false,
+    AutoName: true,
     CustomName: false,
     MaxCatsToSave: null,
     HasTargetVar: false,
@@ -67,19 +67,19 @@ export const KNNSaveDefault: KNNSaveType = {
 };
 
 export const KNNOutputDefault: KNNOutputType = {
-    CaseSummary: false,
-    ChartAndTable: false,
+    CaseSummary: true,
+    ChartAndTable: true,
     ExportModelXML: false,
     XMLFilePath: null,
     ExportDistance: false,
-    CreateDataset: false,
+    CreateDataset: true,
     WriteDataFile: false,
     NewDataFilePath: null,
     DatasetName: null,
 };
 
 export const KNNOptionsDefault: KNNOptionsType = {
-    Exclude: false,
+    Exclude: true,
     Include: false,
 };
 

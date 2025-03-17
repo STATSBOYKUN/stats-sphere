@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/popover";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const KNNFeatures = ({
     isFeaturesOpen,
@@ -40,12 +42,27 @@ export const KNNFeatures = ({
         ...data,
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isFeaturesOpen) {
             setFeaturesState({ ...data });
+            setAvailableVariables(data.ForwardSelection ?? []);
         }
     }, [isFeaturesOpen, data]);
+
+    useEffect(() => {
+        const usedVariables = [...(featuresState.ForcedEntryVar || [])].filter(
+            Boolean
+        );
+
+        if (!(featuresState.ForwardSelection === null)) {
+            const updatedVariables = featuresState.ForwardSelection.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setAvailableVariables(updatedVariables);
+        }
+    }, [featuresState]);
 
     const handleChange = (
         field: keyof KNNFeaturesType,
@@ -54,6 +71,39 @@ export const KNNFeatures = ({
         setFeaturesState((prevState) => ({
             ...prevState,
             [field]: value,
+        }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setFeaturesState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "ForcedEntryVar") {
+                updatedState.ForcedEntryVar = [
+                    ...(updatedState.ForcedEntryVar || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setFeaturesState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "ForcedEntryVar") {
+                updatedState.ForcedEntryVar = (
+                    updatedState.ForcedEntryVar || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
+    };
+
+    const handleCriterionGrp = (value: string) => {
+        setFeaturesState((prevState) => ({
+            ...prevState,
+            MaxReached: value === "MaxReached",
+            BelowMin: value === "BelowMin",
         }));
     };
 
@@ -128,49 +178,109 @@ export const KNNFeatures = ({
                                 </div>
                                 <ResizablePanelGroup direction="horizontal">
                                     <ResizablePanel defaultSize={50}>
-                                        <div>
+                                        <div className="flex flex-col gap-2">
                                             <Label className="font-bold">
                                                 Forward Selection:
                                             </Label>
-                                            <Input
-                                                id="FeaturesToEvaluate"
-                                                type="text"
-                                                className="min-w-2xl w-full min-h-[150px]"
-                                                placeholder=""
-                                                value={
-                                                    featuresState.FeaturesToEvaluate ??
-                                                    ""
-                                                }
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        "FeaturesToEvaluate",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
+                                            <ScrollArea>
+                                                <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                    {availableVariables.map(
+                                                        (
+                                                            variable: string,
+                                                            index: number
+                                                        ) => (
+                                                            <Badge
+                                                                key={index}
+                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                variant="outline"
+                                                                draggable
+                                                                onDragStart={(
+                                                                    e
+                                                                ) =>
+                                                                    e.dataTransfer.setData(
+                                                                        "text",
+                                                                        variable
+                                                                    )
+                                                                }
+                                                            >
+                                                                {variable}
+                                                            </Badge>
+                                                        )
+                                                    )}
+                                                </div>
+                                            </ScrollArea>
                                         </div>
                                     </ResizablePanel>
                                     <ResizableHandle withHandle />
                                     <ResizablePanel defaultSize={50}>
-                                        <div>
+                                        <div
+                                            className="flex flex-col w-full gap-2"
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
+                                            }
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "ForcedEntryVar",
+                                                    variable
+                                                );
+                                            }}
+                                        >
                                             <Label className="font-bold">
                                                 Forced Entry:
                                             </Label>
-                                            <Input
-                                                id="ForcedEntryVar"
-                                                type="text"
-                                                className="min-w-2xl w-full min-h-[150px]"
-                                                placeholder=""
+                                            <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[150px]">
+                                                        {featuresState.ForcedEntryVar &&
+                                                        featuresState
+                                                            .ForcedEntryVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {featuresState.ForcedEntryVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "ForcedEntryVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
                                                 value={
                                                     featuresState.ForcedEntryVar ??
                                                     ""
                                                 }
-                                                onChange={(e) =>
-                                                    handleChange(
-                                                        "ForcedEntryVar",
-                                                        e.target.value
-                                                    )
-                                                }
+                                                name="Independents"
                                             />
                                         </div>
                                     </ResizablePanel>
@@ -179,7 +289,15 @@ export const KNNFeatures = ({
                         </ResizablePanel>
                         <ResizableHandle withHandle />
                         <ResizablePanel defaultSize={40}>
-                            <RadioGroup>
+                            <RadioGroup
+                                value={
+                                    featuresState.MaxReached
+                                        ? "MaxReached"
+                                        : "BelowMin"
+                                }
+                                disabled={!featuresState.PerformSelection}
+                                onValueChange={handleCriterionGrp}
+                            >
                                 <div className="flex flex-col gap-2 p-2">
                                     <Label className="font-bold">
                                         Stopping Criterion
@@ -208,6 +326,9 @@ export const KNNFeatures = ({
                                                         value={
                                                             featuresState.MaxToSelect ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !featuresState.MaxReached
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(
@@ -248,6 +369,9 @@ export const KNNFeatures = ({
                                                         value={
                                                             featuresState.MinChange ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !featuresState.BelowMin
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(

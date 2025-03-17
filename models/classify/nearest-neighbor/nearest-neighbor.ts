@@ -51,10 +51,10 @@ export type KNNNeighborsProps = {
 };
 
 export type KNNFeaturesType = {
-    ForwardSelection: string | null;
-    ForcedEntryVar: string | null;
-    FeaturesToEvaluate: string | null;
-    ForcedFeatures: string | null;
+    ForwardSelection: string[] | null;
+    ForcedEntryVar: string[] | null;
+    FeaturesToEvaluate: number | null;
+    ForcedFeatures: number | null;
     PerformSelection: boolean;
     MaxReached: boolean;
     BelowMin: boolean;
@@ -67,21 +67,21 @@ export type KNNFeaturesProps = {
     setIsFeaturesOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof KNNFeaturesType,
-        value: number | string | boolean | null
+        value: string[] | number | string | boolean | null
     ) => void;
     data: KNNFeaturesType;
 };
 
 export type KNNPartitionType = {
-    SrcVar: string | null;
+    SrcVar: string[] | null;
     PartitioningVariable: string | null;
     UseRandomly: boolean;
     UseVariable: boolean;
     VFoldPartitioningVariable: string | null;
     VFoldUseRandomly: boolean;
     VFoldUsePartitioningVar: boolean;
-    NumPartition: number | null;
     TrainingNumber: number | null;
+    NumPartition: number | null;
     SetSeed: boolean;
     Seed: number | null;
 };
@@ -91,7 +91,7 @@ export type KNNPartitionProps = {
     setIsPartitionOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof KNNPartitionType,
-        value: number | string | boolean | null
+        value: string[] | number | string | boolean | null
     ) => void;
     data: KNNPartitionType;
 };

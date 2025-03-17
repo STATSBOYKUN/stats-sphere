@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { KNNDialog } from "@/components/Modals/Analyze/classify/nearest-neighbor/dialog";
 import {
     KNNContainerProps,
@@ -38,6 +38,26 @@ export const KNNContainer = ({ onClose }: KNNContainerProps) => {
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        if (formData.main.FeatureVar) {
+            setFormData((prev) => ({
+                ...prev,
+                features: {
+                    ...prev.features,
+                    ForwardSelection: prev.main.FeatureVar
+                        ? [...prev.main.FeatureVar]
+                        : [],
+                },
+                partition: {
+                    ...prev.partition,
+                    SrcVar: prev.main.FeatureVar
+                        ? [...prev.main.FeatureVar]
+                        : [],
+                },
+            }));
+        }
+    }, [formData.main.FeatureVar]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

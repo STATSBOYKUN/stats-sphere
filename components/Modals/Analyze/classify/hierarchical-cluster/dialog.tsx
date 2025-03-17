@@ -123,6 +123,9 @@ export const HierClusDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof HierClusMainType, value);
+            });
             setter(true);
         };
 

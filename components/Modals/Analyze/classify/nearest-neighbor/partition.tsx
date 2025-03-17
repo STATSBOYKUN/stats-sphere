@@ -22,6 +22,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const KNNPartition = ({
     isPartitionOpen,
@@ -33,12 +35,28 @@ export const KNNPartition = ({
         ...data,
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isPartitionOpen) {
             setPartitionState({ ...data });
+            setAvailableVariables(data.SrcVar ?? []);
         }
     }, [isPartitionOpen, data]);
+
+    useEffect(() => {
+        const usedVariables = [
+            partitionState.PartitioningVariable,
+            partitionState.VFoldPartitioningVariable,
+        ].filter(Boolean);
+
+        if (!(partitionState.SrcVar === null)) {
+            const updatedVariables = partitionState.SrcVar.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setAvailableVariables(updatedVariables);
+        }
+    }, [partitionState]);
 
     const handleChange = (
         field: keyof KNNPartitionType,
@@ -48,6 +66,30 @@ export const KNNPartition = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setPartitionState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "PartitioningVariable") {
+                updatedState.PartitioningVariable = variable;
+            } else if (target === "VFoldPartitioningVariable") {
+                updatedState.VFoldPartitioningVariable = variable;
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setPartitionState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "PartitioningVariable") {
+                updatedState.PartitioningVariable = "";
+            } else if (target === "VFoldPartitioningVariable") {
+                updatedState.VFoldPartitioningVariable = "";
+            }
+            return updatedState;
+        });
     };
 
     const handlePartitionGrp = (value: string) => {
@@ -86,14 +128,31 @@ export const KNNPartition = ({
                     <Separator />
                     <ResizablePanelGroup
                         direction="horizontal"
-                        className="min-h-[495px] max-w-xl rounded-lg border md:min-w-[200px]"
+                        className="min-h-[510px] max-w-xl rounded-lg border md:min-w-[200px]"
                     >
                         <ResizablePanel defaultSize={40}>
-                            <div className="flex h-full items-center justify-center p-2">
-                                <span className="font-semibold">
-                                    List Variabel
-                                </span>
-                            </div>
+                            <ScrollArea>
+                                <div className="flex flex-col justify-start items-start h-[510px] gap-1 p-2 overflow-hidden">
+                                    {availableVariables.map(
+                                        (variable: string, index: number) => (
+                                            <Badge
+                                                key={index}
+                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                variant="outline"
+                                                draggable
+                                                onDragStart={(e) =>
+                                                    e.dataTransfer.setData(
+                                                        "text",
+                                                        variable
+                                                    )
+                                                }
+                                            >
+                                                {variable}
+                                            </Badge>
+                                        )
+                                    )}
+                                </div>
+                            </ScrollArea>
                         </ResizablePanel>
                         <ResizableHandle withHandle />
                         <ResizablePanel defaultSize={60}>
@@ -128,12 +187,15 @@ export const KNNPartition = ({
                                                     </Label>
                                                     <Input
                                                         id="TrainingNumber"
-                                                        type="text"
+                                                        type="number"
                                                         className="min-w-2xl w-full"
                                                         placeholder=""
                                                         value={
                                                             partitionState.TrainingNumber ??
-                                                            ""
+                                                            70
+                                                        }
+                                                        disabled={
+                                                            !partitionState.UseRandomly
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(
@@ -149,13 +211,16 @@ export const KNNPartition = ({
                                                     </Label>
                                                     <Input
                                                         id="HoldoutNumber"
-                                                        type="text"
+                                                        type="number"
                                                         className="min-w-2xl w-full"
                                                         placeholder=""
                                                         value={
-                                                            partitionState.TrainingNumber ??
-                                                            0
+                                                            100 -
+                                                            (partitionState.TrainingNumber ??
+                                                                0)
                                                         }
+                                                        disabled={true}
+                                                        onChange={() => {}}
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-2">
@@ -164,13 +229,12 @@ export const KNNPartition = ({
                                                     </Label>
                                                     <Input
                                                         id="TotalNumber"
-                                                        type="text"
+                                                        type="number"
                                                         className="min-w-2xl w-full"
                                                         placeholder=""
-                                                        value={
-                                                            partitionState.TrainingNumber ??
-                                                            0
-                                                        }
+                                                        value={100}
+                                                        disabled={true}
+                                                        onChange={() => {}}
                                                     />
                                                 </div>
                                             </div>
@@ -188,22 +252,52 @@ export const KNNPartition = ({
                                                     <Label htmlFor="PartitioningVariable">
                                                         Partition Variable:
                                                     </Label>
-                                                    <Input
-                                                        id="PartitioningVariable"
-                                                        type="text"
-                                                        className="min-w-2xl w-full"
-                                                        placeholder=""
-                                                        value={
-                                                            partitionState.PartitioningVariable ??
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "PartitioningVariable",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
+                                                    <div className="flex w-full items-center space-x-2">
+                                                        <div
+                                                            className="w-full min-h-[40px] p-2 border rounded"
+                                                            onDrop={(e) => {
+                                                                handleDrop(
+                                                                    "PartitioningVariable",
+                                                                    e.dataTransfer.getData(
+                                                                        "text"
+                                                                    )
+                                                                );
+                                                            }}
+                                                            onDragOver={(e) =>
+                                                                e.preventDefault()
+                                                            }
+                                                        >
+                                                            {partitionState.PartitioningVariable ? (
+                                                                <Badge
+                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant="outline"
+                                                                    onClick={() =>
+                                                                        handleRemoveVariable(
+                                                                            "PartitioningVariable"
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {
+                                                                        partitionState.PartitioningVariable
+                                                                    }
+                                                                </Badge>
+                                                            ) : (
+                                                                <span className="text-sm font-light text-gray-500">
+                                                                    Drop
+                                                                    variables
+                                                                    here.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <input
+                                                            type="hidden"
+                                                            value={
+                                                                partitionState.PartitioningVariable ??
+                                                                ""
+                                                            }
+                                                            name="PartitioningVariable"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -246,6 +340,9 @@ export const KNNPartition = ({
                                                         partitionState.NumPartition ??
                                                         ""
                                                     }
+                                                    disabled={
+                                                        !partitionState.VFoldUseRandomly
+                                                    }
                                                     onChange={(e) =>
                                                         handleChange(
                                                             "NumPartition",
@@ -267,22 +364,51 @@ export const KNNPartition = ({
                                                 <Label htmlFor="VFoldPartitioningVariable">
                                                     Fold Variable:
                                                 </Label>
-                                                <Input
-                                                    id="VFoldPartitioningVariable"
-                                                    type="text"
-                                                    className="min-w-2xl w-full"
-                                                    placeholder=""
-                                                    value={
-                                                        partitionState.VFoldPartitioningVariable ??
-                                                        ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleChange(
-                                                            "VFoldPartitioningVariable",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
+                                                <div className="flex w-full items-center space-x-2">
+                                                    <div
+                                                        className="w-full min-h-[40px] p-2 border rounded"
+                                                        onDrop={(e) => {
+                                                            handleDrop(
+                                                                "VFoldPartitioningVariable",
+                                                                e.dataTransfer.getData(
+                                                                    "text"
+                                                                )
+                                                            );
+                                                        }}
+                                                        onDragOver={(e) =>
+                                                            e.preventDefault()
+                                                        }
+                                                    >
+                                                        {partitionState.VFoldPartitioningVariable ? (
+                                                            <Badge
+                                                                className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    handleRemoveVariable(
+                                                                        "VFoldPartitioningVariable"
+                                                                    )
+                                                                }
+                                                            >
+                                                                {
+                                                                    partitionState.VFoldPartitioningVariable
+                                                                }
+                                                            </Badge>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
+                                                        value={
+                                                            partitionState.VFoldPartitioningVariable ??
+                                                            ""
+                                                        }
+                                                        name="VFoldPartitioningVariable"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </RadioGroup>
@@ -320,6 +446,9 @@ export const KNNPartition = ({
                                                 placeholder=""
                                                 value={
                                                     partitionState.Seed ?? ""
+                                                }
+                                                disabled={
+                                                    !partitionState.SetSeed
                                                 }
                                                 onChange={(e) =>
                                                     handleChange(

@@ -53,6 +53,14 @@ export const KNNSave = ({
         }));
     };
 
+    const handleSavedGrp = (value: string) => {
+        setSaveState((prevState) => ({
+            ...prevState,
+            AutoName: value === "AutoName",
+            CustomName: value === "CustomName",
+        }));
+    };
+
     const handleContinue = () => {
         Object.entries(saveState).forEach(([key, value]) => {
             updateFormData(key as keyof KNNSaveType, value);
@@ -76,7 +84,14 @@ export const KNNSave = ({
                         className="min-h-[200px] rounded-lg border md:min-w-[200px]"
                     >
                         <ResizablePanel defaultSize={100}>
-                            <RadioGroup>
+                            <RadioGroup
+                                value={
+                                    saveState.AutoName
+                                        ? "AutoName"
+                                        : "CustomName"
+                                }
+                                onValueChange={handleSavedGrp}
+                            >
                                 <div className="flex flex-col gap-2 p-2">
                                     <Label className="font-bold">
                                         Names of Saved Variables
@@ -165,6 +180,7 @@ export const KNNSave = ({
                                         <Checkbox
                                             id="IsCateTargetVar"
                                             checked={saveState.IsCateTargetVar}
+                                            disabled={true}
                                             onCheckedChange={(checked) =>
                                                 handleChange(
                                                     "IsCateTargetVar",
@@ -216,6 +232,7 @@ export const KNNSave = ({
                                             checked={
                                                 saveState.RandomAssignToFold
                                             }
+                                            disabled={true}
                                             onCheckedChange={(checked) =>
                                                 handleChange(
                                                     "RandomAssignToFold",

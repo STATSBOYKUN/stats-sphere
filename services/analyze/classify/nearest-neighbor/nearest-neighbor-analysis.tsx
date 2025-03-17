@@ -55,4 +55,17 @@ export async function analyzeKNN({
         variables,
         CaseIdentifierVariable
     );
+
+    /*
+     * 1. Case Processing Summary
+     * 2. Feature Space
+     * 3. Variable Importance
+     * 4. Peers
+     * 5. Nearest Neighbors Distances
+     * 6. Quadrant Map
+     * 7. Feature Selection
+     * 8. K Selection
+     * 9. Classification Table
+     * 10. Error Summary
+     */
 }

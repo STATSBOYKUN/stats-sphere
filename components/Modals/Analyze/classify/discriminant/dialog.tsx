@@ -118,6 +118,9 @@ export const DiscriminantDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof DiscriminantMainType, value);
+            });
             setter(true);
         };
 

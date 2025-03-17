@@ -124,6 +124,9 @@ export const RocAnalysisDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof RocAnalysisMainType, value);
+            });
             setter(true);
         };
 

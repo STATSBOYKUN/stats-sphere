@@ -125,6 +125,9 @@ export const KNNDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof KNNMainType, value);
+            });
             setter(true);
         };
 
@@ -137,9 +140,9 @@ export const KNNDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Nearest Neighbor</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Nearest Neighbor Analysis</DialogTitle>
@@ -228,15 +231,74 @@ export const KNNDialog = ({
                                         </div>
                                     </div>
                                     <div className="flex flex-col w-full gap-1">
-                                        <Label className="font-bold">
-                                            Features:
-                                        </Label>
-                                        <Input
-                                            id="FeatureVar"
-                                            type="text"
-                                            className="min-w-2xl w-full min-h-[150px]"
-                                            placeholder=""
-                                        />
+                                        <div
+                                            className="flex flex-col w-full gap-2"
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
+                                            }
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
+                                                    "FeatureVar",
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Features:
+                                            </Label>
+                                            <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[175px]">
+                                                        {mainState.FeatureVar &&
+                                                        mainState.FeatureVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {mainState.FeatureVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "FeatureVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    mainState.FeatureVar ?? ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox
                                                 id="NormCovar"
@@ -369,6 +431,10 @@ export const KNNDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
+                                        disabled={
+                                            mainState.DepVar === "" ||
+                                            mainState.DepVar === null
+                                        }
                                         onClick={openDialog(setIsFeaturesOpen)}
                                     >
                                         Features...

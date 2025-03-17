@@ -109,6 +109,9 @@ export const CorrespondenceDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof CorrespondenceMainType, value);
+            });
             setter(true);
         };
 

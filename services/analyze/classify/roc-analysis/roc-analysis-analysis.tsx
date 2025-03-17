@@ -41,4 +41,16 @@ export async function analyzeRocAnalysis({
     const varDefsForTest = getVarDefs(variables, TestVariables);
     const varDefsForState = getVarDefs(variables, StateVariable);
     const varDefsForTargetGroup = getVarDefs(variables, TargetGroupVariable);
+
+    /*
+     * 1. Case Processing Summary
+     * 2. ROC Curve
+     * 3. Precission-Recall Curve
+     * 4. Area Under the ROC Curve
+     * 5. Classifier Evaluation Metrics
+     * 6. Independent-Group Area Difference Under the ROC Curve
+     * 7. Overall Model Quality
+     * 8. Coordinates of the ROC Curve
+     * 9. Coordinates of the Precision-Recall Curve
+     */
 }

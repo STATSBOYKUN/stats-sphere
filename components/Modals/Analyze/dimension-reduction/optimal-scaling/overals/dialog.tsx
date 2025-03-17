@@ -126,6 +126,9 @@ export const OptScaOveralsDialog = ({
 
     const openDialog =
         (setter: React.Dispatch<React.SetStateAction<boolean>>) => () => {
+            Object.entries(mainState).forEach(([key, value]) => {
+                updateFormData(key as keyof OptScaOveralsMainType, value);
+            });
             setter(true);
         };
 
