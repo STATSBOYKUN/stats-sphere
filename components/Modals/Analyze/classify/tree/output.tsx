@@ -46,10 +46,6 @@ export const TreeOutput = ({
     >({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isOutputOpen) {
             setOutputState({ ...data });
@@ -673,13 +669,12 @@ export const TreeOutput = ({
                                                                                 index
                                                                             }
                                                                             value={
-                                                                                method
+                                                                                method.value
                                                                             }
                                                                         >
-                                                                            {capitalize(
-                                                                                method
-                                                                            ) +
-                                                                                "'s Method"}
+                                                                            {
+                                                                                method.name
+                                                                            }
                                                                         </SelectItem>
                                                                     )
                                                                 )}
@@ -720,12 +715,12 @@ export const TreeOutput = ({
                                                                                 index
                                                                             }
                                                                             value={
-                                                                                method
+                                                                                method.value
                                                                             }
                                                                         >
-                                                                            {capitalize(
-                                                                                method
-                                                                            )}
+                                                                            {
+                                                                                method.name
+                                                                            }
                                                                         </SelectItem>
                                                                     )
                                                                 )}

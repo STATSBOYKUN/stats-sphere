@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     TreeContainerProps,
     TreeMainType,
@@ -38,6 +38,27 @@ export const TreeContainer = ({ onClose }: TreeContainerProps) => {
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        if (formData.main) {
+            const usedVariables = [
+                formData.main.DependentTargetVar,
+                ...(formData.main.IndependentTargetVar || []),
+                formData.main.InfluenceTargetVar,
+            ].filter(Boolean);
+
+            const updatedVariables = tempVariables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setFormData((prev) => ({
+                ...prev,
+                validation: {
+                    ...prev.validation,
+                    SrcVar: updatedVariables ? [...updatedVariables] : [],
+                },
+            }));
+        }
+    }, [formData.main]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

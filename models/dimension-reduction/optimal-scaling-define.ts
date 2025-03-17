@@ -15,6 +15,7 @@ export type OptScaDefineProps = {
     setIsOptScaOverals: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (field: keyof OptScaDefineMainType, value: boolean) => void;
     data: OptScaDefineMainType;
+    onReset: () => void;
 };
 
 export type OptScaDefineType = {

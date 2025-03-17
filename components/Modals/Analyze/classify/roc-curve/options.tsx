@@ -193,11 +193,11 @@ export const RocCurveOptions = ({
                                     <Select
                                         value={
                                             optionsState.DistAssumptMethod ??
-                                            "NONPARAMETRIC"
+                                            "Nonparametric"
                                         }
                                         defaultValue={
                                             optionsState.DistAssumptMethod ??
-                                            "NONPARAMETRIC"
+                                            "Nonparametric"
                                         }
                                         onValueChange={(value) =>
                                             handleChange(
@@ -215,11 +215,9 @@ export const RocCurveOptions = ({
                                                     (method, index) => (
                                                         <SelectItem
                                                             key={index}
-                                                            value={method}
+                                                            value={method.value}
                                                         >
-                                                            {capitalize(
-                                                                method
-                                                            ) + "'s Method"}
+                                                            {method.name}
                                                         </SelectItem>
                                                     )
                                                 )}

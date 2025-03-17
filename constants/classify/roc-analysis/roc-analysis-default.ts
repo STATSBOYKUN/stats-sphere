@@ -15,7 +15,7 @@ export const RocAnalysisMainDefault: RocAnalysisMainType = {
 };
 
 export const RocAnalysisDefineGroupsDefault: RocAnalysisDefineGroupsType = {
-    SpecifiedValues: false,
+    SpecifiedValues: true,
     Group1: null,
     Group2: null,
     UseMidValue: false,
@@ -24,21 +24,21 @@ export const RocAnalysisDefineGroupsDefault: RocAnalysisDefineGroupsType = {
 };
 
 export const RocAnalysisOptionsDefault: RocAnalysisOptionsType = {
-    IncludeCutoff: false,
+    IncludeCutoff: true,
     ExcludeCutoff: false,
-    LargerTest: false,
+    LargerTest: true,
     SmallerTest: false,
-    DistAssumptMethod: null,
-    ConfLevel: null,
-    ExcludeMissValue: false,
+    DistAssumptMethod: "Nonparametric",
+    ConfLevel: 95,
+    ExcludeMissValue: true,
     MissValueAsValid: false,
 };
 
 export const RocAnalysisDisplayDefault: RocAnalysisDisplayType = {
-    RocCurve: false,
+    RocCurve: true,
     Refline: false,
     PRC: false,
-    IntepolateTrue: false,
+    IntepolateTrue: true,
     IntepolateFalse: false,
     Overall: false,
     SECI: false,

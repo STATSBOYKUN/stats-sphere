@@ -53,10 +53,6 @@ export const TreeDialog = ({
 
     const { closeModal } = useModal();
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         setMainState({ ...data });
         setAvailableVariables(globalVariables);
@@ -145,9 +141,9 @@ export const TreeDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Decision Tree</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Decision Tree</DialogTitle>
@@ -270,9 +266,6 @@ export const TreeDialog = ({
                                                 );
                                             }}
                                         >
-                                            <Label className="font-bold">
-                                                Independents:
-                                            </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
                                                     <div className="w-full h-[100px]">
@@ -395,7 +388,8 @@ export const TreeDialog = ({
                                         </Label>
                                         <Select
                                             value={
-                                                mainState.GrowingMethod ?? ""
+                                                mainState.GrowingMethod ??
+                                                "CHAID"
                                             }
                                             onValueChange={(value) =>
                                                 handleChange(
@@ -413,11 +407,11 @@ export const TreeDialog = ({
                                                         (method, index) => (
                                                             <SelectItem
                                                                 key={index}
-                                                                value={method}
+                                                                value={
+                                                                    method.value
+                                                                }
                                                             >
-                                                                {capitalize(
-                                                                    method
-                                                                ) + "'s Method"}
+                                                                {method.name}
                                                             </SelectItem>
                                                         )
                                                     )}

@@ -111,6 +111,9 @@ export const RocAnalysisDefineGroups = ({
                                                             defineGroupsState.Group1 ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !defineGroupsState.SpecifiedValues
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "Group1",
@@ -135,6 +138,9 @@ export const RocAnalysisDefineGroups = ({
                                                         value={
                                                             defineGroupsState.Group2 ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !defineGroupsState.SpecifiedValues
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(
@@ -184,6 +190,9 @@ export const RocAnalysisDefineGroups = ({
                                                         value={
                                                             defineGroupsState.CutPointValue ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !defineGroupsState.CutPoint
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(

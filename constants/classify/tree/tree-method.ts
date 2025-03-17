@@ -1,15 +1,40 @@
 export const GROWINGMETHOD = [
-    "CHAID",
-    "CART",
-    "C5.0",
-]
+    {
+        name: "CHAID",
+        value: "CHAID",
+    },
+    {
+        name: "Exhaustive CHAID",
+        value: "ExhaustiveCHAID",
+    },
+    {
+        name: "CART",
+        value: "CART",
+    },
+    {
+        name: "QUEST",
+        value: "QUEST",
+    },
+];
 
 export const ROWSNODE = [
-    "TERMINAL",
-    "PREDICTED VALUE",
-]
+    {
+        name: "Terminal",
+        value: "TERMINAL",
+    },
+    {
+        name: "Predicted Value",
+        value: "PREDICTEDVALUE",
+    },
+];
 
 export const SORTINGMETHOD = [
-    "ASCENDING",
-    "DESCENDING",
-]
+    {
+        name: "Ascending",
+        value: "ASCENDING",
+    },
+    {
+        name: "Descending",
+        value: "DESCENDING",
+    },
+];

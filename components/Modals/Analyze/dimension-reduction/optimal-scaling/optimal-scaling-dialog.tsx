@@ -30,6 +30,7 @@ export const OptScaInitial = ({
     setIsOptScaOverals,
     updateFormData,
     data,
+    onReset,
 }: OptScaDefineProps) => {
     const [mainState, setMainState] = useState<OptScaDefineMainType>({
         ...data,
@@ -95,9 +96,9 @@ export const OptScaInitial = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isDefineOpen} onOpenChange={setIsDefineOpen}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Optimal Scaling</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Optimal Scaling</DialogTitle>

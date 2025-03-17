@@ -99,6 +99,7 @@ export const RocAnalysisDisplay = ({
                                     <Checkbox
                                         id="Refline"
                                         checked={displayState.Refline}
+                                        disabled={!displayState.RocCurve}
                                         onCheckedChange={(checked) =>
                                             handleChange("Refline", checked)
                                         }
@@ -132,6 +133,7 @@ export const RocAnalysisDisplay = ({
                                                 ? "IntepolateTrue"
                                                 : "IntepolateFalse"
                                         }
+                                        disabled={!displayState.PRC}
                                         onValueChange={handlePRCGrp}
                                     >
                                         <div className="flex flex-col gap-2 pl-6">

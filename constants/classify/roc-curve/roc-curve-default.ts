@@ -11,17 +11,17 @@ export const RocCurveMainDefault: RocCurveMainType = {
     CoordPt: false,
     DiagRef: false,
     ErrInterval: false,
-    RocCurve: false,
+    RocCurve: true,
 };
 
 export const RocCurveOptionsDefault: RocCurveOptionsType = {
-    IncludeCutoff: false,
+    IncludeCutoff: true,
     ExcludeCutoff: false,
-    LargerTest: false,
+    LargerTest: true,
     SmallerTest: false,
-    DistAssumptMethod: null,
-    ConfLevel: null,
-    ExcludeMissValue: false,
+    DistAssumptMethod: "Nonparametric",
+    ConfLevel: 95,
+    ExcludeMissValue: true,
     MissValueAsValid: false,
 };
 

@@ -20,6 +20,8 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const TreeValidation = ({
     isValidationOpen,
@@ -31,12 +33,25 @@ export const TreeValidation = ({
         ...data,
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isValidationOpen) {
             setValidationState({ ...data });
+            setAvailableVariables(data.SrcVar ?? []);
         }
     }, [isValidationOpen, data]);
+
+    useEffect(() => {
+        const usedVariables = [validationState.TargetVar].filter(Boolean);
+
+        if (!(validationState.SrcVar === null)) {
+            const updatedVariables = validationState.SrcVar.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setAvailableVariables(updatedVariables);
+        }
+    }, [validationState]);
 
     const handleChange = (
         field: keyof TreeValidationType,
@@ -71,6 +86,26 @@ export const TreeValidation = ({
             Training: value === "Training",
             TestSample: value === "TestSample",
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setValidationState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = variable;
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setValidationState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = "";
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -217,45 +252,90 @@ export const TreeValidation = ({
                                                         <Label>
                                                             Variables:
                                                         </Label>
-                                                        <Input
-                                                            id="SrcVar"
-                                                            type="text"
-                                                            className="min-h-[75px] w-full"
-                                                            placeholder=""
-                                                            value={
-                                                                validationState.SrcVar ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "SrcVar",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                                {availableVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
                                                     <div>
                                                         <Label>
                                                             Split Sample By:
                                                         </Label>
-                                                        <Input
-                                                            id="TargetVar"
-                                                            type="text"
-                                                            className="w-full"
-                                                            placeholder=""
-                                                            value={
-                                                                validationState.TargetVar ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "TargetVar",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <div className="flex items-center space-x-2">
+                                                            <div
+                                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                                onDrop={(e) => {
+                                                                    handleDrop(
+                                                                        "TargetVar",
+                                                                        e.dataTransfer.getData(
+                                                                            "text"
+                                                                        )
+                                                                    );
+                                                                }}
+                                                                onDragOver={(
+                                                                    e
+                                                                ) =>
+                                                                    e.preventDefault()
+                                                                }
+                                                            >
+                                                                {validationState.TargetVar ? (
+                                                                    <Badge
+                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleRemoveVariable(
+                                                                                "TargetVar"
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            validationState.TargetVar
+                                                                        }
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <input
+                                                                type="hidden"
+                                                                value={
+                                                                    validationState.TargetVar ??
+                                                                    ""
+                                                                }
+                                                                name="TargetVar"
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

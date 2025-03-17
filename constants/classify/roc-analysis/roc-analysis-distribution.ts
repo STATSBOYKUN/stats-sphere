@@ -1,4 +1,10 @@
 export const DISTRIBUTIONMETHODS = [
-    "PARAMETRIC",
-    "NONPARAMETRIC"
+    {
+        name: "Nonparametric",
+        value: "Nonparametric",
+    },
+    {
+        name: "Bi-Negative Exponential",
+        value: "BiNegativeExponential",
+    },
 ];

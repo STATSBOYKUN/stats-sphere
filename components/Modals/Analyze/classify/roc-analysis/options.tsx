@@ -41,10 +41,6 @@ export const RocAnalysisOptions = ({
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isOptionsOpen) {
             setOptionsState({ ...data });
@@ -94,11 +90,11 @@ export const RocAnalysisOptions = ({
 
     return (
         <>
-            {/* Define Groups Dialog */}
+            {/* Options Dialog */}
             <Dialog open={isOptionsOpen} onOpenChange={setIsOptionsOpen}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
-                        <DialogTitle>ROC Analysis: Define Groups</DialogTitle>
+                        <DialogTitle>ROC Analysis: Options</DialogTitle>
                     </DialogHeader>
                     <Separator />
                     <ResizablePanelGroup
@@ -193,11 +189,11 @@ export const RocAnalysisOptions = ({
                                     <Select
                                         value={
                                             optionsState.DistAssumptMethod ??
-                                            "NONPARAMETRIC"
+                                            "Nonparametric"
                                         }
                                         defaultValue={
                                             optionsState.DistAssumptMethod ??
-                                            "NONPARAMETRIC"
+                                            "Nonparametric"
                                         }
                                         onValueChange={(value) =>
                                             handleChange(
@@ -215,11 +211,9 @@ export const RocAnalysisOptions = ({
                                                     (method, index) => (
                                                         <SelectItem
                                                             key={index}
-                                                            value={method}
+                                                            value={method.value}
                                                         >
-                                                            {capitalize(
-                                                                method
-                                                            ) + "'s Method"}
+                                                            {method.name}
                                                         </SelectItem>
                                                     )
                                                 )}

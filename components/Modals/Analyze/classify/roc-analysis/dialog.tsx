@@ -185,79 +185,69 @@ export const RocAnalysisDialog = ({
                             {/* Defining Variable */}
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-2 p-2">
-                                    <div className="w-full">
+                                    <div
+                                        className="w-full min-h-[100px]"
+                                        onDragOver={(e) => e.preventDefault()}
+                                        onDrop={(e) => {
+                                            const variable =
+                                                e.dataTransfer.getData("text");
+                                            handleDrop(
+                                                "TestTargetVariable",
+                                                variable
+                                            );
+                                        }}
+                                    >
                                         <Label className="font-bold">
                                             Test Variable:{" "}
                                         </Label>
-                                        <div
-                                            onDragOver={(e) =>
-                                                e.preventDefault()
-                                            }
-                                            onDrop={(e) => {
-                                                const variable =
-                                                    e.dataTransfer.getData(
-                                                        "text"
-                                                    );
-                                                handleDrop(
-                                                    "TestTargetVariable",
-                                                    variable
-                                                );
-                                            }}
-                                        >
-                                            <Label className="font-bold">
-                                                Independents:
-                                            </Label>
-                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
-                                                <ScrollArea>
-                                                    <div className="w-full h-[100px]">
-                                                        {mainState.TestTargetVariable &&
-                                                        mainState
-                                                            .TestTargetVariable
-                                                            .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {mainState.TestTargetVariable.map(
-                                                                    (
-                                                                        variable,
-                                                                        index
-                                                                    ) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                            variant="outline"
-                                                                            onClick={() =>
-                                                                                handleRemoveVariable(
-                                                                                    "TestTargetVariable",
-                                                                                    variable
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {
+                                        <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                            <ScrollArea>
+                                                <div className="w-full h-[100px]">
+                                                    {mainState.TestTargetVariable &&
+                                                    mainState.TestTargetVariable
+                                                        .length > 0 ? (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {mainState.TestTargetVariable.map(
+                                                                (
+                                                                    variable,
+                                                                    index
+                                                                ) => (
+                                                                    <Badge
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleRemoveVariable(
+                                                                                "TestTargetVariable",
                                                                                 variable
-                                                                            }
-                                                                        </Badge>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-sm font-light text-gray-500">
-                                                                Drop variables
-                                                                here.
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </ScrollArea>
-                                            </div>
-                                            <input
-                                                type="hidden"
-                                                value={
-                                                    mainState.TestTargetVariable ??
-                                                    ""
-                                                }
-                                                name="Independents"
-                                            />
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            variable
+                                                                        }
+                                                                    </Badge>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </ScrollArea>
                                         </div>
+                                        <input
+                                            type="hidden"
+                                            value={
+                                                mainState.TestTargetVariable ??
+                                                ""
+                                            }
+                                            name="Independents"
+                                        />
                                     </div>
                                     <div className="w-full">
                                         <Label className="font-bold">
@@ -310,53 +300,21 @@ export const RocAnalysisDialog = ({
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[300px]">
+                                            <Label className="w-[500px]">
                                                 Value of State Variable:
                                             </Label>
-                                            <div className="flex items-center space-x-2">
-                                                <div
-                                                    className="w-full min-h-[40px] p-2 border rounded"
-                                                    onDrop={(e) => {
-                                                        handleDrop(
-                                                            "StateVarVal",
-                                                            e.dataTransfer.getData(
-                                                                "text"
-                                                            )
-                                                        );
-                                                    }}
-                                                    onDragOver={(e) =>
-                                                        e.preventDefault()
-                                                    }
-                                                >
-                                                    {mainState.StateVarVal ? (
-                                                        <Badge
-                                                            className="text-start text-sm font-light p-2 cursor-pointer"
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                handleRemoveVariable(
-                                                                    "StateVarVal"
-                                                                )
-                                                            }
-                                                        >
-                                                            {
-                                                                mainState.StateVarVal
-                                                            }
-                                                        </Badge>
-                                                    ) : (
-                                                        <span className="text-sm font-light text-gray-500">
-                                                            Drop variables here.
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <input
-                                                    type="hidden"
-                                                    value={
-                                                        mainState.StateVarVal ??
-                                                        ""
-                                                    }
-                                                    name="StateVarVal"
-                                                />
-                                            </div>
+                                            <Input
+                                                type="number"
+                                                value={
+                                                    mainState.StateVarVal ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "StateVarVal",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Checkbox

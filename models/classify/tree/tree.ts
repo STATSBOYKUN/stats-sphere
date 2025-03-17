@@ -116,7 +116,7 @@ export type TreeValidationType = {
     UseRandom: boolean;
     TrainingSample: number | null;
     UseVariable: boolean;
-    SrcVar: string | null;
+    SrcVar: string[] | null;
     TargetVar: string | null;
     Training: boolean;
     TestSample: boolean;
@@ -127,7 +127,7 @@ export type TreeValidationProps = {
     setIsValidationOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof TreeValidationType,
-        value: number | string | boolean | null
+        value: string[] | number | string | boolean | null
     ) => void;
     data: TreeValidationType;
 };

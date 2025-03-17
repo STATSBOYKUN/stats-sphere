@@ -304,50 +304,18 @@ export const RocCurveDialog = ({
                                             <Label className="w-[300px]">
                                                 Value of State Variable:
                                             </Label>
-                                            <div className="flex items-center space-x-2">
-                                                <div
-                                                    className="w-full min-h-[40px] p-2 border rounded"
-                                                    onDrop={(e) => {
-                                                        handleDrop(
-                                                            "StateVarVal",
-                                                            e.dataTransfer.getData(
-                                                                "text"
-                                                            )
-                                                        );
-                                                    }}
-                                                    onDragOver={(e) =>
-                                                        e.preventDefault()
-                                                    }
-                                                >
-                                                    {mainState.StateVarVal ? (
-                                                        <Badge
-                                                            className="text-start text-sm font-light p-2 cursor-pointer"
-                                                            variant="outline"
-                                                            onClick={() =>
-                                                                handleRemoveVariable(
-                                                                    "StateVarVal"
-                                                                )
-                                                            }
-                                                        >
-                                                            {
-                                                                mainState.StateVarVal
-                                                            }
-                                                        </Badge>
-                                                    ) : (
-                                                        <span className="text-sm font-light text-gray-500">
-                                                            Drop variables here.
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <input
-                                                    type="hidden"
-                                                    value={
-                                                        mainState.StateVarVal ??
-                                                        ""
-                                                    }
-                                                    name="StateVarVal"
-                                                />
-                                            </div>
+                                            <Input
+                                                type="number"
+                                                value={
+                                                    mainState.StateVarVal ?? ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "StateVarVal",
+                                                        e.target.value
+                                                    )
+                                                }
+                                            />
                                         </div>
                                         <ResizablePanelGroup
                                             direction="vertical"
@@ -385,6 +353,9 @@ export const RocCurveDialog = ({
                                                             id="DiagRef"
                                                             checked={
                                                                 mainState.DiagRef
+                                                            }
+                                                            disabled={
+                                                                !mainState.RocCurve
                                                             }
                                                             onCheckedChange={(
                                                                 checked

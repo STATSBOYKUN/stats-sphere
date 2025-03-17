@@ -39,6 +39,10 @@ export const OptScaContainer = ({ onClose }: OptScaContainerProps) => {
     const [isOptScaMCA, setIsOptScaMCA] = useState(false);
     const [isOptScaOverals, setIsOptScaOverals] = useState(false);
 
+    const resetFormData = () => {
+        setFormData({ ...OptScaDefineDefault });
+    };
+
     return (
         <>
             <OptScaInitial
@@ -51,6 +55,7 @@ export const OptScaContainer = ({ onClose }: OptScaContainerProps) => {
                     updateFormData("main", field, value)
                 }
                 data={formData.main}
+                onReset={resetFormData}
             />
 
             <OptScaCatpcaContainer
