@@ -41,10 +41,6 @@ Promise<[number[], string, string]> {
                 smoothingValue = smoothing.calculate_dma(pars[0]);
                 nameMethod = 'Double Moving Average';
                 break;
-            case 'wma':
-                smoothingValue = smoothing.calculate_wma(pars[0]);
-                nameMethod = `Weighted Moving Average`;
-                break;
             case 'ses':
                 smoothingValue = smoothing.calculate_ses(pars[0]);
                 nameMethod = 'Simple Exponential Smoothing';

@@ -40,34 +40,4 @@ impl Smoothing {
         }
         dma_values
     }
-
-    // Weighted Moving Average Method
-    pub fn calculate_wma(&self, distance: usize) -> Vec<f64> {
-        let data: Vec<f64> = self.get_data();
-        let mut wma_values: Vec<f64> = Vec::new();
-        let avg: f64 = data[0..distance].iter().sum::<f64>() / distance as f64;
-        let mut dev: Vec<f64> = Vec::new();
-        let mut weight: Vec<f64> = Vec::new();
-        let mut norm_weight: Vec<f64> = Vec::new();
-        for i in 0..distance{
-            dev.push((data[i] - avg).abs() as f64);
-            weight.push((1.0 / dev[i]) as f64);
-        }
-        let sum_weight = weight.iter().sum::<f64>() as f64;
-        for i in 0..distance{
-            norm_weight.push(weight[i] / sum_weight as f64);
-        }
-        for i in 0..data.len(){
-            if i < distance-1{
-                wma_values.push(0.0);
-            }else{
-                let mut sum_temp = 0.0;
-                for j in 0..distance{
-                    sum_temp += data[i-distance+j+1] * norm_weight[j] as f64;
-                }
-                wma_values.push(sum_temp);
-            }
-        }
-        wma_values
-    }
 }

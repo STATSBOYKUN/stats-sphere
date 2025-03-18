@@ -34,7 +34,6 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
     const methods = [
         { value: 'sma', label: 'Simple Moving Average' },
         { value: 'dma', label: 'Double Moving Average' },
-        { value: 'wma', label: 'Weighted Moving Average' },
         { value: 'ses', label: 'Simple Exponential Smoothing' },
         { value: 'des', label: 'Double Exponential Smoothing' },
         { value: 'holt', label: 'Holt\'s Method Exponential Smoothing' },
@@ -234,7 +233,10 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             }
 
             let [smoothingResult, smoothingGraphic, smoothingEvaluation]: [any[], any, any] = await handleSmoothing(dataValues as number[], varDefs[0].name, timeValues as string[], varDefs[1].name, parameters, selectedMethod[0]);
-            console.log(slicedData);
+            console.log(smoothingResult);
+            console.log(smoothingGraphic);
+            console.log(smoothingEvaluation);
+            console.log(selectedPeriod[0]);
             // Membuat Log
             const logMsg = `SMOOTHING: ${varDefs[0].label? varDefs[0].label + ' Using' : varDefs[0].name + ' Using'} ${selectedMethod[1]} method with parameters ${parameters.join(", ")}.`;
             const logId = await addLog({ log: logMsg });
@@ -314,7 +316,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
             onClose();
         }
         catch (ex){
-            console.error(ex);
+            // console.error(ex);
             if (ex instanceof Error) {
                 setErrorMsg(ex.message);
             } else {
@@ -326,7 +328,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
 
     const inputParameters = (method: string) => {
         switch (method) {
-            case 'sma': case 'dma': case 'wma':
+            case 'sma': case 'dma':
                 return (
                     <InputRow label="distance" id="par1" value={parameters[0]} min={'2'} max={'11'} step={'1'} onChange={(value) => handleInputChange(0, value)} />
                 );
@@ -370,7 +372,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
 
     useEffect(() => {
         switch (selectedMethod[0]) {
-            case 'sma': case 'dma': case 'wma':
+            case 'sma': case 'dma':
                 setParameters([2]);
                 break;
             case 'ses': case 'des':
@@ -388,7 +390,7 @@ const SmoothingModal: React.FC<SmoothingModalProps> = ({ onClose }) => {
         }
     }, [selectedMethod]);
 
-    console.log(availableVariables);
+    // console.log(availableVariables);
 
     return(
         <DialogContent className="max-w-[75vw] max-h-[90vh] flex flex-col space-y-0 overflow-y-auto">
