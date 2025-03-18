@@ -1,34 +1,28 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { HotTable } from "@handsontable/react";
 import { registerAllModules } from "handsontable/registry";
 import Handsontable from "handsontable";
 import "handsontable/dist/handsontable.full.min.css";
 
-// Component imports
 import { VariableTypeDialog } from "./VariableTypeDialog";
 import { ValueLabelsDialog } from "./ValueLabelsDialog";
 import { MissingValuesDialog } from "./MissingValuesDialog";
 
-// Config imports
 import { colHeaders, columns } from "./tableConfig";
 
-// Store imports
 import { useVariableStore } from "@/stores/useVariableStore";
 import { useDataStore } from "@/stores/useDataStore";
 
-// Type imports
 import { Variable } from "@/types/Variable";
 import { ValueLabel } from "@/types/ValueLabel";
 
-// Constants
 const DEFAULT_MIN_ROWS = 45;
 const DEFAULT_VARIABLE_TYPE = "NUMERIC";
 const DEFAULT_VARIABLE_WIDTH = 8;
 const DEFAULT_VARIABLE_DECIMALS = 2;
 
-// Field mapping for variable properties
 const FIELD_MAPPING = [
     "name",
     "type",
@@ -43,17 +37,12 @@ const FIELD_MAPPING = [
     "role"
 ];
 
-// Column indexes for special handling
 const TYPE_COLUMN_INDEX = 1;
 const VALUES_COLUMN_INDEX = 5;
 const MISSING_COLUMN_INDEX = 6;
 
-// Register all Handsontable modules
 registerAllModules();
 
-/**
- * Converts variables array to a 2D display matrix for HotTable
- */
 function getDisplayVariable(variables: Variable[]): (string | number)[][] {
     const maxColumnIndex = variables.length > 0
         ? Math.max(...variables.map(v => v.columnIndex))
@@ -68,10 +57,7 @@ function getDisplayVariable(variables: Variable[]): (string | number)[][] {
             return ["", "", "", "", "", "", "", "", "", "", ""];
         }
 
-        // Format missing values display
         const missingDisplay = formatMissingValuesDisplay(variable);
-
-        // Format value labels display
         const valuesDisplay = formatValueLabelsDisplay(variable);
 
         return [
@@ -90,15 +76,11 @@ function getDisplayVariable(variables: Variable[]): (string | number)[][] {
     });
 }
 
-/**
- * Formats missing values for display
- */
 function formatMissingValuesDisplay(variable: Variable): string {
     if (!Array.isArray(variable.missing) || variable.missing.length === 0) {
         return "";
     }
 
-    // Check if it's a range (for numeric types)
     if (
         variable.missing.length >= 2 &&
         variable.type !== "STRING" &&
@@ -113,16 +95,12 @@ function formatMissingValuesDisplay(variable: Variable): string {
         return display;
     }
 
-    // Display as comma-separated list
     return variable.missing.map(m => {
         if (m === " ") return "'[Space]'";
         return m;
     }).join(", ");
 }
 
-/**
- * Formats value labels for display
- */
 function formatValueLabelsDisplay(variable: Variable): string {
     if (!Array.isArray(variable.values) || variable.values.length === 0) {
         return "";
@@ -133,56 +111,51 @@ function formatValueLabelsDisplay(variable: Variable): string {
     ).join(", ");
 }
 
-/**
- * VariableTable component for displaying and editing variable metadata
- */
 export default function VariableTable() {
-    // Refs
     const hotTableRef = useRef<any>(null);
-    const isSelectionProgrammatic = useRef(false);
+    const pendingOperations = useRef<Array<{ type: string, payload: any }>>([]);
+    const isProcessing = useRef(false);
 
-    // Store hooks
     const {
         variables,
         updateVariable,
         addVariable,
         deleteVariable,
         selectedVariable,
-        selectVariable
+        selectVariable,
+        getVariableByColumnIndex
     } = useVariableStore();
 
     const {
         addColumn,
         deleteColumn,
-        ensureMatrixDimensions
+        ensureMatrixDimensions,
+        validateVariableData
     } = useDataStore();
 
-    // State
     const [tableData, setTableData] = useState<(string | number)[][]>([]);
     const [showTypeDialog, setShowTypeDialog] = useState(false);
     const [showValuesDialog, setShowValuesDialog] = useState(false);
     const [showMissingDialog, setShowMissingDialog] = useState(false);
     const [selectedCell, setSelectedCell] = useState<{ row: number; col: number } | null>(null);
     const [selectedVariableType, setSelectedVariableType] = useState<string>(DEFAULT_VARIABLE_TYPE);
+    const [selectionSource, setSelectionSource] = useState<'user' | 'program' | null>(null);
 
-    // Update table data when variables change
     useEffect(() => {
         setTableData(getDisplayVariable(variables));
     }, [variables]);
 
-    // Handle selected cell changes
     useEffect(() => {
         if (selectedCell) {
             const variable = variables.find(v => v.columnIndex === selectedCell.row);
             setSelectedVariableType(variable?.type || DEFAULT_VARIABLE_TYPE);
 
-            if (!isSelectionProgrammatic.current) {
+            if (selectionSource !== 'program') {
                 selectVariable(selectedCell.row);
             }
         }
-    }, [selectedCell, variables, selectVariable]);
+    }, [selectedCell, variables, selectVariable, selectionSource]);
 
-    // Synchronize with selected variable from store
     useEffect(() => {
         if (selectedVariable !== null && hotTableRef.current) {
             const hotInstance = hotTableRef.current.hotInstance;
@@ -193,31 +166,110 @@ export default function VariableTable() {
                     currentSelection[0][0] === selectedVariable;
 
                 if (!isAlreadySelected) {
-                    isSelectionProgrammatic.current = true;
+                    setSelectionSource('program');
                     hotInstance.selectCell(selectedVariable, 0);
                     setSelectedCell({ row: selectedVariable, col: 0 });
 
-                    setTimeout(() => {
-                        isSelectionProgrammatic.current = false;
-                    }, 0);
+                    requestAnimationFrame(() => {
+                        setSelectionSource(null);
+                    });
                 }
             }
         }
     }, [selectedVariable]);
 
-    /**
-     * Handles data changes before they're applied to the grid
-     */
-    const handleBeforeChange = (
+    const processPendingOperations = useCallback(async () => {
+        if (isProcessing.current || pendingOperations.current.length === 0) return;
+
+        isProcessing.current = true;
+
+        try {
+            const operation = pendingOperations.current[0];
+
+            switch (operation.type) {
+                case 'CREATE_VARIABLE':
+                    await addVariable(operation.payload.variableData);
+                    await ensureMatrixDimensions(0, operation.payload.row);
+                    break;
+
+                case 'INSERT_VARIABLE':
+                    await addVariable(operation.payload.variableData);
+                    await addColumn(operation.payload.row);
+                    await ensureMatrixDimensions(0, operation.payload.row);
+                    break;
+
+                case 'DELETE_VARIABLE':
+                    await deleteVariable(operation.payload.row);
+                    await deleteColumn(operation.payload.row);
+                    break;
+
+                case 'UPDATE_VARIABLE':
+                    await updateVariable(
+                        operation.payload.row,
+                        operation.payload.field,
+                        operation.payload.value
+                    );
+                    if (operation.payload.needsValidation) {
+                        await validateVariableData(
+                            operation.payload.row,
+                            operation.payload.type,
+                            operation.payload.width
+                        );
+                    }
+                    break;
+
+                case 'UPDATE_VARIABLE_TYPE':
+                    await updateVariable(operation.payload.row, 'type', operation.payload.type);
+                    await updateVariable(operation.payload.row, 'width', operation.payload.width);
+                    await updateVariable(operation.payload.row, 'decimals', operation.payload.decimals);
+                    await validateVariableData(operation.payload.row, operation.payload.type, operation.payload.width);
+                    break;
+
+                case 'UPDATE_VARIABLE_VALUES':
+                    await updateVariable(operation.payload.row, 'values', operation.payload.values);
+                    break;
+
+                case 'UPDATE_VARIABLE_MISSING':
+                    await updateVariable(operation.payload.row, 'missing', operation.payload.missing);
+                    break;
+            }
+
+            pendingOperations.current.shift();
+        } catch (error) {
+            console.error('Error processing operation:', error);
+        } finally {
+            isProcessing.current = false;
+
+            if (pendingOperations.current.length > 0) {
+                processPendingOperations();
+            }
+        }
+    }, [addVariable, deleteVariable, updateVariable, addColumn, deleteColumn, ensureMatrixDimensions, validateVariableData]);
+
+    const handleDialogVisibility = useCallback((row: number, col: number) => {
+        setShowTypeDialog(false);
+        setShowValuesDialog(false);
+        setShowMissingDialog(false);
+
+        requestAnimationFrame(() => {
+            if (col === TYPE_COLUMN_INDEX) {
+                setShowTypeDialog(true);
+            } else if (col === VALUES_COLUMN_INDEX) {
+                setShowValuesDialog(true);
+            } else if (col === MISSING_COLUMN_INDEX) {
+                setShowMissingDialog(true);
+            }
+        });
+    }, []);
+
+    const handleBeforeChange = useCallback((
         changes: (Handsontable.CellChange | null)[],
         source: Handsontable.ChangeSource
     ): void | boolean => {
         if (source === "loadData" || !changes) return;
 
-        const { getVariableByColumnIndex } = useVariableStore.getState();
         const changesByRow: Record<number, Handsontable.CellChange[]> = {};
 
-        // Process changes and check for special column handling
         for (const change of changes) {
             if (!change) continue;
 
@@ -226,127 +278,100 @@ export default function VariableTable() {
 
             const propIndex = Number(prop);
 
-            // Special handling for type, values, and missing columns
-            if (propIndex === TYPE_COLUMN_INDEX) {
+            if (propIndex === TYPE_COLUMN_INDEX ||
+                propIndex === VALUES_COLUMN_INDEX ||
+                propIndex === MISSING_COLUMN_INDEX) {
                 setSelectedCell({ row, col: propIndex });
-                setShowTypeDialog(true);
-                return false;
-            } else if (propIndex === VALUES_COLUMN_INDEX) {
-                setSelectedCell({ row, col: propIndex });
-                setShowValuesDialog(true);
-                return false;
-            } else if (propIndex === MISSING_COLUMN_INDEX) {
-                setSelectedCell({ row, col: propIndex });
-                setShowMissingDialog(true);
+                handleDialogVisibility(row, propIndex);
                 return false;
             }
 
-            // Group changes by row
             if (!changesByRow[row]) changesByRow[row] = [];
             changesByRow[row].push(change);
         }
 
-        // Apply changes by row
         Object.keys(changesByRow).forEach(rowKey => {
             const row = Number(rowKey);
             const rowChanges = changesByRow[row];
-            let variable = getVariableByColumnIndex(row);
+            const variable = getVariableByColumnIndex(row);
 
             if (variable) {
-                // Update existing variable
-                updateExistingVariable(row, rowChanges);
+                let isTypeChanged = false;
+                let isWidthChanged = false;
+                let newType = variable.type;
+                let newWidth = variable.width;
+
+                for (const change of rowChanges) {
+                    if (!change) continue;
+                    const [, prop, oldValue, newValue] = change;
+                    if (newValue === oldValue) continue;
+
+                    const propIndex = Number(prop);
+                    const field = FIELD_MAPPING[propIndex] || prop;
+
+                    if (field === 'type') {
+                        isTypeChanged = true;
+                        newType = newValue as any;
+                    } else if (field === 'width') {
+                        isWidthChanged = true;
+                        newWidth = Number(newValue);
+                    }
+
+                    pendingOperations.current.push({
+                        type: 'UPDATE_VARIABLE',
+                        payload: {
+                            row,
+                            field,
+                            value: newValue,
+                            needsValidation: field === 'type' || field === 'width',
+                            type: newType,
+                            width: newWidth
+                        }
+                    });
+                }
             } else {
-                // Create new variable
-                createNewVariable(row, rowChanges);
+                const variableData: Partial<Variable> = {
+                    columnIndex: row
+                };
+
+                rowChanges.forEach(change => {
+                    if (!change) return;
+                    const [, prop, , newValue] = change;
+                    const field = FIELD_MAPPING[Number(prop)] || prop;
+                    variableData[field as keyof Variable] = newValue as any;
+                });
+
+                pendingOperations.current.push({
+                    type: 'CREATE_VARIABLE',
+                    payload: { row, variableData }
+                });
             }
         });
-    };
 
-    /**
-     * Updates an existing variable with changes
-     */
-    const updateExistingVariable = async (row: number, changes: Handsontable.CellChange[]) => {
-        const variable = useVariableStore.getState().getVariableByColumnIndex(row);
-        if (!variable) return;
+        processPendingOperations();
+        return true;
+    }, [getVariableByColumnIndex, handleDialogVisibility, processPendingOperations]);
 
-        let isTypeChanged = false;
-        let isWidthChanged = false;
-        let newType = variable.type;
-        let newWidth = variable.width;
-
-        for (const change of changes) {
-            if (!change) continue;
-            const [, prop, oldValue, newValue] = change;
-            if (newValue === oldValue) continue;
-
-            const propIndex = Number(prop);
-            const field = FIELD_MAPPING[propIndex] || prop;
-
-            if (field === 'type') {
-                isTypeChanged = true;
-                newType = newValue as any;
-            } else if (field === 'width') {
-                isWidthChanged = true;
-                newWidth = Number(newValue);
-            }
-
-            updateVariable(row, field as keyof Variable, newValue);
-        }
-
-        if (isTypeChanged || isWidthChanged) {
-            await useDataStore.getState().validateVariableData(row, newType, newWidth);
-        }
-    };
-
-    /**
-     * Creates a new variable with initial data
-     */
-    const createNewVariable = (row: number, changes: Handsontable.CellChange[]) => {
-        const variableData: Partial<Variable> = {
-            columnIndex: row
-        };
-
-        changes.forEach(change => {
-            if (!change) return;
-            const [, prop, , newValue] = change;
-            const field = FIELD_MAPPING[Number(prop)] || prop;
-            variableData[field as keyof Variable] = newValue as any;
-        });
-
-        addVariable(variableData).then(() => {
-            ensureMatrixDimensions(-1, row);
-        });
-    };
-
-    /**
-     * Handles selection events
-     */
-    const handleAfterSelectionEnd = (
+    const handleAfterSelectionEnd = useCallback((
         row: number,
         column: number,
         row2: number,
         column2: number,
         selectionLayerLevel: number
     ) => {
-        if (!isSelectionProgrammatic.current) {
+        if (selectionSource !== 'program') {
             setSelectedCell({ row, col: column });
             selectVariable(row);
-        }
 
-        // Open appropriate dialog based on column
-        if (column === TYPE_COLUMN_INDEX) {
-            setShowTypeDialog(true);
-        } else if (column === VALUES_COLUMN_INDEX) {
-            setShowValuesDialog(true);
-        } else if (column === MISSING_COLUMN_INDEX) {
-            setShowMissingDialog(true);
+            if (column === TYPE_COLUMN_INDEX ||
+                column === VALUES_COLUMN_INDEX ||
+                column === MISSING_COLUMN_INDEX) {
+                handleDialogVisibility(row, column);
+            }
         }
-    };
+    }, [selectionSource, selectVariable, handleDialogVisibility]);
 
-    /**
-     * Inserts a new variable at the selected position
-     */
-    const handleInsertVariable = () => {
+    const handleInsertVariable = useCallback(() => {
         if (!selectedCell) return;
 
         const { row } = selectedCell;
@@ -355,129 +380,75 @@ export default function VariableTable() {
             name: `var${row + 1}`
         };
 
-        addVariable(newVariable)
-            .then(() => {
-                addColumn(row);
-                ensureMatrixDimensions(0, row);
-            })
-            .catch(err => {
-                console.error("Error inserting variable:", err);
-            });
-    };
-
-    /**
-     * Deletes the selected variable
-     */
-    const handleDeleteVariable = () => {
-        if (!selectedCell) return;
-
-        const { row } = selectedCell;
-        deleteVariable(row).then(() => {
-            deleteColumn(row);
+        pendingOperations.current.push({
+            type: 'INSERT_VARIABLE',
+            payload: { row, variableData: newVariable }
         });
-    };
+        processPendingOperations();
+    }, [selectedCell, processPendingOperations]);
 
-    /**
-     * Updates variable type properties
-     */
-    const handleTypeSelection = async (type: string, width: number, decimals: number) => {
+    const handleDeleteVariable = useCallback(() => {
         if (!selectedCell) return;
 
         const { row } = selectedCell;
-        const variable = useVariableStore.getState().getVariableByColumnIndex(row);
+        pendingOperations.current.push({
+            type: 'DELETE_VARIABLE',
+            payload: { row }
+        });
+        processPendingOperations();
+    }, [selectedCell, processPendingOperations]);
 
-        if (variable) {
-            updateVariable(row, 'type', type as any);
-            updateVariable(row, 'width', width);
-            updateVariable(row, 'decimals', decimals);
-            await useDataStore.getState().validateVariableData(row, type, width);
-        } else {
-            addVariable({
-                columnIndex: row,
-                type: type as any,
-                width,
-                decimals
-            }).then(() => {
-                ensureMatrixDimensions(0, row);
-            });
-        }
-    };
-
-    /**
-     * Updates variable value labels
-     */
-    const handleValuesSelection = (values: ValueLabel[]) => {
+    const handleTypeSelection = useCallback((type: string, width: number, decimals: number) => {
         if (!selectedCell) return;
 
         const { row } = selectedCell;
-        const variable = useVariableStore.getState().getVariableByColumnIndex(row);
+        pendingOperations.current.push({
+            type: 'UPDATE_VARIABLE_TYPE',
+            payload: { row, type, width, decimals }
+        });
+        processPendingOperations();
+    }, [selectedCell, processPendingOperations]);
 
-        if (variable) {
-            updateVariable(row, 'values', values);
-        } else {
-            addVariable({
-                columnIndex: row,
-                values
-            }).then(() => {
-                ensureMatrixDimensions(0, row);
-            });
-        }
-    };
-
-    /**
-     * Updates variable missing values
-     */
-    const handleMissingSelection = (missing: (number | string)[]) => {
+    const handleValuesSelection = useCallback((values: ValueLabel[]) => {
         if (!selectedCell) return;
 
         const { row } = selectedCell;
-        const variable = useVariableStore.getState().getVariableByColumnIndex(row);
+        pendingOperations.current.push({
+            type: 'UPDATE_VARIABLE_VALUES',
+            payload: { row, values }
+        });
+        processPendingOperations();
+    }, [selectedCell, processPendingOperations]);
 
-        if (variable) {
-            updateVariable(row, 'missing', missing);
-        } else {
-            addVariable({
-                columnIndex: row,
-                missing
-            }).then(() => {
-                ensureMatrixDimensions(0, row);
-            });
-        }
-    };
+    const handleMissingSelection = useCallback((missing: (number | string)[]) => {
+        if (!selectedCell) return;
 
-    /**
-     * Gets the name of the currently selected variable
-     */
-    const getSelectedVariableName = (): string => {
+        const { row } = selectedCell;
+        pendingOperations.current.push({
+            type: 'UPDATE_VARIABLE_MISSING',
+            payload: { row, missing }
+        });
+        processPendingOperations();
+    }, [selectedCell, processPendingOperations]);
+
+    const getSelectedVariableName = useCallback((): string => {
         if (!selectedCell) return "";
-
         const variable = variables.find(v => v.columnIndex === selectedCell.row);
         return variable?.name || `var${selectedCell.row + 1}`;
-    };
+    }, [selectedCell, variables]);
 
-    /**
-     * Gets the value labels of the currently selected variable
-     */
-    const getSelectedVariableValues = (): ValueLabel[] => {
+    const getSelectedVariableValues = useCallback((): ValueLabel[] => {
         if (!selectedCell) return [];
-
         const variable = variables.find(v => v.columnIndex === selectedCell.row);
         return variable?.values || [];
-    };
+    }, [selectedCell, variables]);
 
-    /**
-     * Gets the missing values of the currently selected variable
-     */
-    const getSelectedVariableMissing = (): (number | string)[] => {
+    const getSelectedVariableMissing = useCallback((): (number | string)[] => {
         if (!selectedCell) return [];
-
         const variable = variables.find(v => v.columnIndex === selectedCell.row);
         return variable?.missing || [];
-    };
+    }, [selectedCell, variables]);
 
-    /**
-     * Context menu configuration
-     */
     const customContextMenu = {
         items: {
             insert_variable: {
@@ -491,10 +462,7 @@ export default function VariableTable() {
         }
     };
 
-    /**
-     * Cell properties customization
-     */
-    const getCellProperties = (row: number, col: number) => {
+    const getCellProperties = useCallback((row: number, col: number) => {
         const cellProperties: any = {};
 
         if (col === TYPE_COLUMN_INDEX) {
@@ -506,23 +474,17 @@ export default function VariableTable() {
         }
 
         return cellProperties;
-    };
+    }, []);
 
-    /**
-     * Handles key down events for custom keyboard navigation
-     */
-    const handleBeforeKeyDown = (event: KeyboardEvent) => {
+    const handleBeforeKeyDown = useCallback((event: KeyboardEvent) => {
         if (event.shiftKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
             event.stopImmediatePropagation();
             event.preventDefault();
             return false;
         }
-    };
+    }, []);
 
-    /**
-     * Handles range end for custom selection behavior
-     */
-    const handleBeforeSetRangeEnd = (coords: any) => {
+    const handleBeforeSetRangeEnd = useCallback((coords: any) => {
         const hotInstance = hotTableRef.current?.hotInstance;
         if (!hotInstance) return coords;
 
@@ -535,7 +497,7 @@ export default function VariableTable() {
         }
 
         return coords;
-    };
+    }, []);
 
     return (
         <div className="h-full w-full relative">

@@ -1,28 +1,22 @@
 "use client";
 
-import React, { useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import { HotTable } from '@handsontable/react';
 import { registerAllModules } from 'handsontable/registry';
 import 'handsontable/dist/handsontable.full.min.css';
 import Handsontable from 'handsontable';
 import { ContextMenu } from 'handsontable/plugins/contextMenu';
 
-// Internal imports
 import { useDataStore } from '@/stores/useDataStore';
 import { useVariableStore } from '@/stores/useVariableStore';
 import { Variable } from '@/types/Variable';
 
-// Constants
 const DEFAULT_ROWS = 100;
 const DEFAULT_MIN_COLUMNS = 45;
 const DEFAULT_COLUMN_WIDTH = 64;
 
-// Register all Handsontable modules
 registerAllModules();
 
-/**
- * Creates column configuration based on variable type and properties
- */
 const getColumnConfig = (variable: Variable) => {
     const baseConfig = {
         width: variable.columns || DEFAULT_COLUMN_WIDTH,
@@ -42,9 +36,8 @@ const getColumnConfig = (variable: Variable) => {
                     pattern: `0,0.${'0'.repeat(variable.decimals || 0)}`,
                     culture: 'en-US'
                 },
-                allowInvalid: false, // Reject invalid values
+                allowInvalid: false,
                 validator: (value: any, callback: (valid: boolean) => void) => {
-                    // Accept empty string or valid numbers
                     const valid = value === '' ||
                         (typeof value === 'number' && !isNaN(value)) ||
                         (typeof value === 'string' && !isNaN(Number(value)));
@@ -56,15 +49,14 @@ const getColumnConfig = (variable: Variable) => {
                 ...baseConfig,
                 type: 'date',
                 dateFormat: 'MM/DD/YYYY',
-                allowInvalid: false, // Reject invalid dates
-                validator: 'date' // Use built-in date validator
+                allowInvalid: false,
+                validator: 'date'
             };
         case 'STRING':
         default:
             return {
                 ...baseConfig,
                 type: 'text',
-                // Optional: validate string length if variable has width constraint
                 ...(variable.width && {
                     validator: (value: any, callback: (valid: boolean) => void) => {
                         callback(value === '' || String(value).length <= variable.width!);
@@ -75,9 +67,6 @@ const getColumnConfig = (variable: Variable) => {
     }
 };
 
-/**
- * Creates a display matrix with proper dimensions based on data and variable count
- */
 const getDisplayMatrix = (
     stateData: (string | number)[][],
     varCount: number
@@ -101,15 +90,12 @@ const getDisplayMatrix = (
     });
 };
 
-/**
- * DataTable component that displays and manages tabular data with Handsontable
- */
 export default function DataTable() {
-    // Refs
     const hotTableRef = useRef<any>(null);
-    const isSelectionProgrammatic = useRef<boolean>(false);
+    const pendingOperations = useRef<Array<{ type: string, payload: any }>>([]);
+    const isProcessing = useRef(false);
+    const [selectionSource, setSelectionSource] = useState<'user' | 'program' | null>(null);
 
-    // Store hooks
     const {
         data,
         updateCell,
@@ -132,27 +118,23 @@ export default function DataTable() {
         addMultipleVariables
     } = useVariableStore();
 
-    // Grid dimensions calculation
     const stateCols = data[0]?.length || 0;
     const variableCount = variables.length > 0
         ? Math.max(...variables.map(v => v.columnIndex)) + 1
         : 0;
     const numColumns = Math.max(stateCols, variableCount, DEFAULT_MIN_COLUMNS - 1) + 1;
 
-    // Column headers generation
     const colHeaders = useMemo(() => {
         return Array.from({ length: numColumns }, (_, index) => {
             const variable = getVariableByColumnIndex(index);
-            return variable?.name || 'var';
+            return variable?.name || `var`;
         });
-    }, [getVariableByColumnIndex, numColumns]);
+    }, [getVariableByColumnIndex, numColumns, variables]);
 
-    // Data matrix generation
     const displayMatrix = useMemo(() =>
             getDisplayMatrix(data, variableCount),
         [data, variableCount]);
 
-    // Column configuration generation
     const columns = useMemo(() => {
         return Array.from({ length: numColumns }, (_, i) => {
             const variable = getVariableByColumnIndex(i);
@@ -166,7 +148,6 @@ export default function DataTable() {
         });
     }, [getVariableByColumnIndex, numColumns]);
 
-    // Fungsi helper untuk memproses cell updates
     const processCellUpdates = useCallback((data: {
         changesByCol: Record<number, Handsontable.CellChange[]>,
         highestColumn: number,
@@ -174,14 +155,12 @@ export default function DataTable() {
     }) => {
         const { changesByCol, highestColumn, maxRow } = data;
 
-        // Ensure matrix has appropriate dimensions
         const highestVarIndex = variables.length > 0
             ? Math.max(...variables.map(v => v.columnIndex))
             : -1;
 
         ensureMatrixDimensions(maxRow, Math.max(highestColumn, highestVarIndex));
 
-        // Process cell updates
         const cellUpdates = [];
 
         for (const colKey of Object.keys(changesByCol)) {
@@ -214,7 +193,6 @@ export default function DataTable() {
             }
         }
 
-        // Batch update cells
         if (cellUpdates.length > 0) {
             updateBulkCells(cellUpdates).catch(error => {
                 console.error('Failed to update cells:', error);
@@ -227,16 +205,40 @@ export default function DataTable() {
         updateBulkCells,
     ]);
 
-    /**
-     * Handles data changes before they're applied to the grid
-     */
+    const processPendingOperations = useCallback(async () => {
+        if (isProcessing.current || pendingOperations.current.length === 0) return;
+
+        isProcessing.current = true;
+
+        try {
+            const operation = pendingOperations.current[0];
+
+            if (operation.type === 'CREATE_VARIABLES_AND_UPDATE') {
+                const { newVariables, pendingChanges } = operation.payload;
+                await addMultipleVariables(newVariables);
+                await processCellUpdates(pendingChanges);
+            } else if (operation.type === 'UPDATE_CELLS') {
+                await processCellUpdates(operation.payload);
+            }
+
+            pendingOperations.current.shift();
+        } catch (error) {
+            console.error('Error processing operation:', error);
+        } finally {
+            isProcessing.current = false;
+
+            if (pendingOperations.current.length > 0) {
+                processPendingOperations();
+            }
+        }
+    }, [addMultipleVariables, processCellUpdates]);
+
     const handleBeforeChange = useCallback((
         changes: (Handsontable.CellChange | null)[],
         source: Handsontable.ChangeSource
     ): boolean | void => {
         if (source === 'loadData' || !changes) return true;
 
-        // Filter out invalid changes based on cell type
         for (let i = changes.length - 1; i >= 0; i--) {
             const change = changes[i];
             if (!change) continue;
@@ -247,10 +249,7 @@ export default function DataTable() {
             const variable = getVariableByColumnIndex(col);
             if (!variable) continue;
 
-            // Additional validation check
             if (variable.type === 'NUMERIC' && newValue !== '' && isNaN(Number(newValue))) {
-                // Remove this change - the validator will also catch this,
-                // but we're doing double verification
                 changes.splice(i, 1);
             }
         }
@@ -259,7 +258,6 @@ export default function DataTable() {
         let highestColumn = -1;
         let maxRow = -1;
 
-        // Group changes by column and find max dimensions
         changes.forEach((change) => {
             if (!change) return;
 
@@ -277,10 +275,8 @@ export default function DataTable() {
             changesByCol[colNumber].push(change);
         });
 
-        // Simpan perubahan untuk diproses nanti
         const pendingChanges = { changesByCol, highestColumn, maxRow };
 
-        // Check for columns without variables
         const missingColumns: number[] = [];
         for (let i = 0; i <= highestColumn; i++) {
             if (!getVariableByColumnIndex(i)) {
@@ -288,7 +284,6 @@ export default function DataTable() {
             }
         }
 
-        // Create missing variables first, then process cell updates separately
         if (missingColumns.length > 0) {
             const newVariables = missingColumns.map(colIndex => {
                 const hasChanges = changesByCol[colIndex] && changesByCol[colIndex].length > 0;
@@ -309,30 +304,25 @@ export default function DataTable() {
                 };
             });
 
-            // Create variables and then process updates when done
-            addMultipleVariables(newVariables)
-                .then(() => {
-                    // Process updates after variables are created
-                    processCellUpdates(pendingChanges);
-                })
-                .catch(error => {
-                    console.error('Failed to create variables:', error);
-                });
+            pendingOperations.current.push({
+                type: 'CREATE_VARIABLES_AND_UPDATE',
+                payload: { newVariables, pendingChanges }
+            });
+            processPendingOperations();
 
-            // Return true to allow the UI update but we'll handle persistence separately
             return true;
         } else {
-            // Process immediately if no new variables needed
-            processCellUpdates(pendingChanges);
+            pendingOperations.current.push({
+                type: 'UPDATE_CELLS',
+                payload: pendingChanges
+            });
+            processPendingOperations();
+
             return true;
         }
-    }, [getVariableByColumnIndex, addMultipleVariables, processCellUpdates]);
+    }, [getVariableByColumnIndex, processPendingOperations]);
 
-    /**
-     * Custom validator function that can be registered globally
-     */
     useEffect(() => {
-        // Register custom validator if needed
         if (Handsontable.validators && typeof Handsontable.validators.registerValidator === 'function') {
             Handsontable.validators.registerValidator('custom.numeric', (value: any, callback: (valid: boolean) => void) => {
                 const valid = value === '' ||
@@ -341,33 +331,20 @@ export default function DataTable() {
                 callback(valid);
             });
         }
-
-        return () => {
-            // Clean up if needed
-        };
     }, []);
 
-    /**
-     * Handles selection events
-     */
     const handleAfterSelectionEnd = useCallback((row: number, column: number) => {
-        if (!isSelectionProgrammatic.current) {
+        if (selectionSource !== 'program') {
             selectCell(row, column);
         }
-    }, [selectCell]);
+    }, [selectCell, selectionSource]);
 
-    /**
-     * Handles row creation
-     */
     const handleAfterCreateRow = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             addRow(index + i);
         }
     }, [addRow]);
 
-    /**
-     * Handles column creation
-     */
     const handleAfterCreateCol = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             const insertIndex = index + i;
@@ -378,18 +355,12 @@ export default function DataTable() {
         }
     }, [addColumn, addVariable]);
 
-    /**
-     * Handles row deletion
-     */
     const handleAfterRemoveRow = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             deleteRow(index);
         }
     }, [deleteRow]);
 
-    /**
-     * Handles column deletion
-     */
     const handleAfterRemoveCol = useCallback((index: number, amount: number) => {
         for (let i = 0; i < amount; i++) {
             deleteColumn(index);
@@ -397,9 +368,6 @@ export default function DataTable() {
         }
     }, [deleteColumn, deleteVariable]);
 
-    /**
-     * Handles column resizing
-     */
     const handleAfterColumnResize = useCallback((newSize: number, column: number) => {
         const variable = getVariableByColumnIndex(column);
         if (variable) {
@@ -407,9 +375,6 @@ export default function DataTable() {
         }
     }, [getVariableByColumnIndex, updateVariable]);
 
-    /**
-     * Handles applying alignment to the selected columns
-     */
     const applyAlignment = useCallback((alignment: 'left' | 'center' | 'right') => {
         const hotInstance = hotTableRef.current?.hotInstance;
         const selectedRange = hotInstance?.getSelectedRange();
@@ -426,17 +391,12 @@ export default function DataTable() {
         }
     }, [getVariableByColumnIndex, updateVariable]);
 
-    /**
-     * Handles afterValidate event to log validation errors or update UI accordingly
-     */
     const handleAfterValidate = useCallback((isValid: boolean, value: any, row: number, prop: string | number) => {
-        // You can handle validation results here if needed
         if (!isValid) {
             console.log(`Validation failed at row: ${row}, column: ${prop}, value: ${value}`);
         }
     }, []);
 
-    // Context menu configuration
     const contextMenuConfig = useMemo(() => {
         return {
             items: {
@@ -483,7 +443,6 @@ export default function DataTable() {
         };
     }, [applyAlignment]);
 
-    // Effect to handle selected cell changes
     useEffect(() => {
         if (hotTableRef.current && selectedCell && hotTableRef.current.hotInstance) {
             const { row, col } = selectedCell;
@@ -496,16 +455,24 @@ export default function DataTable() {
                 currentSelection[0][1] === col;
 
             if (!alreadySelected) {
-                isSelectionProgrammatic.current = true;
+                setSelectionSource('program');
                 hotInstance.selectCell(row, col);
 
-                // Reset flag after selection is complete
-                setTimeout(() => {
-                    isSelectionProgrammatic.current = false;
-                }, 0);
+                requestAnimationFrame(() => {
+                    setSelectionSource(null);
+                });
             }
         }
     }, [selectedCell]);
+
+    useEffect(() => {
+        const hotInstance = hotTableRef.current?.hotInstance;
+        if (hotInstance) {
+            hotInstance.updateSettings({
+                colHeaders: colHeaders
+            }, false);
+        }
+    }, [colHeaders]);
 
     return (
         <div className="h-full w-full z-0 relative">
@@ -536,8 +503,8 @@ export default function DataTable() {
                 afterRemoveCol={handleAfterRemoveCol}
                 afterColumnResize={handleAfterColumnResize}
                 afterValidate={handleAfterValidate}
-                invalidCellClassName="htInvalid" // Add custom class for invalid cells
-                allowInvalid={false} // Global setting - can be overridden by individual column settings
+                invalidCellClassName="htInvalid"
+                allowInvalid={false}
             />
         </div>
     );

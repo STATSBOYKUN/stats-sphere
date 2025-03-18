@@ -61,22 +61,26 @@ export const useDataStore = create<DataStoreState>()(
 
             ensureMatrixDimensions: (maxRow, maxCol, minColCount) => {
                 set((state) => {
-                    // Ensure minColCount is used if provided
-                    const effectiveMaxCol = minColCount !== undefined ? Math.max(maxCol, minColCount - 1) : maxCol;
+                    const effectiveMaxCol = minColCount !== undefined ?
+                        Math.max(maxCol, minColCount - 1) : maxCol;
 
-                    if (state.data.length === 0 && (maxRow >= 0 || effectiveMaxCol >= 0)) {
-                        const colsCount = effectiveMaxCol + 1;
-                        const rowsCount = maxRow + 1;
+                    if (state.data.length === 0) {
+                        if (maxRow >= 0 || effectiveMaxCol >= 0) {
+                            const rowsCount = maxRow + 1;
+                            const colsCount = effectiveMaxCol + 1;
 
-                        state.data = Array(rowsCount).fill(0).map(() => Array(colsCount).fill(""));
-                        state.lastUpdated = new Date();
+                            state.data = Array.from({ length: rowsCount },
+                                () => Array(colsCount).fill(""));
+                            state.lastUpdated = new Date();
+                        }
                         return;
                     }
 
                     if (maxRow >= state.data.length) {
-                        const colsCount = state.data.length > 0
-                            ? Math.max(state.data[0].length, effectiveMaxCol + 1)
-                            : effectiveMaxCol + 1;
+                        const colsCount = Math.max(
+                            state.data[0].length,
+                            effectiveMaxCol + 1
+                        );
 
                         for (let i = state.data.length; i <= maxRow; i++) {
                             state.data.push(Array(colsCount).fill(""));
@@ -84,9 +88,12 @@ export const useDataStore = create<DataStoreState>()(
                     }
 
                     if (state.data.length > 0 && effectiveMaxCol >= state.data[0].length) {
-                        for (let i = 0; i < state.data.length; i++) {
-                            const additionalCols = Array(effectiveMaxCol + 1 - state.data[i].length).fill("");
-                            state.data[i].push(...additionalCols);
+                        const additionalColsCount = effectiveMaxCol + 1 - state.data[0].length;
+
+                        if (additionalColsCount > 0) {
+                            for (let i = 0; i < state.data.length; i++) {
+                                state.data[i].push(...Array(additionalColsCount).fill(""));
+                            }
                         }
                     }
 

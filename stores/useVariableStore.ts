@@ -220,7 +220,7 @@ export const useVariableStore = create<VariableStoreState>()(
 
                         set((draft) => {
                             if (variableIndex !== -1) {
-                                draft.variables[variableIndex] = variableToUpdate!;
+                                draft.variables[variableIndex] = {...variableToUpdate!};
                             }
                             draft.lastUpdated = new Date();
                         });
@@ -265,31 +265,27 @@ export const useVariableStore = create<VariableStoreState>()(
                             }
                         }
 
-                        for (let i = 0; i < existingVariables.length; i++) {
-                            if (existingVariables[i].columnIndex >= targetIndex) {
-                                const updatedVariable = {
-                                    ...existingVariables[i],
-                                    columnIndex: existingVariables[i].columnIndex + 1
+                        const updatedExistingVariables = existingVariables.map(variable => {
+                            if (variable.columnIndex >= targetIndex) {
+                                return {
+                                    ...variable,
+                                    columnIndex: variable.columnIndex + 1
                                 };
+                            }
+                            return variable;
+                        });
 
-                                await db.variables.put(updatedVariable);
+                        for (const variable of updatedExistingVariables) {
+                            if (variable.columnIndex >= targetIndex) {
+                                await db.variables.put(variable);
                             }
                         }
 
                         const id = await db.variables.add(newVariable);
 
                         set((draft) => {
-                            for (let i = 0; i < draft.variables.length; i++) {
-                                if (draft.variables[i].columnIndex >= targetIndex) {
-                                    draft.variables[i] = {
-                                        ...draft.variables[i],
-                                        columnIndex: draft.variables[i].columnIndex + 1
-                                    };
-                                }
-                            }
-
-                            draft.variables.push({...newVariable, id});
-                            draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
+                            draft.variables = [...updatedExistingVariables, {...newVariable, id}]
+                                .sort((a, b) => a.columnIndex - b.columnIndex);
                             draft.lastUpdated = new Date();
                         });
 
@@ -352,29 +348,32 @@ export const useVariableStore = create<VariableStoreState>()(
                         const columnIndices = newVariables.map(v => v.columnIndex).sort((a, b) => a - b);
                         const lowestNewIndex = columnIndices[0];
 
-                        for (let i = 0; i < existingVariables.length; i++) {
-                            if (existingVariables[i].columnIndex >= lowestNewIndex) {
-                                existingVariables[i].columnIndex += newVariables.length;
-                                await db.variables.put(existingVariables[i]);
+                        const updatedExistingVariables = existingVariables.map(variable => {
+                            if (variable.columnIndex >= lowestNewIndex) {
+                                return {
+                                    ...variable,
+                                    columnIndex: variable.columnIndex + newVariables.length
+                                };
+                            }
+                            return variable;
+                        });
+
+                        for (const variable of updatedExistingVariables) {
+                            if (variable.columnIndex >= lowestNewIndex) {
+                                await db.variables.put(variable);
                             }
                         }
 
                         const ids = await db.variables.bulkAdd(newVariables, { allKeys: true });
 
                         set((draft) => {
-                            for (let i = 0; i < draft.variables.length; i++) {
-                                if (draft.variables[i].columnIndex >= lowestNewIndex) {
-                                    draft.variables[i].columnIndex += newVariables.length;
-                                }
-                            }
-
                             const variablesWithIds = newVariables.map((v, i) => ({
                                 ...v,
                                 id: ids[i]
                             }));
 
-                            draft.variables.push(...variablesWithIds);
-                            draft.variables.sort((a, b) => a.columnIndex - b.columnIndex);
+                            draft.variables = [...updatedExistingVariables, ...variablesWithIds]
+                                .sort((a, b) => a.columnIndex - b.columnIndex);
                             draft.lastUpdated = new Date();
                         });
 
@@ -419,7 +418,7 @@ export const useVariableStore = create<VariableStoreState>()(
                         const sortedVariables = variablesFromDb.sort((a, b) => a.columnIndex - b.columnIndex);
 
                         set((draft) => {
-                            draft.variables = sortedVariables;
+                            draft.variables = sortedVariables.map(variable => ({...variable}));
                             draft.lastUpdated = new Date();
                             draft.isLoading = false;
                         });
@@ -470,12 +469,17 @@ export const useVariableStore = create<VariableStoreState>()(
 
                         await db.variables.delete(variableToDelete.id!);
 
-                        await db.variables
+                        const variablesToUpdate = await db.variables
                             .where('columnIndex')
                             .above(columnIndex)
-                            .modify(variable => {
-                                variable.columnIndex--;
+                            .toArray();
+
+                        for (const variable of variablesToUpdate) {
+                            await db.variables.put({
+                                ...variable,
+                                columnIndex: variable.columnIndex - 1
                             });
+                        }
 
                         set((draft) => {
                             const variableIndex = draft.variables.findIndex(v => v.columnIndex === columnIndex);
@@ -485,7 +489,10 @@ export const useVariableStore = create<VariableStoreState>()(
 
                                 for (let i = 0; i < draft.variables.length; i++) {
                                     if (draft.variables[i].columnIndex > columnIndex) {
-                                        draft.variables[i].columnIndex -= 1;
+                                        draft.variables[i] = {
+                                            ...draft.variables[i],
+                                            columnIndex: draft.variables[i].columnIndex - 1
+                                        };
                                     }
                                 }
 
@@ -521,12 +528,18 @@ export const useVariableStore = create<VariableStoreState>()(
             overwriteVariables: async (newVariables) => {
                 try {
                     await db.transaction('rw', db.variables, async () => {
-                        const normalizedVariables = [...newVariables].sort((a, b) => a.columnIndex - b.columnIndex);
+                        const normalizedVariables = [...newVariables]
+                            .map((variable, index) => ({
+                                ...variable,
+                                columnIndex: index
+                            }))
+                            .sort((a, b) => a.columnIndex - b.columnIndex);
+
                         await db.variables.clear();
                         await db.variables.bulkPut(normalizedVariables);
 
                         set((draft) => {
-                            draft.variables = normalizedVariables;
+                            draft.variables = normalizedVariables.map(variable => ({...variable}));
                             draft.lastUpdated = new Date();
                         });
 

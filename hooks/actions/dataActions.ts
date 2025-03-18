@@ -1,6 +1,7 @@
 // hooks/dataActions.ts
 import { useDataStore } from "@/stores/useDataStore";
 import { useVariableStore } from "@/stores/useVariableStore";
+import { useResultStore } from "@/stores/useResultStore";
 
 export type DataActionType =
     | "InsertVariable"
@@ -18,6 +19,7 @@ export const useDataActions = () => {
             case "New":
                 useDataStore.getState().resetData();
                 useVariableStore.getState().resetVariables();
+                useResultStore.getState().clearAll();
                 break;
             case "InsertVariable":
             case "InsertCases":
