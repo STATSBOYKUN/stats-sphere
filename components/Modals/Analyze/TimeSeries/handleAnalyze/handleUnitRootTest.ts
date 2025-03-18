@@ -44,7 +44,7 @@ export async function handleUnitRootTest(
         let standard_error = Array.from(await unitroot.get_se_vec());
         let coef_pvalue = Array.from(await unitroot.get_p_value_vec());
         let coef_statistic = Array.from(await unitroot.get_test_stat_vec());
-        let r_square = Array.from(await unitroot.get_r_square());
+        let sel_crit = Array.from(await unitroot.get_sel_crit());
 
         let t: number[] = [];
         let difference: number[] = [];
@@ -122,19 +122,42 @@ export async function handleUnitRootTest(
             }]
         });
 
-        let fitJSON = JSON.stringify({
+        let sel_critName = equation ===  `no_constant` ? 
+        [
+            `R-Squared`, `Adj. R-Squared`, `S.E. of Regression`,`Sum Squared Resid`,
+            `Log Likelihood`, `Mean Dependent Var`, `S.D. Dependent Var`,
+            `Akaike Info Crit`, `Schwarz Criterion`, `Hannan-Quinn`, `Durbin-Watson`
+        ]
+        :
+        [
+            `R-Squared`, `Adj. R-Squared`, `S.E. of Regression`,`Sum Squared Resid`,
+            `Log Likelihood`, `F-Statistic`, `Prob(F-Stat)`, `Mean Dependent Var`, `S.D. Dependent Var`,
+            `Akaike Info Crit`, `Schwarz Criterion`, `Hannan-Quinn`, `Durbin-Watson`
+        ];
+        let sel_critStruct: Record<string, any> = {}; // Menggunakan objek kosong
+        // Mengecek panjang seluruh data apakah sama
+        if (sel_critName.length === sel_crit.length) {
+            for (let i = 0; i < sel_crit.length; i++) {
+                sel_critStruct[i] = { // Gunakan i sebagai key dalam objek
+                    sel_critName: sel_critName[i],
+                    sel_critValue: sel_crit[i],
+                };
+            }
+        } else {
+            throw new Error("Data length is not equal");
+        }
+        let sel_critJSON = JSON.stringify({
             tables: [{
-                title: "Fit Regression",
-                columnHeaders: [{header: ""}, {header: "R-Square"}, {header: "R-Square Adj"}],
-                rows: [{
-                    "rowHeader": [`model ${equation} ${lag === 0 ? "without lag" : "with " + lag + " lags"}`],
-                    "R-Square": `${r_square[0].toFixed(3)}`,
-                    "R-Square Adj": `${r_square[1].toFixed(3)}`,
-                }],
+                title: "Selection Criterion",
+                columnHeaders: [{header: ""}, {header: "value"}],
+                rows: Object.entries(sel_critStruct).map(([key, value]) => ({
+                    "rowHeader": [value.sel_critName],
+                    "value": value.sel_critValue.toFixed(3),
+                })),
             }]
         });
         
-        return [[...critical_value, adf_statistic, ...coeficient, ...standard_error, adf_pvalue], adfJSON, coefJSON, fitJSON, methodName];
+        return [[...critical_value, adf_statistic, ...coeficient, ...standard_error, adf_pvalue], adfJSON, coefJSON, sel_critJSON, methodName];
     } catch (error) {
         let errorMessage = error as Error;
         return [[0],"" , "", JSON.stringify({ error: errorMessage.message }), ""];

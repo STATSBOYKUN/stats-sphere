@@ -6,7 +6,7 @@ use crate::{first_difference, second_difference};
 #[wasm_bindgen]
 impl AugmentedDickeyFuller {
     pub fn calculate_pvalue(&self) -> f64 {
-        let p_value = calculate_p_value(self.get_test_stat(), 1 + self.get_lag(), &self.get_equation());
+        let p_value = calculate_p_value(self.get_test_stat(), 1, &self.get_equation());
         p_value
     }
 
@@ -58,7 +58,7 @@ impl AugmentedDickeyFuller {
         if lag_values[0].len() as usize != x.len() as usize {
             return lag_values[0].len() as f64 / x.len() as f64;
         }
-        let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec,r_square) = match self.get_equation().as_str() {
+        let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec,sel_crit) = match self.get_equation().as_str() {
             "no_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
                 x_matriks.push(x.clone());
@@ -71,8 +71,14 @@ impl AugmentedDickeyFuller {
                 let se = reg.calculate_standard_error();
                 let test_stat = reg.calculate_t_stat();
                 let p_value = reg.calculate_pvalue();
-                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
-                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, r_square)
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_f_stat(),
+                    reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
+                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, sel_crit)
             },
             "with_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
@@ -87,8 +93,14 @@ impl AugmentedDickeyFuller {
                 let se = reg.calculate_standard_error();
                 let test_stat = reg.calculate_t_stat();
                 let p_value = reg.calculate_pvalue();
-                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
-                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, r_square)
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_f_stat(),
+                    reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
+                (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, sel_crit)
             }
             _ => {(0.0, 0.0, vec![0.0], vec![0.0], vec![0.0], vec![0.0], vec![0.0, 0.0])}
         };
@@ -100,7 +112,7 @@ impl AugmentedDickeyFuller {
         self.set_se_vec(se_vec);
         self.set_test_stat_vec(stat_test_vec);
         self.set_p_value_vec(p_value_vec);
-        self.set_r_square(r_square);
+        self.set_sel_crit(sel_crit);
         test_stat
     }    
 }

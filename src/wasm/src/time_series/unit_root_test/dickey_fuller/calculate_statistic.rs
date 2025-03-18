@@ -50,7 +50,7 @@ impl DickeyFuller{
             y.push(difference[i]);
         }
         
-        let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec, r_square) = match self.get_equation().as_str() {
+        let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec, sel_crit) = match self.get_equation().as_str() {
             "no_constant" => {
                 let mut reg = NoInterceptLinearRegression::new(x.clone(), y.clone());
                 reg.calculate_regression();
@@ -58,8 +58,13 @@ impl DickeyFuller{
                 let se = reg.calculate_standard_error();
                 let test_stat = reg.calculate_t_stat();
                 let p_value = reg.calculate_pvalue();
-                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
-                (b, se, vec![b], vec![se], vec![test_stat], vec![p_value], r_square)
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
+                (b, se, vec![b], vec![se], vec![test_stat], vec![p_value], sel_crit)
             },
             "no_trend" => {
                 let mut reg = SimpleLinearRegression::new(x.clone(), y.clone());
@@ -68,8 +73,14 @@ impl DickeyFuller{
                 let se = reg.calculate_standard_error();
                 let test_stat = reg.calculate_t_stat();
                 let p_value = reg.calculate_pvalue();
-                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
-                (b[1], se[1], b, se, test_stat, p_value, r_square)
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_f_stat(),
+                    reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
+                (b[1], se[1], b, se, test_stat, p_value, sel_crit)
             },
             "with_trend" => {
                 // Buat matriks X dengan tren (t) dan data (x)
@@ -83,9 +94,15 @@ impl DickeyFuller{
                 let se = reg.calculate_standard_error();
                 let test_stat = reg.calculate_t_stat();
                 let p_value = reg.calculate_pvalue();
-                let r_square = vec![reg.calculate_r2(), reg.calculate_r2_adj()];
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_f_stat(),
+                    reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
                 // Pastikan indeks 2 ada dan standard error tidak nol
-                (b[2], se[2], b, se, test_stat, p_value, r_square)
+                (b[2], se[2], b, se, test_stat, p_value, sel_crit)
             },
             _ => (0.0, 0.0, vec![0.0], vec![0.0], vec![0.0], vec![0.0], vec![0.0, 0.0]),
         };
@@ -99,7 +116,7 @@ impl DickeyFuller{
         self.set_se_vec(se_vec);
         self.set_test_stat_vec(stat_test_vec);
         self.set_p_value_vec(p_value_vec);
-        self.set_r_square(r_square);
+        self.set_sel_crit(sel_crit);
         test_stat
     }
 }

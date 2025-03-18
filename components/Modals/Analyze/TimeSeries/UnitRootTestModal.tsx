@@ -167,12 +167,12 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                 return;
             }
 
-            let [testing, df_stat, coef_stat, fit, methodName]: [any,any,any,any,any] = await handleUnitRootTest(dataValues as number[], varDefs[0].name, selectedMethod[0], lengthLag, selectedEquation[0], selectedDifference[0]);
+            let [testing, df_stat, coef_stat, sel_crit, methodName]: [any,any,any,any,any] = await handleUnitRootTest(dataValues as number[], varDefs[0].name, selectedMethod[0], lengthLag, selectedEquation[0], selectedDifference[0]);
             
             console.log(testing);
             console.log(df_stat);
             console.log(coef_stat);
-            console.log(fit);
+            console.log(sel_crit);
 
             // Membuat Log
             const logMsg = `UNIT ROOT TEST: ${varDefs[0].label? varDefs[0].label : varDefs[0].name} on ${selectedDifference[1]} ${selectedEquation[1]} ${selectedMethod[1] == 'augmented dickey-fuller' ? `with lag length ${lengthLag}` : ''}`;
@@ -201,12 +201,12 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                 components: `Coeficient Regression Test`,
             });
 
-            // Membuat Tabel Fit Regression
-            const fit_table = await addStatistic({
+            // Membuat Tabel Selection Criterion
+            const sel_crit_table = await addStatistic({
                 analytic_id: analyticId,
-                title: `Fit Regression`,
-                output_data: fit,
-                components: `Fit Regression`,
+                title: `Selection Criterion`,
+                output_data: sel_crit,
+                components: `Selection Criterion`,
             });
 
             setIsCalculating(false);
@@ -370,7 +370,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                         <Label>lag length:</Label>
                                     </div>
                                     <Input type="number" className="w-[60px]" 
-                                        placeholder="1" min="1" max="5" step="1"
+                                        placeholder="1" min="1" max="10" step="1"
                                         value={lengthLag}
                                         onChange={(e) => setLengthLag(Number(e.target.value))}
                                     /> 
