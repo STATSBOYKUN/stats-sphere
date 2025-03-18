@@ -69,7 +69,7 @@ export type TreeOutputStatsType = {
     TargetCategory: boolean;
     RowsMethod: string | null;
     SortOrderMethod: string | null;
-    PercentIncMethod: string | null;
+    PercentIncMethod: number | null;
     Display: boolean;
 };
 
@@ -220,14 +220,13 @@ export type TreeOptionsProps = {
 export type TreeType = {
     main: TreeMainType;
     categories: TreeCategoriesType;
-    output: TreeOutputTreeType | TreeOutputStatsType | TreeOutputRulesType;
+    output: TreeOutputTreeType & TreeOutputStatsType & TreeOutputRulesType;
     validation: TreeValidationType;
-    criteria:
-        | TreeCriteriaGrowthType
-        | TreeCriteriaCHAIDType
-        | TreeCriteriaIntervalsType;
+    criteria: TreeCriteriaGrowthType &
+        TreeCriteriaCHAIDType &
+        TreeCriteriaIntervalsType;
     save: TreeSaveType;
-    options: TreeOptionsMissCostsType | TreeOptionsProfitsType;
+    options: TreeOptionsMissCostsType & TreeOptionsProfitsType;
 };
 
 export type TreeContainerProps = {

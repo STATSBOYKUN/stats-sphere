@@ -160,6 +160,9 @@ export const TreeValidation = ({
                                         value={
                                             validationState.NumberOfSample ?? 0
                                         }
+                                        disabled={
+                                            !validationState.CrossValidation
+                                        }
                                         onChange={(e) =>
                                             handleChange(
                                                 "NumberOfSample",
@@ -195,6 +198,7 @@ export const TreeValidation = ({
                                                 ? "UseRandom"
                                                 : "UseVariable"
                                         }
+                                        disabled={!validationState.SplitSample}
                                         onValueChange={handleCaseGrp}
                                     >
                                         <div className="p-2">
@@ -223,6 +227,9 @@ export const TreeValidation = ({
                                                             value={
                                                                 validationState.TrainingSample ??
                                                                 0
+                                                            }
+                                                            disabled={
+                                                                !validationState.UseRandom
                                                             }
                                                             onChange={(e) =>
                                                                 handleChange(

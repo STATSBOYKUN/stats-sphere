@@ -129,6 +129,7 @@ export const TreeSave = ({
                                     <Checkbox
                                         id="SampleAssign"
                                         checked={saveState.SampleAssign}
+                                        disabled={true}
                                         onCheckedChange={(checked) =>
                                             handleChange(
                                                 "SampleAssign",
@@ -187,6 +188,7 @@ export const TreeSave = ({
                                     <Checkbox
                                         id="TestSample"
                                         checked={saveState.TestSample}
+                                        disabled={true}
                                         onCheckedChange={(checked) =>
                                             handleChange("TestSample", checked)
                                         }
@@ -204,6 +206,7 @@ export const TreeSave = ({
                                         id="TestSampleFile"
                                         type="file"
                                         placeholder=""
+                                        disabled={true}
                                         onChange={(e) =>
                                             handleChange(
                                                 "TestSampleFile",

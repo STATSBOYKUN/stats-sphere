@@ -28,87 +28,87 @@ export const TreeCategoriesDefault: TreeCategoriesType = {
 };
 
 export const TreeOutputTreeDefault: TreeOutputTreeType = {
-    TreeOutput: false,
-    TopDown: false,
+    TreeOutput: true,
+    TopDown: true,
     L2R: false,
     R2L: false,
-    Table: false,
+    Table: true,
     Chart: false,
     TableAndChart: false,
-    Automatic: false,
+    Automatic: true,
     Custom: false,
     Percent: null,
-    IndVarStats: false,
-    NodeDef: false,
+    IndVarStats: true,
+    NodeDef: true,
     TreeInTableFormat: false,
 };
 
 export const TreeOutputStatsDefault: TreeOutputStatsType = {
-    Summary: false,
-    Risk: false,
-    ClassTable: false,
+    Summary: true,
+    Risk: true,
+    ClassTable: true,
     CPSP: false,
     ImpToModel: false,
     Surrogates: false,
-    SummaryNP: false,
-    TargetCategory: false,
-    RowsMethod: null,
-    SortOrderMethod: null,
-    PercentIncMethod: null,
+    SummaryNP: true,
+    TargetCategory: true,
+    RowsMethod: "TERMINAL",
+    SortOrderMethod: "DESCENDING",
+    PercentIncMethod: 10,
     Display: false,
 };
 
 export const TreeOutputRulesDefault: TreeOutputRulesType = {
     GenRules: false,
-    Spss: false,
+    Spss: true,
     Sql: false,
     SimpleText: false,
-    ValLbl: false,
-    ValToCases: false,
+    ValLbl: true,
+    ValToCases: true,
     SelectCases: false,
-    IncSurrogates: false,
-    TerminalNodes: false,
+    IncSurrogates: true,
+    TerminalNodes: true,
     BestTerminal: false,
     NumberOfNodes: null,
     BestTerminalPercent: false,
     TermPercent: null,
     BestTerminalMinIndex: false,
     MinIndex: null,
-    AllNodes: false,
+    AllNodes: true,
     ExportRules: false,
     FileEdit: null,
 };
 
 export const TreeValidationDefault: TreeValidationType = {
-    None: false,
+    None: true,
     CrossValidation: false,
-    NumberOfSample: null,
+    NumberOfSample: 10,
     SplitSample: false,
-    UseRandom: false,
-    TrainingSample: null,
+    UseRandom: true,
+    TrainingSample: 50,
     UseVariable: false,
     SrcVar: null,
     TargetVar: null,
-    Training: false,
+    Training: true,
     TestSample: false,
 };
 
 export const TreeCriteriaGrowthDefault: TreeCriteriaGrowthType = {
-    Automatic: false,
+    Automatic: true,
     Custom: false,
     Value: null,
-    ParentNode: null,
-    ChildNode: null,
+    ParentNode: 100,
+    ChildNode: 50,
 };
 
 export const TreeCriteriaCHAIDDefault: TreeCriteriaCHAIDType = {
-    Split: null,
-    MergCate: null,
-    Pearson: false,
+    Split: 0.05,
+    MergCate: 0.05,
+    Pearson: true,
     LikeliHood: false,
-    MaxNoText: null,
-    MinChange: null,
-    AdjustSign: false,
+    MaxNoText: 100,
+    MinChange: 0.001,
+    AdjustSign: true,
     Allow: false,
 };
 
@@ -130,7 +130,7 @@ export const TreeSaveDefault: TreeSaveType = {
 };
 
 export const TreeOptionsMissCostsDefault: TreeOptionsMissCostsType = {
-    EqualCrossCate: false,
+    EqualCrossCate: true,
     Custom: false,
     DupLowMatrix: false,
     DupUppMatrix: false,
@@ -138,22 +138,27 @@ export const TreeOptionsMissCostsDefault: TreeOptionsMissCostsType = {
 };
 
 export const TreeOptionsProfitsDefault: TreeOptionsProfitsType = {
-    NoneProfits: false,
+    NoneProfits: true,
     CustomProfits: false,
 };
 
 export const TreeDefault: TreeType = {
     main: TreeMainDefault,
     categories: TreeCategoriesDefault,
-    output:
-        TreeOutputTreeDefault &&
-        TreeOutputStatsDefault &&
-        TreeOutputRulesDefault,
+    output: {
+        ...TreeOutputTreeDefault,
+        ...TreeOutputStatsDefault,
+        ...TreeOutputRulesDefault,
+    },
     validation: TreeValidationDefault,
-    criteria:
-        TreeCriteriaGrowthDefault &&
-        TreeCriteriaCHAIDDefault &&
-        TreeCriteriaIntervalsDefault,
+    criteria: {
+        ...TreeCriteriaGrowthDefault,
+        ...TreeCriteriaCHAIDDefault,
+        ...TreeCriteriaIntervalsDefault,
+    },
     save: TreeSaveDefault,
-    options: TreeOptionsMissCostsDefault && TreeOptionsProfitsDefault,
+    options: {
+        ...TreeOptionsMissCostsDefault,
+        ...TreeOptionsProfitsDefault,
+    },
 };

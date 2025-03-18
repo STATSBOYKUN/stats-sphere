@@ -31,8 +31,8 @@ export type TwoStepClusterDialogProps = {
 };
 
 export type TwoStepClusterOptionsType = {
-    SrcVar: string | null;
-    TargetVar: string | null;
+    SrcVar: string[] | null;
+    TargetVar: string[] | null;
     Noise: boolean;
     NoiseCluster: number | null;
     NoiseThreshold: number | null;
@@ -49,14 +49,14 @@ export type TwoStepClusterOptionsProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof TwoStepClusterOptionsType,
-        value: number | string | boolean | null
+        value: string[] | number | string | boolean | null
     ) => void;
     data: TwoStepClusterOptionsType;
 };
 
 export type TwoStepClusterOutputType = {
-    SrcVar: string | null;
-    TargetVar: string | null;
+    SrcVar: string[] | null;
+    TargetVar: string[] | null;
     PivotTable: boolean;
     ChartTable: boolean;
     ClustVar: boolean;
@@ -71,7 +71,7 @@ export type TwoStepClusterOutputProps = {
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof TwoStepClusterOutputType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: TwoStepClusterOutputType;
 };

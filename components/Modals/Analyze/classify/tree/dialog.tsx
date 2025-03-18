@@ -240,6 +240,7 @@ export const TreeDialog = ({
                                         <Button
                                             type="button"
                                             variant="secondary"
+                                            disabled={true}
                                             onClick={openDialog(
                                                 setIsCategoriesOpen
                                             )}
@@ -322,6 +323,11 @@ export const TreeDialog = ({
                                         <Checkbox
                                             id="Force"
                                             checked={mainState.Force}
+                                            disabled={
+                                                !mainState.IndependentTargetVar ||
+                                                mainState.IndependentTargetVar
+                                                    .length === 0
+                                            }
                                             onCheckedChange={(checked) =>
                                                 handleChange("Force", checked)
                                             }
@@ -463,6 +469,11 @@ export const TreeDialog = ({
                                         className="w-full"
                                         type="button"
                                         variant="secondary"
+                                        disabled={
+                                            !mainState.IndependentTargetVar ||
+                                            mainState.IndependentTargetVar
+                                                .length === 0
+                                        }
                                         onClick={openDialog(setIsOptionsOpen)}
                                     >
                                         Options...

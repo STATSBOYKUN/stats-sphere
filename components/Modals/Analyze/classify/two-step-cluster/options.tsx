@@ -27,6 +27,7 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const TwoStepClusterOptions = ({
@@ -39,12 +40,27 @@ export const TwoStepClusterOptions = ({
         { ...data }
     );
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isOptionsOpen) {
             setOptionsState({ ...data });
+            setAvailableVariables(data.SrcVar ?? []);
         }
     }, [isOptionsOpen, data]);
+
+    useEffect(() => {
+        const usedVariables = [...(optionsState.TargetVar || [])].filter(
+            Boolean
+        );
+
+        if (!(optionsState.SrcVar === null)) {
+            const updatedVariables = optionsState.SrcVar.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setAvailableVariables(updatedVariables);
+        }
+    }, [optionsState]);
 
     const handleChange = (
         field: keyof TwoStepClusterOptionsType,
@@ -54,6 +70,31 @@ export const TwoStepClusterOptions = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setOptionsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = [
+                    ...(updatedState.TargetVar || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setOptionsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "TargetVar") {
+                updatedState.TargetVar = (updatedState.TargetVar || []).filter(
+                    (item) => item !== variable
+                );
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -119,6 +160,9 @@ export const TwoStepClusterOptions = ({
                                                             optionsState.NoiseCluster ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !optionsState.Noise
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "NoiseCluster",
@@ -136,11 +180,11 @@ export const TwoStepClusterOptions = ({
                                     <ResizableHandle />
                                     <ResizablePanel defaultSize={50}>
                                         <div className="flex flex-col gap-2 p-2">
-                                            <Label className="font-bold">
+                                            <Label className="font-bold text-gray-500">
                                                 Memory Allocation
                                             </Label>
                                             <div className="flex items-center space-x-2">
-                                                <Label className="w-[100px]">
+                                                <Label className="w-[100px] text-gray-500">
                                                     Maximum (MB):
                                                 </Label>
                                                 <div className="w-[150px]">
@@ -152,6 +196,7 @@ export const TwoStepClusterOptions = ({
                                                             optionsState.MemoryValue ??
                                                             ""
                                                         }
+                                                        disabled={true}
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "MemoryValue",
@@ -176,50 +221,111 @@ export const TwoStepClusterOptions = ({
                                     </Label>
                                     <ResizablePanelGroup direction="horizontal">
                                         <ResizablePanel defaultSize={50}>
-                                            <div className="w-full p-2">
+                                            <div
+                                                className="flex flex-col w-full gap-2"
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                                onDrop={(e) => {
+                                                    const variable =
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        );
+                                                    handleDrop(
+                                                        "TargetVar",
+                                                        variable
+                                                    );
+                                                }}
+                                            >
                                                 <Label>
                                                     Assumed Standardized:{" "}
                                                 </Label>
-                                                <Input
-                                                    id="SrcVar"
-                                                    type="text"
-                                                    className="w-full min-h-[65px]"
-                                                    placeholder=""
+                                                <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                    <ScrollArea>
+                                                        <div className="w-full h-[150px]">
+                                                            {optionsState.TargetVar &&
+                                                            optionsState
+                                                                .TargetVar
+                                                                .length > 0 ? (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {optionsState.TargetVar.map(
+                                                                        (
+                                                                            variable,
+                                                                            index
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                onClick={() =>
+                                                                                    handleRemoveVariable(
+                                                                                        "TargetVar",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    variable
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-sm font-light text-gray-500">
+                                                                    Drop
+                                                                    variables
+                                                                    here.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
+                                                <input
+                                                    type="hidden"
                                                     value={
-                                                        optionsState.SrcVar ??
+                                                        optionsState.TargetVar ??
                                                         ""
                                                     }
-                                                    onChange={(e) =>
-                                                        handleChange(
-                                                            "SrcVar",
-                                                            e.target.value
-                                                        )
-                                                    }
+                                                    name="TargetVar"
                                                 />
                                             </div>
                                         </ResizablePanel>
                                         <ResizableHandle />
                                         <ResizablePanel defaultSize={50}>
-                                            <div className="w-full p-2">
+                                            <div className="flex flex-col gap-2">
                                                 <Label>
-                                                    To be Standardized:{" "}
+                                                    To Be Standardized:
                                                 </Label>
-                                                <Input
-                                                    id="TargetVar"
-                                                    type="text"
-                                                    className="w-full min-h-[65px]"
-                                                    placeholder=""
-                                                    value={
-                                                        optionsState.TargetVar ??
-                                                        ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleChange(
-                                                            "TargetVar",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
+                                                <ScrollArea>
+                                                    <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                        {availableVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant="outline"
+                                                                    draggable
+                                                                    onDragStart={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.dataTransfer.setData(
+                                                                            "text",
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
                                             </div>
                                         </ResizablePanel>
                                     </ResizablePanelGroup>
@@ -403,11 +509,14 @@ export const TwoStepClusterOptions = ({
                                                         <Label className="w-[150px]">
                                                             CF Tree Name:
                                                         </Label>
-                                                        <div className="w-[150px]">
+                                                        <div>
                                                             <Input
                                                                 id="CFTreeName"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !optionsState.ImportCFTree
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "CFTreeName",

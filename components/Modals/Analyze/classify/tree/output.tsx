@@ -191,6 +191,9 @@ export const TreeOutput = ({
                                                                 ? "L2R"
                                                                 : "R2L"
                                                         }
+                                                        disabled={
+                                                            !outputState.TreeOutput
+                                                        }
                                                         onValueChange={
                                                             handleOrienGrp
                                                         }
@@ -240,6 +243,9 @@ export const TreeOutput = ({
                                                                 ? "Chart"
                                                                 : "TableAndChart"
                                                         }
+                                                        disabled={
+                                                            !outputState.TreeOutput
+                                                        }
                                                         onValueChange={
                                                             handleNodeGrp
                                                         }
@@ -287,6 +293,9 @@ export const TreeOutput = ({
                                                                 ? "Automatic"
                                                                 : "Custom"
                                                         }
+                                                        disabled={
+                                                            !outputState.TreeOutput
+                                                        }
                                                         onValueChange={
                                                             handleScaleGrp
                                                         }
@@ -328,6 +337,9 @@ export const TreeOutput = ({
                                                                                     outputState.Percent ??
                                                                                     0
                                                                                 }
+                                                                                disabled={
+                                                                                    !outputState.Custom
+                                                                                }
                                                                                 onChange={(
                                                                                     e
                                                                                 ) =>
@@ -353,6 +365,9 @@ export const TreeOutput = ({
                                                             checked={
                                                                 outputState.IndVarStats
                                                             }
+                                                            disabled={
+                                                                !outputState.TreeOutput
+                                                            }
                                                             onCheckedChange={(
                                                                 checked
                                                             ) =>
@@ -375,6 +390,9 @@ export const TreeOutput = ({
                                                             id="NodeDef"
                                                             checked={
                                                                 outputState.NodeDef
+                                                            }
+                                                            disabled={
+                                                                !outputState.TreeOutput
                                                             }
                                                             onCheckedChange={(
                                                                 checked
@@ -536,6 +554,7 @@ export const TreeOutput = ({
                                                         checked={
                                                             outputState.ImpToModel
                                                         }
+                                                        disabled={true}
                                                         onCheckedChange={(
                                                             checked
                                                         ) =>
@@ -558,6 +577,7 @@ export const TreeOutput = ({
                                                         checked={
                                                             outputState.Surrogates
                                                         }
+                                                        disabled={true}
                                                         onCheckedChange={(
                                                             checked
                                                         ) =>
@@ -592,6 +612,7 @@ export const TreeOutput = ({
                                                         checked={
                                                             outputState.SummaryNP
                                                         }
+                                                        disabled={true}
                                                         onCheckedChange={(
                                                             checked
                                                         ) =>
@@ -615,6 +636,7 @@ export const TreeOutput = ({
                                                         checked={
                                                             outputState.TargetCategory
                                                         }
+                                                        disabled={true}
                                                         onCheckedChange={(
                                                             checked
                                                         ) =>
@@ -645,6 +667,7 @@ export const TreeOutput = ({
                                                             outputState.RowsMethod ??
                                                             ""
                                                         }
+                                                        disabled={true}
                                                         onValueChange={(
                                                             value
                                                         ) =>
@@ -691,6 +714,7 @@ export const TreeOutput = ({
                                                             outputState.SortOrderMethod ??
                                                             ""
                                                         }
+                                                        disabled={true}
                                                         onValueChange={(
                                                             value
                                                         ) =>
@@ -820,6 +844,7 @@ export const TreeOutput = ({
                                                                 ? "Sql"
                                                                 : "SimpleText"
                                                         }
+                                                        disabled={true}
                                                         onValueChange={
                                                             handleSyntaxGrp
                                                         }
@@ -919,6 +944,7 @@ export const TreeOutput = ({
                                                             checked={
                                                                 outputState.IncSurrogates
                                                             }
+                                                            disabled={true}
                                                             onCheckedChange={(
                                                                 checked
                                                             ) =>
@@ -991,6 +1017,7 @@ export const TreeOutput = ({
                                                                 outputState.NumberOfNodes ??
                                                                 0
                                                             }
+                                                            disabled={true}
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "NumberOfNodes",
@@ -1027,6 +1054,7 @@ export const TreeOutput = ({
                                                                 outputState.TermPercent ??
                                                                 0
                                                             }
+                                                            disabled={true}
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "TermPercent",
@@ -1063,6 +1091,7 @@ export const TreeOutput = ({
                                                                 outputState.MinIndex ??
                                                                 0
                                                             }
+                                                            disabled={true}
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "MinIndex",

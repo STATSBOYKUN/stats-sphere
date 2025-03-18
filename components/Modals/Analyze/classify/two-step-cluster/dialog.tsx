@@ -203,9 +203,6 @@ export const TwoStepClusterDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Categorical Variables:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -222,7 +219,7 @@ export const TwoStepClusterDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Categorical Variables:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -271,14 +268,11 @@ export const TwoStepClusterDialog = ({
                                                     mainState.CategoricalVar ??
                                                     ""
                                                 }
-                                                name="Independents"
+                                                name="CategoricalVar"
                                             />
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Continous Variables:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -295,7 +289,7 @@ export const TwoStepClusterDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Continous Variables:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -343,7 +337,7 @@ export const TwoStepClusterDialog = ({
                                                 value={
                                                     mainState.ContinousVar ?? ""
                                                 }
-                                                name="Independents"
+                                                name="ContinousVar"
                                             />
                                         </div>
                                     </div>
@@ -488,6 +482,9 @@ export const TwoStepClusterDialog = ({
                                                                 mainState.MaxCluster ??
                                                                 ""
                                                             }
+                                                            disabled={
+                                                                !mainState.Auto
+                                                            }
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "MaxCluster",
@@ -521,6 +518,9 @@ export const TwoStepClusterDialog = ({
                                                             value={
                                                                 mainState.NumCluster ??
                                                                 ""
+                                                            }
+                                                            disabled={
+                                                                !mainState.Fixed
                                                             }
                                                             onChange={(e) =>
                                                                 handleChange(

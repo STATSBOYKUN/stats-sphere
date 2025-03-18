@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     TwoStepClusterContainerProps,
     TwoStepClusterMainType,
@@ -34,6 +34,32 @@ export const TwoStepClusterContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        if (formData.main) {
+            const usedVariables = [
+                ...(formData.main.CategoricalVar || []),
+                ...(formData.main.ContinousVar || []),
+            ].filter(Boolean);
+
+            const updatedVariables = tempVariables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+            setFormData((prev) => ({
+                ...prev,
+                options: {
+                    ...prev.options,
+                    SrcVar: formData.main.ContinousVar
+                        ? [...formData.main.ContinousVar]
+                        : [],
+                },
+                output: {
+                    ...prev.output,
+                    SrcVar: updatedVariables ? [...updatedVariables] : [],
+                },
+            }));
+        }
+    }, [formData.main]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

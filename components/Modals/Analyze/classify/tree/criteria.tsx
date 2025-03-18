@@ -171,6 +171,9 @@ export const TreeCriteria = ({
                                                             criteriaState.Value ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !criteriaState.Custom
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "Value",
@@ -307,6 +310,7 @@ export const TreeCriteria = ({
                                                         ? "Pearson"
                                                         : "LikeliHood"
                                                 }
+                                                disabled={true}
                                                 onValueChange={handleCSQGrp}
                                             >
                                                 <div className="flex flex-col gap-2 p-2">
