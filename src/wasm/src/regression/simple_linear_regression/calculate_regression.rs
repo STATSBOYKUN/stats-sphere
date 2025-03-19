@@ -6,8 +6,8 @@ impl SimpleLinearRegression{
     // Calculate the simple linear regression
     pub fn calculate_regression(&mut self) {
         // Initialize the variables
-        let x_values: Vec<f64> = self.get_x().clone();
-        let y_values: Vec<f64> = self.get_y().clone();
+        let x_values: Vec<f64> = self.get_x();
+        let y_values: Vec<f64> = self.get_y();
         let mut x_pow_2: Vec<f64> = Vec::new();
         let mut xy: Vec<f64> = Vec::new();
         let mut x_sum: f64 = 0.0;

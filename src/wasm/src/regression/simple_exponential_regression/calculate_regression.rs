@@ -5,7 +5,7 @@ use crate::SimpleExponentialRegression;
 impl SimpleExponentialRegression{
     // Calculate the simple exponential regression
     pub fn calculate_regression(&mut self) {
-        let x_values: Vec<f64> = self.get_x().clone();
+        let x_values: Vec<f64> = self.get_x();
         let y_values: Vec<f64> = self.get_y().iter().map(|x| x.ln()).collect();
         let mut x_pow_2: Vec<f64> = Vec::new();
         let mut xy: Vec<f64> = Vec::new();
@@ -28,12 +28,12 @@ impl SimpleExponentialRegression{
         }
 
         // Calculate the parameter a and b
-        b0 = ((y_sum * x_pow_2_sum - x_sum * xy_sum) / (x_values.len() as f64 * x_pow_2_sum - x_sum.powi(2))).exp();
+        b0 = (y_sum * x_pow_2_sum - x_sum * xy_sum) / (x_values.len() as f64 * x_pow_2_sum - x_sum.powi(2));
         b1 = (x_values.len() as f64 * xy_sum - x_sum * y_sum) / (x_values.len() as f64 * x_pow_2_sum - x_sum.powi(2));
 
         // Calculate the prediction
         for i in 0..x_values.len(){
-            y_prediction.push(b0 * (b1 * x_values[i]).exp());
+            y_prediction.push((b0 + b1 * x_values[i]).exp());
         }
 
         // Set the b0, b1, and y_prediction

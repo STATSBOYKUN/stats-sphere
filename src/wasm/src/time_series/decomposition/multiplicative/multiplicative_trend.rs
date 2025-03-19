@@ -110,9 +110,9 @@ impl Decomposition{
         // Write the trend equation
         let equation: String;
         if par_b < 0 as f64 {
-            equation = format!("y = {} * e^(({}) * t)", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
+            equation = format!("y =  e^({} - {} * t)", (par_a * 1000.0).round() / 1000.0, (par_b.abs() * 1000.0).round() / 1000.0);
         } else {
-            equation = format!("y = {} * e^({} * t)", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
+            equation = format!("y =  e^({} + {} * t)", (par_a * 1000.0).round() / 1000.0, (par_b * 1000.0).round() / 1000.0);
         }
         
         // Set the trend component
