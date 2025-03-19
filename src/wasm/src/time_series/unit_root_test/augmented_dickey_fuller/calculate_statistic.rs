@@ -59,6 +59,27 @@ impl AugmentedDickeyFuller {
             return lag_values[0].len() as f64 / x.len() as f64;
         }
         let (b, se, b_vec, se_vec, stat_test_vec, p_value_vec,sel_crit) = match self.get_equation().as_str() {
+            "no_constant" => {
+                let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
+                x_matriks.push(x.clone());
+    
+                // Konversi ke nilai JS; jika gagal, panik dengan pesan jelas
+                let x_matriks_js = serde_wasm_bindgen::to_value(&x_matriks).expect("Gagal mengkonversi x_matriks ke JS value");
+                let mut reg = MultipleLinearRegression::new(x_matriks_js, y.clone());
+                reg.set_constant(false);
+                reg.calculate_regression();
+                let b = reg.get_beta();
+                let se = reg.calculate_standard_error();
+                let test_stat = reg.calculate_t_stat();
+                let p_value = reg.calculate_pvalue();
+                let sel_crit = vec![
+                    reg.calculate_r2(), reg.calculate_r2_adj(),
+                    reg.calculate_se_reg(), reg.calculate_sse(),
+                    reg.calculate_log_likelihood(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
+                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                ];
+                (b[x_matriks.len()-1], se[x_matriks.len()-1], b, se, test_stat, p_value, sel_crit)
+            },
             "no_trend" => {
                 let mut x_matriks: Vec<Vec<f64>> = lag_values.clone();
                 x_matriks.push(x.clone());

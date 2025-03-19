@@ -91,6 +91,11 @@ export async function handleUnitRootTest(
             }
             coefName.push(`${dataHeader}`);
         } else {
+            if (method === "augmented-dickey-fuller") {
+                for (let i = 1; i <= lag; i++) {
+                    coefName.push(`${dataHeader} Diff Lag (${i})`);
+                }
+            }
             coefName.push(`${dataHeader}`)
         }
         let coefStruct: Record<string, any> = {}; // Menggunakan objek kosong

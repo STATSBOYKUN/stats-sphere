@@ -13,10 +13,12 @@ impl MultipleLinearRegression{
         let n: usize = x_values[0].len();
         let mut design_matrix: Vec<Vec<f64>> = Vec::new();
         let mut first_column = Vec::new();
-        for _ in 0..n{
-            first_column.push(1.0);
+        if self.get_constant() {
+            for _ in 0..n{
+                first_column.push(1.0);
+            }
+            design_matrix.push(first_column);
         }
-        design_matrix.push(first_column);
         for i in 0..m{
             design_matrix.push(x_values[i].clone());
         }

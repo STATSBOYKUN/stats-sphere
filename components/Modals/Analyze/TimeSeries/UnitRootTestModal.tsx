@@ -293,7 +293,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                             <label className="w-[100px] font-semibold">Method:</label>
                             <RadioGroup
                                 value={selectedMethod[0]}
-                                onValueChange={(value) => handleMethodChange(value)}
+                                onValueChange={(value) => setSelectedMethod([value,methods.find((method) => method.value === value)!.label])}
                                 className="flex flex-col gap-4"
                             >
                                 {methods.map((method) => (
@@ -349,7 +349,7 @@ const UnitRootTestModal: React.FC<UnitRootTestModalProps> = ({ onClose }) => {
                                     className="flex flex-row gap-4"
                                 >
                                     {equations.map((equation) => (
-                                        (selectedMethod[0] === 'augmented-dickey-fuller' && equation.value === 'no_constant') ? null :
+                                        
                                             <div key={equation.value} className="flex flex-row items-center space-x-2">
                                                 <RadioGroupItem
                                                     value={equation.value}

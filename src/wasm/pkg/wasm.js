@@ -229,15 +229,6 @@ export function get_t() {
     return v1;
 }
 
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    for (let i = 0; i < array.length; i++) {
-        const add = addToExternrefTable0(array[i]);
-        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
-}
 /**
  * @param {number} k
  * @param {number} j
@@ -251,6 +242,15 @@ export function partial_kj(k, j, partial_autocorrelate) {
     return ret;
 }
 
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    for (let i = 0; i < array.length; i++) {
+        const add = addToExternrefTable0(array[i]);
+        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
 /**
  * @returns {Float64Array}
  */
@@ -391,23 +391,6 @@ export class Arima {
         wasm.arima_set_ma_coef(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {number} n
-     * @returns {Float64Array}
-     */
-    forecast(n) {
-        const ret = wasm.arima_forecast(this.__wbg_ptr, n);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
-     * @returns {any}
-     */
-    forecasting_evaluation() {
-        const ret = wasm.arima_forecasting_evaluation(this.__wbg_ptr);
-        return ret;
-    }
-    /**
      * @returns {Float64Array}
      */
     estimate_coef() {
@@ -419,26 +402,41 @@ export class Arima {
     /**
      * @returns {Float64Array}
      */
-    z_stat() {
-        const ret = wasm.arima_z_stat(this.__wbg_ptr);
+    estimate_residual() {
+        const ret = wasm.arima_estimate_residual(this.__wbg_ptr);
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
     }
     /**
-     * @returns {Float64Array}
+     * @returns {number}
      */
-    p_value() {
-        const ret = wasm.arima_p_value(this.__wbg_ptr);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
+    res_sum_of_square() {
+        const ret = wasm.arima_res_sum_of_square(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @returns {number}
+     */
+    res_variance() {
+        const ret = wasm.arima_res_variance(this.__wbg_ptr);
+        return ret;
     }
     /**
      * @returns {Float64Array}
      */
     estimate_se() {
         const ret = wasm.arima_estimate_se(this.__wbg_ptr);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {number} n
+     * @returns {Float64Array}
+     */
+    forecast(n) {
+        const ret = wasm.arima_forecast(this.__wbg_ptr, n);
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
@@ -472,27 +470,29 @@ export class Arima {
         return ret;
     }
     /**
+     * @returns {any}
+     */
+    forecasting_evaluation() {
+        const ret = wasm.arima_forecasting_evaluation(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * @returns {Float64Array}
      */
-    estimate_residual() {
-        const ret = wasm.arima_estimate_residual(this.__wbg_ptr);
+    z_stat() {
+        const ret = wasm.arima_z_stat(this.__wbg_ptr);
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
     }
     /**
-     * @returns {number}
+     * @returns {Float64Array}
      */
-    res_sum_of_square() {
-        const ret = wasm.arima_res_sum_of_square(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * @returns {number}
-     */
-    res_variance() {
-        const ret = wasm.arima_res_variance(this.__wbg_ptr);
-        return ret;
+    p_value() {
+        const ret = wasm.arima_p_value(this.__wbg_ptr);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
     }
 }
 
@@ -768,6 +768,32 @@ export class Autocorrelation {
         wasm.__wbg_autocorrelation_free(ptr, 0);
     }
     /**
+     * @param {Float64Array} se
+     * @param {number} alpha
+     * @returns {Float64Array}
+     */
+    calculate_bartlet_left(se, alpha) {
+        const ptr0 = passArrayF64ToWasm0(se, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_bartlet_left(this.__wbg_ptr, ptr0, len0, alpha);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} se
+     * @param {number} alpha
+     * @returns {Float64Array}
+     */
+    calculate_bartlet_right(se, alpha) {
+        const ptr0 = passArrayF64ToWasm0(se, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_bartlet_right(this.__wbg_ptr, ptr0, len0, alpha);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
      * @param {Float64Array} data
      * @param {string} data_header
      * @param {number} lag
@@ -955,37 +981,28 @@ export class Autocorrelation {
         wasm.autocorrelation_set_pvalue_lb(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {Float64Array} autocorrelate
+     * @param {Float64Array} difference
      * @returns {Float64Array}
      */
-    calculate_ljung_box(autocorrelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
+    calculate_acf(difference) {
+        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_ljung_box(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
     }
     /**
-     * @param {Float64Array} ljung_box
+     * @param {Float64Array} autocorelate
      * @returns {Float64Array}
      */
-    pvalue_ljung_box(ljung_box) {
-        const ptr0 = passArrayF64ToWasm0(ljung_box, wasm.__wbindgen_malloc);
+    calculate_acf_se(autocorelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_pvalue_ljung_box(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
-    }
-    /**
-     * @returns {Uint32Array}
-     */
-    df_ljung_box() {
-        const ret = wasm.autocorrelation_df_ljung_box(this.__wbg_ptr);
-        var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-        return v1;
     }
     /**
      * @param {Float64Array} autocorrelate
@@ -1021,54 +1038,37 @@ export class Autocorrelation {
         wasm.autocorrelation_autocorelate(this.__wbg_ptr, ptr0, len0, seasonally);
     }
     /**
-     * @param {Float64Array} se
-     * @param {number} alpha
+     * @param {Float64Array} autocorrelate
      * @returns {Float64Array}
      */
-    calculate_bartlet_left(se, alpha) {
-        const ptr0 = passArrayF64ToWasm0(se, wasm.__wbindgen_malloc);
+    calculate_ljung_box(autocorrelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_bartlet_left(this.__wbg_ptr, ptr0, len0, alpha);
+        const ret = wasm.autocorrelation_calculate_ljung_box(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
     }
     /**
-     * @param {Float64Array} se
-     * @param {number} alpha
+     * @param {Float64Array} ljung_box
      * @returns {Float64Array}
      */
-    calculate_bartlet_right(se, alpha) {
-        const ptr0 = passArrayF64ToWasm0(se, wasm.__wbindgen_malloc);
+    pvalue_ljung_box(ljung_box) {
+        const ptr0 = passArrayF64ToWasm0(ljung_box, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_bartlet_right(this.__wbg_ptr, ptr0, len0, alpha);
+        const ret = wasm.autocorrelation_pvalue_ljung_box(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
     }
     /**
-     * @param {Float64Array} difference
-     * @returns {Float64Array}
+     * @returns {Uint32Array}
      */
-    calculate_acf(difference) {
-        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorelate
-     * @returns {Float64Array}
-     */
-    calculate_acf_se(autocorelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
+    df_ljung_box() {
+        const ret = wasm.autocorrelation_df_ljung_box(this.__wbg_ptr);
+        var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
     }
 }
 
@@ -1097,6 +1097,18 @@ export class Decomposition {
         const ptr0 = passArrayF64ToWasm0(centered_ma, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.decomposition_calculate_multiplicative_seasonal_component(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} centered_ma
+     * @returns {Float64Array}
+     */
+    calculate_additive_trend_component(centered_ma) {
+        const ptr0 = passArrayF64ToWasm0(centered_ma, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decomposition_calculate_additive_trend_component(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
@@ -1278,44 +1290,13 @@ export class Decomposition {
         return v1;
     }
     /**
+     * @param {string} trend
      * @returns {Float64Array}
      */
-    additive_decomposition() {
-        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
-     * @param {Float64Array} forecast
-     * @returns {any}
-     */
-    decomposition_evaluation(forecast) {
-        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
+    multiplicative_decomposition(trend) {
+        const ptr0 = passStringToWasm0(trend, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_decomposition_evaluation(this.__wbg_ptr, ptr0, len0);
-        return ret;
-    }
-    /**
-     * @param {Float64Array} centered_ma
-     * @returns {Float64Array}
-     */
-    calculate_additive_trend_component(centered_ma) {
-        const ptr0 = passArrayF64ToWasm0(centered_ma, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_calculate_additive_trend_component(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} detrended
-     * @returns {Float64Array}
-     */
-    calculate_additive_seasonal_component(detrended) {
-        const ptr0 = passArrayF64ToWasm0(detrended, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_calculate_additive_seasonal_component(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.decomposition_multiplicative_decomposition(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
@@ -1372,13 +1353,32 @@ export class Decomposition {
         return v2;
     }
     /**
-     * @param {string} trend
      * @returns {Float64Array}
      */
-    multiplicative_decomposition(trend) {
-        const ptr0 = passStringToWasm0(trend, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    additive_decomposition() {
+        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {Float64Array} forecast
+     * @returns {any}
+     */
+    decomposition_evaluation(forecast) {
+        const ptr0 = passArrayF64ToWasm0(forecast, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_multiplicative_decomposition(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.decomposition_decomposition_evaluation(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
+     * @param {Float64Array} detrended
+     * @returns {Float64Array}
+     */
+    calculate_additive_seasonal_component(detrended) {
+        const ptr0 = passArrayF64ToWasm0(detrended, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decomposition_calculate_additive_seasonal_component(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
@@ -1462,21 +1462,21 @@ export class DickeyFuller {
      * @returns {number}
      */
     get_b() {
-        const ret = wasm.dickeyfuller_get_b(this.__wbg_ptr);
+        const ret = wasm.augmenteddickeyfuller_get_b(this.__wbg_ptr);
         return ret;
     }
     /**
      * @returns {number}
      */
     get_se() {
-        const ret = wasm.dickeyfuller_get_se(this.__wbg_ptr);
+        const ret = wasm.augmenteddickeyfuller_get_se(this.__wbg_ptr);
         return ret;
     }
     /**
      * @returns {number}
      */
     get_test_stat() {
-        const ret = wasm.dickeyfuller_get_test_stat(this.__wbg_ptr);
+        const ret = wasm.augmenteddickeyfuller_get_test_stat(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -1552,19 +1552,19 @@ export class DickeyFuller {
      * @param {number} b
      */
     set_b(b) {
-        wasm.dickeyfuller_set_b(this.__wbg_ptr, b);
+        wasm.augmenteddickeyfuller_set_b(this.__wbg_ptr, b);
     }
     /**
      * @param {number} se
      */
     set_se(se) {
-        wasm.dickeyfuller_set_se(this.__wbg_ptr, se);
+        wasm.augmenteddickeyfuller_set_se(this.__wbg_ptr, se);
     }
     /**
      * @param {number} test_stat
      */
     set_test_stat(test_stat) {
-        wasm.dickeyfuller_set_test_stat(this.__wbg_ptr, test_stat);
+        wasm.augmenteddickeyfuller_set_test_stat(this.__wbg_ptr, test_stat);
     }
     /**
      * @param {Float64Array} b_vec
@@ -1695,6 +1695,13 @@ export class MultipleLinearRegression {
         return v1;
     }
     /**
+     * @returns {boolean}
+     */
+    get_constant() {
+        const ret = wasm.multiplelinearregression_get_constant(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
      * @param {Float64Array} y_prediction
      */
     set_y_prediction(y_prediction) {
@@ -1709,6 +1716,12 @@ export class MultipleLinearRegression {
         const ptr0 = passArrayF64ToWasm0(beta, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.multiplelinearregression_set_beta(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {boolean} constant
+     */
+    set_constant(constant) {
+        wasm.multiplelinearregression_set_constant(this.__wbg_ptr, constant);
     }
     calculate_regression() {
         wasm.multiplelinearregression_calculate_regression(this.__wbg_ptr);
@@ -2162,6 +2175,9 @@ export class SimpleExponentialRegression {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_simpleexponentialregression_free(ptr, 0);
     }
+    calculate_regression() {
+        wasm.simpleexponentialregression_calculate_regression(this.__wbg_ptr);
+    }
     /**
      * @param {Float64Array} x
      * @param {Float64Array} y
@@ -2207,14 +2223,14 @@ export class SimpleExponentialRegression {
      * @returns {number}
      */
     get_b0() {
-        const ret = wasm.dickeyfuller_get_b(this.__wbg_ptr);
+        const ret = wasm.simpleexponentialregression_get_b0(this.__wbg_ptr);
         return ret;
     }
     /**
      * @returns {number}
      */
     get_b1() {
-        const ret = wasm.dickeyfuller_get_se(this.__wbg_ptr);
+        const ret = wasm.simpleexponentialregression_get_b1(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -2229,16 +2245,13 @@ export class SimpleExponentialRegression {
      * @param {number} b0
      */
     set_b0(b0) {
-        wasm.dickeyfuller_set_b(this.__wbg_ptr, b0);
+        wasm.simpleexponentialregression_set_b0(this.__wbg_ptr, b0);
     }
     /**
      * @param {number} b1
      */
     set_b1(b1) {
-        wasm.dickeyfuller_set_se(this.__wbg_ptr, b1);
-    }
-    calculate_regression() {
-        wasm.simpleexponentialregression_calculate_regression(this.__wbg_ptr);
+        wasm.simpleexponentialregression_set_b1(this.__wbg_ptr, b1);
     }
 }
 
@@ -2268,7 +2281,7 @@ export class SimpleLinearRegression {
         const len0 = WASM_VECTOR_LEN;
         const ptr1 = passArrayF64ToWasm0(y, wasm.__wbindgen_malloc);
         const len1 = WASM_VECTOR_LEN;
-        const ret = wasm.simpleexponentialregression_new(ptr0, len0, ptr1, len1);
+        const ret = wasm.simplelinearregression_new(ptr0, len0, ptr1, len1);
         this.__wbg_ptr = ret >>> 0;
         SimpleLinearRegressionFinalization.register(this, this.__wbg_ptr, this);
         return this;
@@ -2304,14 +2317,14 @@ export class SimpleLinearRegression {
      * @returns {number}
      */
     get_b0() {
-        const ret = wasm.dickeyfuller_get_b(this.__wbg_ptr);
+        const ret = wasm.simplelinearregression_get_b0(this.__wbg_ptr);
         return ret;
     }
     /**
      * @returns {number}
      */
     get_b1() {
-        const ret = wasm.dickeyfuller_get_se(this.__wbg_ptr);
+        const ret = wasm.simplelinearregression_get_b1(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -2326,13 +2339,13 @@ export class SimpleLinearRegression {
      * @param {number} b0
      */
     set_b0(b0) {
-        wasm.dickeyfuller_set_b(this.__wbg_ptr, b0);
+        wasm.simplelinearregression_set_b0(this.__wbg_ptr, b0);
     }
     /**
      * @param {number} b1
      */
     set_b1(b1) {
-        wasm.dickeyfuller_set_se(this.__wbg_ptr, b1);
+        wasm.simplelinearregression_set_b1(this.__wbg_ptr, b1);
     }
     calculate_regression() {
         wasm.simplelinearregression_calculate_regression(this.__wbg_ptr);
