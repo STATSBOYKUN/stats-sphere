@@ -62,7 +62,7 @@ impl DickeyFuller{
                     reg.calculate_r2(), reg.calculate_r2_adj(),
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 (b, se, vec![b], vec![se], vec![test_stat], vec![p_value], sel_crit)
             },
@@ -78,7 +78,7 @@ impl DickeyFuller{
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_f_stat(),
                     reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 (b[1], se[1], b, se, test_stat, p_value, sel_crit)
             },
@@ -99,7 +99,7 @@ impl DickeyFuller{
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_f_stat(),
                     reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 // Pastikan indeks 2 ada dan standard error tidak nol
                 (b[2], se[2], b, se, test_stat, p_value, sel_crit)

@@ -76,7 +76,7 @@ impl AugmentedDickeyFuller {
                     reg.calculate_r2(), reg.calculate_r2_adj(),
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 (b[x_matriks.len()-1], se[x_matriks.len()-1], b, se, test_stat, p_value, sel_crit)
             },
@@ -97,7 +97,7 @@ impl AugmentedDickeyFuller {
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_f_stat(),
                     reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, sel_crit)
             },
@@ -119,7 +119,7 @@ impl AugmentedDickeyFuller {
                     reg.calculate_se_reg(), reg.calculate_sse(),
                     reg.calculate_log_likelihood(), reg.calculate_f_stat(),
                     reg.calculate_f_prob(), reg.calculate_mean_dep(), reg.calculate_sd_dep(),
-                    reg.calculate_aic(), reg.calculate_bic(), reg.calculate_hc(), reg.calculate_dw()
+                    reg.calculate_aic(), reg.calculate_sbc(), reg.calculate_hqc(), reg.calculate_dw()
                 ];
                 (b[x_matriks.len()], se[x_matriks.len()], b, se, test_stat, p_value, sel_crit)
             }

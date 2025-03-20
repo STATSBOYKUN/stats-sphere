@@ -111,7 +111,7 @@ impl NoInterceptLinearRegression{
         aic / n
     }
 
-    pub fn calculate_bic(&self)-> f64 {
+    pub fn calculate_sbc(&self)-> f64 {
         let n = self.get_y().len() as f64;
         let p = 1.0;
         let likelihood = self.calculate_log_likelihood();
@@ -134,7 +134,7 @@ impl NoInterceptLinearRegression{
         dw
     }
 
-    pub fn calculate_hc(&self)-> f64 {
+    pub fn calculate_hqc(&self)-> f64 {
         let likelihood = self.calculate_log_likelihood();
         let n = self.get_y().len() as f64;
         let k = 1.0;

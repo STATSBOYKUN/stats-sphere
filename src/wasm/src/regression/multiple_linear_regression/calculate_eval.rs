@@ -140,7 +140,7 @@ impl MultipleLinearRegression{
         aic / n
     }
 
-    pub fn calculate_bic(&self)-> f64 {
+    pub fn calculate_sbc(&self)-> f64 {
         let n = self.get_y().len() as f64;
         let p = self.get_beta().len() as f64;
         let likelihood = self.calculate_log_likelihood();
@@ -163,7 +163,7 @@ impl MultipleLinearRegression{
         dw
     }
 
-    pub fn calculate_hc(&self)-> f64 {
+    pub fn calculate_hqc(&self)-> f64 {
         let likelihood = self.calculate_log_likelihood();
         let n = self.get_y().len() as f64;
         let k = self.get_beta().len() as f64;

@@ -1840,8 +1840,8 @@ export class MultipleLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_bic() {
-        const ret = wasm.multiplelinearregression_calculate_bic(this.__wbg_ptr);
+    calculate_sbc() {
+        const ret = wasm.multiplelinearregression_calculate_sbc(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -1854,8 +1854,8 @@ export class MultipleLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_hc() {
-        const ret = wasm.multiplelinearregression_calculate_hc(this.__wbg_ptr);
+    calculate_hqc() {
+        const ret = wasm.multiplelinearregression_calculate_hqc(this.__wbg_ptr);
         return ret;
     }
 }
@@ -2050,8 +2050,8 @@ export class NoInterceptLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_bic() {
-        const ret = wasm.nointerceptlinearregression_calculate_bic(this.__wbg_ptr);
+    calculate_sbc() {
+        const ret = wasm.nointerceptlinearregression_calculate_sbc(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -2064,8 +2064,8 @@ export class NoInterceptLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_hc() {
-        const ret = wasm.nointerceptlinearregression_calculate_hc(this.__wbg_ptr);
+    calculate_hqc() {
+        const ret = wasm.nointerceptlinearregression_calculate_hqc(this.__wbg_ptr);
         return ret;
     }
 }
@@ -2464,8 +2464,8 @@ export class SimpleLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_bic() {
-        const ret = wasm.simplelinearregression_calculate_bic(this.__wbg_ptr);
+    calculate_sbc() {
+        const ret = wasm.simplelinearregression_calculate_sbc(this.__wbg_ptr);
         return ret;
     }
     /**
@@ -2478,8 +2478,8 @@ export class SimpleLinearRegression {
     /**
      * @returns {number}
      */
-    calculate_hc() {
-        const ret = wasm.simplelinearregression_calculate_hc(this.__wbg_ptr);
+    calculate_hqc() {
+        const ret = wasm.simplelinearregression_calculate_hqc(this.__wbg_ptr);
         return ret;
     }
 }

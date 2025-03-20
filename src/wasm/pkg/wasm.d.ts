@@ -182,9 +182,9 @@ export class MultipleLinearRegression {
   calculate_mean_dep(): number;
   calculate_sd_dep(): number;
   calculate_aic(): number;
-  calculate_bic(): number;
+  calculate_sbc(): number;
   calculate_dw(): number;
-  calculate_hc(): number;
+  calculate_hqc(): number;
   readonly get_x: any;
 }
 export class NoInterceptLinearRegression {
@@ -211,9 +211,9 @@ export class NoInterceptLinearRegression {
   calculate_mean_dep(): number;
   calculate_sd_dep(): number;
   calculate_aic(): number;
-  calculate_bic(): number;
+  calculate_sbc(): number;
   calculate_dw(): number;
-  calculate_hc(): number;
+  calculate_hqc(): number;
   readonly get_x: Float64Array;
 }
 export class QuadraticRegression {
@@ -267,9 +267,9 @@ export class SimpleLinearRegression {
   calculate_mean_dep(): number;
   calculate_sd_dep(): number;
   calculate_aic(): number;
-  calculate_bic(): number;
+  calculate_sbc(): number;
   calculate_dw(): number;
-  calculate_hc(): number;
+  calculate_hqc(): number;
 }
 export class Smoothing {
   free(): void;
@@ -434,9 +434,9 @@ export interface InitOutput {
   readonly nointerceptlinearregression_calculate_mean_dep: (a: number) => number;
   readonly nointerceptlinearregression_calculate_sd_dep: (a: number) => number;
   readonly nointerceptlinearregression_calculate_aic: (a: number) => number;
-  readonly nointerceptlinearregression_calculate_bic: (a: number) => number;
+  readonly nointerceptlinearregression_calculate_sbc: (a: number) => number;
   readonly nointerceptlinearregression_calculate_dw: (a: number) => number;
-  readonly nointerceptlinearregression_calculate_hc: (a: number) => number;
+  readonly nointerceptlinearregression_calculate_hqc: (a: number) => number;
   readonly get_t: () => [number, number];
   readonly __wbg_multiplelinearregression_free: (a: number, b: number) => void;
   readonly multiplelinearregression_new: (a: any, b: number, c: number) => number;
@@ -474,9 +474,9 @@ export interface InitOutput {
   readonly multiplelinearregression_calculate_mean_dep: (a: number) => number;
   readonly multiplelinearregression_calculate_sd_dep: (a: number) => number;
   readonly multiplelinearregression_calculate_aic: (a: number) => number;
-  readonly multiplelinearregression_calculate_bic: (a: number) => number;
+  readonly multiplelinearregression_calculate_sbc: (a: number) => number;
   readonly multiplelinearregression_calculate_dw: (a: number) => number;
-  readonly multiplelinearregression_calculate_hc: (a: number) => number;
+  readonly multiplelinearregression_calculate_hqc: (a: number) => number;
   readonly __wbg_simplelinearregression_free: (a: number, b: number) => void;
   readonly simplelinearregression_new: (a: number, b: number, c: number, d: number) => number;
   readonly simplelinearregression_get_x: (a: number) => [number, number];
@@ -503,9 +503,9 @@ export interface InitOutput {
   readonly simplelinearregression_calculate_mean_dep: (a: number) => number;
   readonly simplelinearregression_calculate_sd_dep: (a: number) => number;
   readonly simplelinearregression_calculate_aic: (a: number) => number;
-  readonly simplelinearregression_calculate_bic: (a: number) => number;
+  readonly simplelinearregression_calculate_sbc: (a: number) => number;
   readonly simplelinearregression_calculate_dw: (a: number) => number;
-  readonly simplelinearregression_calculate_hc: (a: number) => number;
+  readonly simplelinearregression_calculate_hqc: (a: number) => number;
   readonly __wbg_quadraticregression_free: (a: number, b: number) => void;
   readonly quadraticregression_new: (a: number, b: number, c: number, d: number) => number;
   readonly quadraticregression_get_x: (a: number) => [number, number];
