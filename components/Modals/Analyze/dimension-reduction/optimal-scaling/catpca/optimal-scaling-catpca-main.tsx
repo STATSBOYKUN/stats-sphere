@@ -100,11 +100,32 @@ export const OptScaCatpcaContainer = ({
                 QuantifiedVars: [...analysisVars, ...suppleVars],
             };
 
+            newState.objectPlots = {
+                ...prev.objectPlots,
+                BTAvailableVars: [...analysisVars, ...suppleVars],
+            };
+
+            newState.categoryPlots = {
+                ...prev.categoryPlots,
+                SourceVar: [...analysisVars, ...suppleVars],
+            };
+
+            newState.loadingPlots = {
+                ...prev.loadingPlots,
+                LoadingAvailableVars: [...analysisVars, ...suppleVars],
+                IncludeCentroidsAvailableVars: [...analysisVars, ...suppleVars],
+            };
+
             // Update based on LabelingVars (if it exists)
             if (prev.main.LabelingVars) {
                 newState.output = {
                     ...newState.output, // Use the already updated output state
                     LabelingVars: [...prev.main.LabelingVars],
+                };
+
+                newState.objectPlots = {
+                    ...newState.objectPlots, // Use the already updated objectPlots state
+                    LabelObjAvailableVars: [...prev.main.LabelingVars],
                 };
             }
 

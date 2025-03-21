@@ -277,12 +277,12 @@ export type OptScaCatpcaObjectPlotsType = {
     Triplot: boolean;
     BTIncludeAllVars: boolean;
     BTIncludeSelectedVars: boolean;
-    BTAvailableVars: string | null;
-    BTSelectedVars: string | null;
+    BTAvailableVars: string[] | null;
+    BTSelectedVars: string[] | null;
     LabelObjLabelByCaseNumber: boolean;
     LabelObjLabelByVar: boolean;
-    LabelObjAvailableVars: string | null;
-    LabelObjSelectedVars: string | null;
+    LabelObjAvailableVars: string[] | null;
+    LabelObjSelectedVars: string[] | null;
 };
 
 export type OptScaCatpcaObjectPlotsProps = {
@@ -290,20 +290,20 @@ export type OptScaCatpcaObjectPlotsProps = {
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaObjectPlotsType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaCatpcaObjectPlotsType;
 };
 
 export type OptScaCatpcaCategoryPlotsType = {
-    SourceVar: string | null;
-    CatPlotsVar: string | null;
-    JointCatPlotsVar: string | null;
-    TransPlotsVar: string | null;
+    SourceVar: string[] | null;
+    CatPlotsVar: string[] | null;
+    JointCatPlotsVar: string[] | null;
+    TransPlotsVar: string[] | null;
     DimensionsForMultiNom: number | null;
     InclResidPlots: boolean;
     PrjCentroidsOfVar: string | null;
-    PrjCentroidsOntoVar: string | null;
+    PrjCentroidsOntoVar: string[] | null;
 };
 
 export type OptScaCatpcaCategoryPlotsProps = {
@@ -311,7 +311,7 @@ export type OptScaCatpcaCategoryPlotsProps = {
     setIsCategoryPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaCategoryPlotsType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: OptScaCatpcaCategoryPlotsType;
 };
@@ -321,13 +321,13 @@ export type OptScaCatpcaLoadingPlotsType = {
     DisplayCompLoadings: boolean;
     LoadingIncludeAllVars: boolean;
     LoadingIncludeSelectedVars: boolean;
-    LoadingAvailableVars: string | null;
-    LoadingSelectedVars: string | null;
+    LoadingAvailableVars: string[] | null;
+    LoadingSelectedVars: string[] | null;
     IncludeCentroids: boolean;
     IncludeCentroidsIncludeAllVars: boolean;
     IncludeCentroidsIncludeSelectedVars: boolean;
-    IncludeCentroidsAvailableVars: string | null;
-    IncludeCentroidsSelectedVars: string | null;
+    IncludeCentroidsAvailableVars: string[] | null;
+    IncludeCentroidsSelectedVars: string[] | null;
 };
 
 export type OptScaCatpcaLoadingPlotsProps = {
@@ -335,7 +335,7 @@ export type OptScaCatpcaLoadingPlotsProps = {
     setIsLoadingPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaLoadingPlotsType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaCatpcaLoadingPlotsType;
 };

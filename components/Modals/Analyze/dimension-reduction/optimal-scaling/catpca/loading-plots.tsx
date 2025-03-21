@@ -12,7 +12,6 @@ import {
     OptScaCatpcaLoadingPlotsProps,
     OptScaCatpcaLoadingPlotsType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -23,6 +22,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const OptScaCatpcaLoadingPlots = ({
     isLoadingPlotsOpen,
@@ -33,12 +34,50 @@ export const OptScaCatpcaLoadingPlots = ({
     const [loadingPlotsState, setLoadingPlotsState] =
         useState<OptScaCatpcaLoadingPlotsType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableLoadingVariables, setAvailableLoadingVariables] = useState<
+        string[]
+    >([]);
+    const [
+        availableIncludeCentroidVariables,
+        setAvailableIncludeCentroidVariables,
+    ] = useState<string[]>([]);
 
     useEffect(() => {
         if (isLoadingPlotsOpen) {
             setLoadingPlotsState({ ...data });
+            setAvailableLoadingVariables(data.LoadingAvailableVars ?? []);
+            setAvailableIncludeCentroidVariables(
+                data.IncludeCentroidsAvailableVars ?? []
+            );
         }
     }, [isLoadingPlotsOpen, data]);
+
+    useEffect(() => {
+        const usedLoadingVariables = [
+            ...(loadingPlotsState.LoadingSelectedVars || []),
+        ].filter(Boolean);
+
+        if (!(loadingPlotsState.LoadingAvailableVars === null)) {
+            const updatedVariables =
+                loadingPlotsState.LoadingAvailableVars.filter(
+                    (variable) => !usedLoadingVariables.includes(variable)
+                );
+            setAvailableLoadingVariables(updatedVariables);
+        }
+
+        const usedIncludeCentroidVariables = [
+            ...(loadingPlotsState.IncludeCentroidsSelectedVars || []),
+        ].filter(Boolean);
+
+        if (!(loadingPlotsState.IncludeCentroidsAvailableVars === null)) {
+            const updatedVariables =
+                loadingPlotsState.IncludeCentroidsAvailableVars.filter(
+                    (variable) =>
+                        !usedIncludeCentroidVariables.includes(variable)
+                );
+            setAvailableIncludeCentroidVariables(updatedVariables);
+        }
+    }, [loadingPlotsState]);
 
     const handleChange = (
         field: keyof OptScaCatpcaLoadingPlotsType,
@@ -66,6 +105,40 @@ export const OptScaCatpcaLoadingPlots = ({
             IncludeCentroidsIncludeSelectedVars:
                 value === "IncludeCentroidsIncludeSelectedVars",
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setLoadingPlotsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "LoadingSelectedVars") {
+                updatedState.LoadingSelectedVars = [
+                    ...(updatedState.LoadingSelectedVars || []),
+                    variable,
+                ];
+            } else if (target === "IncludeCentroidsSelectedVars") {
+                updatedState.IncludeCentroidsSelectedVars = [
+                    ...(updatedState.IncludeCentroidsSelectedVars || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setLoadingPlotsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "LoadingSelectedVars") {
+                updatedState.LoadingSelectedVars = (
+                    updatedState.LoadingSelectedVars || []
+                ).filter((item) => item !== variable);
+            } else if (target === "IncludeCentroidsSelectedVars") {
+                updatedState.IncludeCentroidsSelectedVars = (
+                    updatedState.IncludeCentroidsSelectedVars || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -173,45 +246,114 @@ export const OptScaCatpcaLoadingPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <Input
-                                                            id="LoadingAvailableVars"
-                                                            type="text"
-                                                            className="w-full min-h-[150px]"
-                                                            placeholder=""
-                                                            value={
-                                                                loadingPlotsState.LoadingAvailableVars ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "LoadingAvailableVars",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                                {availableLoadingVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
-                                                <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Selected: </Label>
-                                                    <Input
-                                                        id="LoadingSelectedVars"
-                                                        type="text"
-                                                        className="w-full min-h-[150px]"
-                                                        placeholder=""
+                                                <div
+                                                    className="flex flex-col w-full gap-2 p-2"
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                    onDrop={(e) => {
+                                                        const variable =
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            );
+                                                        handleDrop(
+                                                            "LoadingSelectedVars",
+                                                            variable
+                                                        );
+                                                    }}
+                                                >
+                                                    <Label className="font-bold">
+                                                        <Label>
+                                                            Selected:{" "}
+                                                        </Label>
+                                                    </Label>
+                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[150px]">
+                                                                {loadingPlotsState.LoadingSelectedVars &&
+                                                                loadingPlotsState
+                                                                    .LoadingSelectedVars
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {loadingPlotsState.LoadingSelectedVars.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "LoadingSelectedVars",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
                                                         value={
                                                             loadingPlotsState.LoadingSelectedVars ??
                                                             ""
                                                         }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "LoadingSelectedVars",
-                                                                e.target.value
-                                                            )
-                                                        }
+                                                        name="Independents"
                                                     />
                                                 </div>
                                             </ResizablePanel>
@@ -287,45 +429,110 @@ export const OptScaCatpcaLoadingPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <Input
-                                                            id="IncludeCentroidsAvailableVars"
-                                                            type="text"
-                                                            className="w-full min-h-[150px]"
-                                                            placeholder=""
-                                                            value={
-                                                                loadingPlotsState.IncludeCentroidsAvailableVars ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "IncludeCentroidsAvailableVars",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                                {availableIncludeCentroidVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
-                                                <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Selected: </Label>
-                                                    <Input
-                                                        id="IncludeCentroidsSelectedVars"
-                                                        type="text"
-                                                        className="w-full min-h-[150px]"
-                                                        placeholder=""
+                                                <div
+                                                    className="flex flex-col w-full gap-2 p-2"
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                    onDrop={(e) => {
+                                                        const variable =
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            );
+                                                        handleDrop(
+                                                            "IncludeCentroidsSelectedVars",
+                                                            variable
+                                                        );
+                                                    }}
+                                                >
+                                                    <Label>Selected:</Label>
+                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[150px]">
+                                                                {loadingPlotsState.IncludeCentroidsSelectedVars &&
+                                                                loadingPlotsState
+                                                                    .IncludeCentroidsSelectedVars
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {loadingPlotsState.IncludeCentroidsSelectedVars.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "IncludeCentroidsSelectedVars",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
                                                         value={
                                                             loadingPlotsState.IncludeCentroidsSelectedVars ??
                                                             ""
                                                         }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "IncludeCentroidsSelectedVars",
-                                                                e.target.value
-                                                            )
-                                                        }
+                                                        name="Independents"
                                                     />
                                                 </div>
                                             </ResizablePanel>

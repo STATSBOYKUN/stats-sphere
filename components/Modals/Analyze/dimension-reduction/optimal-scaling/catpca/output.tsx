@@ -57,7 +57,7 @@ export const OptScaCatpcaOutput = ({
         }));
     };
 
-    const handleDrop = (target, variable) => {
+    const handleDrop = (target: string, variable: string) => {
         setOutputState((prev) => {
             const updatedState = { ...prev };
 

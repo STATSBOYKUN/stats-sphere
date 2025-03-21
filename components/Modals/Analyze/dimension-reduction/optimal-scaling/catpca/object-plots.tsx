@@ -17,12 +17,13 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const OptScaCatpcaObjectPlots = ({
     isObjectPlotsOpen,
@@ -33,12 +34,45 @@ export const OptScaCatpcaObjectPlots = ({
     const [objectPlotsState, setObjectPlotsState] =
         useState<OptScaCatpcaObjectPlotsType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableBTVariables, setAvailableBTVariables] = useState<string[]>(
+        []
+    );
+    const [availableLabelVariables, setAvailableLabelVariables] = useState<
+        string[]
+    >([]);
 
     useEffect(() => {
         if (isObjectPlotsOpen) {
             setObjectPlotsState({ ...data });
+            setAvailableBTVariables(data.BTAvailableVars ?? []);
+            setAvailableLabelVariables(data.LabelObjAvailableVars ?? []);
         }
     }, [isObjectPlotsOpen, data]);
+
+    useEffect(() => {
+        const usedBTVariables = [
+            ...(objectPlotsState.BTSelectedVars || []),
+        ].filter(Boolean);
+
+        if (!(objectPlotsState.BTAvailableVars === null)) {
+            const updatedVariables = objectPlotsState.BTAvailableVars.filter(
+                (variable) => !usedBTVariables.includes(variable)
+            );
+            setAvailableBTVariables(updatedVariables);
+        }
+
+        const usedLabelVariables = [
+            ...(objectPlotsState.LabelObjSelectedVars || []),
+        ].filter(Boolean);
+
+        if (!(objectPlotsState.LabelObjAvailableVars === null)) {
+            const updatedVariables =
+                objectPlotsState.LabelObjAvailableVars.filter(
+                    (variable) => !usedLabelVariables.includes(variable)
+                );
+            setAvailableLabelVariables(updatedVariables);
+        }
+    }, [objectPlotsState]);
 
     const handleChange = (
         field: keyof OptScaCatpcaObjectPlotsType,
@@ -72,6 +106,40 @@ export const OptScaCatpcaObjectPlots = ({
             LabelObjLabelByCaseNumber: value === "LabelObjLabelByCaseNumber",
             LabelObjLabelByVar: value === "LabelObjLabelByVar",
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setObjectPlotsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "BTSelectedVars") {
+                updatedState.BTSelectedVars = [
+                    ...(updatedState.BTSelectedVars || []),
+                    variable,
+                ];
+            } else if (target === "LabelObjSelectedVars") {
+                updatedState.LabelObjSelectedVars = [
+                    ...(updatedState.LabelObjSelectedVars || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setObjectPlotsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "BTSelectedVars") {
+                updatedState.BTSelectedVars = (
+                    updatedState.BTSelectedVars || []
+                ).filter((item) => item !== variable);
+            } else if (target === "LabelObjSelectedVars") {
+                updatedState.LabelObjSelectedVars = (
+                    updatedState.LabelObjSelectedVars || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -251,45 +319,114 @@ export const OptScaCatpcaObjectPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <Input
-                                                            id="BTAvailableVars"
-                                                            type="text"
-                                                            className="w-full min-h-[175px]"
-                                                            placeholder=""
-                                                            value={
-                                                                objectPlotsState.BTAvailableVars ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "BTAvailableVars",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col justify-start items-start h-[175px] p-2 border rounded overflow-hidden">
+                                                                {availableBTVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
-                                                <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Selected: </Label>
-                                                    <Input
-                                                        id="BTSelectedVars"
-                                                        type="text"
-                                                        className="w-full min-h-[175px]"
-                                                        placeholder=""
+                                                <div
+                                                    className="flex flex-col w-full gap-2 p-2"
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                    onDrop={(e) => {
+                                                        const variable =
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            );
+                                                        handleDrop(
+                                                            "BTSelectedVars",
+                                                            variable
+                                                        );
+                                                    }}
+                                                >
+                                                    <Label className="font-bold">
+                                                        <Label>
+                                                            Selected:{" "}
+                                                        </Label>
+                                                    </Label>
+                                                    <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[175px]">
+                                                                {objectPlotsState.BTSelectedVars &&
+                                                                objectPlotsState
+                                                                    .BTSelectedVars
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {objectPlotsState.BTSelectedVars.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "BTSelectedVars",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
                                                         value={
                                                             objectPlotsState.BTSelectedVars ??
                                                             ""
                                                         }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "BTSelectedVars",
-                                                                e.target.value
-                                                            )
-                                                        }
+                                                        name="Independents"
                                                     />
                                                 </div>
                                             </ResizablePanel>
@@ -343,45 +480,110 @@ export const OptScaCatpcaObjectPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <Input
-                                                            id="LabelObjAvailableVars"
-                                                            type="text"
-                                                            className="w-full min-h-[150px]"
-                                                            placeholder=""
-                                                            value={
-                                                                objectPlotsState.LabelObjAvailableVars ??
-                                                                ""
-                                                            }
-                                                            onChange={(e) =>
-                                                                handleChange(
-                                                                    "LabelObjAvailableVars",
-                                                                    e.target
-                                                                        .value
-                                                                )
-                                                            }
-                                                        />
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                                {availableLabelVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={35}>
-                                                <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Selected: </Label>
-                                                    <Input
-                                                        id="LabelObjSelectedVars"
-                                                        type="text"
-                                                        className="w-full min-h-[150px]"
-                                                        placeholder=""
+                                                <div
+                                                    className="flex flex-col w-full gap-2 p-2"
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                    onDrop={(e) => {
+                                                        const variable =
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            );
+                                                        handleDrop(
+                                                            "LabelObjSelectedVars",
+                                                            variable
+                                                        );
+                                                    }}
+                                                >
+                                                    <Label>Selected:</Label>
+                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[150px]">
+                                                                {objectPlotsState.LabelObjSelectedVars &&
+                                                                objectPlotsState
+                                                                    .LabelObjSelectedVars
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {objectPlotsState.LabelObjSelectedVars.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "LabelObjSelectedVars",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
                                                         value={
                                                             objectPlotsState.LabelObjSelectedVars ??
                                                             ""
                                                         }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "LabelObjSelectedVars",
-                                                                e.target.value
-                                                            )
-                                                        }
+                                                        name="Independents"
                                                     />
                                                 </div>
                                             </ResizablePanel>

@@ -21,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const OptScaCatpcaCategoryPlots = ({
     isCategoryPlotsOpen,
@@ -31,10 +33,12 @@ export const OptScaCatpcaCategoryPlots = ({
     const [categoryPlotsState, setCategoryPlotsState] =
         useState<OptScaCatpcaCategoryPlotsType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isCategoryPlotsOpen) {
             setCategoryPlotsState({ ...data });
+            setAvailableVariables(data.SourceVar ?? []);
         }
     }, [isCategoryPlotsOpen, data]);
 
@@ -46,6 +50,71 @@ export const OptScaCatpcaCategoryPlots = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setCategoryPlotsState((prev) => {
+            const updatedState = { ...prev };
+
+            // Add to target array if it doesn't already exist in that array
+            if (target === "CatPlotsVar") {
+                const currentArray = updatedState.CatPlotsVar || [];
+                if (!currentArray.includes(variable)) {
+                    updatedState.CatPlotsVar = [...currentArray, variable];
+                }
+            } else if (target === "JointCatPlotsVar") {
+                const currentArray = updatedState.JointCatPlotsVar || [];
+                if (!currentArray.includes(variable)) {
+                    updatedState.JointCatPlotsVar = [...currentArray, variable];
+                }
+            } else if (target === "TransPlotsVar") {
+                const currentArray = updatedState.TransPlotsVar || [];
+                if (!currentArray.includes(variable)) {
+                    updatedState.TransPlotsVar = [...currentArray, variable];
+                }
+            } else if (target === "PrjCentroidsOfVar") {
+                const currentArray = updatedState.PrjCentroidsOfVar || "";
+                if (!currentArray.includes(variable)) {
+                    updatedState.PrjCentroidsOfVar = variable;
+                }
+            } else if (target === "PrjCentroidsOntoVar") {
+                const currentArray = updatedState.PrjCentroidsOntoVar || [];
+                if (!currentArray.includes(variable)) {
+                    updatedState.PrjCentroidsOntoVar = [
+                        ...currentArray,
+                        variable,
+                    ];
+                }
+            }
+
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setCategoryPlotsState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "CatPlotsVar") {
+                updatedState.CatPlotsVar = (
+                    updatedState.CatPlotsVar || []
+                ).filter((item) => item !== variable);
+            } else if (target === "JointCatPlotsVar") {
+                updatedState.JointCatPlotsVar = (
+                    updatedState.JointCatPlotsVar || []
+                ).filter((item) => item !== variable);
+            } else if (target === "TransPlotsVar") {
+                updatedState.TransPlotsVar = (
+                    updatedState.TransPlotsVar || []
+                ).filter((item) => item !== variable);
+            } else if (target === "PrjCentroidsOfVar") {
+                updatedState.PrjCentroidsOfVar = "";
+            } else if (target === "PrjCentroidsOntoVar") {
+                updatedState.PrjCentroidsOntoVar = (
+                    updatedState.PrjCentroidsOntoVar || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -76,11 +145,31 @@ export const OptScaCatpcaCategoryPlots = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -88,64 +177,221 @@ export const OptScaCatpcaCategoryPlots = ({
                             <ResizablePanel defaultSize={75}>
                                 <div className="flex flex-col p-2">
                                     <div className="w-full">
-                                        <Label>Category Plots: </Label>
-                                        <Input
-                                            id="CatPlotsVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={
-                                                categoryPlotsState.CatPlotsVar ??
-                                                ""
+                                        <div
+                                            className="flex flex-col w-full gap-2"
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                            onChange={(e) =>
-                                                handleChange(
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
                                                     "CatPlotsVar",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label>Category Plots: </Label>
+                                            <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[65px]">
+                                                        {categoryPlotsState.CatPlotsVar &&
+                                                        categoryPlotsState
+                                                            .CatPlotsVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {categoryPlotsState.CatPlotsVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "CatPlotsVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    categoryPlotsState.CatPlotsVar ??
+                                                    ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="w-full">
                                         <Label>Joint Category Plots: </Label>
-                                        <Input
-                                            id="JointCatPlotsVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={
-                                                categoryPlotsState.JointCatPlotsVar ??
-                                                ""
+                                        <div
+                                            className="flex flex-col w-full gap-2"
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                            onChange={(e) =>
-                                                handleChange(
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
                                                     "JointCatPlotsVar",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label className="font-bold">
+                                                Forced Entry:
+                                            </Label>
+                                            <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[65px]">
+                                                        {categoryPlotsState.JointCatPlotsVar &&
+                                                        categoryPlotsState
+                                                            .JointCatPlotsVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {categoryPlotsState.JointCatPlotsVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "JointCatPlotsVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    categoryPlotsState.JointCatPlotsVar ??
+                                                    ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className="w-full">
-                                            <Label>
-                                                Transformation Plots:{" "}
-                                            </Label>
-                                            <Input
-                                                id="TransPlotsVar"
-                                                type="text"
-                                                className="w-full min-h-[65px]"
-                                                placeholder=""
-                                                value={
-                                                    categoryPlotsState.TransPlotsVar ??
-                                                    ""
+                                            <div
+                                                className="flex flex-col w-full gap-2"
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
                                                 }
-                                                onChange={(e) =>
-                                                    handleChange(
+                                                onDrop={(e) => {
+                                                    const variable =
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        );
+                                                    handleDrop(
                                                         "TransPlotsVar",
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
+                                                        variable
+                                                    );
+                                                }}
+                                            >
+                                                <Label>
+                                                    Transformation Plots:{" "}
+                                                </Label>
+                                                <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
+                                                    <ScrollArea>
+                                                        <div className="w-full h-[65px]">
+                                                            {categoryPlotsState.TransPlotsVar &&
+                                                            categoryPlotsState
+                                                                .TransPlotsVar
+                                                                .length > 0 ? (
+                                                                <div className="flex flex-wrap gap-1">
+                                                                    {categoryPlotsState.TransPlotsVar.map(
+                                                                        (
+                                                                            variable,
+                                                                            index
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                onClick={() =>
+                                                                                    handleRemoveVariable(
+                                                                                        "TransPlotsVar",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
+                                                                                    variable
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-sm font-light text-gray-500">
+                                                                    Drop
+                                                                    variables
+                                                                    here.
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        categoryPlotsState.TransPlotsVar ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
+                                            </div>
                                         </div>
                                         <div className="flex items-center space-x-2">
                                             <Label className="w-[225px]">
@@ -193,42 +439,137 @@ export const OptScaCatpcaCategoryPlots = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label>Project Centroids Of: </Label>
-                                        <Input
-                                            id="PrjCentroidsOfVar"
-                                            type="text"
-                                            className="w-full min-h-[65px]"
-                                            placeholder=""
-                                            value={
-                                                categoryPlotsState.PrjCentroidsOfVar ??
-                                                ""
+                                        <div
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                            onChange={(e) =>
-                                                handleChange(
+                                            onDrop={(e) => {
+                                                handleDrop(
                                                     "PrjCentroidsOfVar",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    )
+                                                );
+                                            }}
+                                        >
+                                            <Label>
+                                                Project Centroids Of:{" "}
+                                            </Label>
+                                            <div className="flex items-center space-x-2">
+                                                <div
+                                                    className="w-full min-h-[40px] p-2 border rounded"
+                                                    onDrop={(e) => {
+                                                        handleDrop(
+                                                            "PrjCentroidsOfVar",
+                                                            e.dataTransfer.getData(
+                                                                "text"
+                                                            )
+                                                        );
+                                                    }}
+                                                    onDragOver={(e) =>
+                                                        e.preventDefault()
+                                                    }
+                                                >
+                                                    {categoryPlotsState.PrjCentroidsOfVar ? (
+                                                        <Badge
+                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                            variant="outline"
+                                                            onClick={() =>
+                                                                handleRemoveVariable(
+                                                                    "PrjCentroidsOfVar"
+                                                                )
+                                                            }
+                                                        >
+                                                            {
+                                                                categoryPlotsState.PrjCentroidsOfVar
+                                                            }
+                                                        </Badge>
+                                                    ) : (
+                                                        <span className="text-sm font-light text-gray-500">
+                                                            Drop variables here.
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        categoryPlotsState.PrjCentroidsOfVar ??
+                                                        ""
+                                                    }
+                                                    name="PrjCentroidsOfVar"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label>Onto: </Label>
-                                        <Input
-                                            id="PrjCentroidsOntoVar"
-                                            type="text"
-                                            className="w-full"
-                                            placeholder=""
-                                            value={
-                                                categoryPlotsState.PrjCentroidsOntoVar ??
-                                                ""
+                                        <div
+                                            className="flex flex-col w-full gap-2"
+                                            onDragOver={(e) =>
+                                                e.preventDefault()
                                             }
-                                            onChange={(e) =>
-                                                handleChange(
+                                            onDrop={(e) => {
+                                                const variable =
+                                                    e.dataTransfer.getData(
+                                                        "text"
+                                                    );
+                                                handleDrop(
                                                     "PrjCentroidsOntoVar",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
+                                                    variable
+                                                );
+                                            }}
+                                        >
+                                            <Label>Onto: </Label>
+                                            <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="w-full h-[65px]">
+                                                        {categoryPlotsState.PrjCentroidsOntoVar &&
+                                                        categoryPlotsState
+                                                            .PrjCentroidsOntoVar
+                                                            .length > 0 ? (
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {categoryPlotsState.PrjCentroidsOntoVar.map(
+                                                                    (
+                                                                        variable,
+                                                                        index
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "PrjCentroidsOntoVar",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <span className="text-sm font-light text-gray-500">
+                                                                Drop variables
+                                                                here.
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
+                                            <input
+                                                type="hidden"
+                                                value={
+                                                    categoryPlotsState.PrjCentroidsOntoVar ??
+                                                    ""
+                                                }
+                                                name="Independents"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </ResizablePanel>
