@@ -102,9 +102,9 @@ export type OptScaCatpcaDiscretizeProps = {
 };
 
 export type OptScaCatpcaMissingType = {
-    CurrentTargetList: string | null;
-    AnalysisVariables: string | null;
-    SupplementaryVariables: string | null;
+    CurrentTargetList: string[] | null;
+    AnalysisVariables: string[] | null;
+    SupplementaryVariables: string[] | null;
     MissingValuesExclude: boolean;
     ExcludeMode: boolean;
     ExcludeExtraCat: boolean;
@@ -121,7 +121,7 @@ export type OptScaCatpcaMissingProps = {
     setIsMissingOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaMissingType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaCatpcaMissingType;
 };
@@ -174,12 +174,12 @@ export type OptScaCatpcaOutputType = {
     CorreOriginalVars: boolean;
     CorreTransVars: boolean;
     Variance: boolean;
-    QuantifiedVars: string | null;
-    LabelingVars: string | null;
-    CatQuantifications: string | null;
-    DescStats: string | null;
-    ObjScoresIncludeCat: string | null;
-    ObjScoresLabelBy: string | null;
+    QuantifiedVars: string[] | null;
+    LabelingVars: string[] | null;
+    CatQuantifications: string[] | null;
+    DescStats: string[] | null;
+    ObjScoresIncludeCat: string[] | null;
+    ObjScoresLabelBy: string[] | null;
 };
 
 export type OptScaCatpcaOutputProps = {
@@ -187,7 +187,7 @@ export type OptScaCatpcaOutputProps = {
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaOutputType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaCatpcaOutputType;
 };

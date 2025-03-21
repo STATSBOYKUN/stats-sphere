@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import {
     CONFIGURATIONMETHOD,
     DISCRETIZEMETHOD,
+    NORMALIZATIONMETHOD,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
 import {
     OptScaCatpcaOptionsProps,
@@ -119,7 +120,7 @@ export const OptScaCatpcaOptions = ({
                     <div className="flex flex-col items-start gap-2">
                         <ResizablePanelGroup
                             direction="vertical"
-                            className="min-h-[485px] max-w-xl rounded-lg border md:min-w-[250px]"
+                            className="min-h-[495px] max-w-xl rounded-lg border md:min-w-[250px]"
                         >
                             <ResizablePanel defaultSize={100}>
                                 <ResizablePanelGroup direction="horizontal">
@@ -452,7 +453,7 @@ export const OptScaCatpcaOptions = ({
                                                             </SelectTrigger>
                                                             <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {DISCRETIZEMETHOD.map(
+                                                                    {NORMALIZATIONMETHOD.map(
                                                                         (
                                                                             method,
                                                                             index

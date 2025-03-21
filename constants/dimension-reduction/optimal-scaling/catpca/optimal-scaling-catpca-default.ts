@@ -47,10 +47,10 @@ export const OptScaCatpcaDefineScaleDefault: OptScaCatpcaDefineScaleType = {
 
 export const OptScaCatpcaDiscretizeDefault: OptScaCatpcaDiscretizeType = {
     VariablesList: null,
-    Method: null,
-    NumberOfCategories: false,
+    Method: "Unspecified",
+    NumberOfCategories: true,
     NumberOfCategoriesValue: null,
-    DistributionNormal: false,
+    DistributionNormal: true,
     DistributionUniform: false,
     EqualIntervals: false,
     EqualIntervalsValue: null,

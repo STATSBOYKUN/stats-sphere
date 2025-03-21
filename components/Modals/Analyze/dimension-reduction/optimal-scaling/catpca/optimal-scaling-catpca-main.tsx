@@ -62,18 +62,59 @@ export const OptScaCatpcaContainer = ({
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
     useEffect(() => {
-        if (formData.main.AnalysisVars) {
-            setFormData((prev) => ({
-                ...prev,
-                discretize: {
+        setFormData((prev) => {
+            // Create a copy of the previous state to modify
+            const newState = { ...prev };
+
+            // Update discretize based on AnalysisVars (if it exists)
+            if (prev.main.AnalysisVars) {
+                newState.discretize = {
                     ...prev.discretize,
-                    VariablesList: prev.main.AnalysisVars
-                        ? [...prev.main.AnalysisVars]
-                        : [],
-                },
-            }));
-        }
-    }, [formData.main.AnalysisVars]);
+                    VariablesList: [...prev.main.AnalysisVars],
+                };
+
+                newState.missing = {
+                    ...prev.missing,
+                    AnalysisVariables: [...prev.main.AnalysisVars],
+                };
+            }
+
+            // Update missing.SupplementaryVariables based on SuppleVars (if it exists)
+            if (prev.main.SuppleVars) {
+                newState.missing = {
+                    ...(newState.missing || prev.missing),
+                    SupplementaryVariables: [...prev.main.SuppleVars],
+                };
+            }
+
+            // Combine AnalysisVars and SuppleVars for QuantifiedVars
+            const analysisVars = prev.main.AnalysisVars
+                ? [...prev.main.AnalysisVars]
+                : [];
+            const suppleVars = prev.main.SuppleVars
+                ? [...prev.main.SuppleVars]
+                : [];
+
+            newState.output = {
+                ...prev.output,
+                QuantifiedVars: [...analysisVars, ...suppleVars],
+            };
+
+            // Update based on LabelingVars (if it exists)
+            if (prev.main.LabelingVars) {
+                newState.output = {
+                    ...newState.output, // Use the already updated output state
+                    LabelingVars: [...prev.main.LabelingVars],
+                };
+            }
+
+            return newState;
+        });
+    }, [
+        formData.main.AnalysisVars,
+        formData.main.SuppleVars,
+        formData.main.LabelingVars,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
