@@ -50,6 +50,14 @@ export const CorrespondencePlots = ({
         }));
     };
 
+    const handlePlotGrp = (value: string) => {
+        setPlotsState((prevState) => ({
+            ...prevState,
+            DisplayAll: value === "DisplayAll",
+            RestrictDim: value === "RestrictDim",
+        }));
+    };
+
     const handleContinue = () => {
         Object.entries(plotsState).forEach(([key, value]) => {
             updateFormData(key as keyof CorrespondencePlotsType, value);
@@ -130,6 +138,11 @@ export const CorrespondencePlots = ({
                                             type="number"
                                             placeholder=""
                                             value={plotsState.IdScatter ?? 0}
+                                            disabled={
+                                                !plotsState.Biplot &&
+                                                !plotsState.RowPts &&
+                                                !plotsState.ColPts
+                                            }
                                             onChange={(e) =>
                                                 handleChange(
                                                     "IdScatter",
@@ -185,6 +198,10 @@ export const CorrespondencePlots = ({
                                             type="number"
                                             placeholder=""
                                             value={plotsState.IdLine ?? 0}
+                                            disabled={
+                                                !plotsState.TransRow &&
+                                                !plotsState.TransCol
+                                            }
                                             onChange={(e) =>
                                                 handleChange(
                                                     "IdLine",
@@ -198,7 +215,14 @@ export const CorrespondencePlots = ({
                         </ResizablePanel>
                         <ResizableHandle />
                         <ResizablePanel defaultSize={38}>
-                            <RadioGroup>
+                            <RadioGroup
+                                value={
+                                    plotsState.DisplayAll
+                                        ? "DisplayAll"
+                                        : "RestrictDim"
+                                }
+                                onValueChange={handlePlotGrp}
+                            >
                                 <div className="flex flex-col gap-2 p-2">
                                     <Label className="font-bold">
                                         Plot Dimension
@@ -232,6 +256,9 @@ export const CorrespondencePlots = ({
                                                 type="number"
                                                 placeholder=""
                                                 value={plotsState.Lowest ?? 0}
+                                                disabled={
+                                                    !plotsState.RestrictDim
+                                                }
                                                 onChange={(e) =>
                                                     handleChange(
                                                         "Lowest",
@@ -251,6 +278,9 @@ export const CorrespondencePlots = ({
                                                 type="number"
                                                 placeholder=""
                                                 value={plotsState.Highest ?? 0}
+                                                disabled={
+                                                    !plotsState.RestrictDim
+                                                }
                                                 onChange={(e) =>
                                                     handleChange(
                                                         "Highest",

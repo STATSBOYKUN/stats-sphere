@@ -21,12 +21,18 @@ import {
 } from "@/components/ui/resizable";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
+// Extend the props type with an optional onContinue callback
+interface ExtendedProps extends OptScaCatpcaDefineRangeScaleProps {
+    onContinue?: (data: OptScaCatpcaDefineRangeScaleType) => void;
+}
+
 export const OptScaCatpcaDefineRangeScale = ({
     isDefineRangeScaleOpen,
     setIsDefineRangeScaleOpen,
     updateFormData,
     data,
-}: OptScaCatpcaDefineRangeScaleProps) => {
+    onContinue, // Optional callback
+}: ExtendedProps) => {
     const [defineRangeScaleState, setDefineRangeScaleState] =
         useState<OptScaCatpcaDefineRangeScaleType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
@@ -66,6 +72,12 @@ export const OptScaCatpcaDefineRangeScale = ({
                 value
             );
         });
+
+        // Call the onContinue callback if provided
+        if (onContinue) {
+            onContinue(defineRangeScaleState);
+        }
+
         setIsDefineRangeScaleOpen(false);
     };
 

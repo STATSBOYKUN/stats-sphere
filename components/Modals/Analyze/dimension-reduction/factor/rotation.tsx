@@ -100,7 +100,7 @@ export const FactorRotation = ({
                                                 ? "Oblimin"
                                                 : rotationState.Promax
                                                 ? "Promax"
-                                                : ""
+                                                : "None"
                                         }
                                         onValueChange={handleMethodGrp}
                                     >
@@ -145,6 +145,9 @@ export const FactorRotation = ({
                                                             value={
                                                                 rotationState.Delta ??
                                                                 ""
+                                                            }
+                                                            disabled={
+                                                                !rotationState.Oblimin
                                                             }
                                                             onChange={(e) =>
                                                                 handleChange(
@@ -200,6 +203,9 @@ export const FactorRotation = ({
                                                                 rotationState.Kappa ??
                                                                 ""
                                                             }
+                                                            disabled={
+                                                                !rotationState.Promax
+                                                            }
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "Kappa",
@@ -228,6 +234,7 @@ export const FactorRotation = ({
                                                 checked={
                                                     rotationState.RotatedSol
                                                 }
+                                                disabled={rotationState.None}
                                                 onCheckedChange={(checked) =>
                                                     handleChange(
                                                         "RotatedSol",

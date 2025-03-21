@@ -1,12 +1,15 @@
-import {OptScaDefineMainType, OptScaDefineType} from "@/models/dimension-reduction/optimal-scaling-define";
+import {
+    OptScaDefineMainType,
+    OptScaDefineType,
+} from "@/models/dimension-reduction/optimal-scaling-define";
 
 export const OptScaDefineMainDefault: OptScaDefineMainType = {
-    AllVarsMultiNominal: false,
+    AllVarsMultiNominal: true,
     SomeVarsNotMultiNominal: false,
-    OneSet: false,
+    OneSet: true,
     MultipleSets: false,
 };
 
 export const OptScaDefineDefault: OptScaDefineType = {
     main: OptScaDefineMainDefault,
-}
+};

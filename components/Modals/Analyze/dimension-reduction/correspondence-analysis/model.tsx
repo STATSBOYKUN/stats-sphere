@@ -189,6 +189,7 @@ export const CorrespondenceModel = ({
                                             <RadioGroupItem
                                                 value="RowRemoved"
                                                 id="RowRemoved"
+                                                disabled={modelState.ChiSquare}
                                             />
                                             <Label htmlFor="RowRemoved">
                                                 Row Means are Removed
@@ -198,6 +199,7 @@ export const CorrespondenceModel = ({
                                             <RadioGroupItem
                                                 value="ColRemoved"
                                                 id="ColRemoved"
+                                                disabled={modelState.ChiSquare}
                                             />
                                             <Label htmlFor="ColRemoved">
                                                 Column Means are Removed
@@ -207,6 +209,7 @@ export const CorrespondenceModel = ({
                                             <RadioGroupItem
                                                 value="RowTotals"
                                                 id="RowTotals"
+                                                disabled={modelState.ChiSquare}
                                             />
                                             <Label htmlFor="RowTotals">
                                                 Row Totals are Equalized and
@@ -217,6 +220,7 @@ export const CorrespondenceModel = ({
                                             <RadioGroupItem
                                                 value="ColTotals"
                                                 id="ColTotals"
+                                                disabled={modelState.ChiSquare}
                                             />
                                             <Label htmlFor="ColTotals">
                                                 Column Totals are Equalized and
@@ -311,6 +315,9 @@ export const CorrespondenceModel = ({
                                                             value={
                                                                 modelState.CustomDimensions ??
                                                                 0
+                                                            }
+                                                            disabled={
+                                                                !modelState.Custom
                                                             }
                                                             onChange={(e) =>
                                                                 handleChange(

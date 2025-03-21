@@ -299,6 +299,11 @@ export const FactorDialog = ({
                                             <Button
                                                 type="button"
                                                 variant="secondary"
+                                                disabled={
+                                                    !mainState.TargetVar ||
+                                                    mainState.TargetVar
+                                                        .length === 0
+                                                }
                                                 onClick={openDialog(
                                                     setIsValueOpen
                                                 )}

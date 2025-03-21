@@ -21,12 +21,18 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 
+// Extend the props type with an optional onContinue callback
+interface ExtendedProps extends OptScaCatpcaDefineScaleProps {
+    onContinue?: (data: OptScaCatpcaDefineScaleType) => void;
+}
+
 export const OptScaCatpcaDefineScale = ({
     isDefineScaleOpen,
     setIsDefineScaleOpen,
     updateFormData,
     data,
-}: OptScaCatpcaDefineScaleProps) => {
+    onContinue, // Optional callback
+}: ExtendedProps) => {
     const [defineScaleState, setDefineScaleState] =
         useState<OptScaCatpcaDefineScaleType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
@@ -63,6 +69,12 @@ export const OptScaCatpcaDefineScale = ({
         Object.entries(defineScaleState).forEach(([key, value]) => {
             updateFormData(key as keyof OptScaCatpcaDefineScaleType, value);
         });
+
+        // Call the onContinue callback if provided
+        if (onContinue) {
+            onContinue(defineScaleState);
+        }
+
         setIsDefineScaleOpen(false);
     };
 

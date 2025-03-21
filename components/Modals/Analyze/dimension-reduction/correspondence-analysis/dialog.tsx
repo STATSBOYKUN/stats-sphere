@@ -224,6 +224,11 @@ export const CorrespondenceDialog = ({
                                             <Button
                                                 type="button"
                                                 variant="secondary"
+                                                disabled={
+                                                    !mainState.RowTargetVar ||
+                                                    mainState.RowTargetVar ===
+                                                        ""
+                                                }
                                                 onClick={openDialog(
                                                     setIsDefineRangeRowOpen
                                                 )}
@@ -286,6 +291,11 @@ export const CorrespondenceDialog = ({
                                             <Button
                                                 type="button"
                                                 variant="secondary"
+                                                disabled={
+                                                    !mainState.ColTargetVar ||
+                                                    mainState.ColTargetVar ===
+                                                        ""
+                                                }
                                                 onClick={openDialog(
                                                     setIsDefineRangeColumnOpen
                                                 )}

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
     Dialog,
     DialogContent,
@@ -6,20 +7,14 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import {
-    OptScaCatpcaOptionsProps,
-    OptScaCatpcaOptionsType,
-} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -28,9 +23,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DISCRETIZEMETHOD } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import {
+    CONFIGURATIONMETHOD,
+    DISCRETIZEMETHOD,
+} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+import {
+    OptScaCatpcaOptionsProps,
+    OptScaCatpcaOptionsType,
+} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { useEffect, useState } from "react";
 
 export const OptScaCatpcaOptions = ({
     isOptionsOpen,
@@ -42,10 +45,6 @@ export const OptScaCatpcaOptions = ({
         ...data,
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
-
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
 
     useEffect(() => {
         if (isOptionsOpen) {
@@ -369,7 +368,7 @@ export const OptScaCatpcaOptions = ({
                                                         <Select
                                                             value={
                                                                 optionsState.ConfigurationMethod ??
-                                                                ""
+                                                                "VariablePrincipal"
                                                             }
                                                             onValueChange={(
                                                                 value
@@ -385,7 +384,7 @@ export const OptScaCatpcaOptions = ({
                                                             </SelectTrigger>
                                                             <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {DISCRETIZEMETHOD.map(
+                                                                    {CONFIGURATIONMETHOD.map(
                                                                         (
                                                                             method,
                                                                             index
@@ -395,13 +394,12 @@ export const OptScaCatpcaOptions = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}
@@ -438,7 +436,7 @@ export const OptScaCatpcaOptions = ({
                                                         <Select
                                                             value={
                                                                 optionsState.NormalizationMethod ??
-                                                                ""
+                                                                "None"
                                                             }
                                                             onValueChange={(
                                                                 value
@@ -464,13 +462,12 @@ export const OptScaCatpcaOptions = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}

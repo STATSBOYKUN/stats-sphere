@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogClose,
@@ -5,29 +6,25 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import React, { useEffect, useState } from "react";
+import { Separator } from "@/components/ui/separator";
+import { useModal, ModalType } from "@/hooks/useModal";
 import {
     OptScaDefineMainType,
     OptScaDefineProps,
 } from "@/models/dimension-reduction/optimal-scaling-define";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useEffect, useState } from "react";
 
 export const OptScaInitial = ({
     isDefineOpen,
     setIsDefineOpen,
-    setIsOptScaCatpca,
-    setIsOptScaMCA,
-    setIsOptScaOverals,
     updateFormData,
     data,
     onReset,
@@ -38,6 +35,7 @@ export const OptScaInitial = ({
     const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(
         null
     );
+    const { closeModal, openModal } = useModal();
 
     useEffect(() => {
         if (mainState.AllVarsMultiNominal && mainState.OneSet) {
@@ -80,22 +78,35 @@ export const OptScaInitial = ({
         setIsDefineOpen(false);
 
         if (selectedAnalysis === "Category Principal Components") {
-            setIsOptScaCatpca(true);
+            closeModal();
+            openModal(ModalType.OptimalScalingCATPCA);
         }
 
         if (selectedAnalysis === "Nonlinear Canonical Correlation") {
-            setIsOptScaOverals(true);
+            closeModal();
+            openModal(ModalType.OptimalScalingOVERALS);
         }
 
         if (selectedAnalysis === "Multiple Correspondence Analysis") {
-            setIsOptScaMCA(true);
+            closeModal();
+            openModal(ModalType.OptimalScalingMCA);
         }
+    };
+
+    const handleReset = () => {
+        onReset();
+        setMainState({ ...data });
+    };
+
+    const handleDialog = () => {
+        setIsDefineOpen(false);
+        closeModal();
     };
 
     return (
         <>
             {/* Main Dialog */}
-            <Dialog open={isDefineOpen} onOpenChange={setIsDefineOpen}>
+            <Dialog open={isDefineOpen} onOpenChange={handleDialog}>
                 {/* <DialogTrigger asChild>
                     <Button variant="outline">Optimal Scaling</Button>
                 </DialogTrigger> */}
@@ -212,7 +223,7 @@ export const OptScaInitial = ({
                         <Button
                             type="button"
                             variant="secondary"
-                            onClick={onReset}
+                            onClick={handleReset}
                         >
                             Reset
                         </Button>

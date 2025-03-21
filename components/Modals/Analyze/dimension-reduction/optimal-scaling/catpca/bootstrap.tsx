@@ -38,7 +38,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DISCRETIZEMETHOD } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+import {
+    BOOTSTRAPMETHOD,
+    OPERATORMETHOD,
+} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const OptScaCatpcaBootstrap = ({
@@ -50,10 +53,6 @@ export const OptScaCatpcaBootstrap = ({
     const [bootstrapState, setBootstrapState] =
         useState<OptScaCatpcaBootstrapType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
-
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
 
     useEffect(() => {
         if (isBootstrapOpen) {
@@ -272,7 +271,7 @@ export const OptScaCatpcaBootstrap = ({
                                                             <Select
                                                                 value={
                                                                     bootstrapState.ThresholdLoading ??
-                                                                    ""
+                                                                    "Area"
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -288,7 +287,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {BOOTSTRAPMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -298,13 +297,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}
@@ -316,7 +314,7 @@ export const OptScaCatpcaBootstrap = ({
                                                             <Select
                                                                 value={
                                                                     bootstrapState.OperatorLoading ??
-                                                                    ""
+                                                                    "Greater"
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -332,7 +330,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {OPERATORMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -342,13 +340,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}
@@ -403,7 +400,7 @@ export const OptScaCatpcaBootstrap = ({
                                                             <Select
                                                                 value={
                                                                     bootstrapState.ThresholdObject ??
-                                                                    ""
+                                                                    "Area"
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -419,7 +416,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {BOOTSTRAPMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -429,13 +426,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}
@@ -447,7 +443,7 @@ export const OptScaCatpcaBootstrap = ({
                                                             <Select
                                                                 value={
                                                                     bootstrapState.OperatorObject ??
-                                                                    ""
+                                                                    "Greater"
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -463,7 +459,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {BOOTSTRAPMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -473,13 +469,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}
@@ -534,7 +529,7 @@ export const OptScaCatpcaBootstrap = ({
                                                             <Select
                                                                 value={
                                                                     bootstrapState.ThresholdCategory ??
-                                                                    ""
+                                                                    "Area"
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -550,7 +545,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {BOOTSTRAPMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -560,13 +555,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}
@@ -594,7 +588,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {DISCRETIZEMETHOD.map(
+                                                                        {BOOTSTRAPMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -604,13 +598,12 @@ export const OptScaCatpcaBootstrap = ({
                                                                                         index
                                                                                     }
                                                                                     value={
-                                                                                        method
+                                                                                        method.value
                                                                                     }
                                                                                 >
-                                                                                    {capitalize(
-                                                                                        method
-                                                                                    ) +
-                                                                                        "'s Method"}
+                                                                                    {
+                                                                                        method.name
+                                                                                    }
                                                                                 </SelectItem>
                                                                             )
                                                                         )}

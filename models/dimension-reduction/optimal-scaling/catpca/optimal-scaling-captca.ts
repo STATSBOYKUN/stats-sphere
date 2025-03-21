@@ -29,6 +29,10 @@ export type OptScaCatpcaDialogProps = {
     globalVariables: string[];
     onContinue: (mainState: OptScaCatpcaMainType) => void;
     onReset: () => void;
+    handleDefineRangeScaleContinue?: (
+        data: OptScaCatpcaDefineRangeScaleType
+    ) => void;
+    handleDefineScaleContinue?: (data: OptScaCatpcaDefineScaleType) => void;
 };
 
 export type OptScaCatpcaDefineRangeScaleType = {
@@ -51,6 +55,7 @@ export type OptScaCatpcaDefineRangeScaleProps = {
         value: string | number | boolean | null
     ) => void;
     data: OptScaCatpcaDefineRangeScaleType;
+    onContinue?: (data: OptScaCatpcaDefineRangeScaleType) => void;
 };
 
 export type OptScaCatpcaDefineScaleType = {
@@ -72,10 +77,11 @@ export type OptScaCatpcaDefineScaleProps = {
         value: string | number | boolean | null
     ) => void;
     data: OptScaCatpcaDefineScaleType;
+    onContinue?: (data: OptScaCatpcaDefineScaleType) => void;
 };
 
 export type OptScaCatpcaDiscretizeType = {
-    VariablesList: string | null;
+    VariablesList: string[] | null;
     Method: string | null;
     NumberOfCategories: boolean;
     NumberOfCategoriesValue: number | null;
@@ -90,7 +96,7 @@ export type OptScaCatpcaDiscretizeProps = {
     setIsDiscretizeOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaCatpcaDiscretizeType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: OptScaCatpcaDiscretizeType;
 };

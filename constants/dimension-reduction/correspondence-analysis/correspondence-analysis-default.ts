@@ -36,28 +36,28 @@ export const CorrespondenceDefineRangeColumnDefault: CorrespondenceDefineRangeCo
     };
 
 export const CorrespondenceModelDefault: CorrespondenceModelType = {
-    ChiSquare: false,
+    ChiSquare: true,
     Euclidean: false,
-    RNCRemoved: false,
+    RNCRemoved: true,
     RowRemoved: false,
     ColRemoved: false,
     RowTotals: false,
     ColTotals: false,
-    Symmetrical: false,
+    Symmetrical: true,
     RowPrincipal: false,
     Custom: false,
     Principal: false,
     ColPrincipal: false,
-    Dimensions: null,
-    CustomDimensions: null,
+    Dimensions: 2,
+    CustomDimensions: 0,
 };
 
 export const CorrespondenceStatisticsDefault: CorrespondenceStatisticsType = {
-    CorrTable: false,
-    StatRowPoints: false,
-    StatColPoints: false,
+    CorrTable: true,
+    StatRowPoints: true,
+    StatColPoints: true,
     PermutationTest: false,
-    MaxPermutations: null,
+    MaxPermutations: 1,
     RowProfile: false,
     ColProfile: false,
     RowPoints: false,
@@ -65,14 +65,14 @@ export const CorrespondenceStatisticsDefault: CorrespondenceStatisticsType = {
 };
 
 export const CorrespondencePlotsDefault: CorrespondencePlotsType = {
-    Biplot: false,
+    Biplot: true,
     RowPts: false,
     ColPts: false,
-    IdScatter: null,
+    IdScatter: 20,
     TransRow: false,
     TransCol: false,
-    IdLine: null,
-    DisplayAll: false,
+    IdLine: 20,
+    DisplayAll: true,
     RestrictDim: false,
     Lowest: null,
     Highest: null,

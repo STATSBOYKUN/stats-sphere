@@ -42,10 +42,6 @@ export const FactorExtraction = ({
         useState<FactorExtractionType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isExtractionOpen) {
             setExtractionState({ ...data });
@@ -100,7 +96,9 @@ export const FactorExtraction = ({
                                 Growing Method:{" "}
                             </Label>
                             <Select
-                                value={extractionState.Method ?? ""}
+                                value={
+                                    extractionState.Method ?? "PrincipalComp"
+                                }
                                 onValueChange={(value) =>
                                     handleChange("Method", value)
                                 }
@@ -114,10 +112,9 @@ export const FactorExtraction = ({
                                             (method, index) => (
                                                 <SelectItem
                                                     key={index}
-                                                    value={method}
+                                                    value={method.value}
                                                 >
-                                                    {capitalize(method) +
-                                                        "'s Method"}
+                                                    {method.name}
                                                 </SelectItem>
                                             )
                                         )}
@@ -254,6 +251,9 @@ export const FactorExtraction = ({
                                                             extractionState.EigenVal ??
                                                             ""
                                                         }
+                                                        disabled={
+                                                            !extractionState.Eigen
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "EigenVal",
@@ -287,6 +287,9 @@ export const FactorExtraction = ({
                                                         value={
                                                             extractionState.MaxFactors ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            !extractionState.Factor
                                                         }
                                                         onChange={(e) =>
                                                             handleChange(

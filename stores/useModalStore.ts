@@ -1,7 +1,7 @@
 // stores/useModalStore.ts
 
-import {create} from "zustand";
-import {devtools} from "zustand/middleware";
+import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 import zukeper from "zukeeper";
 
 export enum ModalType {
@@ -28,12 +28,16 @@ export enum ModalType {
     Univariate = "univariate",
     Multivariate = "multivariate",
     RepeatedMeasures = "repeated-measures",
+    RepeatedMeasuresDialog = "repeated-measures-dialog",
     VarianceComponents = "variance-components",
 
     // Dimension Reduction
     Factor = "factor",
     CorrespondenceAnalysis = "correspondence-analysis",
     OptimalScaling = "optimal-scaling",
+    OptimalScalingCATPCA = "optimal-scaling-catpca",
+    OptimalScalingMCA = "optimal-scaling-mca",
+    OptimalScalingOVERALS = "optimal-scaling-overals",
 
     // Classify
     TwoStepCluster = "two-step-cluster",
@@ -49,7 +53,7 @@ export enum ModalType {
     // Time Series
     Smoothing = "smoothing", //Time Series Smoothing
     Decomposition = "decomposition", //Time Series Decomposition
-    Autocorrelation = 'autocorrelation', //Time Series Stationary Test
+    Autocorrelation = "autocorrelation", //Time Series Stationary Test
     UnitRootTest = "unitRootTest", //Time Series Stationary Test
     BoxJenkinsModel = "BoxJenkinsModel", //Time Series Create Model
     FrequenciesStatistic = "frequenciesStatistic",
@@ -120,14 +124,16 @@ export const useModalStore = create<ModalStoreState>()(
         zukeper((set, get) => ({
             modals: [],
             openModal: (type, props) => {
-                console.log('openModal', type, props);
-                set((state) => ({modals: [...state.modals, {type, props}]}));
+                console.log("openModal", type, props);
+                set((state) => ({
+                    modals: [...state.modals, { type, props }],
+                }));
             },
             closeModal: () => {
-                set((state) => ({modals: state.modals.slice(0, -1)}));
+                set((state) => ({ modals: state.modals.slice(0, -1) }));
             },
             closeAllModals: () => {
-                set({modals: []});
+                set({ modals: [] });
             },
         }))
     )

@@ -104,6 +104,7 @@ export const FactorScores = ({
                                                     ? "Bartlett"
                                                     : "Anderson"
                                             }
+                                            disabled={!scoresState.SaveVar}
                                             onValueChange={handleMethodGrp}
                                         >
                                             <div className="flex flex-col gap-2">

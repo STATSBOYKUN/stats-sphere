@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+    OptScaMCAContainerProps,
     OptScaMCAMainType,
     OptScaMCAType,
 } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
@@ -13,7 +14,6 @@ import { OptScaMCAOptions } from "@/components/Modals/Analyze/dimension-reductio
 import { OptScaMCAOutput } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/output";
 import { OptScaMCASave } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/save";
 import { OptScaMCAObjectPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/object-plots";
-import { OptScaMCAContainerProps } from "@/models/dimension-reduction/optimal-scaling-define";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useModal } from "@/hooks/useModal";
 import { useVariableStore } from "@/stores/useVariableStore";
@@ -22,10 +22,7 @@ import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
 import { analyzeOptScaMCA } from "@/services/analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-analysis";
 
-export const OptScaMCAContainer = ({
-    isOptScaMCA,
-    setIsOptScaMCA,
-}: OptScaMCAContainerProps) => {
+export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
     const variables = useVariableStore(
         (state) => state.variables
     ) as VariableDef[];
@@ -84,118 +81,119 @@ export const OptScaMCAContainer = ({
         closeModal();
     };
 
-    useEffect(() => {
-        if (isOptScaMCA) {
-            setIsMainOpen(true);
-            setIsOptScaMCA(false);
-        }
-    }, [isOptScaMCA, setIsOptScaMCA]);
-
     const resetFormData = () => {
         setFormData({ ...OptScaMCADefault });
     };
 
+    const handleClose = () => {
+        closeModal();
+        onClose();
+    };
+
     return (
-        <>
-            <OptScaMCADialog
-                isMainOpen={isMainOpen}
-                setIsMainOpen={setIsMainOpen}
-                setIsDefineVariableOpen={setIsDefineVariableOpen}
-                setIsDiscretizeOpen={setIsDiscretizeOpen}
-                setIsMissingOpen={setIsMissingOpen}
-                setIsOptionsOpen={setIsOptionsOpen}
-                setIsOutputOpen={setIsOutputOpen}
-                setIsSaveOpen={setIsSaveOpen}
-                setIsObjectPlotsOpen={setIsObjectPlotsOpen}
-                setIsVariablePlotsOpen={setIsVariablePlotsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("main", field, value)
-                }
-                data={formData.main}
-                globalVariables={tempVariables}
-                onContinue={(mainData) => executeOptScaMCA(mainData)}
-                onReset={resetFormData}
-            />
+        <Dialog open={isMainOpen} onOpenChange={handleClose}>
+            <DialogTitle></DialogTitle>
+            <DialogContent>
+                <OptScaMCADialog
+                    isMainOpen={isMainOpen}
+                    setIsMainOpen={setIsMainOpen}
+                    setIsDefineVariableOpen={setIsDefineVariableOpen}
+                    setIsDiscretizeOpen={setIsDiscretizeOpen}
+                    setIsMissingOpen={setIsMissingOpen}
+                    setIsOptionsOpen={setIsOptionsOpen}
+                    setIsOutputOpen={setIsOutputOpen}
+                    setIsSaveOpen={setIsSaveOpen}
+                    setIsObjectPlotsOpen={setIsObjectPlotsOpen}
+                    setIsVariablePlotsOpen={setIsVariablePlotsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("main", field, value)
+                    }
+                    data={formData.main}
+                    globalVariables={tempVariables}
+                    onContinue={(mainData) => executeOptScaMCA(mainData)}
+                    onReset={resetFormData}
+                />
 
-            {/* Define Variable */}
-            <OptScaMCADefineVariable
-                isDefineVariableOpen={isDefineVariableOpen}
-                setIsDefineVariableOpen={setIsDefineVariableOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("defineVariable", field, value)
-                }
-                data={formData.defineVariable}
-            />
+                {/* Define Variable */}
+                <OptScaMCADefineVariable
+                    isDefineVariableOpen={isDefineVariableOpen}
+                    setIsDefineVariableOpen={setIsDefineVariableOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("defineVariable", field, value)
+                    }
+                    data={formData.defineVariable}
+                />
 
-            {/* Discretize */}
-            <OptScaMCADiscretize
-                isDiscretizeOpen={isDiscretizeOpen}
-                setIsDiscretizeOpen={setIsDiscretizeOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("discretize", field, value)
-                }
-                data={formData.discretize}
-            />
+                {/* Discretize */}
+                <OptScaMCADiscretize
+                    isDiscretizeOpen={isDiscretizeOpen}
+                    setIsDiscretizeOpen={setIsDiscretizeOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("discretize", field, value)
+                    }
+                    data={formData.discretize}
+                />
 
-            {/* Missing */}
-            <OptScaMCAMissing
-                isMissingOpen={isMissingOpen}
-                setIsMissingOpen={setIsMissingOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("missing", field, value)
-                }
-                data={formData.missing}
-            />
+                {/* Missing */}
+                <OptScaMCAMissing
+                    isMissingOpen={isMissingOpen}
+                    setIsMissingOpen={setIsMissingOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("missing", field, value)
+                    }
+                    data={formData.missing}
+                />
 
-            {/* Options */}
-            <OptScaMCAOptions
-                isOptionsOpen={isOptionsOpen}
-                setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("options", field, value)
-                }
-                data={formData.options}
-            />
+                {/* Options */}
+                <OptScaMCAOptions
+                    isOptionsOpen={isOptionsOpen}
+                    setIsOptionsOpen={setIsOptionsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("options", field, value)
+                    }
+                    data={formData.options}
+                />
 
-            {/* Output */}
-            <OptScaMCAOutput
-                isOutputOpen={isOutputOpen}
-                setIsOutputOpen={setIsOutputOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("output", field, value)
-                }
-                data={formData.output}
-            />
+                {/* Output */}
+                <OptScaMCAOutput
+                    isOutputOpen={isOutputOpen}
+                    setIsOutputOpen={setIsOutputOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("output", field, value)
+                    }
+                    data={formData.output}
+                />
 
-            {/* Save */}
-            <OptScaMCASave
-                isSaveOpen={isSaveOpen}
-                setIsSaveOpen={setIsSaveOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("save", field, value)
-                }
-                data={formData.save}
-            />
+                {/* Save */}
+                <OptScaMCASave
+                    isSaveOpen={isSaveOpen}
+                    setIsSaveOpen={setIsSaveOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("save", field, value)
+                    }
+                    data={formData.save}
+                />
 
-            {/* Object Plots */}
-            <OptScaMCAObjectPlots
-                isObjectPlotsOpen={isObjectPlotsOpen}
-                setIsObjectPlotsOpen={setIsObjectPlotsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("objectPlots", field, value)
-                }
-                data={formData.objectPlots}
-            />
+                {/* Object Plots */}
+                <OptScaMCAObjectPlots
+                    isObjectPlotsOpen={isObjectPlotsOpen}
+                    setIsObjectPlotsOpen={setIsObjectPlotsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("objectPlots", field, value)
+                    }
+                    data={formData.objectPlots}
+                />
 
-            {/* Variable Plots */}
-            <OptScaMCAVariablePlots
-                isVariablePlotsOpen={isVariablePlotsOpen}
-                setIsVariablePlotsOpen={setIsVariablePlotsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("variablePlots", field, value)
-                }
-                data={formData.variablePlots}
-            />
-        </>
+                {/* Variable Plots */}
+                <OptScaMCAVariablePlots
+                    isVariablePlotsOpen={isVariablePlotsOpen}
+                    setIsVariablePlotsOpen={setIsVariablePlotsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("variablePlots", field, value)
+                    }
+                    data={formData.variablePlots}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };

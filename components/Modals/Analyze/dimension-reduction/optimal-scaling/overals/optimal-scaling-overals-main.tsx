@@ -1,25 +1,24 @@
-import { useEffect, useState } from "react";
+import { OptScaOveralsDefineRange } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
+import { OptScaOveralsDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range-scale";
+import { OptScaOveralsDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
+import { OptScaOveralsOptions } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/options";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { OptScaOveralsDefault } from "@/constants/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-default";
+import { useModal } from "@/hooks/useModal";
+import { RawData, VariableDef } from "@/lib/db";
 import {
+    OptScaOveralsContainerProps,
     OptScaOveralsMainType,
     OptScaOveralsType,
 } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
-import { OptScaOveralsDefault } from "@/constants/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-default";
-import { OptScaOveralsDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
-import { OptScaOveralsDefineRange } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
-import { OptScaOveralsDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range-scale";
-import { OptScaOveralsOptions } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/options";
-import { OptScaOveralsContainerProps } from "@/models/dimension-reduction/optimal-scaling-define";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useModal } from "@/hooks/useModal";
-import { useVariableStore } from "@/stores/useVariableStore";
-import { RawData, VariableDef } from "@/lib/db";
+import { analyzeOptScaOverals } from "@/services/analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-analysis";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
-import { analyzeOptScaOverals } from "@/services/analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-analysis";
+import { useVariableStore } from "@/stores/useVariableStore";
+import { useEffect, useState } from "react";
 
 export const OptScaOveralsContainer = ({
-    isOptScaOverals,
-    setIsOptScaOverals,
+    onClose,
 }: OptScaOveralsContainerProps) => {
     const variables = useVariableStore(
         (state) => state.variables
@@ -78,59 +77,60 @@ export const OptScaOveralsContainer = ({
         setFormData({ ...OptScaOveralsDefault });
     };
 
-    useEffect(() => {
-        if (isOptScaOverals) {
-            setIsMainOpen(true);
-            setIsOptScaOverals(false);
-        }
-    }, [isOptScaOverals, setIsOptScaOverals]);
+    const handleClose = () => {
+        closeModal();
+        onClose();
+    };
 
     return (
-        <>
-            <OptScaOveralsDialog
-                isMainOpen={isMainOpen}
-                setIsMainOpen={setIsMainOpen}
-                setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
-                setIsDefineRangeOpen={setIsDefineRangeOpen}
-                setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("main", field, value)
-                }
-                data={formData.main}
-                globalVariables={tempVariables}
-                onContinue={(mainData) => executeOptScaOverals(mainData)}
-                onReset={resetFormData}
-            />
+        <Dialog open={isMainOpen} onOpenChange={handleClose}>
+            <DialogTitle></DialogTitle>
+            <DialogContent>
+                <OptScaOveralsDialog
+                    isMainOpen={isMainOpen}
+                    setIsMainOpen={setIsMainOpen}
+                    setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
+                    setIsDefineRangeOpen={setIsDefineRangeOpen}
+                    setIsOptionsOpen={setIsOptionsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("main", field, value)
+                    }
+                    data={formData.main}
+                    globalVariables={tempVariables}
+                    onContinue={(mainData) => executeOptScaOverals(mainData)}
+                    onReset={resetFormData}
+                />
 
-            {/* Define Range Scale */}
-            <OptScaOveralsDefineRangeScale
-                isDefineRangeScaleOpen={isDefineRangeScaleOpen}
-                setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("defineRangeScale", field, value)
-                }
-                data={formData.defineRangeScale}
-            />
+                {/* Define Range Scale */}
+                <OptScaOveralsDefineRangeScale
+                    isDefineRangeScaleOpen={isDefineRangeScaleOpen}
+                    setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("defineRangeScale", field, value)
+                    }
+                    data={formData.defineRangeScale}
+                />
 
-            {/* Define Range */}
-            <OptScaOveralsDefineRange
-                isDefineRangeOpen={isDefineRangeOpen}
-                setIsDefineRangeOpen={setIsDefineRangeOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("defineRange", field, value)
-                }
-                data={formData.defineRange}
-            />
+                {/* Define Range */}
+                <OptScaOveralsDefineRange
+                    isDefineRangeOpen={isDefineRangeOpen}
+                    setIsDefineRangeOpen={setIsDefineRangeOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("defineRange", field, value)
+                    }
+                    data={formData.defineRange}
+                />
 
-            {/* Options */}
-            <OptScaOveralsOptions
-                isOptionsOpen={isOptionsOpen}
-                setIsOptionsOpen={setIsOptionsOpen}
-                updateFormData={(field, value) =>
-                    updateFormData("options", field, value)
-                }
-                data={formData.options}
-            />
-        </>
+                {/* Options */}
+                <OptScaOveralsOptions
+                    isOptionsOpen={isOptionsOpen}
+                    setIsOptionsOpen={setIsOptionsOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("options", field, value)
+                    }
+                    data={formData.options}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };

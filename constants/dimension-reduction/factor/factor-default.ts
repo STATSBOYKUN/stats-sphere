@@ -20,7 +20,7 @@ export const FactorValueDefault: FactorValueType = {
 
 export const FactorDescriptivesDefault: FactorDescriptivesType = {
     UnivarDesc: false,
-    InitialSol: false,
+    InitialSol: true,
     Coefficient: false,
     Inverse: false,
     SignificanceLvl: false,
@@ -31,47 +31,47 @@ export const FactorDescriptivesDefault: FactorDescriptivesType = {
 };
 
 export const FactorExtractionDefault: FactorExtractionType = {
-    Method: null,
-    Correlation: false,
+    Method: "PrincipalComp",
+    Correlation: true,
     Covariance: false,
-    Unrotated: false,
+    Unrotated: true,
     Scree: false,
-    Eigen: false,
+    Eigen: true,
     Factor: false,
-    EigenVal: null,
+    EigenVal: 1,
     MaxFactors: null,
-    MaxIter: null,
+    MaxIter: 25,
 };
 
 export const FactorRotationDefault: FactorRotationType = {
-    None: false,
+    None: true,
     Varimax: false,
     Oblimin: false,
-    Delta: null,
+    Delta: 0,
     Quartimax: false,
     Equimax: false,
     Promax: false,
-    Kappa: null,
-    RotatedSol: false,
+    Kappa: 4,
+    RotatedSol: true,
     LoadingPlot: false,
-    MaxIter: null,
+    MaxIter: 25,
 };
 
 export const FactorScoresDefault: FactorScoresType = {
     SaveVar: false,
-    Regression: false,
+    Regression: true,
     Bartlett: false,
     Anderson: false,
     DisplayFactor: false,
 };
 
 export const FactorOptionsDefault: FactorOptionsType = {
-    ExcludeListWise: false,
+    ExcludeListWise: true,
     ExcludePairWise: false,
     ReplaceMean: false,
     SortSize: false,
     SuppressValues: false,
-    SuppressValuesNum: null,
+    SuppressValuesNum: 0.1,
 };
 
 export const FactorDefault: FactorType = {

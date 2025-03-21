@@ -178,6 +178,9 @@ export const FactorOptions = ({
                                                 optionsState.SuppressValuesNum ??
                                                 ""
                                             }
+                                            disabled={
+                                                !optionsState.SuppressValues
+                                            }
                                             onChange={(e) =>
                                                 handleChange(
                                                     "SuppressValuesNum",

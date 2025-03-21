@@ -35,14 +35,12 @@ export const OptScaCatpcaDiscretize = ({
     const [discretizeState, setDiscretizeState] =
         useState<OptScaCatpcaDiscretizeType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
-
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isDiscretizeOpen) {
             setDiscretizeState({ ...data });
+            setAvailableVariables(data.VariablesList ?? []);
         }
     }, [isDiscretizeOpen, data]);
 
@@ -109,35 +107,39 @@ export const OptScaCatpcaDiscretize = ({
                                 }
                             />
                         </div>
-                        <div className="flex items-center space-x-2">
-                            <Label className="w-[250px] font-bold">
+                        <div className="flex justify-between items-center space-x-2">
+                            <Label className="w-[150px] font-bold">
                                 Growing Method:{" "}
                             </Label>
-                            <Select
-                                value={discretizeState.Method ?? ""}
-                                onValueChange={(value) =>
-                                    handleChange("Method", value)
-                                }
-                            >
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="w-[150px]">
-                                    <SelectGroup>
-                                        {DISCRETIZEMETHOD.map(
-                                            (method, index) => (
-                                                <SelectItem
-                                                    key={index}
-                                                    value={method}
-                                                >
-                                                    {capitalize(method) +
-                                                        "'s Method"}
-                                                </SelectItem>
-                                            )
-                                        )}
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            <div className="flex items-center space-x-2">
+                                <Select
+                                    value={discretizeState.Method ?? "Grouping"}
+                                    onValueChange={(value) =>
+                                        handleChange("Method", value)
+                                    }
+                                >
+                                    <SelectTrigger className="w-[150px]">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="w-[150px]">
+                                        <SelectGroup>
+                                            {DISCRETIZEMETHOD.map(
+                                                (method, index) => (
+                                                    <SelectItem
+                                                        key={index}
+                                                        value={method.value}
+                                                    >
+                                                        {method.name}
+                                                    </SelectItem>
+                                                )
+                                            )}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                                <Button type="button" variant="secondary">
+                                    Change
+                                </Button>
+                            </div>
                         </div>
                         <ResizablePanelGroup
                             direction="vertical"

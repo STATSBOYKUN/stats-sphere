@@ -1,24 +1,20 @@
-import { useState } from "react";
+import { OptScaInitial } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/optimal-scaling-dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { OptScaDefineDefault } from "@/constants/dimension-reduction/optimal-scaling/optimal-scaling-define-default";
+import { useModal } from "@/hooks/useModal";
 import {
     OptScaContainerProps,
     OptScaDefineType,
 } from "@/models/dimension-reduction/optimal-scaling-define";
-import { OptScaDefineDefault } from "@/constants/dimension-reduction/optimal-scaling/optimal-scaling-define-default";
-import { OptScaInitial } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/optimal-scaling-dialog";
-import { OptScaCatpcaContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-main";
-import { OptScaMCAContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-main";
-import { OptScaOveralsContainer } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-main";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useModal } from "@/hooks/useModal";
-import { useVariableStore } from "@/stores/useVariableStore";
-import { RawData, VariableDef } from "@/lib/db";
-import { useDataStore } from "@/stores/useDataStore";
-import useResultStore from "@/stores/useResultStore";
+import { useState } from "react";
 
 export const OptScaContainer = ({ onClose }: OptScaContainerProps) => {
     const [formData, setFormData] = useState<OptScaDefineType>({
         ...OptScaDefineDefault,
     });
+    const [isDefineOpen, setIsDefineOpen] = useState(true);
+
+    const { closeModal } = useModal();
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
@@ -34,44 +30,29 @@ export const OptScaContainer = ({ onClose }: OptScaContainerProps) => {
         }));
     };
 
-    const [isDefineOpen, setIsDefineOpen] = useState(false);
-    const [isOptScaCatpca, setIsOptScaCatpca] = useState(false);
-    const [isOptScaMCA, setIsOptScaMCA] = useState(false);
-    const [isOptScaOverals, setIsOptScaOverals] = useState(false);
-
     const resetFormData = () => {
         setFormData({ ...OptScaDefineDefault });
     };
 
+    const handleClose = () => {
+        closeModal();
+        onClose();
+    };
+
     return (
-        <>
-            <OptScaInitial
-                isDefineOpen={isDefineOpen}
-                setIsDefineOpen={setIsDefineOpen}
-                setIsOptScaCatpca={setIsOptScaCatpca}
-                setIsOptScaMCA={setIsOptScaMCA}
-                setIsOptScaOverals={setIsOptScaOverals}
-                updateFormData={(field, value) =>
-                    updateFormData("main", field, value)
-                }
-                data={formData.main}
-                onReset={resetFormData}
-            />
-
-            <OptScaCatpcaContainer
-                isOptScaCatpca={isOptScaCatpca}
-                setIsOptScaCatpca={setIsOptScaCatpca}
-            />
-
-            <OptScaMCAContainer
-                isOptScaMCA={isOptScaMCA}
-                setIsOptScaMCA={setIsOptScaMCA}
-            />
-
-            <OptScaOveralsContainer
-                isOptScaOverals={isOptScaOverals}
-                setIsOptScaOverals={setIsOptScaOverals}
-            />
-        </>
+        <Dialog open={isDefineOpen} onOpenChange={handleClose}>
+            <DialogTitle></DialogTitle>
+            <DialogContent className="sm:max-w-sm">
+                <OptScaInitial
+                    isDefineOpen={isDefineOpen}
+                    setIsDefineOpen={setIsDefineOpen}
+                    updateFormData={(field, value) =>
+                        updateFormData("main", field, value)
+                    }
+                    data={formData.main}
+                    onReset={resetFormData}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };

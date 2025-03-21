@@ -133,6 +133,7 @@ export const CorrespondenceStatistics = ({
                                     type="number"
                                     placeholder=""
                                     value={statisticsState.MaxPermutations ?? 0}
+                                    disabled={!statisticsState.PermutationTest}
                                     onChange={(e) =>
                                         handleChange(
                                             "MaxPermutations",
