@@ -224,6 +224,9 @@ export const OptScaCatpcaObjectPlots = ({
                                                         ? "BiLoadings"
                                                         : "BiCentroids"
                                                 }
+                                                disabled={
+                                                    !objectPlotsState.Biplot
+                                                }
                                                 onValueChange={handleBiGrp}
                                             >
                                                 <div className="grid grid-cols-2 gap-2">
@@ -288,6 +291,9 @@ export const OptScaCatpcaObjectPlots = ({
                                                                 objectPlotsState.BTIncludeAllVars
                                                                     ? "BTIncludeAllVars"
                                                                     : "BTIncludeSelectedVars"
+                                                            }
+                                                            disabled={
+                                                                !objectPlotsState.Biplot
                                                             }
                                                             onValueChange={
                                                                 handleBTInclude

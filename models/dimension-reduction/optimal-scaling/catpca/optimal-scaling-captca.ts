@@ -7,6 +7,22 @@ export type OptScaCatpcaMainType = {
     Dimensions: number | null;
 };
 
+export type DialogHandlers = {
+    handleDefineRangeScaleContinue: (
+        data: OptScaCatpcaDefineRangeScaleType
+    ) => void;
+    handleDefineScaleContinue: (data: OptScaCatpcaDefineScaleType) => void;
+};
+
+export type VariableInfoType = {
+    [key: string]: {
+        weight?: number;
+        scaling: string;
+        degree: number;
+        interiorKnots: number;
+    };
+};
+
 export type OptScaCatpcaDialogProps = {
     isMainOpen: boolean;
     setIsMainOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -135,7 +151,7 @@ export type OptScaCatpcaOptionsType = {
     NormalizationMethod: string | null;
     NormCustomValue: number | null;
     Convergence: number | null;
-    MaximumIterations: string | null;
+    MaximumIterations: number | null;
     VariableLabels: boolean;
     LimitForLabel: number | null;
     VariableNames: boolean;

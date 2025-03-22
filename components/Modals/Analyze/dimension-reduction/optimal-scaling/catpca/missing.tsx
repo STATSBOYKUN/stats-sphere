@@ -376,6 +376,9 @@ export const OptScaCatpcaMissing = ({
                                                     ? "ExcludeExtraCat"
                                                     : "ExcludeRandomCat"
                                             }
+                                            disabled={
+                                                !missingState.MissingValuesExclude
+                                            }
                                             onValueChange={
                                                 handleExcludeMethodGrp
                                             }
@@ -426,6 +429,9 @@ export const OptScaCatpcaMissing = ({
                                                     : missingState.ImputeExtraCat
                                                     ? "ImputeExtraCat"
                                                     : "ImputeRandomCat"
+                                            }
+                                            disabled={
+                                                !missingState.MissingValuesImpute
                                             }
                                             onValueChange={
                                                 handleImputeMethodGrp

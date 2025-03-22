@@ -160,6 +160,9 @@ export const OptScaCatpcaSave = ({
                                                             ? "DiscWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={
+                                                        !saveState.Discretized
+                                                    }
                                                     onValueChange={
                                                         handleDiscGrp
                                                     }
@@ -187,6 +190,9 @@ export const OptScaCatpcaSave = ({
                                                                     value={
                                                                         saveState.DiscDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.DiscNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -216,6 +222,9 @@ export const OptScaCatpcaSave = ({
                                                                 id="DiscretizedFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.DiscWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "DiscretizedFile",
@@ -288,6 +297,7 @@ export const OptScaCatpcaSave = ({
                                                             ? "TransWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={!saveState.Trans}
                                                     onValueChange={
                                                         handleTransGrp
                                                     }
@@ -315,6 +325,9 @@ export const OptScaCatpcaSave = ({
                                                                     value={
                                                                         saveState.TransDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.TransNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -344,6 +357,9 @@ export const OptScaCatpcaSave = ({
                                                                 id="TransformedFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.TransWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "TransformedFile",
@@ -420,6 +436,9 @@ export const OptScaCatpcaSave = ({
                                                             ? "ObjWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={
+                                                        !saveState.ObjScores
+                                                    }
                                                     onValueChange={handleObjGrp}
                                                 >
                                                     <div className="flex flex-col gap-1 pl-6">
@@ -445,6 +464,9 @@ export const OptScaCatpcaSave = ({
                                                                     value={
                                                                         saveState.ObjDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.ObjNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -474,6 +496,9 @@ export const OptScaCatpcaSave = ({
                                                                 id="ObjScoresFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.ObjWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ObjScoresFile",
@@ -546,6 +571,7 @@ export const OptScaCatpcaSave = ({
                                                             ? "ApproxWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={!saveState.Approx}
                                                     onValueChange={
                                                         handleApproxGrp
                                                     }
@@ -573,6 +599,9 @@ export const OptScaCatpcaSave = ({
                                                                     value={
                                                                         saveState.ApproxDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.ApproxNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -602,6 +631,9 @@ export const OptScaCatpcaSave = ({
                                                                 id="ApproximationsFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.ApproxWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ApproximationsFile",
@@ -726,6 +758,9 @@ export const OptScaCatpcaSave = ({
                                                             ? "BTWriteDataFile"
                                                             : ""
                                                     }
+                                                    disabled={
+                                                        !saveState.BTEllipseCoord
+                                                    }
                                                     onValueChange={handleBTGrp}
                                                 >
                                                     <div className="flex flex-col gap-1 pl-6">
@@ -751,6 +786,9 @@ export const OptScaCatpcaSave = ({
                                                                     value={
                                                                         saveState.BTDatasetName ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.BTNewDataset
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -780,6 +818,9 @@ export const OptScaCatpcaSave = ({
                                                                 id="BTFileText"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.BTWriteDataFile
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "BTFileText",
@@ -804,6 +845,11 @@ export const OptScaCatpcaSave = ({
                                     : saveState.First
                                     ? "First"
                                     : ""
+                            }
+                            disabled={
+                                !saveState.SaveApprox ||
+                                !saveState.SaveObjScores ||
+                                !saveState.SaveTrans
                             }
                             onValueChange={handleNomGrp}
                         >

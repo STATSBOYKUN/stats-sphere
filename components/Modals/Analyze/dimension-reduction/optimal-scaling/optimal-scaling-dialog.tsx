@@ -40,9 +40,9 @@ export const OptScaInitial = ({
     useEffect(() => {
         if (mainState.AllVarsMultiNominal && mainState.OneSet) {
             setSelectedAnalysis("Multiple Correspondence Analysis");
-        } else if (mainState.AllVarsMultiNominal && mainState.MultipleSets) {
+        } else if (mainState.SomeVarsNotMultiNominal && mainState.OneSet) {
             setSelectedAnalysis("Category Principal Components");
-        } else if (mainState.SomeVarsNotMultiNominal) {
+        } else if (mainState.MultipleSets) {
             setSelectedAnalysis("Nonlinear Canonical Correlation");
         } else {
             setSelectedAnalysis(null);

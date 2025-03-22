@@ -26,20 +26,14 @@ import {
     OptScaCatpcaMainType,
     OptScaCatpcaDefineRangeScaleType,
     OptScaCatpcaDefineScaleType,
+    DialogHandlers,
+    VariableInfoType,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useModal } from "@/hooks/useModal";
-
-// Interface untuk ref yang diekspos oleh dialog
-export interface DialogHandlers {
-    handleDefineRangeScaleContinue: (
-        data: OptScaCatpcaDefineRangeScaleType
-    ) => void;
-    handleDefineScaleContinue: (data: OptScaCatpcaDefineScaleType) => void;
-}
 
 export const OptScaCatpcaDialog = forwardRef<
     DialogHandlers,
@@ -87,14 +81,7 @@ export const OptScaCatpcaDialog = forwardRef<
         }>({});
 
         // State untuk menyimpan informasi variable
-        const [variableInfo, setVariableInfo] = useState<{
-            [key: string]: {
-                weight?: number;
-                scaling: string;
-                degree: number;
-                interiorKnots: number;
-            };
-        }>({});
+        const [variableInfo, setVariableInfo] = useState<VariableInfoType>({});
 
         const { closeModal } = useModal();
 
@@ -253,7 +240,6 @@ export const OptScaCatpcaDialog = forwardRef<
                 updateFormData(key as keyof OptScaCatpcaMainType, value);
             });
 
-            console.log("Enhanced Main State", enhancedMainState);
             // Close the dialog
             setIsMainOpen(false);
 

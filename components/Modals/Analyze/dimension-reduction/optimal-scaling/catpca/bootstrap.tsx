@@ -133,6 +133,7 @@ export const OptScaCatpcaBootstrap = ({
                                                     ? "Balanced"
                                                     : "Unbalanced"
                                             }
+                                            disabled={!bootstrapState.PerformBT}
                                             onValueChange={handleBootsGrp}
                                         >
                                             <div className="grid grid-cols-2 gap-2">
@@ -169,6 +170,9 @@ export const OptScaCatpcaBootstrap = ({
                                                         bootstrapState.NumberSamples ??
                                                         ""
                                                     }
+                                                    disabled={
+                                                        !bootstrapState.PerformBT
+                                                    }
                                                     onChange={(e) =>
                                                         handleChange(
                                                             "NumberSamples",
@@ -192,6 +196,9 @@ export const OptScaCatpcaBootstrap = ({
                                                     value={
                                                         bootstrapState.ConfLevel ??
                                                         ""
+                                                    }
+                                                    disabled={
+                                                        !bootstrapState.PerformBT
                                                     }
                                                     onChange={(e) =>
                                                         handleChange(
@@ -218,6 +225,7 @@ export const OptScaCatpcaBootstrap = ({
                                                     ? "Procrustes"
                                                     : "Reflection"
                                             }
+                                            disabled={!bootstrapState.PerformBT}
                                             onValueChange={handleMatchGrp}
                                         >
                                             <div className="grid grid-cols-2 gap-2">
@@ -273,6 +281,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                     bootstrapState.ThresholdLoading ??
                                                                     "Area"
                                                                 }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
+                                                                }
                                                                 onValueChange={(
                                                                     value
                                                                 ) =>
@@ -315,6 +326,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                 value={
                                                                     bootstrapState.OperatorLoading ??
                                                                     "Greater"
+                                                                }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -362,6 +376,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                     bootstrapState.ValueLoading ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ValueLoading",
@@ -401,6 +418,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                 value={
                                                                     bootstrapState.ThresholdObject ??
                                                                     "Area"
+                                                                }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -445,6 +465,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                     bootstrapState.OperatorObject ??
                                                                     "Greater"
                                                                 }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
+                                                                }
                                                                 onValueChange={(
                                                                     value
                                                                 ) =>
@@ -459,7 +482,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {BOOTSTRAPMETHOD.map(
+                                                                        {OPERATORMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -490,6 +513,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                 value={
                                                                     bootstrapState.ValueObject ??
                                                                     ""
+                                                                }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleChange(
@@ -530,6 +556,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                 value={
                                                                     bootstrapState.ThresholdCategory ??
                                                                     "Area"
+                                                                }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
                                                                 }
                                                                 onValueChange={(
                                                                     value
@@ -574,6 +603,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                     bootstrapState.OperatorCategory ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
+                                                                }
                                                                 onValueChange={(
                                                                     value
                                                                 ) =>
@@ -588,7 +620,7 @@ export const OptScaCatpcaBootstrap = ({
                                                                 </SelectTrigger>
                                                                 <SelectContent className="w-[150px]">
                                                                     <SelectGroup>
-                                                                        {BOOTSTRAPMETHOD.map(
+                                                                        {OPERATORMETHOD.map(
                                                                             (
                                                                                 method,
                                                                                 index
@@ -620,6 +652,9 @@ export const OptScaCatpcaBootstrap = ({
                                                                     bootstrapState.ValueCategory ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !bootstrapState.PerformBT
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ValueCategory",
@@ -649,6 +684,9 @@ export const OptScaCatpcaBootstrap = ({
                                                     value={
                                                         bootstrapState.NumberPoints ??
                                                         ""
+                                                    }
+                                                    disabled={
+                                                        !bootstrapState.PerformBT
                                                     }
                                                     onChange={(e) =>
                                                         handleChange(

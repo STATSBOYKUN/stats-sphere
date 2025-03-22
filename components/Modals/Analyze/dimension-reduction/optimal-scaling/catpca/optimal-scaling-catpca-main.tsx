@@ -5,12 +5,10 @@ import {
     OptScaCatpcaType,
     OptScaCatpcaDefineRangeScaleType,
     OptScaCatpcaDefineScaleType,
+    DialogHandlers,
 } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-scaling-captca";
 import { OptScaCatpcaDefault } from "@/constants/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-default";
-import {
-    OptScaCatpcaDialog,
-    DialogHandlers,
-} from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/dialog";
+import { OptScaCatpcaDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/dialog";
 import { OptScaCatpcaDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-range-scale";
 import { OptScaCatpcaLoadingPlots } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/loading-plots";
 import { OptScaCatpcaDefineScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/catpca/define-scale";

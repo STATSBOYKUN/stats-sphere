@@ -216,6 +216,9 @@ export const OptScaCatpcaLoadingPlots = ({
                                                                     ? "LoadingIncludeAllVars"
                                                                     : "LoadingIncludeSelectedVars"
                                                             }
+                                                            disabled={
+                                                                !loadingPlotsState.DisplayCompLoadings
+                                                            }
                                                             onValueChange={
                                                                 handleLoadingGrp
                                                             }
@@ -372,6 +375,9 @@ export const OptScaCatpcaLoadingPlots = ({
                                                 checked={
                                                     loadingPlotsState.IncludeCentroids
                                                 }
+                                                disabled={
+                                                    !loadingPlotsState.DisplayCompLoadings
+                                                }
                                                 onCheckedChange={(checked) =>
                                                     handleChange(
                                                         "IncludeCentroids",
@@ -398,6 +404,9 @@ export const OptScaCatpcaLoadingPlots = ({
                                                                 loadingPlotsState.IncludeCentroidsIncludeAllVars
                                                                     ? "IncludeCentroidsIncludeAllVars"
                                                                     : "IncludeCentroidsIncludeSelectedVars"
+                                                            }
+                                                            disabled={
+                                                                !loadingPlotsState.DisplayCompLoadings
                                                             }
                                                             onValueChange={
                                                                 handleCentrGrp

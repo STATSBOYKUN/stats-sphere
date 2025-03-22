@@ -135,6 +135,7 @@ export const OptScaCatpcaOptions = ({
                                                             ? "SingleCase"
                                                             : ""
                                                     }
+                                                    disabled={true}
                                                     onValueChange={
                                                         handleSuppObjGrp
                                                     }
@@ -225,6 +226,7 @@ export const OptScaCatpcaOptions = ({
                                                                     optionsState.SingleCaseValue ??
                                                                     ""
                                                                 }
+                                                                disabled={true}
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "SingleCaseValue",
@@ -247,6 +249,7 @@ export const OptScaCatpcaOptions = ({
                                                                     optionsState.SingleCaseValue ??
                                                                     ""
                                                                 }
+                                                                disabled={true}
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "SingleCaseValue",
@@ -312,6 +315,9 @@ export const OptScaCatpcaOptions = ({
                                                                         optionsState.PlotDimLoDim ??
                                                                         ""
                                                                     }
+                                                                    disabled={
+                                                                        !optionsState.PlotDimRestrict
+                                                                    }
                                                                     onChange={(
                                                                         e
                                                                     ) =>
@@ -340,6 +346,9 @@ export const OptScaCatpcaOptions = ({
                                                                     value={
                                                                         optionsState.PlotDimHiDim ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !optionsState.PlotDimRestrict
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -412,6 +421,10 @@ export const OptScaCatpcaOptions = ({
                                                             type="file"
                                                             className="w-full"
                                                             placeholder=""
+                                                            disabled={
+                                                                optionsState.ConfigurationMethod ===
+                                                                "None"
+                                                            }
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "ConfigFile",
@@ -488,6 +501,10 @@ export const OptScaCatpcaOptions = ({
                                                                 value={
                                                                     optionsState.NormCustomValue ??
                                                                     ""
+                                                                }
+                                                                disabled={
+                                                                    optionsState.NormalizationMethod !==
+                                                                    "Custom"
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleChange(
@@ -603,6 +620,9 @@ export const OptScaCatpcaOptions = ({
                                                                     optionsState.LimitForLabel ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !optionsState.VariableLabels
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "LimitForLabel",
@@ -697,6 +717,9 @@ export const OptScaCatpcaOptions = ({
                                                                                 optionsState.Delta ??
                                                                                 ""
                                                                             }
+                                                                            disabled={
+                                                                                !optionsState.Oblimin
+                                                                            }
                                                                             onChange={(
                                                                                 e
                                                                             ) =>
@@ -754,6 +777,9 @@ export const OptScaCatpcaOptions = ({
                                                                                 optionsState.Kappa ??
                                                                                 ""
                                                                             }
+                                                                            disabled={
+                                                                                !optionsState.Promax
+                                                                            }
                                                                             onChange={(
                                                                                 e
                                                                             ) =>
@@ -777,6 +803,9 @@ export const OptScaCatpcaOptions = ({
                                                             id="Kaiser"
                                                             checked={
                                                                 optionsState.Kaiser
+                                                            }
+                                                            disabled={
+                                                                optionsState.None
                                                             }
                                                             onCheckedChange={(
                                                                 checked

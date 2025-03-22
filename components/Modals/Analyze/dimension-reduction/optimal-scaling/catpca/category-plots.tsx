@@ -406,6 +406,10 @@ export const OptScaCatpcaCategoryPlots = ({
                                                         categoryPlotsState.DimensionsForMultiNom ??
                                                         ""
                                                     }
+                                                    disabled={
+                                                        categoryPlotsState.TransPlotsVar ===
+                                                        null
+                                                    }
                                                     onChange={(e) =>
                                                         handleChange(
                                                             "DimensionsForMultiNom",
@@ -422,6 +426,10 @@ export const OptScaCatpcaCategoryPlots = ({
                                                 id="InclResidPlots"
                                                 checked={
                                                     categoryPlotsState.InclResidPlots
+                                                }
+                                                disabled={
+                                                    categoryPlotsState.TransPlotsVar ===
+                                                    null
                                                 }
                                                 onCheckedChange={(checked) =>
                                                     handleChange(
