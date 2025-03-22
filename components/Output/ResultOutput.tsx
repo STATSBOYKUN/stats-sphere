@@ -64,50 +64,46 @@ const ResultOutput: React.FC = () => {
                                                         {
   "tables": [
     {
-      "title": "ANOVAa",
+      "title": "Coefficient Correlationsa",
       "columnHeaders": [
         { "header": "Model" },
         { "header": "" },
-        { "header": "Sum of Squares" },
-        { "header": "df" },
-        { "header": "Mean Square" },
-        { "header": "F" },
-        { "header": "Sig" }
+        { "header": "" },
+        { "header": "VAR00003" },
+        { "header": "VAR00002" }
       ],
       "rows": [
         {
           "rowHeader": ["1"],
           "children": [
             {
-              "rowHeader": [null, "Regression"],
-              "Sum of Squares": 1.600,
-              "df": 1,
-              "Mean Square": 1.600,
-              "F": 0.371,
-              "Sig": 0.565
+              "rowHeader": [null, "Correlations", "VAR00003"],
+              "VAR00003": 1.000,
+              "VAR00002": 0.000
             },
             {
-              "rowHeader": [null, "Residual"],
-              "Sum of Squares": 25.900,
-              "df": 6,
-              "Mean Square": 4.317,
-              "F": "",
-              "Sig": ""
+              "rowHeader": [null, "Correlations", "VAR00002"],
+              "VAR00003": 0.000,
+              "VAR00002": 1.000
             },
             {
-              "rowHeader": [null, "Total"],
-              "Sum of Squares": 27.500,
-              "df": 7,
-              "Mean Square": "",
-              "F": "",
-              "Sig": ""
+              "rowHeader": [null, "Covariances", "VAR00003"],
+              "VAR00003": 0.420,
+              "VAR00002": 0.000
+            },
+            {
+              "rowHeader": [null, "Covariances", "VAR00002"],
+              "VAR00003": 0.000,
+              "VAR00002": 0.420
             }
           ]
         }
-      ]
+      ],
+      "footnote": "a. Dependent Variable: VAR00001"
     }
   ]
 }
+
 
 
 
