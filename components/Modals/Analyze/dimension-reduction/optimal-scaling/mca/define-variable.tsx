@@ -20,6 +20,7 @@ export const OptScaMCADefineVariable = ({
     setIsDefineVariableOpen,
     updateFormData,
     data,
+    onContinue, // Added onContinue callback
 }: OptScaMCADefineVariableProps) => {
     const [defineVariableState, setDefineVariableState] =
         useState<OptScaMCADefineVariableType>({ ...data });
@@ -45,6 +46,12 @@ export const OptScaMCADefineVariable = ({
         Object.entries(defineVariableState).forEach(([key, value]) => {
             updateFormData(key as keyof OptScaMCADefineVariableType, value);
         });
+
+        // Call the onContinue callback if provided
+        if (onContinue) {
+            onContinue(defineVariableState);
+        }
+
         setIsDefineVariableOpen(false);
     };
 

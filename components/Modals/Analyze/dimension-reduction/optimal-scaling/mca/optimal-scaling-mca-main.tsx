@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
     OptScaMCAContainerProps,
     OptScaMCAMainType,
     OptScaMCAType,
+    OptScaMCADefineVariableType,
+    DialogHandlers,
 } from "@/models/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca";
 import { OptScaMCADefault } from "@/constants/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-default";
 import { OptScaMCADialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/mca/dialog";
@@ -42,8 +44,61 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
     const [isObjectPlotsOpen, setIsObjectPlotsOpen] = useState(false);
     const [isVariablePlotsOpen, setIsVariablePlotsOpen] = useState(false);
 
+    // Ref for accessing dialog functions
+    const dialogRef = useRef<DialogHandlers>(null);
+
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            // Create a copy of the previous state to modify
+            const newState = { ...prev };
+
+            // Update discretize based on AnalysisVars (if it exists)
+            if (prev.main.AnalysisVars) {
+                newState.discretize = {
+                    ...prev.discretize,
+                    VariablesList: [...prev.main.AnalysisVars],
+                };
+
+                newState.missing = {
+                    ...prev.missing,
+                    AnalysisVariables: [...prev.main.AnalysisVars],
+                };
+            }
+
+            // Update missing.SupplementaryVariables based on SuppleVars (if it exists)
+            if (prev.main.SuppleVars) {
+                newState.missing = {
+                    ...(newState.missing || prev.missing),
+                    SupplementaryVariables: [...prev.main.SuppleVars],
+                };
+            }
+
+            // Combine AnalysisVars and SuppleVars for any output variables
+            const analysisVars = prev.main.AnalysisVars
+                ? [...prev.main.AnalysisVars]
+                : [];
+            const suppleVars = prev.main.SuppleVars
+                ? [...prev.main.SuppleVars]
+                : [];
+
+            // Update based on LabelingVars (if it exists)
+            if (prev.main.LabelingVars) {
+                newState.output = {
+                    ...newState.output,
+                    LabelingVars: [...prev.main.LabelingVars],
+                };
+            }
+
+            return newState;
+        });
+    }, [
+        formData.main.AnalysisVars,
+        formData.main.SuppleVars,
+        formData.main.LabelingVars,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
@@ -57,6 +112,15 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
                 [field]: value,
             },
         }));
+    };
+
+    // Callback for handling variable weight updates
+    const handleDefineVariableUpdate = (data: OptScaMCADefineVariableType) => {
+        console.log("Define Variable Weight data updated:", data);
+        // Call the function in the dialog component to update the variable
+        if (dialogRef.current) {
+            dialogRef.current.handleDefineVariableContinue(data);
+        }
     };
 
     const executeOptScaMCA = async (mainData: OptScaMCAMainType) => {
@@ -95,6 +159,7 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
             <DialogTitle></DialogTitle>
             <DialogContent>
                 <OptScaMCADialog
+                    ref={dialogRef}
                     isMainOpen={isMainOpen}
                     setIsMainOpen={setIsMainOpen}
                     setIsDefineVariableOpen={setIsDefineVariableOpen}
@@ -122,6 +187,7 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
                         updateFormData("defineVariable", field, value)
                     }
                     data={formData.defineVariable}
+                    onContinue={handleDefineVariableUpdate}
                 />
 
                 {/* Discretize */}

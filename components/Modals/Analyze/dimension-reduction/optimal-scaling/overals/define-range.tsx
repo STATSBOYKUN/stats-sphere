@@ -20,6 +20,7 @@ export const OptScaOveralsDefineRange = ({
     setIsDefineRangeOpen,
     updateFormData,
     data,
+    onContinue,
 }: OptScaOveralsDefineRangeProps) => {
     const [defineRangeState, setDefineRangeState] =
         useState<OptScaOveralsDefineRangeType>({ ...data });
@@ -45,6 +46,12 @@ export const OptScaOveralsDefineRange = ({
         Object.entries(defineRangeState).forEach(([key, value]) => {
             updateFormData(key as keyof OptScaOveralsDefineRangeType, value);
         });
+
+        // Call the onContinue callback if provided
+        if (onContinue) {
+            onContinue(defineRangeState);
+        }
+
         setIsDefineRangeOpen(false);
     };
 

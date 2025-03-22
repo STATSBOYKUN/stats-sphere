@@ -7,6 +7,16 @@ export type OptScaMCAMainType = {
     Dimensions: number | null;
 };
 
+export type DialogHandlers = {
+    handleDefineVariableContinue: (data: OptScaMCADefineVariableType) => void;
+};
+
+export type VariableInfoType = {
+    [key: string]: {
+        weight?: number;
+    };
+};
+
 export type OptScaMCADialogProps = {
     isMainOpen: boolean;
     setIsMainOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,10 +50,11 @@ export type OptScaMCADefineVariableProps = {
         value: number | null
     ) => void;
     data: OptScaMCADefineVariableType;
+    onContinue?: (data: OptScaMCADefineVariableType) => void;
 };
 
 export type OptScaMCADiscretizeType = {
-    VariablesList: string | null;
+    VariablesList: string[] | null;
     Method: string | null;
     NumberOfCategories: boolean;
     NumberOfCategoriesValue: number | null;
@@ -58,15 +69,15 @@ export type OptScaMCADiscretizeProps = {
     setIsDiscretizeOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCADiscretizeType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: OptScaMCADiscretizeType;
 };
 
 export type OptScaMCAMissingType = {
-    CurrentTargetList: string | null;
-    AnalysisVariables: string | null;
-    SupplementaryVariables: string | null;
+    CurrentTargetList: string[] | null;
+    AnalysisVariables: string[] | null;
+    SupplementaryVariables: string[] | null;
     MissingValuesExclude: boolean;
     ExcludeMode: boolean;
     ExcludeExtraCat: boolean;
@@ -83,7 +94,7 @@ export type OptScaMCAMissingProps = {
     setIsMissingOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCAMissingType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaMCAMissingType;
 };
@@ -129,12 +140,12 @@ export type OptScaMCAOptionsProps = {
 };
 
 export type OptScaMCAOutputType = {
-    QuantifiedVars: string | null;
-    LabelingVars: string | null;
-    CatQuantifications: string | null;
-    DescStats: string | null;
-    ObjScoresIncludeCat: string | null;
-    ObjScoresLabelBy: string | null;
+    QuantifiedVars: string[] | null;
+    LabelingVars: string[] | null;
+    CatQuantifications: string[] | null;
+    DescStats: string[] | null;
+    ObjScoresIncludeCat: string[] | null;
+    ObjScoresLabelBy: string[] | null;
     ObjectScores: boolean;
     DiscMeasures: boolean;
     IterationHistory: boolean;
@@ -147,7 +158,7 @@ export type OptScaMCAOutputProps = {
     setIsOutputOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCAOutputType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaMCAOutputType;
 };
@@ -190,12 +201,12 @@ export type OptScaMCAObjectPlotsType = {
     Biplot: boolean;
     BTIncludeAllVars: boolean;
     BTIncludeSelectedVars: boolean;
-    BTAvailableVars: string | null;
-    BTSelectedVars: string | null;
+    BTAvailableVars: string[] | null;
+    BTSelectedVars: string[] | null;
     LabelObjLabelByCaseNumber: boolean;
     LabelObjLabelByVar: boolean;
-    LabelObjAvailableVars: string | null;
-    LabelObjSelectedVars: string | null;
+    LabelObjAvailableVars: string[] | null;
+    LabelObjSelectedVars: string[] | null;
 };
 
 export type OptScaMCAObjectPlotsProps = {
@@ -203,19 +214,19 @@ export type OptScaMCAObjectPlotsProps = {
     setIsObjectPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCAObjectPlotsType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: OptScaMCAObjectPlotsType;
 };
 
 export type OptScaMCAVariablePlotsType = {
     DimensionsForMultiNom: number | null;
-    SourceVar: string | null;
-    CatPlotsVar: string | null;
-    JointCatPlotsVar: string | null;
-    TransPlotsVar: string | null;
+    SourceVar: string[] | null;
+    CatPlotsVar: string[] | null;
+    JointCatPlotsVar: string[] | null;
+    TransPlotsVar: string[] | null;
     InclResidPlots: boolean;
-    DiscMeasuresVar: string | null;
+    DiscMeasuresVar: string[] | null;
     DisplayPlot: boolean;
     UseAllVars: boolean;
     UseSelectedVars: boolean;
@@ -226,7 +237,7 @@ export type OptScaMCAVariablePlotsProps = {
     setIsVariablePlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaMCAVariablePlotsType,
-        value: string | boolean | number | null
+        value: string[] | string | boolean | number | null
     ) => void;
     data: OptScaMCAVariablePlotsType;
 };

@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef } from "react";
 import { OptScaOveralsDefineRange } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range";
 import { OptScaOveralsDefineRangeScale } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/define-range-scale";
 import { OptScaOveralsDialog } from "@/components/Modals/Analyze/dimension-reduction/optimal-scaling/overals/dialog";
@@ -10,12 +11,14 @@ import {
     OptScaOveralsContainerProps,
     OptScaOveralsMainType,
     OptScaOveralsType,
+    OptScaOveralsDefineRangeType,
+    OptScaOveralsDefineRangeScaleType,
+    DialogHandlers,
 } from "@/models/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals";
 import { analyzeOptScaOverals } from "@/services/analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-analysis";
 import { useDataStore } from "@/stores/useDataStore";
 import useResultStore from "@/stores/useResultStore";
 import { useVariableStore } from "@/stores/useVariableStore";
-import { useEffect, useState } from "react";
 
 export const OptScaOveralsContainer = ({
     onClose,
@@ -34,6 +37,9 @@ export const OptScaOveralsContainer = ({
     const [isDefineRangeOpen, setIsDefineRangeOpen] = useState(false);
     const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
+    // Ref to access dialog functions
+    const dialogRef = useRef<DialogHandlers>(null);
+
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
 
@@ -49,6 +55,24 @@ export const OptScaOveralsContainer = ({
                 [field]: value,
             },
         }));
+    };
+
+    // Callback for Define Range Scale updates
+    const handleDefineRangeScaleUpdate = (
+        data: OptScaOveralsDefineRangeScaleType
+    ) => {
+        console.log("Define Range Scale data updated:", data);
+        if (dialogRef.current) {
+            dialogRef.current.handleDefineRangeScaleContinue(data);
+        }
+    };
+
+    // Callback for Define Range updates
+    const handleDefineRangeUpdate = (data: OptScaOveralsDefineRangeType) => {
+        console.log("Define Range data updated:", data);
+        if (dialogRef.current) {
+            dialogRef.current.handleDefineRangeContinue(data);
+        }
     };
 
     const executeOptScaOverals = async (mainData: OptScaOveralsMainType) => {
@@ -87,6 +111,7 @@ export const OptScaOveralsContainer = ({
             <DialogTitle></DialogTitle>
             <DialogContent>
                 <OptScaOveralsDialog
+                    ref={dialogRef}
                     isMainOpen={isMainOpen}
                     setIsMainOpen={setIsMainOpen}
                     setIsDefineRangeScaleOpen={setIsDefineRangeScaleOpen}
@@ -109,6 +134,7 @@ export const OptScaOveralsContainer = ({
                         updateFormData("defineRangeScale", field, value)
                     }
                     data={formData.defineRangeScale}
+                    onContinue={handleDefineRangeScaleUpdate}
                 />
 
                 {/* Define Range */}
@@ -119,6 +145,7 @@ export const OptScaOveralsContainer = ({
                         updateFormData("defineRange", field, value)
                     }
                     data={formData.defineRange}
+                    onContinue={handleDefineRangeUpdate}
                 />
 
                 {/* Options */}

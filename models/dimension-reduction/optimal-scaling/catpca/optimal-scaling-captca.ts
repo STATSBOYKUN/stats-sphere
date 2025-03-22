@@ -8,10 +8,10 @@ export type OptScaCatpcaMainType = {
 };
 
 export type DialogHandlers = {
+    handleDefineScaleContinue: (data: OptScaCatpcaDefineScaleType) => void;
     handleDefineRangeScaleContinue: (
         data: OptScaCatpcaDefineRangeScaleType
     ) => void;
-    handleDefineScaleContinue: (data: OptScaCatpcaDefineScaleType) => void;
 };
 
 export type VariableInfoType = {

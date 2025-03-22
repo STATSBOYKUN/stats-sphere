@@ -142,6 +142,9 @@ export const OptScaMCASave = ({
                                                             ? "DiscWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={
+                                                        !saveState.Discretized
+                                                    }
                                                     onValueChange={
                                                         handleDiscGrp
                                                     }
@@ -169,6 +172,9 @@ export const OptScaMCASave = ({
                                                                     value={
                                                                         saveState.DiscDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.DiscNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -198,6 +204,9 @@ export const OptScaMCASave = ({
                                                                 id="DiscretizedFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.DiscWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "DiscretizedFile",
@@ -270,6 +279,7 @@ export const OptScaMCASave = ({
                                                             ? "TransWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={!saveState.Trans}
                                                     onValueChange={
                                                         handleTransGrp
                                                     }
@@ -297,6 +307,9 @@ export const OptScaMCASave = ({
                                                                     value={
                                                                         saveState.TransDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.TransNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -326,6 +339,9 @@ export const OptScaMCASave = ({
                                                                 id="TransformedFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.TransWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "TransformedFile",
@@ -402,6 +418,9 @@ export const OptScaMCASave = ({
                                                             ? "ObjWriteNewdata"
                                                             : ""
                                                     }
+                                                    disabled={
+                                                        !saveState.ObjScores
+                                                    }
                                                     onValueChange={handleObjGrp}
                                                 >
                                                     <div className="flex flex-col gap-1 pl-6">
@@ -427,6 +446,9 @@ export const OptScaMCASave = ({
                                                                     value={
                                                                         saveState.ObjDataset ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !saveState.ObjNewdata
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -456,6 +478,9 @@ export const OptScaMCASave = ({
                                                                 id="ObjScoresFile"
                                                                 type="file"
                                                                 placeholder=""
+                                                                disabled={
+                                                                    !saveState.ObjWriteNewdata
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ObjScoresFile",
@@ -485,6 +510,9 @@ export const OptScaMCASave = ({
                                     ? "First"
                                     : ""
                             }
+                            disabled={
+                                !saveState.SaveObjScores || !saveState.SaveTrans
+                            }
                             onValueChange={handleNomGrp}
                         >
                             <div className="flex flex-row items-center gap-2">
@@ -505,6 +533,7 @@ export const OptScaMCASave = ({
                                     className="w-[65px]"
                                     placeholder=""
                                     value={saveState.MultiNomDim ?? ""}
+                                    disabled={!saveState.First}
                                     onChange={(e) =>
                                         handleChange(
                                             "MultiNomDim",

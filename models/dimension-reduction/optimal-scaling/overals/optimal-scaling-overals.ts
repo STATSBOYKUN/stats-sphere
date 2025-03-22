@@ -6,6 +6,21 @@ export type OptScaOveralsMainType = {
     Dimensions: number | null;
 };
 
+export type DialogHandlers = {
+    handleDefineRangeScaleContinue: (
+        data: OptScaOveralsDefineRangeScaleType
+    ) => void;
+    handleDefineRangeContinue: (data: OptScaOveralsDefineRangeType) => void;
+};
+
+export type VariableInfoType = {
+    [key: string]: {
+        measScale?: string;
+        minimum?: number;
+        maximum?: number;
+    };
+};
+
 export type OptScaOveralsDialogProps = {
     isMainOpen: boolean;
     setIsMainOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -39,6 +54,7 @@ export type OptScaOveralsDefineRangeScaleProps = {
         value: string | number | boolean | null
     ) => void;
     data: OptScaOveralsDefineRangeScaleType;
+    onContinue?: (data: OptScaOveralsDefineRangeScaleType) => void;
 };
 
 export type OptScaOveralsDefineRangeType = {
@@ -54,6 +70,7 @@ export type OptScaOveralsDefineRangeProps = {
         value: string | number | null
     ) => void;
     data: OptScaOveralsDefineRangeType;
+    onContinue?: (data: OptScaOveralsDefineRangeType) => void;
 };
 
 export type OptScaOveralsOptionsType = {

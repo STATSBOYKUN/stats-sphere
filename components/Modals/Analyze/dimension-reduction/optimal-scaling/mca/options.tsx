@@ -28,7 +28,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DISCRETIZEMETHOD } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+import {
+    CONFIGURATIONMETHOD,
+    NORMALIZATIONMETHOD,
+} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 export const OptScaMCAOptions = ({
     isOptionsOpen,
@@ -41,10 +46,6 @@ export const OptScaMCAOptions = ({
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isOptionsOpen) {
             setOptionsState({ ...data });
@@ -53,11 +54,23 @@ export const OptScaMCAOptions = ({
 
     const handleChange = (
         field: keyof OptScaMCAOptionsType,
-        value: number | string | null
+        value: CheckedState | number | string | null
     ) => {
         setOptionsState((prevState) => ({
             ...prevState,
             [field]: value,
+        }));
+    };
+
+    const handleMethodGrp = (value: string) => {
+        setOptionsState((prevState) => ({
+            ...prevState,
+            None: value === "None",
+            Quartimax: value === "Quartimax",
+            Varimax: value === "Varimax",
+            Equimax: value === "Equimax",
+            Oblimin: value === "Oblimin",
+            Promax: value === "Promax",
         }));
     };
 
@@ -112,7 +125,7 @@ export const OptScaMCAOptions = ({
                                 <ResizablePanelGroup direction="horizontal">
                                     <ResizablePanel defaultSize={50}>
                                         <ResizablePanelGroup direction="vertical">
-                                            <ResizablePanel defaultSize={50}>
+                                            <ResizablePanel defaultSize={100}>
                                                 <RadioGroup
                                                     value={
                                                         optionsState.RangeOfCases
@@ -152,6 +165,9 @@ export const OptScaMCAOptions = ({
                                                                         optionsState.First ??
                                                                         ""
                                                                     }
+                                                                    disabled={
+                                                                        !optionsState.RangeOfCases
+                                                                    }
                                                                     onChange={(
                                                                         e
                                                                     ) =>
@@ -179,6 +195,9 @@ export const OptScaMCAOptions = ({
                                                                     value={
                                                                         optionsState.Last ??
                                                                         ""
+                                                                    }
+                                                                    disabled={
+                                                                        !optionsState.RangeOfCases
                                                                     }
                                                                     onChange={(
                                                                         e
@@ -211,6 +230,9 @@ export const OptScaMCAOptions = ({
                                                                     optionsState.SingleCaseValue ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !optionsState.SingleCase
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "SingleCaseValue",
@@ -232,6 +254,9 @@ export const OptScaMCAOptions = ({
                                                                 value={
                                                                     optionsState.SingleCaseValue ??
                                                                     ""
+                                                                }
+                                                                disabled={
+                                                                    !optionsState.SingleCase
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleChange(
@@ -298,6 +323,9 @@ export const OptScaMCAOptions = ({
                                                                         optionsState.PlotDimLoDim ??
                                                                         ""
                                                                     }
+                                                                    disabled={
+                                                                        !optionsState.PlotDimRestrict
+                                                                    }
                                                                     onChange={(
                                                                         e
                                                                     ) =>
@@ -327,6 +355,9 @@ export const OptScaMCAOptions = ({
                                                                         optionsState.PlotDimHiDim ??
                                                                         ""
                                                                     }
+                                                                    disabled={
+                                                                        !optionsState.PlotDimRestrict
+                                                                    }
                                                                     onChange={(
                                                                         e
                                                                     ) =>
@@ -355,7 +386,7 @@ export const OptScaMCAOptions = ({
                                                         <Select
                                                             value={
                                                                 optionsState.ConfigurationMethod ??
-                                                                ""
+                                                                "VariablePrincipal"
                                                             }
                                                             onValueChange={(
                                                                 value
@@ -371,7 +402,7 @@ export const OptScaMCAOptions = ({
                                                             </SelectTrigger>
                                                             <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {DISCRETIZEMETHOD.map(
+                                                                    {CONFIGURATIONMETHOD.map(
                                                                         (
                                                                             method,
                                                                             index
@@ -381,13 +412,12 @@ export const OptScaMCAOptions = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}
@@ -399,6 +429,10 @@ export const OptScaMCAOptions = ({
                                                             type="file"
                                                             className="w-full"
                                                             placeholder=""
+                                                            disabled={
+                                                                optionsState.ConfigurationMethod ===
+                                                                "None"
+                                                            }
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "ConfigFile",
@@ -424,7 +458,7 @@ export const OptScaMCAOptions = ({
                                                         <Select
                                                             value={
                                                                 optionsState.NormalizationMethod ??
-                                                                ""
+                                                                "None"
                                                             }
                                                             onValueChange={(
                                                                 value
@@ -440,7 +474,7 @@ export const OptScaMCAOptions = ({
                                                             </SelectTrigger>
                                                             <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {DISCRETIZEMETHOD.map(
+                                                                    {NORMALIZATIONMETHOD.map(
                                                                         (
                                                                             method,
                                                                             index
@@ -450,13 +484,12 @@ export const OptScaMCAOptions = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}
@@ -476,6 +509,10 @@ export const OptScaMCAOptions = ({
                                                                 value={
                                                                     optionsState.NormCustomValue ??
                                                                     ""
+                                                                }
+                                                                disabled={
+                                                                    optionsState.NormalizationMethod !==
+                                                                    "Custom"
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleChange(
@@ -590,6 +627,9 @@ export const OptScaMCAOptions = ({
                                                                 value={
                                                                     optionsState.LimitForLabel ??
                                                                     ""
+                                                                }
+                                                                disabled={
+                                                                    !optionsState.VariableLabels
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleChange(
