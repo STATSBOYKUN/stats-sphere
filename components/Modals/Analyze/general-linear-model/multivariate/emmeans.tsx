@@ -42,10 +42,6 @@ export const MultivariateEMMeans = ({
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isEMMeansOpen) {
             setEMMeansState({ ...data });
@@ -189,13 +185,12 @@ export const MultivariateEMMeans = ({
                                                                             index
                                                                         }
                                                                         value={
-                                                                            method
+                                                                            method.value
                                                                         }
                                                                     >
-                                                                        {capitalize(
-                                                                            method
-                                                                        ) +
-                                                                            "'s Method"}
+                                                                        {
+                                                                            method.name
+                                                                        }
                                                                     </SelectItem>
                                                                 )
                                                             )}

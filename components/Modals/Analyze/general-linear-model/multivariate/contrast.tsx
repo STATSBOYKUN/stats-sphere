@@ -13,7 +13,6 @@ import {
     MultivariateContrastType,
 } from "@/models/general-linear-model/multivariate/multivariate";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -24,7 +23,12 @@ import {
 } from "@/components/ui/select";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { BUILDTERMMETHOD } from "@/constants/general-linear-model/multivariate/multivariate-method";
+import {
+    BUILDTERMMETHOD,
+    CONTRASTMETHOD,
+} from "@/constants/general-linear-model/multivariate/multivariate-method";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const MultivariateContrast = ({
     isContrastOpen,
@@ -36,13 +40,40 @@ export const MultivariateContrast = ({
         useState<MultivariateContrastType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
+    // Add state for variables management
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
+    const [selectedVariable, setSelectedVariable] = useState<string | null>(
+        null
+    );
+    const [formattedVariables, setFormattedVariables] = useState<{
+        [key: string]: string;
+    }>({});
+    const [originalVariables, setOriginalVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isContrastOpen) {
             setContrastState({ ...data });
+
+            // Extract original variable names and create mapping of current formatting
+            const originals: string[] = [];
+            const currentFormatting: { [key: string]: string } = {};
+
+            data.FactorList?.forEach((variable) => {
+                // Extract original name from possibly formatted variable
+                const originalName = variable.split(" (")[0];
+                originals.push(originalName);
+
+                // If the variable is formatted, store the formatting
+                if (variable !== originalName) {
+                    currentFormatting[originalName] = variable;
+                }
+            });
+
+            setAvailableVariables(originals);
+            setOriginalVariables(originals);
+
+            // Initialize with current formatting
+            setFormattedVariables(currentFormatting);
         }
     }, [isContrastOpen, data]);
 
@@ -64,10 +95,53 @@ export const MultivariateContrast = ({
         }));
     };
 
+    // Handle variable selection
+    const handleVariableClick = (variable: string) => {
+        setSelectedVariable(variable);
+    };
+
+    // Format variable based on current contrast settings
+    const formatVariable = (variable: string) => {
+        const method = contrastState.ContrastMethod || "Deviation";
+        const reference = contrastState.Last ? "Last" : "First";
+
+        // Get the original variable name to prevent double formatting
+        const originalName = variable.split(" (")[0];
+        return `${originalName} (${method}, Ref: ${reference})`;
+    };
+
+    // Handle the Change button click
+    const handleChangeClick = () => {
+        if (selectedVariable) {
+            const formatted = formatVariable(selectedVariable);
+
+            // Update formatted variables
+            setFormattedVariables((prev) => ({
+                ...prev,
+                [selectedVariable]: formatted,
+            }));
+        }
+    };
+
     const handleContinue = () => {
-        Object.entries(contrastState).forEach(([key, value]) => {
+        // Create the updated variable list by applying formatting
+        const updatedVariablesList = availableVariables.map((variable) => {
+            return formattedVariables[variable] || variable;
+        });
+
+        // Update the contrast state with formatted variables
+        const updatedState = {
+            ...contrastState,
+            // Set the updated variable list
+            FactorList: updatedVariablesList,
+        };
+
+        // Update parent component's form data
+        Object.entries(updatedState).forEach(([key, value]) => {
             updateFormData(key as keyof MultivariateContrastType, value);
         });
+
+        // Close the dialog
         setIsContrastOpen(false);
     };
 
@@ -75,7 +149,7 @@ export const MultivariateContrast = ({
         <>
             {/* Contrast Dialog */}
             <Dialog open={isContrastOpen} onOpenChange={setIsContrastOpen}>
-                <DialogContent className="sm:max-w-sm">
+                <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Multivariate: Contrast</DialogTitle>
                     </DialogHeader>
@@ -83,20 +157,36 @@ export const MultivariateContrast = ({
                     <div className="flex flex-col gap-2">
                         <div className="w-full">
                             <Label className="font-bold">Factors: </Label>
-                            <Input
-                                id="FactorList"
-                                type="text"
-                                className="w-full min-h-[100px]"
-                                placeholder=""
-                                value={contrastState.FactorList ?? ""}
-                                onChange={(e) =>
-                                    handleChange("FactorList", e.target.value)
-                                }
-                            />
+                            <ScrollArea>
+                                <div className="flex flex-col gap-1 justify-start items-start h-[150px] w-full p-2 border rounded">
+                                    {availableVariables.map(
+                                        (variable: string, index: number) => (
+                                            <Badge
+                                                key={index}
+                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                variant={
+                                                    selectedVariable ===
+                                                    variable
+                                                        ? "default"
+                                                        : "outline"
+                                                }
+                                                onClick={() =>
+                                                    handleVariableClick(
+                                                        variable
+                                                    )
+                                                }
+                                            >
+                                                {formattedVariables[variable] ||
+                                                    variable}
+                                            </Badge>
+                                        )
+                                    )}
+                                </div>
+                            </ScrollArea>
                         </div>
                         <ResizablePanelGroup
                             direction="vertical"
-                            className="min-h-[115px] max-w-md rounded-lg border md:min-w-[200px]"
+                            className="min-h-[150px] max-w-md rounded-lg border md:min-w-[200px]"
                         >
                             <ResizablePanel defaultSize={100}>
                                 <div className="flex flex-col gap-2 p-2">
@@ -124,15 +214,15 @@ export const MultivariateContrast = ({
                                             </SelectTrigger>
                                             <SelectContent className="w-[150px]">
                                                 <SelectGroup>
-                                                    {BUILDTERMMETHOD.map(
+                                                    {CONTRASTMETHOD.map(
                                                         (method, index) => (
                                                             <SelectItem
                                                                 key={index}
-                                                                value={method}
+                                                                value={
+                                                                    method.value
+                                                                }
                                                             >
-                                                                {capitalize(
-                                                                    method
-                                                                ) + "'s Method"}
+                                                                {method.name}
                                                             </SelectItem>
                                                         )
                                                     )}
@@ -145,6 +235,12 @@ export const MultivariateContrast = ({
                                             contrastState.Last
                                                 ? "Last"
                                                 : "First"
+                                        }
+                                        disabled={
+                                            contrastState.ContrastMethod !==
+                                                "deviation" &&
+                                            contrastState.ContrastMethod !==
+                                                "simple"
                                         }
                                         onValueChange={handleRefGrp}
                                     >
@@ -172,6 +268,16 @@ export const MultivariateContrast = ({
                                             </div>
                                         </div>
                                     </RadioGroup>
+                                    <div className="flex justify-end pt-2">
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            onClick={handleChangeClick}
+                                            disabled={!selectedVariable}
+                                        >
+                                            Change
+                                        </Button>
+                                    </div>
                                 </div>
                             </ResizablePanel>
                         </ResizablePanelGroup>

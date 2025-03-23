@@ -195,9 +195,6 @@ export const MultivariateDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Dependent Variables:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -211,7 +208,7 @@ export const MultivariateDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Dependent Variables:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -262,9 +259,6 @@ export const MultivariateDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Fixed Factor(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -281,7 +275,7 @@ export const MultivariateDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Fixed Factor(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -334,9 +328,6 @@ export const MultivariateDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Covariate(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -350,7 +341,7 @@ export const MultivariateDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Covariate(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>

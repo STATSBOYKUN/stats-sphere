@@ -135,7 +135,6 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
 
     // Callback for handling variable weight updates
     const handleDefineVariableUpdate = (data: OptScaMCADefineVariableType) => {
-        console.log("Define Variable Weight data updated:", data);
         // Call the function in the dialog component to update the variable
         if (dialogRef.current) {
             dialogRef.current.handleDefineVariableContinue(data);

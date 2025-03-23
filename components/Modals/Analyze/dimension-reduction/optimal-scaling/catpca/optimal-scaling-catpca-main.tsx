@@ -153,7 +153,6 @@ export const OptScaCatpcaContainer = ({
     const handleDefineRangeScaleUpdate = (
         data: OptScaCatpcaDefineRangeScaleType
     ) => {
-        console.log("Define Range Scale data updated:", data);
         // Panggil fungsi di komponen dialog untuk memperbarui variabel
         if (dialogRef.current) {
             dialogRef.current.handleDefineRangeScaleContinue(data);
@@ -162,7 +161,6 @@ export const OptScaCatpcaContainer = ({
 
     // Callback untuk pembaruan definisi scale
     const handleDefineScaleUpdate = (data: OptScaCatpcaDefineScaleType) => {
-        console.log("Define Scale data updated:", data);
         // Panggil fungsi di komponen dialog untuk memperbarui variabel
         if (dialogRef.current) {
             dialogRef.current.handleDefineScaleContinue(data);

@@ -61,7 +61,6 @@ export const OptScaOveralsContainer = ({
     const handleDefineRangeScaleUpdate = (
         data: OptScaOveralsDefineRangeScaleType
     ) => {
-        console.log("Define Range Scale data updated:", data);
         if (dialogRef.current) {
             dialogRef.current.handleDefineRangeScaleContinue(data);
         }
@@ -69,7 +68,6 @@ export const OptScaOveralsContainer = ({
 
     // Callback for Define Range updates
     const handleDefineRangeUpdate = (data: OptScaOveralsDefineRangeType) => {
-        console.log("Define Range data updated:", data);
         if (dialogRef.current) {
             dialogRef.current.handleDefineRangeContinue(data);
         }

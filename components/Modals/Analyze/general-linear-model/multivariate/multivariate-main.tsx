@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     MultivariateContainerProps,
     MultivariateMainType,
@@ -46,6 +46,51 @@ export const MultivariateContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            // Create a copy of the previous state to modify
+            const newState = { ...prev };
+
+            // Update discretize based on AnalysisVars (if it exists)
+            if (prev.main.DepVar) {
+                // newState.discretize = {
+                //     ...prev.discretize,
+                //     VariablesList: [...prev.main.AnalysisVars],
+                // };
+            }
+
+            // Update missing.SupplementaryVariables based on SuppleVars (if it exists)
+            if (prev.main.FixFactor) {
+                newState.contrast = {
+                    ...prev.contrast,
+                    FactorList: [...prev.main.FixFactor],
+                };
+            }
+
+            // Update based on LabelingVars (if it exists)
+            if (prev.main.Covar) {
+                // newState.output = {
+                //     ...newState.output, // Use the already updated output state
+                //     LabelingVars: [...prev.main.LabelingVars],
+                // };
+            }
+
+            // Combine AnalysisVars and SuppleVars for QuantifiedVars
+            const depVars = prev.main.DepVar ? [...prev.main.DepVar] : [];
+            const factorVars = prev.main.FixFactor
+                ? [...prev.main.FixFactor]
+                : [];
+            const covarVars = prev.main.Covar ? [...prev.main.Covar] : [];
+
+            newState.model = {
+                ...prev.model,
+                FactorsVar: [...factorVars, ...covarVars],
+            };
+
+            return newState;
+        });
+    }, [formData.main.DepVar, formData.main.FixFactor, formData.main.Covar]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

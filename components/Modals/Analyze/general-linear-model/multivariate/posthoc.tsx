@@ -44,10 +44,6 @@ export const MultivariatePostHoc = ({
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
 
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
-
     useEffect(() => {
         if (isPostHocOpen) {
             setPostHocState({ ...data });
@@ -524,13 +520,12 @@ export const MultivariatePostHoc = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}

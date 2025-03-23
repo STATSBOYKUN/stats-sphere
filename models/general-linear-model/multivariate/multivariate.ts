@@ -32,9 +32,9 @@ export type MultivariateModelType = {
     NonCust: boolean;
     Custom: boolean;
     BuildCustomTerm: boolean;
-    FactorsVar: string | null;
+    FactorsVar: string[] | null;
     BuildTermMethod: string | null;
-    FactorsModel: string | null;
+    FactorsModel: string[] | null;
     TermsVar: string | null;
     CovModel: string | null;
     RandomModel: string | null;
@@ -48,13 +48,13 @@ export type MultivariateModelProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariateModelType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: MultivariateModelType;
 };
 
 export type MultivariateContrastType = {
-    FactorList: string | null;
+    FactorList: string[] | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
@@ -65,7 +65,7 @@ export type MultivariateContrastProps = {
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariateContrastType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: MultivariateContrastType;
 };
