@@ -84,11 +84,30 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
                 ? [...prev.main.SuppleVars]
                 : [];
 
+            newState.output = {
+                ...prev.output,
+                QuantifiedVars: [...analysisVars, ...suppleVars],
+            };
+
+            newState.objectPlots = {
+                ...prev.objectPlots,
+                BTAvailableVars: [...analysisVars, ...suppleVars],
+            };
+
+            newState.variablePlots = {
+                ...prev.variablePlots,
+                SourceVar: [...analysisVars, ...suppleVars],
+            };
+
             // Update based on LabelingVars (if it exists)
             if (prev.main.LabelingVars) {
                 newState.output = {
                     ...newState.output,
                     LabelingVars: [...prev.main.LabelingVars],
+                };
+                newState.objectPlots = {
+                    ...newState.objectPlots,
+                    LabelObjAvailableVars: [...prev.main.LabelingVars],
                 };
             }
 

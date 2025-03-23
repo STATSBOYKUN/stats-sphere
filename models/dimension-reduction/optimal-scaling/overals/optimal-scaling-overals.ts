@@ -1,7 +1,7 @@
 import React from "react";
 
 export type OptScaOveralsMainType = {
-    SetTargetVariable: string[] | null;
+    SetTargetVariable: string[][] | null;
     PlotsTargetVariable: string[] | null;
     Dimensions: number | null;
 };
@@ -29,7 +29,7 @@ export type OptScaOveralsDialogProps = {
     setIsOptionsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof OptScaOveralsMainType,
-        value: string[] | string | number | null
+        value: string[][] | string[] | string | number | null
     ) => void;
     data: OptScaOveralsMainType;
     globalVariables: string[];
@@ -89,7 +89,7 @@ export type OptScaOveralsOptionsType = {
     SaveObjscore: boolean;
     UseRandconf: boolean;
     MaxIter: number | null;
-    Conv: string | null;
+    Conv: number | null;
 };
 
 export type OptScaOveralsOptionsProps = {

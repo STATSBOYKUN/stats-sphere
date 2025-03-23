@@ -261,7 +261,7 @@ export const OptScaMCAMissing = ({
                     <Separator />
                     <ResizablePanelGroup
                         direction="vertical"
-                        className="min-h-[450px] max-w-xl rounded-lg border md:min-w-[250px]"
+                        className="min-h-[500px] max-w-xl rounded-lg border md:min-w-[250px]"
                     >
                         <ResizablePanel defaultSize={65}>
                             <ResizablePanelGroup direction="vertical">

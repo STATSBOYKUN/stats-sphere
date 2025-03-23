@@ -119,13 +119,13 @@ export const OptScaMCAOptions = ({
                     <div className="flex flex-col items-start gap-2">
                         <ResizablePanelGroup
                             direction="vertical"
-                            className="min-h-[485px] max-w-xl rounded-lg border md:min-w-[250px]"
+                            className="min-h-[495px] max-w-xl rounded-lg border md:min-w-[250px]"
                         >
                             <ResizablePanel defaultSize={100}>
                                 <ResizablePanelGroup direction="horizontal">
                                     <ResizablePanel defaultSize={50}>
                                         <ResizablePanelGroup direction="vertical">
-                                            <ResizablePanel defaultSize={100}>
+                                            <ResizablePanel defaultSize={50}>
                                                 <RadioGroup
                                                     value={
                                                         optionsState.RangeOfCases
@@ -539,7 +539,7 @@ export const OptScaMCAOptions = ({
                                                         <Label className="w-[100px]">
                                                             Convergence:
                                                         </Label>
-                                                        <div className="w-[75px]">
+                                                        <div className="w-[150px]">
                                                             <Input
                                                                 id="Convergence"
                                                                 type="number"
@@ -565,7 +565,7 @@ export const OptScaMCAOptions = ({
                                                         <Label className="w-[100px]">
                                                             Maximum Iterations:
                                                         </Label>
-                                                        <div className="w-[75px]">
+                                                        <div className="w-[150px]">
                                                             <Input
                                                                 id="MaximumIterations"
                                                                 type="number"

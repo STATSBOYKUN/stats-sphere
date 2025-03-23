@@ -108,7 +108,7 @@ export type OptScaMCAOptionsType = {
     NormalizationMethod: string | null;
     NormCustomValue: number | null;
     Convergence: number | null;
-    MaximumIterations: string | null;
+    MaximumIterations: number | null;
     VariableLabels: boolean;
     LimitForLabel: number | null;
     VariableNames: boolean;

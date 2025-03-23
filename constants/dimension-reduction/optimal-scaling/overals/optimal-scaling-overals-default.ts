@@ -9,41 +9,41 @@ import {
 export const OptScaOveralsMainDefault: OptScaOveralsMainType = {
     SetTargetVariable: null,
     PlotsTargetVariable: null,
-    Dimensions: null,
+    Dimensions: 2,
 };
 
 export const OptScaOveralsDefineRangeScaleDefault: OptScaOveralsDefineRangeScaleType =
     {
-        Minimum: null,
+        Minimum: 1,
         Maximum: null,
-        Ordinal: false,
+        Ordinal: true,
         SingleNominal: false,
         MultipleNominal: false,
         DiscreteNumeric: false,
     };
 
 export const OptScaOveralsDefineRangeDefault: OptScaOveralsDefineRangeType = {
-    Minimum: null,
+    Minimum: 1,
     Maximum: null,
 };
 
 export const OptScaOveralsOptionsDefault: OptScaOveralsOptionsType = {
-    Freq: false,
-    SingMult: false,
-    Centroid: false,
-    CategoryQuant: false,
+    Freq: true,
+    SingMult: true,
+    Centroid: true,
+    CategoryQuant: true,
     IterHistory: false,
     ObjScore: false,
     WeightCompload: false,
     CategCoord: false,
     CategCentroid: false,
-    PlotObjScore: false,
+    PlotObjScore: true,
     Trans: false,
-    Compload: false,
+    Compload: true,
     SaveObjscore: false,
     UseRandconf: false,
-    MaxIter: null,
-    Conv: null,
+    MaxIter: 100,
+    Conv: 0.00001,
 };
 
 export const OptScaOveralsDefault: OptScaOveralsType = {
