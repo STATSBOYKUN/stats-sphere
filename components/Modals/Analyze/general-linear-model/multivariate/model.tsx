@@ -293,11 +293,11 @@ export const MultivariateModel = ({
                         <DialogTitle>Multivariate: Model</DialogTitle>
                     </DialogHeader>
                     <Separator />
-                    <div className="h-[450px] flex flex-col gap-2">
+                    <div className="h-[500px] flex flex-col gap-2">
                         <ScrollArea>
                             <ResizablePanelGroup
                                 direction="vertical"
-                                className="min-h-[400px] max-w-2xl rounded-lg border md:min-w-[200px]"
+                                className="min-h-[450px] max-w-2xl rounded-lg border md:min-w-[200px]"
                             >
                                 <ResizablePanel defaultSize={15}>
                                     <div className="flex flex-col gap-2 p-2">
@@ -347,7 +347,7 @@ export const MultivariateModel = ({
                                     </div>
                                 </ResizablePanel>
                                 <ResizableHandle />
-                                <ResizablePanel defaultSize={60}>
+                                <ResizablePanel defaultSize={55}>
                                     <ResizablePanelGroup direction="horizontal">
                                         <ResizablePanel defaultSize={30}>
                                             <div className="w-full p-2">
@@ -544,7 +544,7 @@ export const MultivariateModel = ({
                                     </ResizablePanelGroup>
                                 </ResizablePanel>
                                 <ResizableHandle />
-                                <ResizablePanel defaultSize={25}>
+                                <ResizablePanel defaultSize={30}>
                                     <div className="flex flex-col gap-2 p-2">
                                         <Label>Build Term:</Label>
                                         <Table>
@@ -701,7 +701,7 @@ export const MultivariateModel = ({
                                                         colSpan={6}
                                                         className="p-2 border"
                                                     >
-                                                        <div className="bg-gray-100 p-2 rounded-md min-h-[30px]">
+                                                        <div className="p-2 rounded-md min-h-[30px]">
                                                             {currentBuildTerm ||
                                                                 "(Empty)"}
                                                         </div>

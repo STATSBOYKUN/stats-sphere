@@ -66,6 +66,14 @@ export const MultivariateContainer = ({
                     ...prev.contrast,
                     FactorList: [...prev.main.FixFactor],
                 };
+                newState.plots = {
+                    ...prev.plots,
+                    SrcList: [...prev.main.FixFactor],
+                };
+                newState.posthoc = {
+                    ...prev.posthoc,
+                    SrcList: [...prev.main.FixFactor],
+                };
             }
 
             // Update based on LabelingVars (if it exists)
@@ -82,15 +90,46 @@ export const MultivariateContainer = ({
                 ? [...prev.main.FixFactor]
                 : [];
             const covarVars = prev.main.Covar ? [...prev.main.Covar] : [];
+            const wlsVars = prev.main.WlsWeight ? [prev.main.WlsWeight] : [];
+            const plotsVars = prev.plots.FixFactorVars
+                ? [...prev.plots.FixFactorVars]
+                : [];
 
             newState.model = {
                 ...prev.model,
                 FactorsVar: [...factorVars, ...covarVars],
             };
 
+            newState.emmeans = {
+                ...prev.emmeans,
+                SrcList: [...factorVars, ...plotsVars],
+            };
+
+            const usedVariables = [
+                ...depVars,
+                ...factorVars,
+                ...covarVars,
+                ...wlsVars,
+            ];
+
+            const updatedVariables = tempVariables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+
+            newState.bootstrap = {
+                ...prev.bootstrap,
+                Variables: updatedVariables,
+            };
+
             return newState;
         });
-    }, [formData.main.DepVar, formData.main.FixFactor, formData.main.Covar]);
+    }, [
+        formData.main.DepVar,
+        formData.main.FixFactor,
+        formData.main.Covar,
+        formData.main.WlsWeight,
+        formData.plots.FixFactorVars,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

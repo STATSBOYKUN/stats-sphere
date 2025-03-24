@@ -19,24 +19,24 @@ export const MultivariateMainDefault: MultivariateMainType = {
 };
 
 export const MultivariateModelDefault: MultivariateModelType = {
+    NonCust: true,
+    Custom: false,
+    BuildCustomTerm: false,
     FactorsVar: null,
     TermsVar: null,
     FactorsModel: null,
     CovModel: null,
     RandomModel: null,
-    BuildTermMethod: null,
-    NonCust: false,
-    Custom: false,
-    BuildCustomTerm: false,
+    BuildTermMethod: "interaction",
     TermText: null,
-    SumOfSquareMethod: null,
-    Intercept: false,
+    SumOfSquareMethod: "typeIII",
+    Intercept: true,
 };
 
 export const MultivariateContrastDefault: MultivariateContrastType = {
     FactorList: null,
-    ContrastMethod: null,
-    Last: false,
+    ContrastMethod: "none",
+    Last: true,
     First: false,
 };
 
@@ -47,24 +47,24 @@ export const MultivariatePlotsDefault: MultivariatePlotsType = {
     PlotList: null,
     FixFactorVars: null,
     RandFactorVars: null,
-    LineChartType: false,
+    LineChartType: true,
     BarChartType: false,
     IncludeErrorBars: false,
-    ConfidenceInterval: false,
+    ConfidenceInterval: true,
     StandardError: false,
     IncludeRefLineForGrandMean: false,
     YAxisStart0: false,
-    Multiplier: null,
+    Multiplier: 2,
 };
 
 export const MultivariatePostHocDefault: MultivariatePostHocType = {
     SrcList: null,
     FixFactorVars: null,
-    ErrorRatio: null,
-    Twosided: false,
+    ErrorRatio: 100,
+    Twosided: true,
     LtControl: false,
     GtControl: false,
-    CategoryMethod: null,
+    CategoryMethod: "last",
     Waller: false,
     Dunnett: false,
     Lsd: false,
@@ -89,7 +89,7 @@ export const MultivariateEMMeansDefault: MultivariateEMMeansType = {
     SrcList: null,
     TargetList: null,
     CompMainEffect: false,
-    ConfiIntervalMethod: null,
+    ConfiIntervalMethod: "lsdNone",
 };
 
 export const MultivariateSaveDefault: MultivariateSaveType = {
@@ -104,7 +104,7 @@ export const MultivariateSaveDefault: MultivariateSaveType = {
     StudentizedRes: false,
     DeletedRes: false,
     CoeffStats: false,
-    NewDataSet: false,
+    NewDataSet: true,
     FilePath: null,
     DatasetName: null,
     WriteNewDataSet: false,
@@ -124,18 +124,18 @@ export const MultivariateOptionsDefault: MultivariateOptionsType = {
     ResSscpMat: false,
     CoefficientMatrix: false,
     TransformMat: false,
-    SigLevel: null,
+    SigLevel: 0.05,
 };
 
 export const MultivariateBootstrapDefault: MultivariateBootstrapType = {
     PerformBootStrapping: false,
-    NumOfSamples: null,
+    NumOfSamples: 1000,
     Seed: false,
-    SeedValue: null,
-    Level: null,
-    Percentile: false,
+    SeedValue: 200000,
+    Level: 95,
+    Percentile: true,
     BCa: false,
-    Simple: false,
+    Simple: true,
     Stratified: false,
     Variables: null,
     StrataVariables: null,

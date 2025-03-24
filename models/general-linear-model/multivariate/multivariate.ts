@@ -71,11 +71,11 @@ export type MultivariateContrastProps = {
 };
 
 export type MultivariatePlotsType = {
-    SrcList: string | null;
+    SrcList: string[] | null;
     AxisList: string | null;
     LineList: string | null;
     PlotList: string | null;
-    FixFactorVars: string | null;
+    FixFactorVars: string[] | null;
     RandFactorVars: string | null;
     LineChartType: boolean;
     BarChartType: boolean;
@@ -92,14 +92,14 @@ export type MultivariatePlotsProps = {
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariatePlotsType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: MultivariatePlotsType;
 };
 
 export type MultivariatePostHocType = {
-    SrcList: string | null;
-    FixFactorVars: string | null;
+    SrcList: string[] | null;
+    FixFactorVars: string[] | null;
     Lsd: boolean;
     Bonfe: boolean;
     Sidak: boolean;
@@ -113,7 +113,7 @@ export type MultivariatePostHocType = {
     Hoc: boolean;
     Gabriel: boolean;
     Waller: boolean;
-    ErrorRatio: string | null;
+    ErrorRatio: number | null;
     Dunnett: boolean;
     CategoryMethod: string | null;
     Twosided: boolean;
@@ -130,14 +130,14 @@ export type MultivariatePostHocProps = {
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariatePostHocType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: MultivariatePostHocType;
 };
 
 export type MultivariateEMMeansType = {
-    SrcList: string | null;
-    TargetList: string | null;
+    SrcList: string[] | null;
+    TargetList: string[] | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
 };
@@ -147,7 +147,7 @@ export type MultivariateEMMeansProps = {
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariateEMMeansType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: MultivariateEMMeansType;
 };
@@ -217,8 +217,8 @@ export type MultivariateBootstrapType = {
     BCa: boolean;
     Simple: boolean;
     Stratified: boolean;
-    Variables: string | null;
-    StrataVariables: string | null;
+    Variables: string[] | null;
+    StrataVariables: string[] | null;
 };
 
 export type MultivariateBootstrapProps = {
@@ -226,7 +226,7 @@ export type MultivariateBootstrapProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariateBootstrapType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: MultivariateBootstrapType;
 };

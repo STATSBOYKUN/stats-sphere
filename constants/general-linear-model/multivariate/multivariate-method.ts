@@ -74,3 +74,29 @@ export const CONTRASTMETHOD = [
         value: "polynomial",
     },
 ];
+
+export const DUNNETMETHOD = [
+    {
+        name: "Last",
+        value: "last",
+    },
+    {
+        name: "First",
+        value: "first",
+    },
+];
+
+export const CIADJUSTMENTMETHOD = [
+    {
+        name: "LSD(None)",
+        value: "lsdNone",
+    },
+    {
+        name: "Bonferroni",
+        value: "bonferroni",
+    },
+    {
+        name: "Sidak",
+        value: "sidak",
+    },
+];
