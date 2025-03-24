@@ -40,7 +40,7 @@ import ModalOptimalScaling from "./Regression/OptimalScaling/ModalOptimalScaling
 import ChartBuilderModal from "./Graphs/ChartBuilder/ChartBuilderModal";
 import { UnivariateContainer } from "@/components/Modals/Analyze/general-linear-model/univariate/univariate-main";
 import { MultivariateContainer } from "@/components/Modals/Analyze/general-linear-model/multivariate/multivariate-main";
-import { RepeatedMeasuresContainer } from "@/components/Modals/Analyze/general-linear-model/repeated-measures/repeated-measures-main";
+import { RepeatedMeasuresDefineContainer } from "@/components/Modals/Analyze/general-linear-model/repeated-measures/define/repeated-measures-define";
 import { VarianceCompsContainer } from "@/components/Modals/Analyze/general-linear-model/variance-components/variance-components-main";
 import { FactorContainer } from "@/components/Modals/Analyze/dimension-reduction/factor/factor-main";
 import { CorrespondenceContainer } from "@/components/Modals/Analyze/dimension-reduction/correspondence-analysis/correspondence-analysis-main";
@@ -236,7 +236,7 @@ const ModalContainer: React.FC = () => {
                 );
             case ModalType.RepeatedMeasures:
                 return (
-                    <RepeatedMeasuresContainer
+                    <RepeatedMeasuresDefineContainer
                         onClose={closeModal}
                         {...currentModal.props}
                     />
