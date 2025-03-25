@@ -103,7 +103,7 @@ export const RepeatedMeasuresContainer = ({
 
             newState.emmeans = {
                 ...prev.emmeans,
-                SrcList: [...factorVars, ...plotsVars],
+                SrcList: [...factorVars],
             };
 
             const usedVariables = [

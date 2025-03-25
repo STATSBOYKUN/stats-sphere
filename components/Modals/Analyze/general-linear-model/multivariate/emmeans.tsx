@@ -56,15 +56,48 @@ export const MultivariateEMMeans = ({
             // Remove duplicates from SrcList before setting availableVariables
             const uniqueVariables = Array.from(new Set(data.SrcList ?? []));
 
+            // Generate permutations of variables
+            const generatePermutations = (variables: string[]) => {
+                const result = [...variables];
+
+                // Generate 2-variable combinations
+                for (let i = 0; i < variables.length; i++) {
+                    for (let j = i + 1; j < variables.length; j++) {
+                        result.push(`${variables[i]}*${variables[j]}`);
+                    }
+                }
+
+                // Generate 3-variable combinations (if applicable)
+                if (variables.length >= 3) {
+                    for (let i = 0; i < variables.length; i++) {
+                        for (let j = i + 1; j < variables.length; j++) {
+                            for (let k = j + 1; k < variables.length; k++) {
+                                result.push(
+                                    `${variables[i]}*${variables[j]}*${variables[k]}`
+                                );
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            };
+
             // Add (OVERALL) as the first item if it's not already present
             if (!uniqueVariables.includes("(OVERALL)")) {
-                setAvailableVariables(["(OVERALL)", ...uniqueVariables]);
+                setAvailableVariables([
+                    "(OVERALL)",
+                    ...generatePermutations(uniqueVariables),
+                ]);
             } else {
                 // Make sure (OVERALL) is at the beginning
                 const filteredVars = uniqueVariables.filter(
                     (v) => v !== "(OVERALL)"
                 );
-                setAvailableVariables(["(OVERALL)", ...filteredVars]);
+                setAvailableVariables([
+                    "(OVERALL)",
+                    ...generatePermutations(filteredVars),
+                ]);
             }
         }
     }, [isEMMeansOpen, data]);

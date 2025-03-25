@@ -1,7 +1,7 @@
 import React from "react";
 
 export type UnivariateMainType = {
-    DepVar: string[] | null;
+    DepVar: string | null;
     FixFactor: string[] | null;
     RandFactor: string[] | null;
     Covar: string[] | null;
@@ -33,9 +33,9 @@ export type UnivariateModelType = {
     NonCust: boolean;
     Custom: boolean;
     BuildCustomTerm: boolean;
-    FactorsVar: string | null;
+    FactorsVar: string[] | null;
     TermsVar: string | null;
-    FactorsModel: string | null;
+    FactorsModel: string[] | null;
     CovModel: string | null;
     RandomModel: string | null;
     BuildTermMethod: string | null;
@@ -49,13 +49,13 @@ export type UnivariateModelProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariateModelType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: UnivariateModelType;
 };
 
 export type UnivariateContrastType = {
-    FactorList: string | null;
+    FactorList: string[] | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
@@ -66,17 +66,17 @@ export type UnivariateContrastProps = {
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariateContrastType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: UnivariateContrastType;
 };
 
 export type UnivariatePlotsType = {
-    SrcList: string | null;
+    SrcList: string[] | null;
     AxisList: string | null;
     LineList: string | null;
     PlotList: string | null;
-    FixFactorVars: string | null;
+    FixFactorVars: string[] | null;
     RandFactorVars: string | null;
     LineChartType: boolean;
     BarChartType: boolean;
@@ -93,14 +93,14 @@ export type UnivariatePlotsProps = {
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariatePlotsType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: UnivariatePlotsType;
 };
 
 export type UnivariatePostHocType = {
-    SrcList: string | null;
-    FixFactorVars: string | null;
+    SrcList: string[] | null;
+    FixFactorVars: string[] | null;
     ErrorRatio: number | null;
     Twosided: boolean;
     LtControl: boolean;
@@ -131,14 +131,14 @@ export type UnivariatePostHocProps = {
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariatePostHocType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: UnivariatePostHocType;
 };
 
 export type UnivariateEMMeansType = {
-    SrcList: string | null;
-    TargetList: string | null;
+    SrcList: string[] | null;
+    TargetList: string[] | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
 };
@@ -148,7 +148,7 @@ export type UnivariateEMMeansProps = {
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariateEMMeansType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: UnivariateEMMeansType;
 };
@@ -228,8 +228,8 @@ export type UnivariateBootstrapType = {
     BCa: boolean;
     Simple: boolean;
     Stratified: boolean;
-    Variables: string | null;
-    StrataVariables: string | null;
+    Variables: string[] | null;
+    StrataVariables: string[] | null;
 };
 
 export type UnivariateBootstrapProps = {
@@ -237,7 +237,7 @@ export type UnivariateBootstrapProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariateBootstrapType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: UnivariateBootstrapType;
 };

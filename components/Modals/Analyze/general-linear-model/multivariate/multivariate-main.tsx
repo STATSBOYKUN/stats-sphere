@@ -91,9 +91,6 @@ export const MultivariateContainer = ({
                 : [];
             const covarVars = prev.main.Covar ? [...prev.main.Covar] : [];
             const wlsVars = prev.main.WlsWeight ? [prev.main.WlsWeight] : [];
-            const plotsVars = prev.plots.FixFactorVars
-                ? [...prev.plots.FixFactorVars]
-                : [];
 
             newState.model = {
                 ...prev.model,
@@ -102,7 +99,7 @@ export const MultivariateContainer = ({
 
             newState.emmeans = {
                 ...prev.emmeans,
-                SrcList: [...factorVars, ...plotsVars],
+                SrcList: [...factorVars],
             };
 
             const usedVariables = [

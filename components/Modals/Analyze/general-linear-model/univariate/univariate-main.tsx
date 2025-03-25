@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     UnivariateContainerProps,
     UnivariateMainType,
@@ -44,6 +44,75 @@ export const UnivariateContainer = ({ onClose }: UnivariateContainerProps) => {
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            const newState = { ...prev };
+
+            if (prev.main.FixFactor) {
+                newState.posthoc = {
+                    ...prev.posthoc,
+                    SrcList: [...prev.main.FixFactor],
+                };
+            }
+
+            const depVars = prev.main.DepVar ? [prev.main.DepVar] : [];
+            const factorVars = prev.main.FixFactor
+                ? [...prev.main.FixFactor]
+                : [];
+            const randVars = prev.main.RandFactor
+                ? [...prev.main.RandFactor]
+                : [];
+            const covarVars = prev.main.Covar ? [...prev.main.Covar] : [];
+            const wlsVars = prev.main.WlsWeight ? [prev.main.WlsWeight] : [];
+
+            newState.model = {
+                ...prev.model,
+                FactorsVar: [...factorVars, ...randVars, ...covarVars],
+            };
+
+            newState.contrast = {
+                ...prev.contrast,
+                FactorList: [...factorVars, ...randVars],
+            };
+
+            newState.plots = {
+                ...prev.plots,
+                SrcList: [...factorVars, ...randVars],
+            };
+
+            newState.emmeans = {
+                ...prev.emmeans,
+                SrcList: [...factorVars, ...randVars],
+            };
+
+            const usedVariables = [
+                ...depVars,
+                ...factorVars,
+                ...randVars,
+                ...covarVars,
+                ...wlsVars,
+            ];
+
+            const updatedVariables = tempVariables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+
+            newState.bootstrap = {
+                ...prev.bootstrap,
+                Variables: updatedVariables,
+            };
+
+            return newState;
+        });
+    }, [
+        formData.main.DepVar,
+        formData.main.FixFactor,
+        formData.main.RandFactor,
+        formData.main.Covar,
+        formData.main.WlsWeight,
+        formData.plots.FixFactorVars,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
