@@ -344,6 +344,7 @@ export const RepeatedMeasuresSave = ({
                                             ? "WriteNewDataSet"
                                             : ""
                                     }
+                                    disabled={!saveState.CoeffStats}
                                     onValueChange={handleDestGrp}
                                 >
                                     <div className="flex flex-col gap-1 pl-6">
@@ -369,6 +370,9 @@ export const RepeatedMeasuresSave = ({
                                                         saveState.DatasetName ??
                                                         ""
                                                     }
+                                                    disabled={
+                                                        !saveState.NewDataSet
+                                                    }
                                                     onChange={(e) =>
                                                         handleChange(
                                                             "DatasetName",
@@ -392,6 +396,9 @@ export const RepeatedMeasuresSave = ({
                                                 id="FilePath"
                                                 type="file"
                                                 placeholder=""
+                                                disabled={
+                                                    !saveState.WriteNewDataSet
+                                                }
                                                 onChange={(e) =>
                                                     handleChange(
                                                         "FilePath",

@@ -438,6 +438,9 @@ export const UnivariateSave = ({
                                                                 saveState.DatasetName ??
                                                                 ""
                                                             }
+                                                            disabled={
+                                                                !saveState.NewDataSet
+                                                            }
                                                             onChange={(e) =>
                                                                 handleChange(
                                                                     "DatasetName",
@@ -462,6 +465,9 @@ export const UnivariateSave = ({
                                                         id="FilePath"
                                                         type="file"
                                                         placeholder=""
+                                                        disabled={
+                                                            !saveState.WriteNewDataSet
+                                                        }
                                                         onChange={(e) =>
                                                             handleChange(
                                                                 "FilePath",

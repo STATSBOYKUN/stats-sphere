@@ -565,6 +565,9 @@ export const RepeatedMeasuresPostHoc = ({
                                                                     postHocState.ErrorRatio ??
                                                                     ""
                                                                 }
+                                                                disabled={
+                                                                    !postHocState.Waller
+                                                                }
                                                                 onChange={(e) =>
                                                                     handleChange(
                                                                         "ErrorRatio",
@@ -608,6 +611,9 @@ export const RepeatedMeasuresPostHoc = ({
                                                             value={
                                                                 postHocState.CategoryMethod ??
                                                                 ""
+                                                            }
+                                                            disabled={
+                                                                !postHocState.Dunnett
                                                             }
                                                             onValueChange={(
                                                                 value

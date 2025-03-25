@@ -171,12 +171,13 @@ export const UnivariateBootstrap = ({
                                     <Checkbox
                                         id="Seed"
                                         checked={bootstrapState.Seed}
+                                        disabled={
+                                            !bootstrapState.PerformBootStrapping
+                                        }
                                         onCheckedChange={(checked) =>
                                             handleChange("Seed", checked)
                                         }
                                     />
-                                    disabled=
-                                    {!bootstrapState.PerformBootStrapping}
                                     <label
                                         htmlFor="Seed"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

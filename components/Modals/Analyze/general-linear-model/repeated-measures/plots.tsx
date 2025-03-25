@@ -268,7 +268,7 @@ export const RepeatedMeasuresPlots = ({
                         <ScrollArea>
                             <ResizablePanelGroup
                                 direction="vertical"
-                                className="min-h-[600px] max-w-lg rounded-lg border md:min-w-[200px]"
+                                className="min-h-[725px] max-w-lg rounded-lg border md:min-w-[200px]"
                             >
                                 <ResizablePanel defaultSize={40}>
                                     <div className="flex flex-col gap-2 p-2">

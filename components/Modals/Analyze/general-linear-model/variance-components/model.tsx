@@ -12,7 +12,6 @@ import {
     VarianceCompsModelProps,
     VarianceCompsModelType,
 } from "@/models/general-linear-model/variance-components/variance-components";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     ResizableHandle,
     ResizablePanel,
@@ -32,6 +31,8 @@ import {
 import { BUILDTERMMETHOD } from "@/constants/general-linear-model/multivariate/multivariate-method";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const VarianceCompsModel = ({
     isModelOpen,
@@ -43,14 +44,12 @@ export const VarianceCompsModel = ({
         ...data,
     });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
-
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isModelOpen) {
             setModelState({ ...data });
+            setAvailableVariables(data.FactorsVar ?? []);
         }
     }, [isModelOpen, data]);
 
@@ -70,6 +69,34 @@ export const VarianceCompsModel = ({
             NonCust: value === "NonCust",
             Custom: value === "Custom",
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setModelState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "FactorsModel") {
+                // Prevent duplicates by checking if the variable already exists
+                if (!(updatedState.FactorsModel || []).includes(variable)) {
+                    updatedState.FactorsModel = [
+                        ...(updatedState.FactorsModel || []),
+                        variable,
+                    ];
+                }
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setModelState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "FactorsModel") {
+                updatedState.FactorsModel = (
+                    updatedState.FactorsModel || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -140,22 +167,35 @@ export const VarianceCompsModel = ({
                                                 <Label>
                                                     Factor & Covariates:{" "}
                                                 </Label>
-                                                <Input
-                                                    id="FactorsVar"
-                                                    type="text"
-                                                    className="w-full"
-                                                    placeholder=""
-                                                    value={
-                                                        modelState.FactorsVar ??
-                                                        ""
-                                                    }
-                                                    onChange={(e) =>
-                                                        handleChange(
-                                                            "FactorsVar",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
+                                                <ScrollArea>
+                                                    <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                        {availableVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    draggable={
+                                                                        !modelState.NonCust
+                                                                    }
+                                                                    variant="outline"
+                                                                    onDragStart={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.dataTransfer.setData(
+                                                                            "text",
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
                                             </div>
                                         </ResizablePanel>
                                         <ResizableHandle />
@@ -172,6 +212,9 @@ export const VarianceCompsModel = ({
                                                         value={
                                                             modelState.BuildTermMethod ??
                                                             ""
+                                                        }
+                                                        disabled={
+                                                            modelState.NonCust
                                                         }
                                                         onValueChange={(
                                                             value
@@ -197,13 +240,12 @@ export const VarianceCompsModel = ({
                                                                                 index
                                                                             }
                                                                             value={
-                                                                                method
+                                                                                method.value
                                                                             }
                                                                         >
-                                                                            {capitalize(
-                                                                                method
-                                                                            ) +
-                                                                                "'s Method"}
+                                                                            {
+                                                                                method.name
+                                                                            }
                                                                         </SelectItem>
                                                                     )
                                                                 )}
@@ -216,23 +258,82 @@ export const VarianceCompsModel = ({
                                         <ResizableHandle />
                                         <ResizablePanel defaultSize={40}>
                                             <div className="w-full p-2">
-                                                <Label>Model: </Label>
-                                                <Input
-                                                    id="FactorsModel"
-                                                    type="text"
-                                                    className="w-full"
-                                                    placeholder=""
-                                                    value={
-                                                        modelState.FactorsModel ??
-                                                        ""
+                                                <div
+                                                    className="flex flex-col w-full gap-2"
+                                                    onDragOver={(e) =>
+                                                        modelState.Custom
+                                                            ? e.preventDefault()
+                                                            : null
                                                     }
-                                                    onChange={(e) =>
-                                                        handleChange(
-                                                            "FactorsModel",
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                />
+                                                    onDrop={(e) => {
+                                                        if (modelState.Custom) {
+                                                            const variable =
+                                                                e.dataTransfer.getData(
+                                                                    "text"
+                                                                );
+                                                            handleDrop(
+                                                                "FactorsModel",
+                                                                variable
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    <Label>Model: </Label>
+                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[150px]">
+                                                                {modelState.FactorsModel &&
+                                                                modelState
+                                                                    .FactorsModel
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {modelState.FactorsModel.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant={
+                                                                                        "outline"
+                                                                                    }
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "FactorsModel",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        {modelState.Custom
+                                                                            ? "Drop variables here."
+                                                                            : "Select a model specification method."}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
+                                                        value={
+                                                            modelState.FactorsModel ??
+                                                            ""
+                                                        }
+                                                        name="Independents"
+                                                    />
+                                                </div>
                                             </div>
                                         </ResizablePanel>
                                     </ResizablePanelGroup>

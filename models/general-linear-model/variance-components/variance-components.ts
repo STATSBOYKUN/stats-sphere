@@ -1,7 +1,7 @@
 import React from "react";
 
 export type VarianceCompsMainType = {
-    DepVar: string[] | null;
+    DepVar: string | null;
     FixFactor: string[] | null;
     RandFactor: string[] | null;
     Covar: string[] | null;
@@ -27,9 +27,9 @@ export type VarianceCompsDialogProps = {
 export type VarianceCompsModelType = {
     NonCust: boolean;
     Custom: boolean;
-    FactorsVar: string | null;
+    FactorsVar: string[] | null;
     TermsVar: string | null;
-    FactorsModel: string | null;
+    FactorsModel: string[] | null;
     BuildTermMethod: string | null;
     Intercept: boolean;
 };
@@ -39,7 +39,7 @@ export type VarianceCompsModelProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof VarianceCompsModelType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: VarianceCompsModelType;
 };

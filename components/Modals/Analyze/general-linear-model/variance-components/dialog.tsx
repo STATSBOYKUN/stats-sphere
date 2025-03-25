@@ -51,7 +51,7 @@ export const VarianceCompsDialog = ({
 
     useEffect(() => {
         const usedVariables = [
-            ...(mainState.DepVar || []),
+            mainState.DepVar,
             ...(mainState.FixFactor || []),
             ...(mainState.RandFactor || []),
             ...(mainState.Covar || []),
@@ -78,10 +78,7 @@ export const VarianceCompsDialog = ({
         setMainState((prev) => {
             const updatedState = { ...prev };
             if (target === "DepVar") {
-                updatedState.DepVar = [
-                    ...(updatedState.DepVar || []),
-                    variable,
-                ];
+                updatedState.DepVar = variable;
             } else if (target === "FixFactor") {
                 updatedState.FixFactor = [
                     ...(updatedState.FixFactor || []),
@@ -105,9 +102,7 @@ export const VarianceCompsDialog = ({
         setMainState((prev) => {
             const updatedState = { ...prev };
             if (target === "DepVar") {
-                updatedState.DepVar = (updatedState.DepVar || []).filter(
-                    (item) => item !== variable
-                );
+                updatedState.DepVar = "";
             } else if (target === "FixFactor") {
                 updatedState.FixFactor = (updatedState.FixFactor || []).filter(
                     (item) => item !== variable
@@ -168,11 +163,31 @@ export const VarianceCompsDialog = ({
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
-                                <div className="flex h-full items-center justify-center p-2">
-                                    <span className="font-semibold">
-                                        List Variabel
-                                    </span>
-                                </div>
+                                <ScrollArea>
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant="outline"
+                                                    draggable
+                                                    onDragStart={(e) =>
+                                                        e.dataTransfer.setData(
+                                                            "text",
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
                             </ResizablePanel>
                             <ResizableHandle withHandle />
 
@@ -183,73 +198,47 @@ export const VarianceCompsDialog = ({
                                         <Label className="font-bold">
                                             Dependent Variables:{" "}
                                         </Label>
-                                        <div
-                                            onDragOver={(e) =>
-                                                e.preventDefault()
-                                            }
-                                            onDrop={(e) => {
-                                                const variable =
-                                                    e.dataTransfer.getData(
-                                                        "text"
+                                        <div className="flex items-center space-x-2">
+                                            <div
+                                                className="w-full min-h-[40px] p-2 border rounded"
+                                                onDrop={(e) => {
+                                                    handleDrop(
+                                                        "DepVar",
+                                                        e.dataTransfer.getData(
+                                                            "text"
+                                                        )
                                                     );
-                                                handleDrop("DepVar", variable);
-                                            }}
-                                        >
-                                            <Label className="font-bold">
-                                                Independents:
-                                            </Label>
-                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
-                                                <ScrollArea>
-                                                    <div className="w-full h-[100px]">
-                                                        {mainState.DepVar &&
-                                                        mainState.DepVar
-                                                            .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
-                                                                {mainState.DepVar.map(
-                                                                    (
-                                                                        variable,
-                                                                        index
-                                                                    ) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                            variant="outline"
-                                                                            onClick={() =>
-                                                                                handleRemoveVariable(
-                                                                                    "DepVar",
-                                                                                    variable
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                variable
-                                                                            }
-                                                                        </Badge>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <span className="text-sm font-light text-gray-500">
-                                                                Drop variables
-                                                                here.
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </ScrollArea>
+                                                }}
+                                                onDragOver={(e) =>
+                                                    e.preventDefault()
+                                                }
+                                            >
+                                                {mainState.DepVar ? (
+                                                    <Badge
+                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                        variant="outline"
+                                                        onClick={() =>
+                                                            handleRemoveVariable(
+                                                                "DepVar"
+                                                            )
+                                                        }
+                                                    >
+                                                        {mainState.DepVar}
+                                                    </Badge>
+                                                ) : (
+                                                    <span className="text-sm font-light text-gray-500">
+                                                        Drop variables here.
+                                                    </span>
+                                                )}
                                             </div>
                                             <input
                                                 type="hidden"
                                                 value={mainState.DepVar ?? ""}
-                                                name="Independents"
+                                                name="DepVar"
                                             />
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Fixed Factor(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -266,7 +255,7 @@ export const VarianceCompsDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Fixed Factor(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -319,9 +308,6 @@ export const VarianceCompsDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Random Factor(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -338,7 +324,7 @@ export const VarianceCompsDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Random Factor(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -391,9 +377,6 @@ export const VarianceCompsDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Covariate(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -407,7 +390,7 @@ export const VarianceCompsDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Covariate(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>

@@ -295,11 +295,11 @@ export const RepeatedMeasuresModel = ({
                         <DialogTitle>Model</DialogTitle>
                     </DialogHeader>
                     <Separator />
-                    <div className="h-[450px] flex flex-col gap-2">
+                    <div className="h-[500px] flex flex-col gap-2">
                         <ScrollArea>
                             <ResizablePanelGroup
                                 direction="vertical"
-                                className="min-h-[400px] max-w-2xl rounded-lg border md:min-w-[200px]"
+                                className="min-h-[450px] max-w-2xl rounded-lg border md:min-w-[200px]"
                             >
                                 <ResizablePanel defaultSize={15}>
                                     <div className="flex flex-col gap-2 p-2">
@@ -349,7 +349,7 @@ export const RepeatedMeasuresModel = ({
                                     </div>
                                 </ResizablePanel>
                                 <ResizableHandle />
-                                <ResizablePanel defaultSize={60}>
+                                <ResizablePanel defaultSize={55}>
                                     <ResizablePanelGroup direction="horizontal">
                                         <ResizablePanel defaultSize={30}>
                                             <div className="w-full p-2">
@@ -454,69 +454,99 @@ export const RepeatedMeasuresModel = ({
                                                         </SelectContent>
                                                     </Select>
                                                 </div>
+
+                                                {/* Build Custom Terms section removed as it's now in the table */}
                                             </div>
                                         </ResizablePanel>
                                         <ResizableHandle />
                                         <ResizablePanel defaultSize={40}>
                                             <div className="w-full p-2">
-                                                <Label>
-                                                    Between-Subjects Model:{" "}
-                                                </Label>
-                                                <div className="border rounded p-2 h-[150px] overflow-auto mb-2">
-                                                    <ScrollArea>
-                                                        <div className="w-full h-[150px]">
-                                                            {modelState.BetSubModel &&
-                                                            modelState
-                                                                .BetSubModel
-                                                                .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
-                                                                    {modelState.BetSubModel.map(
-                                                                        (
-                                                                            variable,
-                                                                            index
-                                                                        ) => (
-                                                                            <Badge
-                                                                                key={
-                                                                                    index
-                                                                                }
-                                                                                className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                                variant={
-                                                                                    selectedVariable ===
-                                                                                    variable
-                                                                                        ? "default"
-                                                                                        : "outline"
-                                                                                }
-                                                                                onClick={() =>
-                                                                                    handleVariableClick(
+                                                <div
+                                                    className="flex flex-col w-full gap-2"
+                                                    onDragOver={(e) =>
+                                                        modelState.Custom
+                                                            ? e.preventDefault()
+                                                            : null
+                                                    }
+                                                    onDrop={(e) => {
+                                                        if (modelState.Custom) {
+                                                            const variable =
+                                                                e.dataTransfer.getData(
+                                                                    "text"
+                                                                );
+                                                            handleDrop(
+                                                                "BetSubModel",
+                                                                variable
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    <Label>Model: </Label>
+                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                        <ScrollArea>
+                                                            <div className="w-full h-[150px]">
+                                                                {modelState.BetSubModel &&
+                                                                modelState
+                                                                    .BetSubModel
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {modelState.BetSubModel.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant={
+                                                                                        selectedVariable ===
                                                                                         variable
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                {
-                                                                                    variable
-                                                                                }
-                                                                            </Badge>
-                                                                        )
-                                                                    )}
-                                                                </div>
-                                                            ) : (
-                                                                <span className="text-sm font-light text-gray-500">
-                                                                    {modelState.Custom
-                                                                        ? "Drop variables here."
-                                                                        : modelState.BuildCustomTerm
-                                                                        ? "Use the buttons below to build and add terms."
-                                                                        : "Select a model specification method."}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </ScrollArea>
+                                                                                            ? "default"
+                                                                                            : "outline"
+                                                                                    }
+                                                                                    onClick={() =>
+                                                                                        handleVariableClick(
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        {modelState.Custom
+                                                                            ? "Drop variables here."
+                                                                            : modelState.BuildCustomTerm
+                                                                            ? "Use the buttons below to build and add terms."
+                                                                            : "Select a model specification method."}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
+                                                    <input
+                                                        type="hidden"
+                                                        value={
+                                                            modelState.BetSubModel ??
+                                                            ""
+                                                        }
+                                                        name="Independents"
+                                                    />
                                                 </div>
                                             </div>
                                         </ResizablePanel>
                                     </ResizablePanelGroup>
                                 </ResizablePanel>
                                 <ResizableHandle />
-                                <ResizablePanel defaultSize={25}>
+                                <ResizablePanel defaultSize={30}>
                                     <div className="flex flex-col gap-2 p-2">
                                         <Label>Build Term:</Label>
                                         <Table>
@@ -533,7 +563,7 @@ export const RepeatedMeasuresModel = ({
                                                                     0 &&
                                                                     !currentBuildTerm.includes(
                                                                         "{variable}"
-                                                                    ) &&
+                                                                    ) && // Aktif jika ada placeholder
                                                                     !currentBuildTerm.endsWith(
                                                                         " * "
                                                                     ) &&
@@ -559,7 +589,7 @@ export const RepeatedMeasuresModel = ({
                                                                     "" ||
                                                                 currentBuildTerm.includes(
                                                                     "{variable}"
-                                                                ) ||
+                                                                ) || // Tidak aktif jika ada placeholder
                                                                 currentBuildTerm.endsWith(
                                                                     " * "
                                                                 ) ||
@@ -582,10 +612,10 @@ export const RepeatedMeasuresModel = ({
                                                             disabled={
                                                                 !modelState.BuildCustomTerm ||
                                                                 currentBuildTerm.trim() ===
-                                                                    "" ||
+                                                                    "" || // Periksa apakah term kosong
                                                                 currentBuildTerm.includes(
                                                                     "{variable}"
-                                                                ) ||
+                                                                ) || // Tidak aktif jika ada placeholder
                                                                 currentBuildTerm.endsWith(
                                                                     " * "
                                                                 ) ||
@@ -628,7 +658,7 @@ export const RepeatedMeasuresModel = ({
                                                                     0 ||
                                                                 currentBuildTerm.includes(
                                                                     "{variable}"
-                                                                ) ||
+                                                                ) || // Tidak aktif jika ada placeholder
                                                                 currentBuildTerm.endsWith(
                                                                     " * "
                                                                 ) ||
@@ -649,7 +679,13 @@ export const RepeatedMeasuresModel = ({
                                                             variant="outline"
                                                             size="sm"
                                                             disabled={
-                                                                !selectedVariable
+                                                                !selectedVariable ||
+                                                                !(
+                                                                    modelState.BetSubModel ||
+                                                                    []
+                                                                ).includes(
+                                                                    selectedVariable
+                                                                )
                                                             }
                                                             onClick={
                                                                 handleRemoveTermClick

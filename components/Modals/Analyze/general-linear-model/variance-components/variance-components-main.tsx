@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     VarianceCompsContainerProps,
     VarianceCompsMainType,
@@ -36,6 +36,31 @@ export const VarianceCompsContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            const newState = { ...prev };
+            const factorVars = prev.main.FixFactor
+                ? [...prev.main.FixFactor]
+                : [];
+            const randVars = prev.main.RandFactor
+                ? [...prev.main.RandFactor]
+                : [];
+            const covarVars = prev.main.Covar ? [...prev.main.Covar] : [];
+
+            newState.model = {
+                ...prev.model,
+                FactorsVar: [...factorVars, ...randVars, ...covarVars],
+            };
+
+            return newState;
+        });
+    }, [
+        formData.main.DepVar,
+        formData.main.FixFactor,
+        formData.main.RandFactor,
+        formData.main.Covar,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

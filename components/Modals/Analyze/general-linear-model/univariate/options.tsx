@@ -460,6 +460,9 @@ export const UnivariateOptions = ({
                                                     ? "HC4"
                                                     : ""
                                             }
+                                            disabled={
+                                                !optionsState.ParamEstRobStdErr
+                                            }
                                             onValueChange={handleStdErrGrp}
                                         >
                                             <div className="flex items-center space-x-2 pl-6">

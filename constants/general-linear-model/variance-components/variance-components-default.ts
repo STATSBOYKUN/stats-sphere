@@ -25,16 +25,16 @@ export const VarianceCompsModelTypeDefault: VarianceCompsModelType = {
 };
 
 export const VarianceCompsOptionsTypeDefault: VarianceCompsOptionsType = {
-    Minque: false,
+    Minque: true,
     Anova: false,
-    MaxLikelihood: true,
+    MaxLikelihood: false,
     ResMaxLikelihood: false,
-    Uniform: false,
+    Uniform: true,
     Zero: false,
-    TypeI: false,
-    TypeIII: true,
-    ConvergenceMethod: "default",
-    MaxIter: 100,
+    TypeI: true,
+    TypeIII: false,
+    ConvergenceMethod: "1e-8",
+    MaxIter: 50,
     SumOfSquares: false,
     ExpectedMeanSquares: false,
     IterationHistory: false,

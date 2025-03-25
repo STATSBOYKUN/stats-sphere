@@ -171,12 +171,13 @@ export const MultivariateBootstrap = ({
                                     <Checkbox
                                         id="Seed"
                                         checked={bootstrapState.Seed}
+                                        disabled={
+                                            !bootstrapState.PerformBootStrapping
+                                        }
                                         onCheckedChange={(checked) =>
                                             handleChange("Seed", checked)
                                         }
                                     />
-                                    disabled=
-                                    {!bootstrapState.PerformBootStrapping}
                                     <label
                                         htmlFor="Seed"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -310,33 +311,40 @@ export const MultivariateBootstrap = ({
                                         </div>
                                         <ResizablePanelGroup direction="horizontal">
                                             <ResizablePanel defaultSize={50}>
-                                                <ScrollArea>
-                                                    <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
-                                                        {availableVariables.map(
-                                                            (
-                                                                variable: string,
-                                                                index: number
-                                                            ) => (
-                                                                <Badge
-                                                                    key={index}
-                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                    variant="outline"
-                                                                    draggable
-                                                                    onDragStart={(
-                                                                        e
-                                                                    ) =>
-                                                                        e.dataTransfer.setData(
-                                                                            "text",
+                                                <div className="flex flex-col gap-2 p-2">
+                                                    <Label>Variables:</Label>
+                                                    <ScrollArea>
+                                                        <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                            {availableVariables.map(
+                                                                (
+                                                                    variable: string,
+                                                                    index: number
+                                                                ) => (
+                                                                    <Badge
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        draggable
+                                                                        onDragStart={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.dataTransfer.setData(
+                                                                                "text",
+                                                                                variable
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
                                                                             variable
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {variable}
-                                                                </Badge>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </ScrollArea>
+                                                                        }
+                                                                    </Badge>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={50}>
