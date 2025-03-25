@@ -6,6 +6,7 @@ import Footer from "../components/Layout/Main/Footer";
 import { ThemeProvider } from "@/components/theme-provider";
 import React from "react";
 import ModalContainer from "@/components/Modals/ModalContainer";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
     title: "Statify",
@@ -13,36 +14,37 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: {
+    children,
+}: {
     children: React.ReactNode;
 }) {
     return (
         <html lang="en" className="h-full w-full">
-        <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
-        <ThemeProvider
-            attribute="class"
-            defaultTheme=""
-            enableSystem
-            disableTransitionOnChange
-        >
-            <header className="z-50">
-                <Header />
-            </header>
+            <body className="h-full w-full m-0 p-0 grid grid-rows-[auto_1fr_auto] overflow-hidden">
+                <ThemeProvider
+                    attribute="class"
+                    defaultTheme=""
+                    enableSystem
+                    disableTransitionOnChange
+                >
+                    <header className="z-50">
+                        <Header />
+                    </header>
 
-            <main className="overflow-y-auto">
-                {/* Pastikan anak main memiliki tinggi agar konten muncul penuh */}
-                <div className="h-full w-full">
-                    {children}
-                    <ModalContainer />
-                </div>
-            </main>
+                    <main className="overflow-y-auto">
+                        {/* Pastikan anak main memiliki tinggi agar konten muncul penuh */}
+                        <div className="h-full w-full">
+                            {children}
+                            <ModalContainer />
+                        </div>
+                    </main>
 
-            <footer>
-                <Footer />
-            </footer>
-        </ThemeProvider>
-        </body>
+                    <footer>
+                        <Footer />
+                    </footer>
+                </ThemeProvider>
+                <Toaster />
+            </body>
         </html>
     );
 }

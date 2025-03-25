@@ -15,14 +15,18 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     RepeatedMeasureDefineDialogProps,
     RepeatedMeasureDefineData,
+    RepeatedMeasureDefineFactor,
+    FactorLevelCombination,
+    RepeatedMeasure,
 } from "@/models/general-linear-model/repeated-measures/repeated-measure-define";
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { useModal, ModalType } from "@/hooks/useModal";
+import { ModalType, useModal } from "@/hooks/useModal";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
 
 export const RepeatedMeasureDefineDialog = ({
     isDefineOpen,
@@ -53,46 +57,182 @@ export const RepeatedMeasureDefineDialog = ({
         }));
     };
 
+    // Validation for factor name
+    const isFactorNameValid = (name: string): boolean => {
+        // Check if name is empty
+        if (!name.trim()) {
+            toast({
+                title: "Validation Error",
+                description: "Factor name cannot be empty.",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        // Check for illegal characters
+        const illegalCharsRegex = /[^a-zA-Z0-9_]/;
+        if (illegalCharsRegex.test(name)) {
+            toast({
+                title: "Validation Error",
+                description:
+                    "Factor name cannot contain spaces or special characters. Use only letters, numbers, and underscores.",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        // Extract name from selectedFactor for proper comparison
+        let selectedFactorName = "";
+        if (dialogState.selectedFactor) {
+            const match = dialogState.selectedFactor.match(/^(.+?)\([0-9]+\)$/);
+            if (match) {
+                selectedFactorName = match[1];
+            }
+        }
+
+        // Check for duplicate factor names
+        const isDuplicate = dialogState.factors.some(
+            (factor) =>
+                factor.name?.toLowerCase() === name.toLowerCase() &&
+                factor.name?.toLowerCase() !== selectedFactorName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            toast({
+                title: "Validation Error",
+                description: "A factor with this name already exists.",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        return true;
+    };
+
+    // Validation for factor levels
+    const isFactorLevelsValid = (levels: number | null): boolean => {
+        if (levels === null) {
+            toast({
+                title: "Validation Error",
+                description: "Number of levels must be a valid number.",
+                variant: "destructive",
+            });
+            return false;
+        }
+        if (levels < 2 || levels > 99) {
+            toast({
+                title: "Validation Error",
+                description: "Number of levels must be between 2 and 99.",
+                variant: "destructive",
+            });
+            return false;
+        }
+        return true;
+    };
+
+    // Validation for measure name
+    const isMeasureNameValid = (name: string): boolean => {
+        // Check if name is empty
+        if (!name.trim()) {
+            toast({
+                title: "Validation Error",
+                description: "Measure name cannot be empty.",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        // Check for illegal characters
+        const illegalCharsRegex = /[^a-zA-Z0-9_]/;
+        if (illegalCharsRegex.test(name)) {
+            toast({
+                title: "Validation Error",
+                description:
+                    "Measure name cannot contain spaces or special characters. Use only letters, numbers, and underscores.",
+                variant: "destructive",
+            });
+            return false;
+        }
+
+        // Extract name from selectedFactor for proper comparison
+        let selectedFactorName = "";
+        if (dialogState.selectedFactor) {
+            const match = dialogState.selectedFactor.match(/^(.+?)\([0-9]+\)$/);
+            if (match) {
+                selectedFactorName = match[1];
+            }
+        }
+
+        // Check for duplicate factor names
+        const isDuplicate = dialogState.factors.some(
+            (factor) =>
+                factor.name?.toLowerCase() === name.toLowerCase() &&
+                factor.name?.toLowerCase() !== selectedFactorName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            toast({
+                title: "Validation Error",
+                description: "A measure with this name already exists.",
+                variant: "destructive",
+            });
+            return false;
+        }
+        return true;
+    };
+
     // Handler for adding a factor
     const handleAddFactor = () => {
-        if (dialogState.factorName && dialogState.factorLevels) {
-            const newFactor = {
-                name: dialogState.factorName,
-                levels: dialogState.factorLevels,
-            };
-            const updatedFactors = [...dialogState.factors, newFactor];
+        const factorName = dialogState.factorName?.trim() || "";
+        const factorLevels = dialogState.factorLevels;
 
-            handleChange("factors", updatedFactors);
-            handleChange("factorName", "");
-            handleChange("factorLevels", "");
-        }
+        // Validate factor name and levels
+        if (!isFactorNameValid(factorName)) return;
+        if (!isFactorLevelsValid(factorLevels)) return;
+
+        const newFactor = {
+            name: factorName,
+            levels: factorLevels,
+        };
+        const updatedFactors = [...dialogState.factors, newFactor];
+
+        handleChange("factors", updatedFactors);
+        handleChange("factorName", "");
+        handleChange("factorLevels", "");
     };
 
     // Handler for changing a factor
     const handleChangeFactor = () => {
         if (
-            dialogState.selectedFactor &&
-            dialogState.factorName &&
-            dialogState.factorLevels
-        ) {
-            const updatedFactors = dialogState.factors.map((factor) => {
-                if (
-                    `${factor.name}(${factor.levels})` ===
-                    dialogState.selectedFactor
-                ) {
-                    return {
-                        name: dialogState.factorName,
-                        levels: dialogState.factorLevels,
-                    };
-                }
-                return factor;
-            });
+            !dialogState.selectedFactor ||
+            !dialogState.factorName ||
+            !dialogState.factorLevels
+        )
+            return;
 
-            handleChange("factors", updatedFactors);
-            handleChange("factorName", "");
-            handleChange("factorLevels", "");
-            handleChange("selectedFactor", null);
-        }
+        const factorName = dialogState.factorName.trim();
+        const factorLevels = dialogState.factorLevels;
+
+        // Validate factor name and levels
+        if (!isFactorNameValid(factorName)) return;
+        if (!isFactorLevelsValid(factorLevels)) return;
+
+        const updatedFactors = dialogState.factors.map((factor) => {
+            if (
+                `${factor.name}(${factor.levels})` ===
+                dialogState.selectedFactor
+            ) {
+                return {
+                    name: factorName,
+                    levels: factorLevels,
+                };
+            }
+            return factor;
+        });
+
+        handleChange("factors", updatedFactors);
+        handleChange("factorName", "");
+        handleChange("factorLevels", "");
     };
 
     // Handler for removing a factor
@@ -120,33 +260,41 @@ export const RepeatedMeasureDefineDialog = ({
 
     // Handler for adding a measure
     const handleAddMeasure = () => {
-        if (dialogState.measureName) {
-            const newMeasure = {
-                name: dialogState.measureName,
-            };
-            const updatedMeasures = [...dialogState.measures, newMeasure];
+        const measureName = dialogState.measureName?.trim() || "";
 
-            handleChange("measures", updatedMeasures);
-            handleChange("measureName", "");
-        }
+        // Validate measure name
+        if (!isMeasureNameValid(measureName)) return;
+
+        const newMeasure = {
+            name: measureName,
+        };
+        const updatedMeasures = [...dialogState.measures, newMeasure];
+
+        handleChange("measures", updatedMeasures);
+        handleChange("measureName", "");
     };
 
     // Handler for changing a measure
     const handleChangeMeasure = () => {
-        if (dialogState.selectedMeasure && dialogState.measureName) {
-            const updatedMeasures = dialogState.measures.map((measure) => {
-                if (measure.name === dialogState.selectedMeasure) {
-                    return {
-                        name: dialogState.measureName,
-                    };
-                }
-                return measure;
-            });
+        if (!dialogState.selectedMeasure || !dialogState.measureName) return;
 
-            handleChange("measures", updatedMeasures);
-            handleChange("measureName", "");
-            handleChange("selectedMeasure", null);
-        }
+        const measureName = dialogState.measureName.trim();
+
+        // Validate measure name
+        if (!isMeasureNameValid(measureName)) return;
+
+        const updatedMeasures = dialogState.measures.map((measure) => {
+            if (measure.name === dialogState.selectedMeasure) {
+                return {
+                    name: measureName,
+                };
+            }
+            return measure;
+        });
+
+        handleChange("measures", updatedMeasures);
+        handleChange("measureName", "");
+        handleChange("selectedMeasure", null);
     };
 
     // Handler for removing a measure
@@ -167,12 +315,81 @@ export const RepeatedMeasureDefineDialog = ({
         handleChange("measureName", measureName);
     };
 
+    /**
+     * Generates all possible combinations of factor levels and measures
+     * @param factors Array of factor definitions
+     * @param measures Array of measure definitions
+     * @returns Array of all possible combinations
+     */
+    const generateCombinations = (
+        factors: RepeatedMeasureDefineFactor[],
+        measures: RepeatedMeasure[]
+    ): FactorLevelCombination[] => {
+        // No factors or measures, return empty array
+        if (!factors.length || !measures.length) return [];
+
+        const combinations: FactorLevelCombination[] = [];
+
+        // Helper function to generate combinations recursively
+        const generateLevelCombinations = (
+            currentFactorIndex: number,
+            currentCombination: number[]
+        ): void => {
+            // If we've processed all factors, add combinations for each measure
+            if (currentFactorIndex === factors.length) {
+                measures.forEach((measure) => {
+                    combinations.push({
+                        factorLevels: [...currentCombination],
+                        measure: measure.name,
+                    });
+                });
+                return;
+            }
+
+            // Get current factor
+            const currentFactor = factors[currentFactorIndex];
+            const levels = currentFactor.levels || 0;
+
+            // Loop through each level of the current factor
+            for (let level = 1; level <= levels; level++) {
+                // Add this level to the current combination
+                generateLevelCombinations(currentFactorIndex + 1, [
+                    ...currentCombination,
+                    level,
+                ]);
+            }
+        };
+
+        // Start the recursive generation with empty combination
+        generateLevelCombinations(0, []);
+
+        return combinations;
+    };
+
     // Handler for continuing with the defined data
     const handleContinue = () => {
         Object.entries(dialogState).forEach(([key, value]) => {
             updateFormData(key as keyof RepeatedMeasureDefineData, value);
         });
+
+        // Generate all combinations of factor levels and measures
+        const combinations = generateCombinations(
+            dialogState.factors,
+            dialogState.measures
+        );
+
+        // Format the combinations as per the example
+        const formattedCombinations: string[] = combinations.map((combo) => {
+            const levelPart = combo.factorLevels.join(",");
+            return `?_(${levelPart},${combo.measure})`;
+        });
+
+        // Log the combinations for testing
+        console.log("Generated combinations:", formattedCombinations);
+
         setIsDefineOpen(false);
+        closeModal();
+        openModal(ModalType.RepeatedMeasuresDialog);
     };
 
     const handleReset = () => {
@@ -237,6 +454,8 @@ export const RepeatedMeasureDefineDialog = ({
                                         )
                                     }
                                     type="number"
+                                    min={2}
+                                    max={99}
                                 />
                             </div>
                             <div className="flex gap-2">

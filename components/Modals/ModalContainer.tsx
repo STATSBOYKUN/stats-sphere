@@ -56,6 +56,7 @@ import { RocAnalysisContainer } from "@/components/Modals/Analyze/classify/roc-a
 import { OptScaCatpcaContainer } from "./Analyze/dimension-reduction/optimal-scaling/catpca/optimal-scaling-catpca-main";
 import { OptScaMCAContainer } from "./Analyze/dimension-reduction/optimal-scaling/mca/optimal-scaling-mca-main";
 import { OptScaOveralsContainer } from "./Analyze/dimension-reduction/optimal-scaling/overals/optimal-scaling-overals-main";
+import { RepeatedMeasuresContainer } from "./Analyze/general-linear-model/repeated-measures/repeated-measures-main";
 
 const ModalContainer: React.FC = () => {
     const { modals, closeModal } = useModal();
@@ -237,6 +238,13 @@ const ModalContainer: React.FC = () => {
             case ModalType.RepeatedMeasures:
                 return (
                     <RepeatedMeasuresDefineContainer
+                        onClose={closeModal}
+                        {...currentModal.props}
+                    />
+                );
+            case ModalType.RepeatedMeasuresDialog:
+                return (
+                    <RepeatedMeasuresContainer
                         onClose={closeModal}
                         {...currentModal.props}
                     />

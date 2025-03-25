@@ -37,3 +37,8 @@ export type RepeatedMeasureDefineType = {
 export type RepeatedMeasuresDefineContainerProps = {
     onClose: () => void;
 };
+
+export type FactorLevelCombination = {
+    factorLevels: number[];
+    measure: string | null;
+};
