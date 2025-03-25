@@ -15,30 +15,30 @@ export const VarianceCompsMainTypeDefault: VarianceCompsMainType = {
 };
 
 export const VarianceCompsModelTypeDefault: VarianceCompsModelType = {
-    NonCust: false,
+    NonCust: true,
     Custom: false,
     FactorsVar: null,
     TermsVar: null,
     FactorsModel: null,
-    BuildTermMethod: null,
-    Intercept: false,
+    BuildTermMethod: "interaction",
+    Intercept: true,
 };
 
 export const VarianceCompsOptionsTypeDefault: VarianceCompsOptionsType = {
     Minque: false,
     Anova: false,
-    MaxLikelihood: false,
+    MaxLikelihood: true,
     ResMaxLikelihood: false,
     Uniform: false,
     Zero: false,
     TypeI: false,
-    TypeIII: false,
-    ConvergenceMethod: null,
-    MaxIter: null,
+    TypeIII: true,
+    ConvergenceMethod: "default",
+    MaxIter: 100,
     SumOfSquares: false,
     ExpectedMeanSquares: false,
     IterationHistory: false,
-    InStepsOf: null,
+    InStepsOf: 1,
 };
 
 export const VarianceCompsSaveTypeDefault: VarianceCompsSaveType = {
@@ -46,7 +46,7 @@ export const VarianceCompsSaveTypeDefault: VarianceCompsSaveType = {
     CompCovar: false,
     CovMatrix: false,
     CorMatrix: false,
-    CreateNewDataset: false,
+    CreateNewDataset: true,
     FilePath: null,
     WriteNewDataFile: false,
     DatasetName: null,

@@ -130,7 +130,7 @@ export type MultivariatePostHocProps = {
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof MultivariatePostHocType,
-        value: string[] | string | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: MultivariatePostHocType;
 };

@@ -20,7 +20,7 @@ export const UnivariateMainDefault: UnivariateMainType = {
 };
 
 export const UnivariateModelDefault: UnivariateModelType = {
-    NonCust: false,
+    NonCust: true,
     Custom: false,
     BuildCustomTerm: false,
     FactorsVar: null,
@@ -28,16 +28,16 @@ export const UnivariateModelDefault: UnivariateModelType = {
     FactorsModel: null,
     CovModel: null,
     RandomModel: null,
-    BuildTermMethod: null,
+    BuildTermMethod: "interaction",
     TermText: null,
-    SumOfSquareMethod: null,
-    Intercept: false,
+    SumOfSquareMethod: "typeIII",
+    Intercept: true,
 };
 
 export const UnivariateContrastDefault: UnivariateContrastType = {
     FactorList: null,
-    ContrastMethod: null,
-    Last: false,
+    ContrastMethod: "none",
+    Last: true,
     First: false,
 };
 
@@ -48,12 +48,12 @@ export const UnivariatePlotsDefault: UnivariatePlotsType = {
     PlotList: null,
     FixFactorVars: null,
     RandFactorVars: null,
-    LineChartType: false,
+    LineChartType: true,
     BarChartType: false,
     IncludeErrorBars: false,
-    ConfidenceInterval: false,
+    ConfidenceInterval: true,
     StandardError: false,
-    Multiplier: null,
+    Multiplier: 2,
     IncludeRefLineForGrandMean: false,
     YAxisStart0: false,
 };
@@ -61,11 +61,11 @@ export const UnivariatePlotsDefault: UnivariatePlotsType = {
 export const UnivariatePostHocDefault: UnivariatePostHocType = {
     SrcList: null,
     FixFactorVars: null,
-    ErrorRatio: null,
-    Twosided: false,
+    ErrorRatio: 100,
+    Twosided: true,
     LtControl: false,
     GtControl: false,
-    CategoryMethod: null,
+    CategoryMethod: "last",
     Waller: false,
     Dunnett: false,
     Lsd: false,
@@ -90,7 +90,7 @@ export const UnivariateEMMeansDefault: UnivariateEMMeansType = {
     SrcList: null,
     TargetList: null,
     CompMainEffect: false,
-    ConfiIntervalMethod: null,
+    ConfiIntervalMethod: "lsdNone",
 };
 
 export const UnivariateSaveDefault: UnivariateSaveType = {
@@ -107,7 +107,7 @@ export const UnivariateSaveDefault: UnivariateSaveType = {
     CoeffStats: false,
     StandardStats: false,
     Heteroscedasticity: false,
-    NewDataSet: false,
+    NewDataSet: true,
     FilePath: null,
     DatasetName: null,
     WriteNewDataSet: false,
@@ -135,18 +135,18 @@ export const UnivariateOptionsDefault: UnivariateOptionsType = {
     HC3: false,
     HC4: false,
     CoefficientMatrix: false,
-    SigLevel: null,
+    SigLevel: 0.05,
 };
 
 export const UnivariateBootstrapDefault: UnivariateBootstrapType = {
     PerformBootStrapping: false,
-    NumOfSamples: null,
+    NumOfSamples: 1000,
     Seed: false,
-    SeedValue: null,
-    Level: null,
-    Percentile: false,
+    SeedValue: 200000,
+    Level: 95,
+    Percentile: true,
     BCa: false,
-    Simple: false,
+    Simple: true,
     Stratified: false,
     Variables: null,
     StrataVariables: null,

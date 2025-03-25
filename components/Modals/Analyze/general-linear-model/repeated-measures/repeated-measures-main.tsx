@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     RepeatedMeasuresContainerProps,
     RepeatedMeasuresMainType,
@@ -23,6 +23,8 @@ import { analyzeRepeatedMeasures } from "@/services/analyze/general-linear-model
 
 export const RepeatedMeasuresContainer = ({
     onClose,
+    combinationVars,
+    factorVars,
 }: RepeatedMeasuresContainerProps) => {
     const variables = useVariableStore(
         (state) => state.variables
@@ -44,6 +46,79 @@ export const RepeatedMeasuresContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            // Create a copy of the previous state to modify
+            const newState = { ...prev };
+
+            // Update discretize based on AnalysisVars (if it exists)
+            if (prev.main.SubVar) {
+                // newState.discretize = {
+                //     ...prev.discretize,
+                //     VariablesList: [...prev.main.AnalysisVars],
+                // };
+            }
+
+            // Update missing.SupplementaryVariables based on SuppleVars (if it exists)
+            if (prev.main.FactorsVar) {
+                newState.contrast = {
+                    ...prev.contrast,
+                    FactorList: [...prev.main.FactorsVar],
+                };
+                newState.plots = {
+                    ...prev.plots,
+                    SrcList: [...prev.main.FactorsVar],
+                };
+                newState.posthoc = {
+                    ...prev.posthoc,
+                    SrcList: [...prev.main.FactorsVar],
+                };
+            }
+
+            // Update based on LabelingVars (if it exists)
+            if (prev.main.Covariates) {
+                // newState.output = {
+                //     ...newState.output, // Use the already updated output state
+                //     LabelingVars: [...prev.main.LabelingVars],
+                // };
+            }
+
+            // Combine AnalysisVars and SuppleVars for QuantifiedVars
+            const subVars = prev.main.SubVar ? [...prev.main.SubVar] : [];
+            const factorVars = prev.main.FactorsVar
+                ? [...prev.main.FactorsVar]
+                : [];
+            const covariatesVars = prev.main.Covariates
+                ? [...prev.main.Covariates]
+                : [];
+            const plotsVars = prev.plots.FixFactorVars
+                ? [...prev.plots.FixFactorVars]
+                : [];
+
+            newState.model = {
+                ...prev.model,
+                BetSubVar: [...factorVars, ...covariatesVars],
+            };
+
+            newState.emmeans = {
+                ...prev.emmeans,
+                SrcList: [...factorVars, ...plotsVars],
+            };
+
+            const usedVariables = [
+                ...subVars,
+                ...factorVars,
+                ...covariatesVars,
+            ];
+            return newState;
+        });
+    }, [
+        formData.main.SubVar,
+        formData.main.FactorsVar,
+        formData.main.Covariates,
+        formData.plots.FixFactorVars,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,
@@ -112,6 +187,7 @@ export const RepeatedMeasuresContainer = ({
                     }
                     data={formData.main}
                     globalVariables={tempVariables}
+                    combinationVars={combinationVars}
                     onContinue={(mainData) => executeRepeatedMeasures(mainData)}
                     onReset={resetFormData}
                 />

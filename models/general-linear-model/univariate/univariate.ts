@@ -101,7 +101,7 @@ export type UnivariatePlotsProps = {
 export type UnivariatePostHocType = {
     SrcList: string | null;
     FixFactorVars: string | null;
-    ErrorRatio: string | null;
+    ErrorRatio: number | null;
     Twosided: boolean;
     LtControl: boolean;
     GtControl: boolean;
@@ -131,7 +131,7 @@ export type UnivariatePostHocProps = {
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof UnivariatePostHocType,
-        value: string | boolean | null
+        value: string | number | boolean | null
     ) => void;
     data: UnivariatePostHocType;
 };

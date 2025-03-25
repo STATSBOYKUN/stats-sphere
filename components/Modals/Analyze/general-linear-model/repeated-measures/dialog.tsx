@@ -38,6 +38,7 @@ export const RepeatedMeasuresDialog = ({
     updateFormData,
     data,
     globalVariables,
+    combinationVars,
     onContinue,
     onReset,
 }: RepeatedMeasuresDialogProps) => {
@@ -49,22 +50,44 @@ export const RepeatedMeasuresDialog = ({
     const { closeModal } = useModal();
 
     useEffect(() => {
-        setMainState({ ...data });
+        setMainState((prevState) => ({
+            ...data,
+            SubVar: combinationVars || prevState.SubVar || [],
+        }));
         setAvailableVariables(globalVariables);
-    }, [data, globalVariables]);
 
+        console.log(combinationVars, "combinationVars");
+        console.log(mainState.SubVar, "mainState.SubVar");
+    }, [data, globalVariables, combinationVars]);
+
+    // Replace the second useEffect with this:
     useEffect(() => {
+        // Extract actual variable names from SubVar array
+        const extractedSubVars = (mainState.SubVar || [])
+            .map((item) => {
+                // Skip items that still have placeholders
+                if (item.includes("?_")) return null;
+
+                // Extract the variable name (everything before the first parenthesis)
+                const match = item.match(/^([^(]+)/);
+                return match ? match[1] : null;
+            })
+            .filter(Boolean); // Remove null entries
+
+        // Combine all used variables
         const usedVariables = [
-            ...(mainState.SubVar || []),
+            ...extractedSubVars,
             ...(mainState.FactorsVar || []),
             ...(mainState.Covariates || []),
         ].filter(Boolean);
 
+        // Filter out used variables from the available list
         const updatedVariables = globalVariables.filter(
             (variable) => !usedVariables.includes(variable)
         );
+
         setAvailableVariables(updatedVariables);
-    }, [mainState]);
+    }, [mainState, globalVariables]);
 
     const handleChange = (
         field: keyof RepeatedMeasuresMainType,
@@ -76,14 +99,29 @@ export const RepeatedMeasuresDialog = ({
         }));
     };
 
+    // Modified handleDrop function
     const handleDrop = (target: string, variable: string) => {
         setMainState((prev) => {
             const updatedState = { ...prev };
+
             if (target === "SubVar") {
-                updatedState.SubVar = [
-                    ...(updatedState.SubVar || []),
-                    variable,
-                ];
+                const updatedSubVar = [...(updatedState.SubVar || [])];
+
+                // Find the first placeholder that contains "?_"
+                const placeholderIndex = updatedSubVar.findIndex((item) =>
+                    item.includes("?_")
+                );
+
+                if (placeholderIndex >= 0) {
+                    // Replace "?_" with the variable name while preserving the format
+                    updatedSubVar[placeholderIndex] = updatedSubVar[
+                        placeholderIndex
+                    ].replace("?_", variable);
+                    updatedState.SubVar = updatedSubVar;
+                } else {
+                    // If no placeholder with "?_" is found, append as before
+                    updatedState.SubVar = [...updatedSubVar, variable];
+                }
             } else if (target === "FactorsVar") {
                 updatedState.FactorsVar = [
                     ...(updatedState.FactorsVar || []),
@@ -95,17 +133,41 @@ export const RepeatedMeasuresDialog = ({
                     variable,
                 ];
             }
+
             return updatedState;
         });
     };
 
+    // Modified handleRemoveVariable function
     const handleRemoveVariable = (target: string, variable?: string) => {
         setMainState((prev) => {
             const updatedState = { ...prev };
-            if (target === "SubVar") {
-                updatedState.SubVar = (updatedState.SubVar || []).filter(
-                    (item) => item !== variable
+
+            if (target === "SubVar" && variable) {
+                const updatedSubVar = [...(updatedState.SubVar || [])];
+
+                // Find the index of the variable to revert
+                const varIndex = updatedSubVar.findIndex(
+                    (item) => item === variable
                 );
+
+                if (varIndex >= 0) {
+                    // Extract the format part (everything inside parentheses)
+                    const formatRegex = /(\(.*\))/; // Match anything inside parentheses
+                    const formatMatch = variable.match(formatRegex);
+
+                    if (formatMatch) {
+                        const format = formatMatch[0];
+
+                        // Replace with ?_ + format
+                        updatedSubVar[varIndex] = "?_" + format;
+                        updatedState.SubVar = updatedSubVar;
+                    } else {
+                        // If no format is found, just remove the item (fallback)
+                        updatedSubVar.splice(varIndex, 1);
+                        updatedState.SubVar = updatedSubVar;
+                    }
+                }
             } else if (target === "FactorsVar") {
                 updatedState.FactorsVar = (
                     updatedState.FactorsVar || []
@@ -115,6 +177,7 @@ export const RepeatedMeasuresDialog = ({
                     updatedState.Covariates || []
                 ).filter((item) => item !== variable);
             }
+
             return updatedState;
         });
     };
@@ -192,9 +255,6 @@ export const RepeatedMeasuresDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Within-Subjects Variables:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -208,7 +268,7 @@ export const RepeatedMeasuresDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Within-Subjects Variables:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -259,9 +319,6 @@ export const RepeatedMeasuresDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Between-Subjects Factor(s):{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -278,7 +335,7 @@ export const RepeatedMeasuresDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Between-Subjects Factor(s):{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
@@ -331,9 +388,6 @@ export const RepeatedMeasuresDialog = ({
                                         </div>
                                     </div>
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Covariates:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -350,7 +404,7 @@ export const RepeatedMeasuresDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Covariates:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>

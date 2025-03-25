@@ -154,20 +154,22 @@ export const RepeatedMeasureDefineDialog = ({
             return false;
         }
 
-        // Extract name from selectedFactor for proper comparison
-        let selectedFactorName = "";
-        if (dialogState.selectedFactor) {
-            const match = dialogState.selectedFactor.match(/^(.+?)\([0-9]+\)$/);
+        // Extract name from selectedMeasure for proper comparison
+        let selectedMeasureName = "";
+        if (dialogState.selectedMeasure) {
+            const match =
+                dialogState.selectedMeasure.match(/^(.+?)\([0-9]+\)$/);
             if (match) {
-                selectedFactorName = match[1];
+                selectedMeasureName = match[1];
             }
         }
 
         // Check for duplicate factor names
-        const isDuplicate = dialogState.factors.some(
-            (factor) =>
-                factor.name?.toLowerCase() === name.toLowerCase() &&
-                factor.name?.toLowerCase() !== selectedFactorName.toLowerCase()
+        const isDuplicate = dialogState.measures.some(
+            (measure) =>
+                measure.name?.toLowerCase() === name.toLowerCase() &&
+                measure.name?.toLowerCase() !==
+                    selectedMeasureName.toLowerCase()
         );
 
         if (isDuplicate) {
@@ -319,7 +321,7 @@ export const RepeatedMeasureDefineDialog = ({
      * Generates all possible combinations of factor levels and measures
      * @param factors Array of factor definitions
      * @param measures Array of measure definitions
-     * @returns Array of all possible combinations
+     * @returns Array of all possible combinations sorted by measure.name
      */
     const generateCombinations = (
         factors: RepeatedMeasureDefineFactor[],
@@ -330,38 +332,39 @@ export const RepeatedMeasureDefineDialog = ({
 
         const combinations: FactorLevelCombination[] = [];
 
-        // Helper function to generate combinations recursively
-        const generateLevelCombinations = (
-            currentFactorIndex: number,
-            currentCombination: number[]
-        ): void => {
-            // If we've processed all factors, add combinations for each measure
-            if (currentFactorIndex === factors.length) {
-                measures.forEach((measure) => {
+        // First iterate through measures to ensure combinations are grouped by measure.name
+        measures.forEach((measure) => {
+            // Helper function to generate factor level combinations recursively
+            const generateLevelCombinations = (
+                currentFactorIndex: number,
+                currentCombination: number[]
+            ): void => {
+                // If we've processed all factors, add the combination with current measure
+                if (currentFactorIndex === factors.length) {
                     combinations.push({
                         factorLevels: [...currentCombination],
                         measure: measure.name,
                     });
-                });
-                return;
-            }
+                    return;
+                }
 
-            // Get current factor
-            const currentFactor = factors[currentFactorIndex];
-            const levels = currentFactor.levels || 0;
+                // Get current factor
+                const currentFactor = factors[currentFactorIndex];
+                const levels = currentFactor.levels || 0;
 
-            // Loop through each level of the current factor
-            for (let level = 1; level <= levels; level++) {
-                // Add this level to the current combination
-                generateLevelCombinations(currentFactorIndex + 1, [
-                    ...currentCombination,
-                    level,
-                ]);
-            }
-        };
+                // Loop through each level of the current factor
+                for (let level = 1; level <= levels; level++) {
+                    // Add this level to the current combination
+                    generateLevelCombinations(currentFactorIndex + 1, [
+                        ...currentCombination,
+                        level,
+                    ]);
+                }
+            };
 
-        // Start the recursive generation with empty combination
-        generateLevelCombinations(0, []);
+            // Start the recursive generation with empty combination for this measure
+            generateLevelCombinations(0, []);
+        });
 
         return combinations;
     };
@@ -384,12 +387,12 @@ export const RepeatedMeasureDefineDialog = ({
             return `?_(${levelPart},${combo.measure})`;
         });
 
-        // Log the combinations for testing
-        console.log("Generated combinations:", formattedCombinations);
-
         setIsDefineOpen(false);
         closeModal();
-        openModal(ModalType.RepeatedMeasuresDialog);
+        openModal(ModalType.RepeatedMeasuresDialog, {
+            combinationVars: formattedCombinations,
+            factorVars: dialogState.factors.map((factor) => factor.name || ""),
+        });
     };
 
     const handleReset = () => {

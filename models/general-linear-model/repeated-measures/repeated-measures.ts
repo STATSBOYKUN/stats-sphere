@@ -22,6 +22,7 @@ export type RepeatedMeasuresDialogProps = {
     ) => void;
     data: RepeatedMeasuresMainType;
     globalVariables: string[];
+    combinationVars: string[];
     onContinue: (mainState: RepeatedMeasuresMainType) => void;
     onReset: () => void;
 };
@@ -30,8 +31,8 @@ export type RepeatedMeasuresModelType = {
     NonCust: boolean;
     Custom: boolean;
     BuildCustomTerm: boolean;
-    BetSubVar: string | null;
-    BetSubModel: string | null;
+    BetSubVar: string[] | null;
+    BetSubModel: string[] | null;
     WithSubVar: string | null;
     WithSubModel: string | null;
     DefFactors: string | null;
@@ -47,13 +48,13 @@ export type RepeatedMeasuresModelProps = {
     setIsModelOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresModelType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: RepeatedMeasuresModelType;
 };
 
 export type RepeatedMeasuresContrastType = {
-    FactorList: string | null;
+    FactorList: string[] | null;
     ContrastMethod: string | null;
     Last: boolean;
     First: boolean;
@@ -64,17 +65,17 @@ export type RepeatedMeasuresContrastProps = {
     setIsContrastOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresContrastType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: RepeatedMeasuresContrastType;
 };
 
 export type RepeatedMeasuresPlotsType = {
-    SrcList: string | null;
+    SrcList: string[] | null;
     AxisList: string | null;
     LineList: string | null;
     PlotList: string | null;
-    FixFactorVars: string | null;
+    FixFactorVars: string[] | null;
     RandFactorVars: string | null;
     LineChartType: boolean;
     BarChartType: boolean;
@@ -91,15 +92,15 @@ export type RepeatedMeasuresPlotsProps = {
     setIsPlotsOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresPlotsType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: RepeatedMeasuresPlotsType;
 };
 
 export type RepeatedMeasuresPostHocType = {
-    SrcList: string | null;
-    FixFactorVars: string | null;
-    ErrorRatio: string | null;
+    SrcList: string[] | null;
+    FixFactorVars: string[] | null;
+    ErrorRatio: number | null;
     Twosided: boolean;
     LtControl: boolean;
     GtControl: boolean;
@@ -129,14 +130,14 @@ export type RepeatedMeasuresPostHocProps = {
     setIsPostHocOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresPostHocType,
-        value: string | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: RepeatedMeasuresPostHocType;
 };
 
 export type RepeatedMeasuresEMMeansType = {
-    SrcList: string | null;
-    TargetList: string | null;
+    SrcList: string[] | null;
+    TargetList: string[] | null;
     CompMainEffect: boolean;
     ConfiIntervalMethod: string | null;
 };
@@ -146,7 +147,7 @@ export type RepeatedMeasuresEMMeansProps = {
     setIsEMMeansOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof RepeatedMeasuresEMMeansType,
-        value: string | boolean | null
+        value: string[] | string | boolean | null
     ) => void;
     data: RepeatedMeasuresEMMeansType;
 };
@@ -219,4 +220,6 @@ export type RepeatedMeasuresType = {
 
 export type RepeatedMeasuresContainerProps = {
     onClose: () => void;
+    combinationVars: string[];
+    factorVars: string[];
 };

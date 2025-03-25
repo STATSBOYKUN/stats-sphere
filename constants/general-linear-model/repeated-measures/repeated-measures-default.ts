@@ -17,7 +17,7 @@ export const RepeatedMeasuresMainDefault: RepeatedMeasuresMainType = {
 };
 
 export const RepeatedMeasuresModelDefault: RepeatedMeasuresModelType = {
-    NonCust: false,
+    NonCust: true,
     Custom: false,
     BuildCustomTerm: false,
     BetSubVar: null,
@@ -27,15 +27,15 @@ export const RepeatedMeasuresModelDefault: RepeatedMeasuresModelType = {
     DefFactors: null,
     BetFactors: null,
     CovModel: null,
-    BuildTermMethod: null,
-    SumOfSquareMethod: null,
+    BuildTermMethod: "interaction",
+    SumOfSquareMethod: "typeIII",
     TermText: null,
 };
 
 export const RepeatedMeasuresContrastDefault: RepeatedMeasuresContrastType = {
     FactorList: null,
-    ContrastMethod: null,
-    Last: false,
+    ContrastMethod: "none",
+    Last: true,
     First: false,
 };
 
@@ -46,24 +46,24 @@ export const RepeatedMeasuresPlotsDefault: RepeatedMeasuresPlotsType = {
     PlotList: null,
     FixFactorVars: null,
     RandFactorVars: null,
-    LineChartType: false,
+    LineChartType: true,
     BarChartType: false,
     IncludeErrorBars: false,
-    ConfidenceInterval: false,
+    ConfidenceInterval: true,
     StandardError: false,
     IncludeRefLineForGrandMean: false,
     YAxisStart0: false,
-    Multiplier: null,
+    Multiplier: 2,
 };
 
 export const RepeatedMeasuresPostHocDefault: RepeatedMeasuresPostHocType = {
     SrcList: null,
     FixFactorVars: null,
-    ErrorRatio: null,
-    Twosided: false,
+    ErrorRatio: 100,
+    Twosided: true,
     LtControl: false,
     GtControl: false,
-    CategoryMethod: null,
+    CategoryMethod: "last",
     Waller: false,
     Dunnett: false,
     Lsd: false,
@@ -88,7 +88,7 @@ export const RepeatedMeasuresEMMeansDefault: RepeatedMeasuresEMMeansType = {
     SrcList: null,
     TargetList: null,
     CompMainEffect: false,
-    ConfiIntervalMethod: null,
+    ConfiIntervalMethod: "lsdNone",
 };
 
 export const RepeatedMeasuresSaveDefault: RepeatedMeasuresSaveType = {
@@ -103,7 +103,7 @@ export const RepeatedMeasuresSaveDefault: RepeatedMeasuresSaveType = {
     StudentizedRes: false,
     DeletedRes: false,
     CoeffStats: false,
-    NewDataSet: false,
+    NewDataSet: true,
     FilePath: null,
     DatasetName: null,
     WriteNewDataSet: false,
@@ -123,7 +123,7 @@ export const RepeatedMeasuresOptionsDefault: RepeatedMeasuresOptionsType = {
     ResSscpMat: false,
     CoefficientMatrix: false,
     TransformMat: false,
-    SigLevel: null,
+    SigLevel: 0.05,
 };
 
 export const RepeatedMeasuresDefault: RepeatedMeasuresType = {

@@ -29,9 +29,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { BUILDTERMMETHOD } from "@/constants/general-linear-model/multivariate/multivariate-method";
+import {
+    BUILDTERMMETHOD,
+    DUNNETMETHOD,
+} from "@/constants/general-linear-model/multivariate/multivariate-method";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
 
 export const RepeatedMeasuresPostHoc = ({
     isPostHocOpen,
@@ -42,14 +46,12 @@ export const RepeatedMeasuresPostHoc = ({
     const [postHocState, setPostHocState] =
         useState<RepeatedMeasuresPostHocType>({ ...data });
     const [isContinueDisabled, setIsContinueDisabled] = useState(false);
-
-    const capitalize = (str: string) => {
-        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-    };
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isPostHocOpen) {
             setPostHocState({ ...data });
+            setAvailableVariables(data.SrcList ?? []);
         }
     }, [isPostHocOpen, data]);
 
@@ -61,6 +63,44 @@ export const RepeatedMeasuresPostHoc = ({
             ...prevState,
             [field]: value,
         }));
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setPostHocState((prev) => {
+            const updatedState = { ...prev };
+
+            // Add to target array if it doesn't already exist in that array
+            if (target === "FixFactorVars") {
+                const currentArray = Array.isArray(updatedState.FixFactorVars)
+                    ? updatedState.FixFactorVars
+                    : updatedState.FixFactorVars
+                    ? [updatedState.FixFactorVars]
+                    : [];
+
+                if (!currentArray.includes(variable)) {
+                    updatedState.FixFactorVars = [...currentArray, variable];
+                }
+            }
+
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setPostHocState((prev) => {
+            const updatedState = { ...prev };
+
+            if (
+                target === "FixFactorVars" &&
+                Array.isArray(updatedState.FixFactorVars)
+            ) {
+                updatedState.FixFactorVars = updatedState.FixFactorVars.filter(
+                    (item) => item !== variable
+                );
+            }
+
+            return updatedState;
+        });
     };
 
     const handleContinue = () => {
@@ -91,46 +131,116 @@ export const RepeatedMeasuresPostHoc = ({
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Factor(s): </Label>
-                                                    <Input
-                                                        id="SrcList"
-                                                        type="text"
-                                                        className="w-full min-h-[175px]"
-                                                        placeholder=""
-                                                        value={
-                                                            postHocState.SrcList ??
-                                                            ""
-                                                        }
-                                                        onChange={(e) =>
-                                                            handleChange(
-                                                                "SrcList",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
+                                                    <ScrollArea>
+                                                        <div className="flex flex-col gap-1 justify-start items-start h-[175px] w-full p-2">
+                                                            {availableVariables.map(
+                                                                (
+                                                                    variable: string,
+                                                                    index: number
+                                                                ) => (
+                                                                    <Badge
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        draggable
+                                                                        onDragStart={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.dataTransfer.setData(
+                                                                                "text",
+                                                                                variable
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
+                                                                            variable
+                                                                        }
+                                                                    </Badge>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
-                                                    <Label>
-                                                        Post Hoc Tests for:{" "}
-                                                    </Label>
-                                                    <Input
-                                                        id="FixFactorVars"
-                                                        type="text"
-                                                        className="w-full min-h-[175px]"
-                                                        placeholder=""
-                                                        value={
-                                                            postHocState.FixFactorVars ??
-                                                            ""
+                                                    <div
+                                                        className="flex flex-col w-full gap-2"
+                                                        onDragOver={(e) =>
+                                                            e.preventDefault()
                                                         }
-                                                        onChange={(e) =>
-                                                            handleChange(
+                                                        onDrop={(e) => {
+                                                            const variable =
+                                                                e.dataTransfer.getData(
+                                                                    "text"
+                                                                );
+                                                            handleDrop(
                                                                 "FixFactorVars",
-                                                                e.target.value
-                                                            )
-                                                        }
-                                                    />
+                                                                variable
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Label>
+                                                            Post Hoc Tests for:{" "}
+                                                        </Label>
+                                                        <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
+                                                            <ScrollArea>
+                                                                <div className="w-full h-[175px]">
+                                                                    {Array.isArray(
+                                                                        postHocState.FixFactorVars
+                                                                    ) &&
+                                                                    postHocState
+                                                                        .FixFactorVars
+                                                                        .length >
+                                                                        0 ? (
+                                                                        <div className="flex flex-wrap gap-1">
+                                                                            {postHocState.FixFactorVars.map(
+                                                                                (
+                                                                                    variable,
+                                                                                    index
+                                                                                ) => (
+                                                                                    <Badge
+                                                                                        key={
+                                                                                            index
+                                                                                        }
+                                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                        variant="outline"
+                                                                                        onClick={() =>
+                                                                                            handleRemoveVariable(
+                                                                                                "FixFactorVars",
+                                                                                                variable
+                                                                                            )
+                                                                                        }
+                                                                                    >
+                                                                                        {
+                                                                                            variable
+                                                                                        }
+                                                                                    </Badge>
+                                                                                )
+                                                                            )}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <span className="text-sm font-light text-gray-500">
+                                                                            Drop
+                                                                            variables
+                                                                            here.
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </div>
+                                                        <input
+                                                            type="hidden"
+                                                            value={
+                                                                postHocState.FixFactorVars ??
+                                                                ""
+                                                            }
+                                                            name="FixFactorVars"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </ResizablePanel>
                                         </ResizablePanelGroup>
@@ -513,7 +623,7 @@ export const RepeatedMeasuresPostHoc = ({
                                                             </SelectTrigger>
                                                             <SelectContent className="w-[150px]">
                                                                 <SelectGroup>
-                                                                    {BUILDTERMMETHOD.map(
+                                                                    {DUNNETMETHOD.map(
                                                                         (
                                                                             method,
                                                                             index
@@ -523,13 +633,12 @@ export const RepeatedMeasuresPostHoc = ({
                                                                                     index
                                                                                 }
                                                                                 value={
-                                                                                    method
+                                                                                    method.value
                                                                                 }
                                                                             >
-                                                                                {capitalize(
-                                                                                    method
-                                                                                ) +
-                                                                                    "'s Method"}
+                                                                                {
+                                                                                    method.name
+                                                                                }
                                                                             </SelectItem>
                                                                         )
                                                                     )}
