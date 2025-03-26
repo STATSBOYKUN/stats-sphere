@@ -325,37 +325,39 @@ export const OptScaCatpcaObjectPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <ScrollArea>
-                                                            <div className="flex flex-col justify-start items-start h-[175px] p-2 border rounded overflow-hidden">
-                                                                {availableBTVariables.map(
-                                                                    (
-                                                                        variable: string,
-                                                                        index: number
-                                                                    ) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                            variant="outline"
-                                                                            draggable
-                                                                            onDragStart={(
-                                                                                e
-                                                                            ) =>
-                                                                                e.dataTransfer.setData(
-                                                                                    "text",
+                                                        <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
+                                                            <ScrollArea>
+                                                                <div className="flex flex-col h-[155px] gap-1 justify-start items-start">
+                                                                    {availableBTVariables.map(
+                                                                        (
+                                                                            variable: string,
+                                                                            index: number
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                draggable
+                                                                                onDragStart={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    e.dataTransfer.setData(
+                                                                                        "text",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
                                                                                     variable
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                variable
-                                                                            }
-                                                                        </Badge>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </ScrollArea>
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
@@ -378,19 +380,17 @@ export const OptScaCatpcaObjectPlots = ({
                                                     }}
                                                 >
                                                     <Label className="font-bold">
-                                                        <Label>
-                                                            Selected:{" "}
-                                                        </Label>
+                                                        Selected:{" "}
                                                     </Label>
                                                     <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
                                                         <ScrollArea>
-                                                            <div className="w-full h-[175px]">
+                                                            <div className="w-full h-[155px]">
                                                                 {objectPlotsState.BTSelectedVars &&
                                                                 objectPlotsState
                                                                     .BTSelectedVars
                                                                     .length >
                                                                     0 ? (
-                                                                    <div className="flex flex-wrap gap-1">
+                                                                    <div className="flex flex-col gap-1">
                                                                         {objectPlotsState.BTSelectedVars.map(
                                                                             (
                                                                                 variable,
@@ -486,37 +486,39 @@ export const OptScaCatpcaObjectPlots = ({
                                                         <Label>
                                                             Available:{" "}
                                                         </Label>
-                                                        <ScrollArea>
-                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
-                                                                {availableLabelVariables.map(
-                                                                    (
-                                                                        variable: string,
-                                                                        index: number
-                                                                    ) => (
-                                                                        <Badge
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                            variant="outline"
-                                                                            draggable
-                                                                            onDragStart={(
-                                                                                e
-                                                                            ) =>
-                                                                                e.dataTransfer.setData(
-                                                                                    "text",
+                                                        <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                            <ScrollArea>
+                                                                <div className="flex flex-col h-[130px] gap-1 justify-start items-start">
+                                                                    {availableLabelVariables.map(
+                                                                        (
+                                                                            variable: string,
+                                                                            index: number
+                                                                        ) => (
+                                                                            <Badge
+                                                                                key={
+                                                                                    index
+                                                                                }
+                                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                                variant="outline"
+                                                                                draggable
+                                                                                onDragStart={(
+                                                                                    e
+                                                                                ) =>
+                                                                                    e.dataTransfer.setData(
+                                                                                        "text",
+                                                                                        variable
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                {
                                                                                     variable
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            {
-                                                                                variable
-                                                                            }
-                                                                        </Badge>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </ScrollArea>
+                                                                                }
+                                                                            </Badge>
+                                                                        )
+                                                                    )}
+                                                                </div>
+                                                            </ScrollArea>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </ResizablePanel>
@@ -541,13 +543,13 @@ export const OptScaCatpcaObjectPlots = ({
                                                     <Label>Selected:</Label>
                                                     <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
                                                         <ScrollArea>
-                                                            <div className="w-full h-[150px]">
+                                                            <div className="w-full h-[130px]">
                                                                 {objectPlotsState.LabelObjSelectedVars &&
                                                                 objectPlotsState
                                                                     .LabelObjSelectedVars
                                                                     .length >
                                                                     0 ? (
-                                                                    <div className="flex flex-wrap gap-1">
+                                                                    <div className="flex flex-col gap-1">
                                                                         {objectPlotsState.LabelObjSelectedVars.map(
                                                                             (
                                                                                 variable,

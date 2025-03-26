@@ -634,7 +634,7 @@ export const OptScaOveralsDialog = forwardRef<
                                 {/* Variable List */}
                                 <ResizablePanel defaultSize={25}>
                                     <ScrollArea>
-                                        <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        <div className="flex flex-col gap-1 justify-start items-start h-[425px] w-full p-2">
                                             {availableVariables.map(
                                                 (
                                                     variable: string,
@@ -739,7 +739,7 @@ export const OptScaOveralsDialog = forwardRef<
                                                                     </Label>
                                                                     <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                                         <ScrollArea>
-                                                                            <div className="w-full h-[100px]">
+                                                                            <div className="w-full h-[80px]">
                                                                                 {mainState.SetTargetVariable &&
                                                                                 mainState
                                                                                     .SetTargetVariable[
@@ -751,7 +751,7 @@ export const OptScaOveralsDialog = forwardRef<
                                                                                 ]
                                                                                     .length >
                                                                                     0 ? (
-                                                                                    <div className="flex flex-wrap gap-1">
+                                                                                    <div className="flex flex-col gap-1">
                                                                                         {mainState.SetTargetVariable[
                                                                                             activePage
                                                                                         ].map(
@@ -872,13 +872,13 @@ export const OptScaOveralsDialog = forwardRef<
                                                                     </Label>
                                                                     <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                                         <ScrollArea>
-                                                                            <div className="w-full h-[100px]">
+                                                                            <div className="w-full h-[80px]">
                                                                                 {mainState.PlotsTargetVariable &&
                                                                                 mainState
                                                                                     .PlotsTargetVariable
                                                                                     .length >
                                                                                     0 ? (
-                                                                                    <div className="flex flex-wrap gap-1">
+                                                                                    <div className="flex flex-col gap-1">
                                                                                         {mainState.PlotsTargetVariable.map(
                                                                                             (
                                                                                                 variable,

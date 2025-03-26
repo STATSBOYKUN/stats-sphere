@@ -143,7 +143,7 @@ export const FactorDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[275px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -174,9 +174,6 @@ export const FactorDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col gap-4 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Variables:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -193,15 +190,15 @@ export const FactorDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Variables:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.TargetVar &&
                                                         mainState.TargetVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.TargetVar.map(
                                                                     (
                                                                         variable,

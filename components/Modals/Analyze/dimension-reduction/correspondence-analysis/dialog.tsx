@@ -140,7 +140,7 @@ export const CorrespondenceDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[240px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,

@@ -186,32 +186,38 @@ export const OptScaCatpcaDiscretize = ({
                             <Label className="font-bold">
                                 Categorical Variables:{" "}
                             </Label>
-                            <ScrollArea>
-                                <div className="flex flex-col gap-1 justify-start items-start h-[150px] w-full p-2 border rounded">
-                                    {availableVariables.map(
-                                        (variable: string, index: number) => (
-                                            <Badge
-                                                key={index}
-                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                variant={
-                                                    selectedVariable ===
-                                                    variable
-                                                        ? "default"
-                                                        : "outline"
-                                                }
-                                                onClick={() =>
-                                                    handleVariableClick(
+                            <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                <ScrollArea>
+                                    <div className="flex flex-col h-[130px] gap-1 justify-start items-start">
+                                        {availableVariables.map(
+                                            (
+                                                variable: string,
+                                                index: number
+                                            ) => (
+                                                <Badge
+                                                    key={index}
+                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                    variant={
+                                                        selectedVariable ===
                                                         variable
-                                                    )
-                                                }
-                                            >
-                                                {formattedVariables[variable] ||
-                                                    variable}
-                                            </Badge>
-                                        )
-                                    )}
-                                </div>
-                            </ScrollArea>
+                                                            ? "default"
+                                                            : "outline"
+                                                    }
+                                                    onClick={() =>
+                                                        handleVariableClick(
+                                                            variable
+                                                        )
+                                                    }
+                                                >
+                                                    {formattedVariables[
+                                                        variable
+                                                    ] || variable}
+                                                </Badge>
+                                            )
+                                        )}
+                                    </div>
+                                </ScrollArea>
+                            </div>
                         </div>
                         <div className="flex justify-between items-center space-x-2">
                             <Label className="w-[150px] font-bold">

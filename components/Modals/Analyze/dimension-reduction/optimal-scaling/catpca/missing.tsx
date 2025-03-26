@@ -269,36 +269,39 @@ export const OptScaCatpcaMissing = ({
                                         </Label>
                                         <div className="w-full">
                                             <Label>Analysis Variables: </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2 border rounded">
-                                                    {availableAnalysisVariables.map(
-                                                        (
-                                                            variable: string,
-                                                            index: number
-                                                        ) => (
-                                                            <Badge
-                                                                key={index}
-                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                variant={
-                                                                    selectedAnalysisVariable ===
-                                                                    variable
-                                                                        ? "default"
-                                                                        : "outline"
-                                                                }
-                                                                onClick={() =>
-                                                                    handleAnalysisVariableClick(
+                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="flex flex-col h-[80px] gap-1 justify-start items-start">
+                                                        {availableAnalysisVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant={
+                                                                        selectedAnalysisVariable ===
                                                                         variable
-                                                                    )
-                                                                }
-                                                            >
-                                                                {formattedAnalysisVariables[
-                                                                    variable
-                                                                ] || variable}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </ScrollArea>
+                                                                            ? "default"
+                                                                            : "outline"
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleAnalysisVariableClick(
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {formattedAnalysisVariables[
+                                                                        variable
+                                                                    ] ||
+                                                                        variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
                                     </div>
                                 </ResizablePanel>
@@ -309,36 +312,39 @@ export const OptScaCatpcaMissing = ({
                                             <Label>
                                                 Supplementary Variables:{" "}
                                             </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2 border rounded">
-                                                    {availableSupplementaryVariables.map(
-                                                        (
-                                                            variable: string,
-                                                            index: number
-                                                        ) => (
-                                                            <Badge
-                                                                key={index}
-                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                variant={
-                                                                    selectedSupplementaryVariable ===
-                                                                    variable
-                                                                        ? "default"
-                                                                        : "outline"
-                                                                }
-                                                                onClick={() =>
-                                                                    handleSupplementaryVariableClick(
+                                            <div className="w-full h-[125px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="flex flex-col h-[105px] gap-1 justify-start items-start">
+                                                        {availableSupplementaryVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant={
+                                                                        selectedSupplementaryVariable ===
                                                                         variable
-                                                                    )
-                                                                }
-                                                            >
-                                                                {formattedSupplementaryVariables[
-                                                                    variable
-                                                                ] || variable}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </ScrollArea>
+                                                                            ? "default"
+                                                                            : "outline"
+                                                                    }
+                                                                    onClick={() =>
+                                                                        handleSupplementaryVariableClick(
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {formattedSupplementaryVariables[
+                                                                        variable
+                                                                    ] ||
+                                                                        variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
                                     </div>
                                 </ResizablePanel>

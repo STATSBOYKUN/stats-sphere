@@ -184,7 +184,7 @@ export const OptScaMCAVariablePlots = ({
                                 {/* Variable List */}
                                 <ResizablePanel defaultSize={25}>
                                     <ScrollArea>
-                                        <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                        <div className="flex flex-col gap-1 justify-start items-start h-[450px] w-full p-2">
                                             {availableVariables.map(
                                                 (
                                                     variable: string,
@@ -213,7 +213,7 @@ export const OptScaMCAVariablePlots = ({
 
                                 {/* Defining Variable */}
                                 <ResizablePanel defaultSize={75}>
-                                    <div className="flex flex-col p-2">
+                                    <div className="flex flex-col gap-2 p-2">
                                         <div className="w-full">
                                             <div
                                                 className="flex flex-col w-full gap-2"
@@ -234,14 +234,14 @@ export const OptScaMCAVariablePlots = ({
                                                 <Label>Category Plots: </Label>
                                                 <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[65px]">
+                                                        <div className="w-full h-[45px]">
                                                             {Array.isArray(
                                                                 variablePlotsState.CatPlotsVar
                                                             ) &&
                                                             variablePlotsState
                                                                 .CatPlotsVar
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {variablePlotsState.CatPlotsVar.map(
                                                                         (
                                                                             variable,
@@ -309,14 +309,14 @@ export const OptScaMCAVariablePlots = ({
                                                 </Label>
                                                 <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[65px]">
+                                                        <div className="w-full h-[45px]">
                                                             {Array.isArray(
                                                                 variablePlotsState.JointCatPlotsVar
                                                             ) &&
                                                             variablePlotsState
                                                                 .JointCatPlotsVar
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {variablePlotsState.JointCatPlotsVar.map(
                                                                         (
                                                                             variable,
@@ -385,7 +385,7 @@ export const OptScaMCAVariablePlots = ({
                                                     </Label>
                                                     <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
                                                         <ScrollArea>
-                                                            <div className="w-full h-[65px]">
+                                                            <div className="w-full h-[45px]">
                                                                 {Array.isArray(
                                                                     variablePlotsState.TransPlotsVar
                                                                 ) &&
@@ -393,7 +393,7 @@ export const OptScaMCAVariablePlots = ({
                                                                     .TransPlotsVar
                                                                     .length >
                                                                     0 ? (
-                                                                    <div className="flex flex-wrap gap-1">
+                                                                    <div className="flex flex-col gap-1">
                                                                         {variablePlotsState.TransPlotsVar.map(
                                                                             (
                                                                                 variable,
@@ -575,14 +575,14 @@ export const OptScaMCAVariablePlots = ({
                                             >
                                                 <div className="w-full h-[65px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[65px]">
+                                                        <div className="w-full h-[45px]">
                                                             {Array.isArray(
                                                                 variablePlotsState.DiscMeasuresVar
                                                             ) &&
                                                             variablePlotsState
                                                                 .DiscMeasuresVar
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {variablePlotsState.DiscMeasuresVar.map(
                                                                         (
                                                                             variable,

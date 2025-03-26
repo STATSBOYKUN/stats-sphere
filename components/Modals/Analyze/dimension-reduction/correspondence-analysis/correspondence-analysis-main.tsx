@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     CorrespondenceContainerProps,
     CorrespondenceMainType,
@@ -41,6 +41,24 @@ export const CorrespondenceContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            const newState = { ...prev };
+
+            newState.defineRangeColumn = {
+                ...prev.defineRangeColumn,
+                DefaultListModel: formData.main.ColTargetVar ?? "",
+            };
+
+            newState.defineRangeRow = {
+                ...prev.defineRangeRow,
+                DefaultListModel: formData.main.RowTargetVar ?? "",
+            };
+
+            return newState;
+        });
+    }, [formData.main.ColTargetVar, formData.main.RowTargetVar]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

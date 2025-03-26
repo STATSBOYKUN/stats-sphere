@@ -166,7 +166,7 @@ export const OptScaMCAOutput = ({
                     <Separator />
                     <ResizablePanelGroup
                         direction="vertical"
-                        className="min-h-[425px] max-w-md rounded-lg border md:min-w-[200px]"
+                        className="min-h-[475px] max-w-md rounded-lg border md:min-w-[200px]"
                     >
                         <ResizablePanel defaultSize={25}>
                             <div className="flex flex-col gap-2 p-2">
@@ -290,63 +290,67 @@ export const OptScaMCAOutput = ({
                                             <Label>
                                                 Quantified Variables:{" "}
                                             </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
-                                                    {availableQuantifiedVariables.map(
-                                                        (
-                                                            variable: string,
-                                                            index: number
-                                                        ) => (
-                                                            <Badge
-                                                                key={index}
-                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                variant="outline"
-                                                                draggable
-                                                                onDragStart={(
-                                                                    e
-                                                                ) =>
-                                                                    e.dataTransfer.setData(
-                                                                        "text",
-                                                                        variable
-                                                                    )
-                                                                }
-                                                            >
-                                                                {variable}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </ScrollArea>
+                                            <div className="w-full h-[120px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="flex flex-col h-[100px] gap-1 justify-start items-start">
+                                                        {availableQuantifiedVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant="outline"
+                                                                    draggable
+                                                                    onDragStart={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.dataTransfer.setData(
+                                                                            "text",
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
                                         <div className="w-full">
                                             <Label>Labeling Variables: </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
-                                                    {availableLabelingVariables.map(
-                                                        (
-                                                            variable: string,
-                                                            index: number
-                                                        ) => (
-                                                            <Badge
-                                                                key={index}
-                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                variant="outline"
-                                                                draggable
-                                                                onDragStart={(
-                                                                    e
-                                                                ) =>
-                                                                    e.dataTransfer.setData(
-                                                                        "text",
-                                                                        variable
-                                                                    )
-                                                                }
-                                                            >
-                                                                {variable}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </ScrollArea>
+                                            <div className="w-full h-[120px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="flex flex-col h-[100px] gap-1 justify-start items-start">
+                                                        {availableLabelingVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant="outline"
+                                                                    draggable
+                                                                    onDragStart={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.dataTransfer.setData(
+                                                                            "text",
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
                                     </div>
                                 </ResizablePanel>
@@ -373,16 +377,14 @@ export const OptScaMCAOutput = ({
                                                 <Label>
                                                     Category Quantifications:{" "}
                                                 </Label>
-                                                <div className="w-full h-[35px] p-2 border rounded overflow-hidden">
+                                                <div className="w-full h-[50px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[35px]">
-                                                            {Array.isArray(
-                                                                outputState.CatQuantifications
-                                                            ) &&
+                                                        <div className="w-full h-[30px]">
+                                                            {outputState.CatQuantifications &&
                                                             outputState
                                                                 .CatQuantifications
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {outputState.CatQuantifications.map(
                                                                         (
                                                                             variable,
@@ -418,6 +420,14 @@ export const OptScaMCAOutput = ({
                                                         </div>
                                                     </ScrollArea>
                                                 </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        outputState.CatQuantifications ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
                                             </div>
                                         </div>
                                         <div className="w-full">
@@ -440,16 +450,14 @@ export const OptScaMCAOutput = ({
                                                 <Label>
                                                     Descriptive Statistics:{" "}
                                                 </Label>
-                                                <div className="w-full h-[35px] p-2 border rounded overflow-hidden">
+                                                <div className="w-full h-[50px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[35px]">
-                                                            {Array.isArray(
-                                                                outputState.DescStats
-                                                            ) &&
+                                                        <div className="w-full h-[30px]">
+                                                            {outputState.DescStats &&
                                                             outputState
                                                                 .DescStats
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {outputState.DescStats.map(
                                                                         (
                                                                             variable,
@@ -485,6 +493,14 @@ export const OptScaMCAOutput = ({
                                                         </div>
                                                     </ScrollArea>
                                                 </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        outputState.DescStats ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
                                             </div>
                                         </div>
                                         <Label className="font-bold">
@@ -510,16 +526,14 @@ export const OptScaMCAOutput = ({
                                                 <Label>
                                                     Include Categories of:{" "}
                                                 </Label>
-                                                <div className="w-full h-[35px] p-2 border rounded overflow-hidden">
+                                                <div className="w-full h-[50px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[35px]">
-                                                            {Array.isArray(
-                                                                outputState.ObjScoresIncludeCat
-                                                            ) &&
+                                                        <div className="w-full h-[30px]">
+                                                            {outputState.ObjScoresIncludeCat &&
                                                             outputState
                                                                 .ObjScoresIncludeCat
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {outputState.ObjScoresIncludeCat.map(
                                                                         (
                                                                             variable,
@@ -555,6 +569,14 @@ export const OptScaMCAOutput = ({
                                                         </div>
                                                     </ScrollArea>
                                                 </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        outputState.ObjScoresIncludeCat ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
                                             </div>
                                         </div>
                                         <div className="w-full">
@@ -577,16 +599,14 @@ export const OptScaMCAOutput = ({
                                                 <Label>
                                                     Label Object Scores By:{" "}
                                                 </Label>
-                                                <div className="w-full h-[35px] p-2 border rounded overflow-hidden">
+                                                <div className="w-full h-[50px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[35px]">
-                                                            {Array.isArray(
-                                                                outputState.ObjScoresLabelBy
-                                                            ) &&
+                                                        <div className="w-full h-[30px]">
+                                                            {outputState.ObjScoresLabelBy &&
                                                             outputState
                                                                 .ObjScoresLabelBy
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {outputState.ObjScoresLabelBy.map(
                                                                         (
                                                                             variable,
@@ -622,6 +642,14 @@ export const OptScaMCAOutput = ({
                                                         </div>
                                                     </ScrollArea>
                                                 </div>
+                                                <input
+                                                    type="hidden"
+                                                    value={
+                                                        outputState.ObjScoresLabelBy ??
+                                                        ""
+                                                    }
+                                                    name="Independents"
+                                                />
                                             </div>
                                         </div>
                                     </div>

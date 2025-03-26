@@ -26,7 +26,7 @@ export type CorrespondenceDialogProps = {
 export type CorrespondenceDefineRangeRowType = {
     MinValue: number | null;
     MaxValue: number | null;
-    ConstraintsList: string | null;
+    ConstraintsList: string[] | null;
     None: boolean;
     CategoryEqual: boolean;
     CategorySupplemental: boolean;
@@ -38,7 +38,7 @@ export type CorrespondenceDefineRangeRowProps = {
     setIsDefineRangeRowOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof CorrespondenceDefineRangeRowType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: CorrespondenceDefineRangeRowType;
 };
@@ -46,7 +46,7 @@ export type CorrespondenceDefineRangeRowProps = {
 export type CorrespondenceDefineRangeColumnType = {
     MinValue: number | null;
     MaxValue: number | null;
-    ConstraintsList: string | null;
+    ConstraintsList: string[] | null;
     None: boolean;
     CategoryEqual: boolean;
     CategorySupplemental: boolean;
@@ -58,7 +58,7 @@ export type CorrespondenceDefineRangeColumnProps = {
     setIsDefineRangeColumnOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof CorrespondenceDefineRangeColumnType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: CorrespondenceDefineRangeColumnType;
 };
