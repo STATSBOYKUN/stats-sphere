@@ -156,8 +156,8 @@ export const UnivariateContrast = ({
                     <div className="flex flex-col gap-2">
                         <div className="w-full">
                             <Label className="font-bold">Factors: </Label>
-                            <ScrollArea>
-                                <div className="flex flex-col gap-1 justify-start items-start h-[150px] w-full p-2 border rounded">
+                            <ScrollArea className="h-[150px] w-full p-2 border rounded">
+                                <div className="flex flex-col gap-1 justify-start items-start">
                                     {availableVariables.map(
                                         (variable: string, index: number) => (
                                             <Badge

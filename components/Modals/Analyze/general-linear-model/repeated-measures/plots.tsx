@@ -276,7 +276,7 @@ export const RepeatedMeasuresPlots = ({
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Factors: </Label>
-                                                    <ScrollArea className="h-[175px] border rounded">
+                                                    <ScrollArea className="h-[200px] border rounded">
                                                         <div className="flex flex-col gap-1 p-2">
                                                             {availableVariables.map(
                                                                 (
@@ -491,7 +491,7 @@ export const RepeatedMeasuresPlots = ({
                                                 </Button>
                                             </div>
                                         </div>
-                                        <ScrollArea className="h-[100px] border rounded">
+                                        <ScrollArea className="h-[125px] border rounded">
                                             <div className="flex flex-col gap-1 p-2">
                                                 {plotsList.map(
                                                     (plot, index) => (

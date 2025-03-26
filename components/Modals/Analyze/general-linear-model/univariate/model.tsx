@@ -106,10 +106,15 @@ export const UnivariateModel = ({
         setModelState((prev) => {
             const updatedState = { ...prev };
             if (target === "FactorsModel") {
-                updatedState.FactorsModel = [
-                    ...(updatedState.FactorsModel || []),
-                    variable,
-                ];
+                const currentArray = Array.isArray(updatedState.FactorsModel)
+                    ? updatedState.FactorsModel
+                    : updatedState.FactorsModel
+                    ? [updatedState.FactorsModel]
+                    : [];
+
+                if (!currentArray.includes(variable)) {
+                    updatedState.FactorsModel = [...currentArray, variable];
+                }
             }
             return updatedState;
         });
@@ -354,8 +359,8 @@ export const UnivariateModel = ({
                                                 <Label>
                                                     Factor & Covariates:{" "}
                                                 </Label>
-                                                <ScrollArea>
-                                                    <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea className="h-[200px] p-2 border rounded overflow-hidden">
+                                                    <div className="flex flex-col gap-1 justify-start items-start">
                                                         {availableVariables.map(
                                                             (
                                                                 variable: string,
@@ -480,15 +485,15 @@ export const UnivariateModel = ({
                                                     }}
                                                 >
                                                     <Label>Model: </Label>
-                                                    <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                    <div className="w-full h-[200px] p-2 border rounded overflow-hidden">
                                                         <ScrollArea>
-                                                            <div className="w-full h-[150px]">
+                                                            <div className="w-full h-[180px]">
                                                                 {modelState.FactorsModel &&
                                                                 modelState
                                                                     .FactorsModel
                                                                     .length >
                                                                     0 ? (
-                                                                    <div className="flex flex-wrap gap-1">
+                                                                    <div className="flex flex-col gap-1">
                                                                         {modelState.FactorsModel.map(
                                                                             (
                                                                                 variable,

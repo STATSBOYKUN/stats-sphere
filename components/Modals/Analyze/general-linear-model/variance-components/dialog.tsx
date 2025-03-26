@@ -164,7 +164,7 @@ export const VarianceCompsDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[500px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -259,11 +259,11 @@ export const VarianceCompsDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.FixFactor &&
                                                         mainState.FixFactor
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.FixFactor.map(
                                                                     (
                                                                         variable,
@@ -328,11 +328,11 @@ export const VarianceCompsDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.RandFactor &&
                                                         mainState.RandFactor
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.RandFactor.map(
                                                                     (
                                                                         variable,
@@ -394,11 +394,11 @@ export const VarianceCompsDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.Covar &&
                                                         mainState.Covar.length >
                                                             0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.Covar.map(
                                                                     (
                                                                         variable,

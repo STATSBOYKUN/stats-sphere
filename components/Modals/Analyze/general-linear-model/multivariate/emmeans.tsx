@@ -205,8 +205,8 @@ export const MultivariateEMMeans = ({
                                                 Factor(s) and Factor
                                                 Interactions:{" "}
                                             </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[175px] w-full p-2">
+                                            <ScrollArea className="h-[175px] w-full p-2 border rounded overflow-hidden">
+                                                <div className="flex flex-col gap-1 justify-start items-start">
                                                     {availableVariables.map(
                                                         (
                                                             variable: string,

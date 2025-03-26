@@ -148,9 +148,9 @@ export const MultivariateDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Multivariate</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Multivariate</DialogTitle>
@@ -164,7 +164,7 @@ export const MultivariateDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[450px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -212,11 +212,11 @@ export const MultivariateDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.DepVar &&
                                                         mainState.DepVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.DepVar.map(
                                                                     (
                                                                         variable,
@@ -279,11 +279,11 @@ export const MultivariateDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.FixFactor &&
                                                         mainState.FixFactor
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.FixFactor.map(
                                                                     (
                                                                         variable,
@@ -345,11 +345,11 @@ export const MultivariateDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.Covar &&
                                                         mainState.Covar.length >
                                                             0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.Covar.map(
                                                                     (
                                                                         variable,

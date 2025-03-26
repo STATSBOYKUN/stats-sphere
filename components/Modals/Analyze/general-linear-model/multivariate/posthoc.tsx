@@ -132,8 +132,8 @@ export const MultivariatePostHoc = ({
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Factor(s): </Label>
-                                                    <ScrollArea>
-                                                        <div className="flex flex-col gap-1 justify-start items-start h-[175px] w-full p-2">
+                                                    <ScrollArea className="h-[175px] w-full p-2 border rounded">
+                                                        <div className="flex flex-col gap-1 justify-start items-start">
                                                             {availableVariables.map(
                                                                 (
                                                                     variable: string,
@@ -189,7 +189,7 @@ export const MultivariatePostHoc = ({
                                                         </Label>
                                                         <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
                                                             <ScrollArea>
-                                                                <div className="w-full h-[175px]">
+                                                                <div className="w-full h-[155px]">
                                                                     {Array.isArray(
                                                                         postHocState.FixFactorVars
                                                                     ) &&
@@ -197,7 +197,7 @@ export const MultivariatePostHoc = ({
                                                                         .FixFactorVars
                                                                         .length >
                                                                         0 ? (
-                                                                        <div className="flex flex-wrap gap-1">
+                                                                        <div className="flex flex-col gap-1">
                                                                             {postHocState.FixFactorVars.map(
                                                                                 (
                                                                                     variable,

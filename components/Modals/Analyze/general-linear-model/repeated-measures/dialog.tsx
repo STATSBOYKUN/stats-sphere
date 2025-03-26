@@ -208,9 +208,9 @@ export const RepeatedMeasuresDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">Repeated Measures</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>Repeated Measures</DialogTitle>
@@ -272,11 +272,11 @@ export const RepeatedMeasuresDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.SubVar &&
                                                         mainState.SubVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.SubVar.map(
                                                                     (
                                                                         variable,
@@ -339,11 +339,11 @@ export const RepeatedMeasuresDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.FactorsVar &&
                                                         mainState.FactorsVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.FactorsVar.map(
                                                                     (
                                                                         variable,
@@ -408,11 +408,11 @@ export const RepeatedMeasuresDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.Covariates &&
                                                         mainState.Covariates
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.Covariates.map(
                                                                     (
                                                                         variable,

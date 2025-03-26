@@ -313,9 +313,9 @@ export const MultivariateBootstrap = ({
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Variables:</Label>
-                                                    <div className="border rounded">
-                                                        <ScrollArea>
-                                                            <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                    <div>
+                                                        <ScrollArea className="h-[100px] w-full p-2 border rounded">
+                                                            <div className="flex flex-col gap-1 justify-start items-start">
                                                                 {availableVariables.map(
                                                                     (
                                                                         variable: string,
@@ -369,14 +369,14 @@ export const MultivariateBootstrap = ({
                                                         <Label>
                                                             Strata Variables:
                                                         </Label>
-                                                        <div className="border rounded">
-                                                            <ScrollArea>
+                                                        <div>
+                                                            <ScrollArea className="h-[100px] w-full p-2 border rounded">
                                                                 {bootstrapState.StrataVariables &&
                                                                 bootstrapState
                                                                     .StrataVariables
                                                                     .length >
                                                                     0 ? (
-                                                                    <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                                    <div className="flex flex-col gap-1 justify-start items-start">
                                                                         {bootstrapState.StrataVariables.map(
                                                                             (
                                                                                 variable,

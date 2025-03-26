@@ -202,8 +202,8 @@ export const UnivariateEMMeans = ({
                                                 Factor(s) and Factor
                                                 Interactions:{" "}
                                             </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col gap-1 justify-start items-start h-[175px] w-full p-2">
+                                            <ScrollArea className="h-[175px] w-full p-2 border rounded overflow-hidden">
+                                                <div className="flex flex-col gap-1 justify-start items-start">
                                                     {availableVariables.map(
                                                         (
                                                             variable: string,
@@ -255,14 +255,14 @@ export const UnivariateEMMeans = ({
                                                 </Label>
                                                 <div className="w-full h-[75px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[75px]">
+                                                        <div className="w-full h-[55px]">
                                                             {Array.isArray(
                                                                 EMMeansState.TargetList
                                                             ) &&
                                                             EMMeansState
                                                                 .TargetList
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {EMMeansState.TargetList.map(
                                                                         (
                                                                             variable,
