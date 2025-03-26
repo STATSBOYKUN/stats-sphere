@@ -1,68 +1,139 @@
-import React, {useEffect, useState} from "react";
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from "@/components/ui/dialog";
-import {Button} from "@/components/ui/button";
-import {Checkbox} from "@/components/ui/checkbox";
-import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
-import {Label} from "@/components/ui/label";
-import {RadioGroup, RadioGroupItem} from "@/components/ui/radio-group";
-import {Input} from "@/components/ui/input";
-import {Separator} from "@/components/ui/separator";
-import {DiscriminantBootstrapProps, DiscriminantBootstrapType} from "@/models/classify/discriminant/discriminant";
-import {CheckedState} from "@radix-ui/react-checkbox";
+import React, { useEffect, useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+    DiscriminantBootstrapProps,
+    DiscriminantBootstrapType,
+} from "@/models/classify/discriminant/discriminant";
+import { CheckedState } from "@radix-ui/react-checkbox";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, updateFormData, data}: DiscriminantBootstrapProps) => {
-    const [bootstrapState, setBootstrapState] = useState<DiscriminantBootstrapType>({...data});
+export const DiscriminantBootstrap = ({
+    isBootstrapOpen,
+    setIsBootstrapOpen,
+    updateFormData,
+    data,
+}: DiscriminantBootstrapProps) => {
+    const [bootstrapState, setBootstrapState] =
+        useState<DiscriminantBootstrapType>({ ...data });
+    const [isContinueDisabled, setIsContinueDisabled] = useState(false);
+    const [availableVariables, setAvailableVariables] = useState<string[]>([]);
 
     useEffect(() => {
         if (isBootstrapOpen) {
-            setBootstrapState({...data});
+            setBootstrapState({ ...data });
+            setAvailableVariables(data.Variables ?? []);
         }
     }, [isBootstrapOpen, data]);
 
-    const handleChange = (field: keyof DiscriminantBootstrapType, value: CheckedState | string | number | boolean | null) => {
-        setBootstrapState(prevState => ({
+    useEffect(() => {
+        const usedVariables = [
+            ...(bootstrapState.StrataVariables || []),
+        ].filter(Boolean);
+
+        if (data.Variables) {
+            const updatedVariables = data.Variables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+
+            setAvailableVariables(updatedVariables);
+        }
+    }, [bootstrapState]);
+
+    const handleChange = (
+        field: keyof DiscriminantBootstrapType,
+        value: CheckedState | string | number | boolean | null
+    ) => {
+        setBootstrapState((prevState) => ({
             ...prevState,
-            [field]: value
+            [field]: value,
         }));
     };
 
     const handleCIGrp = (value: string) => {
-        setBootstrapState(prev => ({
+        setBootstrapState((prev) => ({
             ...prev,
             Percentile: value === "Percentile",
-            BCa: value === "BCa"
+            BCa: value === "BCa",
         }));
     };
 
     const handleSamplingGrp = (value: string) => {
-        setBootstrapState(prev => ({
+        setBootstrapState((prev) => ({
             ...prev,
             Simple: value === "Simple",
-            Stratified: value === "Stratified"
+            Stratified: value === "Stratified",
         }));
-    }
+    };
+
+    const handleDrop = (target: string, variable: string) => {
+        setBootstrapState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "StrataVariables") {
+                updatedState.StrataVariables = [
+                    ...(updatedState.StrataVariables || []),
+                    variable,
+                ];
+            }
+            return updatedState;
+        });
+    };
+
+    const handleRemoveVariable = (target: string, variable?: string) => {
+        setBootstrapState((prev) => {
+            const updatedState = { ...prev };
+            if (target === "StrataVariables") {
+                updatedState.StrataVariables = (
+                    updatedState.StrataVariables || []
+                ).filter((item) => item !== variable);
+            }
+            return updatedState;
+        });
+    };
 
     const handleContinue = () => {
         Object.entries(bootstrapState).forEach(([field, value]) => {
             updateFormData(field as keyof DiscriminantBootstrapType, value);
         });
+        setIsBootstrapOpen(false);
     };
 
     return (
         <>
-            {/* Bootstrap Dialog */}
             <Dialog open={isBootstrapOpen} onOpenChange={setIsBootstrapOpen}>
                 <DialogContent className="sm:max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Bootstrap</DialogTitle>
                     </DialogHeader>
-                    <Separator/>
+                    <Separator />
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center space-x-2">
                             <Checkbox
                                 id="PerformBootStrapping"
                                 checked={bootstrapState.PerformBootStrapping}
-                                onCheckedChange={(checked) => handleChange("PerformBootStrapping", checked)}
+                                onCheckedChange={(checked) =>
+                                    handleChange(
+                                        "PerformBootStrapping",
+                                        checked
+                                    )
+                                }
                             />
                             <label
                                 htmlFor="PerformBootStrapping"
@@ -79,8 +150,18 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
                                         type="number"
                                         id="NumOfSamples"
                                         placeholder=""
-                                        value={bootstrapState.NumOfSamples ?? ""}
-                                        onChange={(e) => handleChange("NumOfSamples", Number(e.target.value))}
+                                        value={
+                                            bootstrapState.NumOfSamples ?? ""
+                                        }
+                                        disabled={
+                                            !bootstrapState.PerformBootStrapping
+                                        }
+                                        onChange={(e) =>
+                                            handleChange(
+                                                "NumOfSamples",
+                                                Number(e.target.value)
+                                            )
+                                        }
                                     />
                                 </div>
                             </div>
@@ -89,7 +170,12 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
                                     <Checkbox
                                         id="Seed"
                                         checked={bootstrapState.Seed}
-                                        onCheckedChange={(checked) => handleChange("Seed", checked)}
+                                        disabled={
+                                            !bootstrapState.PerformBootStrapping
+                                        }
+                                        onCheckedChange={(checked) =>
+                                            handleChange("Seed", checked)
+                                        }
                                     />
                                     <label
                                         htmlFor="Seed"
@@ -105,8 +191,16 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
                                             id="SeedValue"
                                             type="number"
                                             placeholder=""
-                                            value={bootstrapState.SeedValue ?? ""}
-                                            onChange={(e) => handleChange("SeedValue", Number(e.target.value))}
+                                            value={
+                                                bootstrapState.SeedValue ?? ""
+                                            }
+                                            disabled={!bootstrapState.Seed}
+                                            onChange={(e) =>
+                                                handleChange(
+                                                    "SeedValue",
+                                                    Number(e.target.value)
+                                                )
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -119,81 +213,212 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
                     >
                         <ResizablePanel defaultSize={30}>
                             <div className="flex flex-col h-full gap-2 p-2">
-                                <Label className="font-bold">Confidence Intervals</Label>
+                                <Label className="font-bold">
+                                    Confidence Intervals
+                                </Label>
                                 <div className="flex flex-col gap-1">
                                     <div className="flex items-center space-x-2">
-                                        <Label className="w-[100px]">Level (%):</Label>
+                                        <Label className="w-[100px]">
+                                            Level (%):
+                                        </Label>
                                         <div className="w-[100px]">
                                             <Input
                                                 id="Level"
                                                 type="number"
                                                 placeholder=""
-                                                value={bootstrapState.Level ?? ""}
-                                                onChange={(e) => handleChange("Level", Number(e.target.value))}
+                                                value={
+                                                    bootstrapState.Level ?? ""
+                                                }
+                                                disabled={
+                                                    !bootstrapState.PerformBootStrapping
+                                                }
+                                                onChange={(e) =>
+                                                    handleChange(
+                                                        "Level",
+                                                        Number(e.target.value)
+                                                    )
+                                                }
                                             />
                                         </div>
                                     </div>
                                     <RadioGroup
                                         defaultValue="Percentile"
-                                        value={bootstrapState.Percentile ? "Percentile" : "BCa"}
+                                        value={
+                                            bootstrapState.Percentile
+                                                ? "Percentile"
+                                                : "BCa"
+                                        }
+                                        disabled={
+                                            !bootstrapState.PerformBootStrapping
+                                        }
                                         onValueChange={handleCIGrp}
                                     >
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Percentile" id="Percentile"/>
-                                            <Label htmlFor="Percentile">Percentile</Label>
+                                            <RadioGroupItem
+                                                value="Percentile"
+                                                id="Percentile"
+                                            />
+                                            <Label htmlFor="Percentile">
+                                                Percentile
+                                            </Label>
                                         </div>
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="BCa" id="BCa"/>
-                                            <Label htmlFor="BCa">Bias Corrected Accelerated (BCa)</Label>
+                                            <RadioGroupItem
+                                                value="BCa"
+                                                id="BCa"
+                                            />
+                                            <Label htmlFor="BCa">
+                                                Bias Corrected Accelerated (BCa)
+                                            </Label>
                                         </div>
                                     </RadioGroup>
                                 </div>
                             </div>
                         </ResizablePanel>
-                        <ResizableHandle/>
+                        <ResizableHandle />
                         <ResizablePanel defaultSize={55}>
                             <div className="flex flex-col h-full gap-2 p-2">
                                 <Label className="font-bold">Sampling</Label>
                                 <RadioGroup
                                     defaultValue="Simple"
-                                    value={bootstrapState.Simple ? "Simple" : "Stratified"}
+                                    value={
+                                        bootstrapState.Simple
+                                            ? "Simple"
+                                            : "Stratified"
+                                    }
+                                    disabled={
+                                        !bootstrapState.PerformBootStrapping
+                                    }
                                     onValueChange={handleSamplingGrp}
                                 >
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="Simple" id="Simple"/>
+                                        <RadioGroupItem
+                                            value="Simple"
+                                            id="Simple"
+                                        />
                                         <Label htmlFor="Simple">Simple</Label>
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="Stratified" id="Stratified"/>
-                                            <Label htmlFor="Stratified">Stratified</Label>
+                                            <RadioGroupItem
+                                                value="Stratified"
+                                                id="Stratified"
+                                            />
+                                            <Label htmlFor="Stratified">
+                                                Stratified
+                                            </Label>
                                         </div>
                                         <ResizablePanelGroup direction="horizontal">
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Variables:</Label>
-                                                    <Input
-                                                        id="Variables"
-                                                        type="text"
-                                                        className="w-full min-h-[100px]"
-                                                        placeholder=""
-                                                        value={bootstrapState.Variables ?? ""}
-                                                        onChange={(e) => handleChange("Variables", e.target.value)}
-                                                    />
+                                                    <div className="border rounded">
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                                {availableVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
+                                                                                variable
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
                                                 </div>
                                             </ResizablePanel>
-                                            <ResizableHandle withHandle/>
+                                            <ResizableHandle withHandle />
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
-                                                    <Label>Strata Variables:</Label>
-                                                    <Input
-                                                        id="StrataVariables"
-                                                        type="text"
-                                                        className="w-full min-h-[100px]"
-                                                        placeholder=""
-                                                        value={bootstrapState.StrataVariables ?? ""}
-                                                        onChange={(e) => handleChange("StrataVariables", e.target.value)}
-                                                    />
+                                                    <div
+                                                        onDragOver={(e) =>
+                                                            e.preventDefault()
+                                                        }
+                                                        onDrop={(e) => {
+                                                            const variable =
+                                                                e.dataTransfer.getData(
+                                                                    "text"
+                                                                );
+                                                            handleDrop(
+                                                                "StrataVariables",
+                                                                variable
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Label>
+                                                            Strata Variables:
+                                                        </Label>
+                                                        <div className="border rounded h-[100px]">
+                                                            <ScrollArea>
+                                                                {bootstrapState.StrataVariables &&
+                                                                bootstrapState
+                                                                    .StrataVariables
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-col gap-1 justify-start items-start w-full p-2">
+                                                                        {bootstrapState.StrataVariables.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "StrataVariables",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500 p-2">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
+                                                            </ScrollArea>
+                                                        </div>
+                                                        <input
+                                                            type="hidden"
+                                                            value={
+                                                                bootstrapState.StrataVariables ??
+                                                                ""
+                                                            }
+                                                            name="StrataVariables"
+                                                        />
+                                                    </div>
                                                 </div>
                                             </ResizablePanel>
                                         </ResizablePanelGroup>
@@ -204,6 +429,7 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
                     </ResizablePanelGroup>
                     <DialogFooter className="sm:justify-start">
                         <Button
+                            disabled={isContinueDisabled}
                             type="button"
                             onClick={handleContinue}
                         >
@@ -224,4 +450,4 @@ export const DiscriminantBootstrap = ({isBootstrapOpen, setIsBootstrapOpen, upda
             </Dialog>
         </>
     );
-}
+};

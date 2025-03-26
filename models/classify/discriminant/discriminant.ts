@@ -159,8 +159,8 @@ export type DiscriminantBootstrapType = {
     BCa: boolean;
     Simple: boolean;
     Stratified: boolean;
-    Variables: string | null;
-    StrataVariables: string | null;
+    Variables: string[] | null;
+    StrataVariables: string[] | null;
 };
 
 export type DiscriminantBootstrapProps = {
@@ -168,7 +168,7 @@ export type DiscriminantBootstrapProps = {
     setIsBootstrapOpen: React.Dispatch<React.SetStateAction<boolean>>;
     updateFormData: (
         field: keyof DiscriminantBootstrapType,
-        value: string | number | boolean | null
+        value: string[] | string | number | boolean | null
     ) => void;
     data: DiscriminantBootstrapType;
 };

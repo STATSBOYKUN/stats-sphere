@@ -274,12 +274,12 @@ export const DiscriminantDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.IndependentVariables &&
                                                         mainState
                                                             .IndependentVariables
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.IndependentVariables.map(
                                                                     (
                                                                         variable,

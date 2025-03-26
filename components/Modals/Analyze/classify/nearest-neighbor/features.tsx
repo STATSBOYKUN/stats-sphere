@@ -178,37 +178,39 @@ export const KNNFeatures = ({
                                 </div>
                                 <ResizablePanelGroup direction="horizontal">
                                     <ResizablePanel defaultSize={50}>
-                                        <div className="flex flex-col gap-2">
+                                        <div className="flex flex-col h-full gap-2">
                                             <Label className="font-bold">
                                                 Forward Selection:
                                             </Label>
-                                            <ScrollArea>
-                                                <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
-                                                    {availableVariables.map(
-                                                        (
-                                                            variable: string,
-                                                            index: number
-                                                        ) => (
-                                                            <Badge
-                                                                key={index}
-                                                                className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                variant="outline"
-                                                                draggable
-                                                                onDragStart={(
-                                                                    e
-                                                                ) =>
-                                                                    e.dataTransfer.setData(
-                                                                        "text",
-                                                                        variable
-                                                                    )
-                                                                }
-                                                            >
-                                                                {variable}
-                                                            </Badge>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </ScrollArea>
+                                            <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                <ScrollArea>
+                                                    <div className="flex flex-col h-[130px] gap-1 justify-start items-start">
+                                                        {availableVariables.map(
+                                                            (
+                                                                variable: string,
+                                                                index: number
+                                                            ) => (
+                                                                <Badge
+                                                                    key={index}
+                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                    variant="outline"
+                                                                    draggable
+                                                                    onDragStart={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.dataTransfer.setData(
+                                                                            "text",
+                                                                            variable
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {variable}
+                                                                </Badge>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
                                     </ResizablePanel>
                                     <ResizableHandle withHandle />
@@ -234,12 +236,12 @@ export const KNNFeatures = ({
                                             </Label>
                                             <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[150px]">
+                                                    <div className="w-full h-[130px]">
                                                         {featuresState.ForcedEntryVar &&
                                                         featuresState
                                                             .ForcedEntryVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {featuresState.ForcedEntryVar.map(
                                                                     (
                                                                         variable,

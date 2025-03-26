@@ -113,8 +113,8 @@ export const TreeCriteriaCHAIDDefault: TreeCriteriaCHAIDType = {
 };
 
 export const TreeCriteriaIntervalsDefault: TreeCriteriaIntervalsType = {
-    FixedNo: false,
-    ValueFixed: null,
+    FixedNo: true,
+    ValueFixed: 10,
     CustomInterval: false,
 };
 

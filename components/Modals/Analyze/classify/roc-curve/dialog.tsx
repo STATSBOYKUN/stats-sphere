@@ -146,7 +146,7 @@ export const RocCurveDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[390px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -177,9 +177,6 @@ export const RocCurveDialog = ({
                             <ResizablePanel defaultSize={55}>
                                 <div className="flex flex-col h-full w-full items-start justify-start gap-2 p-2">
                                     <div className="w-full">
-                                        <Label className="font-bold">
-                                            Test Variable:{" "}
-                                        </Label>
                                         <div
                                             onDragOver={(e) =>
                                                 e.preventDefault()
@@ -196,16 +193,16 @@ export const RocCurveDialog = ({
                                             }}
                                         >
                                             <Label className="font-bold">
-                                                Independents:
+                                                Test Variable:{" "}
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.TestTargetVariable &&
                                                         mainState
                                                             .TestTargetVariable
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.TestTargetVariable.map(
                                                                     (
                                                                         variable,

@@ -155,7 +155,7 @@ export const RocAnalysisDialog = ({
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[390px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -202,11 +202,11 @@ export const RocAnalysisDialog = ({
                                         </Label>
                                         <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>
-                                                <div className="w-full h-[100px]">
+                                                <div className="w-full h-[80px]">
                                                     {mainState.TestTargetVariable &&
                                                     mainState.TestTargetVariable
                                                         .length > 0 ? (
-                                                        <div className="flex flex-wrap gap-1">
+                                                        <div className="flex flex-col gap-1">
                                                             {mainState.TestTargetVariable.map(
                                                                 (
                                                                     variable,
@@ -300,7 +300,7 @@ export const RocAnalysisDialog = ({
                                     </div>
                                     <div className="flex flex-col w-full gap-2">
                                         <div className="flex items-center space-x-2">
-                                            <Label className="w-[500px]">
+                                            <Label className="w-[300px]">
                                                 Value of State Variable:
                                             </Label>
                                             <Input

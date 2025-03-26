@@ -220,11 +220,11 @@ export const KMeansClusterDialog = ({
                                         </Label>
                                         <div className="w-full h-[225px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>
-                                                <div className="w-full h-[225px]">
+                                                <div className="w-full h-[205px]">
                                                     {mainState.TargetVar &&
                                                     mainState.TargetVar.length >
                                                         0 ? (
-                                                        <div className="flex flex-wrap gap-1">
+                                                        <div className="flex flex-col gap-1">
                                                             {mainState.TargetVar.map(
                                                                 (
                                                                     variable,
@@ -238,7 +238,7 @@ export const KMeansClusterDialog = ({
                                                                         variant="outline"
                                                                         onClick={() =>
                                                                             handleRemoveVariable(
-                                                                                "Variables",
+                                                                                "TargetVar",
                                                                                 variable
                                                                             )
                                                                         }

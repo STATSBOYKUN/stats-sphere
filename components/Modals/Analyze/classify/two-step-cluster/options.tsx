@@ -240,14 +240,14 @@ export const TwoStepClusterOptions = ({
                                                 <Label>
                                                     Assumed Standardized:{" "}
                                                 </Label>
-                                                <div className="w-full h-[150px] p-2 border rounded overflow-hidden">
+                                                <div className="w-full h-[80px] p-2 border rounded overflow-hidden">
                                                     <ScrollArea>
-                                                        <div className="w-full h-[150px]">
+                                                        <div className="w-full h-[60px]">
                                                             {optionsState.TargetVar &&
                                                             optionsState
                                                                 .TargetVar
                                                                 .length > 0 ? (
-                                                                <div className="flex flex-wrap gap-1">
+                                                                <div className="flex flex-col gap-1">
                                                                     {optionsState.TargetVar.map(
                                                                         (
                                                                             variable,
@@ -299,33 +299,39 @@ export const TwoStepClusterOptions = ({
                                                 <Label>
                                                     To Be Standardized:
                                                 </Label>
-                                                <ScrollArea>
-                                                    <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
-                                                        {availableVariables.map(
-                                                            (
-                                                                variable: string,
-                                                                index: number
-                                                            ) => (
-                                                                <Badge
-                                                                    key={index}
-                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                    variant="outline"
-                                                                    draggable
-                                                                    onDragStart={(
-                                                                        e
-                                                                    ) =>
-                                                                        e.dataTransfer.setData(
-                                                                            "text",
+                                                <div className="w-full h-[80px] p-2 border rounded overflow-hidden">
+                                                    <ScrollArea>
+                                                        <div className="flex flex-col h-[60px] gap-1 justify-start items-start">
+                                                            {availableVariables.map(
+                                                                (
+                                                                    variable: string,
+                                                                    index: number
+                                                                ) => (
+                                                                    <Badge
+                                                                        key={
+                                                                            index
+                                                                        }
+                                                                        className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                        variant="outline"
+                                                                        draggable
+                                                                        onDragStart={(
+                                                                            e
+                                                                        ) =>
+                                                                            e.dataTransfer.setData(
+                                                                                "text",
+                                                                                variable
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        {
                                                                             variable
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {variable}
-                                                                </Badge>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </ScrollArea>
+                                                                        }
+                                                                    </Badge>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </ScrollArea>
+                                                </div>
                                             </div>
                                         </ResizablePanel>
                                     </ResizablePanelGroup>

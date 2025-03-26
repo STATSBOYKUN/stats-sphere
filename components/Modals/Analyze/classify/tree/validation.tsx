@@ -254,97 +254,112 @@ export const TreeValidation = ({
                                                         Use Variable
                                                     </Label>
                                                 </div>
-                                                <div className="grid grid-cols-2 pl-6 gap-2">
-                                                    <div>
-                                                        <Label>
-                                                            Variables:
-                                                        </Label>
-                                                        <ScrollArea>
-                                                            <div className="flex flex-col justify-start items-start h-[150px] p-2 border rounded overflow-hidden">
-                                                                {availableVariables.map(
-                                                                    (
-                                                                        variable: string,
-                                                                        index: number
-                                                                    ) => (
+                                                <ResizablePanelGroup direction="horizontal">
+                                                    <ResizablePanel
+                                                        defaultSize={50}
+                                                    >
+                                                        <div className="flex flex-col h-full gap-2">
+                                                            <Label>
+                                                                Variables:
+                                                            </Label>
+                                                            <div className="w-full h-[80px] p-2 border rounded overflow-hidden">
+                                                                <ScrollArea>
+                                                                    <div className="flex flex-col h-[60px] gap-1 justify-start items-start">
+                                                                        {availableVariables.map(
+                                                                            (
+                                                                                variable: string,
+                                                                                index: number
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    draggable
+                                                                                    onDragStart={(
+                                                                                        e
+                                                                                    ) =>
+                                                                                        e.dataTransfer.setData(
+                                                                                            "text",
+                                                                                            variable
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </ScrollArea>
+                                                            </div>
+                                                        </div>
+                                                    </ResizablePanel>
+                                                    <ResizableHandle
+                                                        withHandle
+                                                    />
+                                                    <ResizablePanel
+                                                        defaultSize={50}
+                                                    >
+                                                        <div className="flex flex-col h-full gap-2">
+                                                            <Label>
+                                                                Split Sample By:
+                                                            </Label>
+                                                            <div className="flex items-center space-x-2">
+                                                                <div
+                                                                    className="w-full min-h-[40px] p-2 border rounded"
+                                                                    onDrop={(
+                                                                        e
+                                                                    ) => {
+                                                                        handleDrop(
+                                                                            "TargetVar",
+                                                                            e.dataTransfer.getData(
+                                                                                "text"
+                                                                            )
+                                                                        );
+                                                                    }}
+                                                                    onDragOver={(
+                                                                        e
+                                                                    ) =>
+                                                                        e.preventDefault()
+                                                                    }
+                                                                >
+                                                                    {validationState.TargetVar ? (
                                                                         <Badge
-                                                                            key={
-                                                                                index
-                                                                            }
-                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            className="text-start text-sm font-light p-2 cursor-pointer"
                                                                             variant="outline"
-                                                                            draggable
-                                                                            onDragStart={(
-                                                                                e
-                                                                            ) =>
-                                                                                e.dataTransfer.setData(
-                                                                                    "text",
-                                                                                    variable
+                                                                            onClick={() =>
+                                                                                handleRemoveVariable(
+                                                                                    "TargetVar"
                                                                                 )
                                                                             }
                                                                         >
                                                                             {
-                                                                                variable
+                                                                                validationState.TargetVar
                                                                             }
                                                                         </Badge>
-                                                                    )
-                                                                )}
+                                                                    ) : (
+                                                                        <span className="text-sm font-light text-gray-500">
+                                                                            Drop
+                                                                            variables
+                                                                            here.
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <input
+                                                                    type="hidden"
+                                                                    value={
+                                                                        validationState.TargetVar ??
+                                                                        ""
+                                                                    }
+                                                                    name="TargetVar"
+                                                                />
                                                             </div>
-                                                        </ScrollArea>
-                                                    </div>
-                                                    <div>
-                                                        <Label>
-                                                            Split Sample By:
-                                                        </Label>
-                                                        <div className="flex items-center space-x-2">
-                                                            <div
-                                                                className="w-full min-h-[40px] p-2 border rounded"
-                                                                onDrop={(e) => {
-                                                                    handleDrop(
-                                                                        "TargetVar",
-                                                                        e.dataTransfer.getData(
-                                                                            "text"
-                                                                        )
-                                                                    );
-                                                                }}
-                                                                onDragOver={(
-                                                                    e
-                                                                ) =>
-                                                                    e.preventDefault()
-                                                                }
-                                                            >
-                                                                {validationState.TargetVar ? (
-                                                                    <Badge
-                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                        variant="outline"
-                                                                        onClick={() =>
-                                                                            handleRemoveVariable(
-                                                                                "TargetVar"
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            validationState.TargetVar
-                                                                        }
-                                                                    </Badge>
-                                                                ) : (
-                                                                    <span className="text-sm font-light text-gray-500">
-                                                                        Drop
-                                                                        variables
-                                                                        here.
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <input
-                                                                type="hidden"
-                                                                value={
-                                                                    validationState.TargetVar ??
-                                                                    ""
-                                                                }
-                                                                name="TargetVar"
-                                                            />
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                    </ResizablePanel>
+                                                </ResizablePanelGroup>
                                             </div>
                                         </div>
                                     </RadioGroup>

@@ -313,37 +313,39 @@ export const MultivariateBootstrap = ({
                                             <ResizablePanel defaultSize={50}>
                                                 <div className="flex flex-col gap-2 p-2">
                                                     <Label>Variables:</Label>
-                                                    <ScrollArea>
-                                                        <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
-                                                            {availableVariables.map(
-                                                                (
-                                                                    variable: string,
-                                                                    index: number
-                                                                ) => (
-                                                                    <Badge
-                                                                        key={
-                                                                            index
-                                                                        }
-                                                                        className="w-full text-start text-sm font-light p-2 cursor-pointer"
-                                                                        variant="outline"
-                                                                        draggable
-                                                                        onDragStart={(
-                                                                            e
-                                                                        ) =>
-                                                                            e.dataTransfer.setData(
-                                                                                "text",
+                                                    <div className="border rounded">
+                                                        <ScrollArea>
+                                                            <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                                {availableVariables.map(
+                                                                    (
+                                                                        variable: string,
+                                                                        index: number
+                                                                    ) => (
+                                                                        <Badge
+                                                                            key={
+                                                                                index
+                                                                            }
+                                                                            className="w-full text-start text-sm font-light p-2 cursor-pointer"
+                                                                            variant="outline"
+                                                                            draggable
+                                                                            onDragStart={(
+                                                                                e
+                                                                            ) =>
+                                                                                e.dataTransfer.setData(
+                                                                                    "text",
+                                                                                    variable
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            {
                                                                                 variable
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        {
-                                                                            variable
-                                                                        }
-                                                                    </Badge>
-                                                                )
-                                                            )}
-                                                        </div>
-                                                    </ScrollArea>
+                                                                            }
+                                                                        </Badge>
+                                                                    )
+                                                                )}
+                                                            </div>
+                                                        </ScrollArea>
+                                                    </div>
                                                 </div>
                                             </ResizablePanel>
                                             <ResizableHandle withHandle />
@@ -367,48 +369,46 @@ export const MultivariateBootstrap = ({
                                                         <Label>
                                                             Strata Variables:
                                                         </Label>
-                                                        <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                                        <div className="border rounded">
                                                             <ScrollArea>
-                                                                <div className="w-full h-[100px]">
-                                                                    {bootstrapState.StrataVariables &&
-                                                                    bootstrapState
-                                                                        .StrataVariables
-                                                                        .length >
-                                                                        0 ? (
-                                                                        <div className="flex flex-wrap gap-1">
-                                                                            {bootstrapState.StrataVariables.map(
-                                                                                (
-                                                                                    variable,
-                                                                                    index
-                                                                                ) => (
-                                                                                    <Badge
-                                                                                        key={
-                                                                                            index
-                                                                                        }
-                                                                                        className="text-start text-sm font-light p-2 cursor-pointer"
-                                                                                        variant="outline"
-                                                                                        onClick={() =>
-                                                                                            handleRemoveVariable(
-                                                                                                "StrataVariables",
-                                                                                                variable
-                                                                                            )
-                                                                                        }
-                                                                                    >
-                                                                                        {
+                                                                {bootstrapState.StrataVariables &&
+                                                                bootstrapState
+                                                                    .StrataVariables
+                                                                    .length >
+                                                                    0 ? (
+                                                                    <div className="flex flex-col gap-1 justify-start items-start h-[100px] w-full p-2">
+                                                                        {bootstrapState.StrataVariables.map(
+                                                                            (
+                                                                                variable,
+                                                                                index
+                                                                            ) => (
+                                                                                <Badge
+                                                                                    key={
+                                                                                        index
+                                                                                    }
+                                                                                    className="text-start text-sm font-light p-2 cursor-pointer"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleRemoveVariable(
+                                                                                            "StrataVariables",
                                                                                             variable
-                                                                                        }
-                                                                                    </Badge>
-                                                                                )
-                                                                            )}
-                                                                        </div>
-                                                                    ) : (
-                                                                        <span className="text-sm font-light text-gray-500">
-                                                                            Drop
-                                                                            variables
-                                                                            here.
-                                                                        </span>
-                                                                    )}
-                                                                </div>
+                                                                                        )
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        variable
+                                                                                    }
+                                                                                </Badge>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                ) : (
+                                                                    <span className="text-sm font-light text-gray-500">
+                                                                        Drop
+                                                                        variables
+                                                                        here.
+                                                                    </span>
+                                                                )}
                                                             </ScrollArea>
                                                         </div>
                                                         <input

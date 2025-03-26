@@ -45,10 +45,10 @@ export const KNNFeaturesDefault: KNNFeaturesType = {
 export const KNNPartitionDefault: KNNPartitionType = {
     SrcVar: null,
     PartitioningVariable: null,
-    UseRandomly: false,
+    UseRandomly: true,
     UseVariable: false,
     VFoldPartitioningVariable: null,
-    VFoldUseRandomly: false,
+    VFoldUseRandomly: true,
     VFoldUsePartitioningVar: false,
     TrainingNumber: 70,
     NumPartition: 10,

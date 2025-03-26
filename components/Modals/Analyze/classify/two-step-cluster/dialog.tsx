@@ -156,9 +156,9 @@ export const TwoStepClusterDialog = ({
         <>
             {/* Main Dialog */}
             <Dialog open={isMainOpen} onOpenChange={handleDialog}>
-                <DialogTrigger asChild>
+                {/* <DialogTrigger asChild>
                     <Button variant="outline">TwoStep Cluster</Button>
-                </DialogTrigger>
+                </DialogTrigger> */}
                 <DialogContent className="sm:max-w-3xl">
                     <DialogHeader>
                         <DialogTitle>TwoStep Cluster Analysis</DialogTitle>
@@ -167,12 +167,12 @@ export const TwoStepClusterDialog = ({
                     <div className="flex flex-col gap-2">
                         <ResizablePanelGroup
                             direction="horizontal"
-                            className="min-h-[200px] rounded-lg border md:min-w-[200px]"
+                            className="min-h-[250px] rounded-lg border md:min-w-[200px]"
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[240px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -221,13 +221,13 @@ export const TwoStepClusterDialog = ({
                                             <Label className="font-bold">
                                                 Categorical Variables:{" "}
                                             </Label>
-                                            <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
+                                            <div className="w-full h-[80px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[60px]">
                                                         {mainState.CategoricalVar &&
                                                         mainState.CategoricalVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.CategoricalVar.map(
                                                                     (
                                                                         variable,
@@ -293,11 +293,11 @@ export const TwoStepClusterDialog = ({
                                             </Label>
                                             <div className="w-full h-[100px] p-2 border rounded overflow-hidden">
                                                 <ScrollArea>
-                                                    <div className="w-full h-[100px]">
+                                                    <div className="w-full h-[80px]">
                                                         {mainState.ContinousVar &&
                                                         mainState.ContinousVar
                                                             .length > 0 ? (
-                                                            <div className="flex flex-wrap gap-1">
+                                                            <div className="flex flex-col gap-1">
                                                                 {mainState.ContinousVar.map(
                                                                     (
                                                                         variable,

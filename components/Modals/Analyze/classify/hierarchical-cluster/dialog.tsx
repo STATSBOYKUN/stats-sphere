@@ -149,12 +149,12 @@ export const HierClusDialog = ({
                     <div className="flex items-center space-x-2">
                         <ResizablePanelGroup
                             direction="horizontal"
-                            className="min-h-[400px] rounded-lg border md:min-w-[200px]"
+                            className="min-h-[425px] rounded-lg border md:min-w-[200px]"
                         >
                             {/* Variable List */}
                             <ResizablePanel defaultSize={25}>
                                 <ScrollArea>
-                                    <div className="flex flex-col gap-1 justify-start items-start h-[400px] w-full p-2">
+                                    <div className="flex flex-col gap-1 justify-start items-start h-[425px] w-full p-2">
                                         {availableVariables.map(
                                             (
                                                 variable: string,
@@ -196,13 +196,13 @@ export const HierClusDialog = ({
                                         <Label className="font-bold">
                                             Variable(s):
                                         </Label>
-                                        <div className="w-full h-[175px] p-2 border rounded overflow-hidden">
+                                        <div className="w-full h-[190px] p-2 border rounded overflow-hidden">
                                             <ScrollArea>
                                                 <div className="w-full h-[175px]">
                                                     {mainState.Variables &&
                                                     mainState.Variables.length >
                                                         0 ? (
-                                                        <div className="flex flex-wrap gap-1">
+                                                        <div className="flex flex-col gap-1">
                                                             {mainState.Variables.map(
                                                                 (
                                                                     variable,

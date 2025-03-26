@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DiscriminantDialog } from "@/components/Modals/Analyze/classify/discriminant/dialog";
 import { DiscriminantDefineRange } from "@/components/Modals/Analyze/classify/discriminant/define-range";
 import { DiscriminantSetValue } from "@/components/Modals/Analyze/classify/discriminant/set-value";
@@ -44,6 +44,39 @@ export const DiscriminantContainer = ({
 
     const { closeModal } = useModal();
     const { addLog, addAnalytic, addStatistic } = useResultStore();
+
+    useEffect(() => {
+        setFormData((prev) => {
+            // Create a copy of the previous state to modify
+            const newState = { ...prev };
+
+            // Combine AnalysisVars and SuppleVars for QuantifiedVars
+            const independentVars = prev.main.IndependentVariables
+                ? [...prev.main.IndependentVariables]
+                : [];
+
+            const usedVariables = [
+                prev.main.GroupingVariable,
+                ...independentVars,
+                prev.main.SelectionVariable,
+            ];
+
+            const updatedVariables = tempVariables.filter(
+                (variable) => !usedVariables.includes(variable)
+            );
+
+            newState.bootstrap = {
+                ...prev.bootstrap,
+                Variables: updatedVariables,
+            };
+
+            return newState;
+        });
+    }, [
+        formData.main.IndependentVariables,
+        formData.main.GroupingVariable,
+        formData.main.SelectionVariable,
+    ]);
 
     const updateFormData = <T extends keyof typeof formData>(
         section: T,

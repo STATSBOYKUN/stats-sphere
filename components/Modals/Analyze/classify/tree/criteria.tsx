@@ -81,6 +81,14 @@ export const TreeCriteria = ({
         }));
     };
 
+    const handleIntervalsGrp = (value: string) => {
+        setCriteriaState((prevState) => ({
+            ...prevState,
+            FixedNo: value === "FixedNo",
+            CustomInterval: value === "CustomInterval",
+        }));
+    };
+
     const handleContinue = () => {
         Object.entries(criteriaState).forEach(([key, value]) => {
             updateFormData(
@@ -464,7 +472,14 @@ export const TreeCriteria = ({
                                 className="min-h-[200px] max-w-2xl rounded-lg border md:min-w-[200px]"
                             >
                                 <ResizablePanel defaultSize={100}>
-                                    <RadioGroup>
+                                    <RadioGroup
+                                        value={
+                                            criteriaState.FixedNo
+                                                ? "FixedNo"
+                                                : "CustomInterval"
+                                        }
+                                        onValueChange={handleIntervalsGrp}
+                                    >
                                         <div className="flex flex-col gap-2 p-2">
                                             <Label className="font-bold">
                                                 Intervals for Scale Independent
