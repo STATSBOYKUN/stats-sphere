@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { RocAnalysisType } from "./roc-analysis";
 
 export type RocAnalysisAnalysisType = {
-    tempData: RocAnalysisType;
+    configData: RocAnalysisType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

@@ -53,7 +53,7 @@ export const RocCurveContainer = ({ onClose }: RocCurveContainerProps) => {
             };
 
             await analyzeRocCurve({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

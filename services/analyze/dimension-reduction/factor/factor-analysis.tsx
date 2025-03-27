@@ -3,7 +3,7 @@ import { FactorAnalysisType } from "@/models/dimension-reduction/factor/factor-w
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeFactor({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,9 +12,9 @@ export async function analyzeFactor({
 }: FactorAnalysisType) {
     await init();
 
-    const targetVariables = tempData.main.TargetVar || [];
-    const valueTarget = tempData.main.ValueTarget
-        ? [tempData.main.ValueTarget]
+    const targetVariables = configData.main.TargetVar || [];
+    const valueTarget = configData.main.ValueTarget
+        ? [configData.main.ValueTarget]
         : [];
 
     const slicedDataForTarget = getSlicedData({

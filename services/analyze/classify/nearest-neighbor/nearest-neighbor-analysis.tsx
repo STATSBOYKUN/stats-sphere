@@ -3,7 +3,7 @@ import { KNNAnalysisType } from "@/models/classify/nearest-neighbor/nearest-neig
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeKNN({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,13 +12,15 @@ export async function analyzeKNN({
 }: KNNAnalysisType) {
     await init();
 
-    const TargetVariable = tempData.main.DepVar ? [tempData.main.DepVar] : [];
-    const FeaturesVariables = tempData.main.FeatureVar || [];
-    const FocalCaseIdentifierVariable = tempData.main.FocalCaseIdenVar
-        ? [tempData.main.FocalCaseIdenVar]
+    const TargetVariable = configData.main.DepVar
+        ? [configData.main.DepVar]
         : [];
-    const CaseIdentifierVariable = tempData.main.CaseIdenVar
-        ? [tempData.main.CaseIdenVar]
+    const FeaturesVariables = configData.main.FeatureVar || [];
+    const FocalCaseIdentifierVariable = configData.main.FocalCaseIdenVar
+        ? [configData.main.FocalCaseIdenVar]
+        : [];
+    const CaseIdentifierVariable = configData.main.CaseIdenVar
+        ? [configData.main.CaseIdenVar]
         : [];
 
     const slicedDataForTarget = getSlicedData({
@@ -55,6 +57,19 @@ export async function analyzeKNN({
         variables,
         CaseIdentifierVariable
     );
+
+    console.log("slicedDataForTarget", slicedDataForTarget);
+    console.log("slicedDataForFeatures", slicedDataForFeatures);
+    console.log(
+        "slicedDataForFocalCaseIdentifier",
+        slicedDataForFocalCaseIdentifier
+    );
+    console.log("slicedDataForCaseIdentifier", slicedDataForCaseIdentifier);
+    console.log("varDefsForTarget", varDefsForTarget);
+    console.log("varDefsForFeatures", varDefsForFeatures);
+    console.log("varDefsForFocalCaseIdentifier", varDefsForFocalCaseIdentifier);
+    console.log("varDefsForCaseIdentifier", varDefsForCaseIdentifier);
+    console.log("configData", configData);
 
     /*
      * 1. Case Processing Summary

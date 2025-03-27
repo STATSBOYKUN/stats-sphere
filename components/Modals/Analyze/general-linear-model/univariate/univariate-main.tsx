@@ -136,7 +136,7 @@ export const UnivariateContainer = ({ onClose }: UnivariateContainerProps) => {
             };
 
             await analyzeUnivariate({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

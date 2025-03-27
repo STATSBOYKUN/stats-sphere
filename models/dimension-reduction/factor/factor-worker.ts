@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { FactorType } from "./factor";
 
 export type FactorAnalysisType = {
-    tempData: FactorType;
+    configData: FactorType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { HierClusType } from "./hierarchical-cluster";
 
 export type HierClusAnalysisType = {
-    tempData: HierClusType;
+    configData: HierClusType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

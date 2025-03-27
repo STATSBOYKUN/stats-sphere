@@ -6,7 +6,7 @@ import { json } from "d3";
 import { resultHierClus } from "./hierarchical-cluster-analysis-output";
 
 export async function analyzeHierClus({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -15,10 +15,10 @@ export async function analyzeHierClus({
 }: HierClusAnalysisType) {
     await init();
 
-    const ClusterVariables = tempData.main.Variables || [];
+    const ClusterVariables = configData.main.Variables || [];
 
-    const LabelCasesVariable = tempData.main.LabelCases
-        ? [tempData.main.LabelCases]
+    const LabelCasesVariable = configData.main.LabelCases
+        ? [configData.main.LabelCases]
         : [];
 
     const slicedDataForCluster = getSlicedData({
@@ -37,7 +37,7 @@ export async function analyzeHierClus({
     const varDefsForLabelCases = getVarDefs(variables, LabelCasesVariable);
 
     const hc = new HierarchicalClusteringWasm(
-        tempData,
+        configData,
         slicedDataForCluster,
         slicedDataForLabelCases,
         varDefsForCluster,

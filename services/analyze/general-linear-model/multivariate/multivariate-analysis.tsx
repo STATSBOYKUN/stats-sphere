@@ -3,7 +3,7 @@ import { MultivariateAnalysisType } from "@/models/general-linear-model/multivar
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeMultivariate({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,11 +12,11 @@ export async function analyzeMultivariate({
 }: MultivariateAnalysisType) {
     await init();
 
-    const DependentVariables = tempData.main.DepVar || [];
-    const FixFactorVariables = tempData.main.FixFactor || [];
-    const CovariateVariables = tempData.main.Covar || [];
-    const WlsWeightVariable = tempData.main.WlsWeight
-        ? [tempData.main.WlsWeight]
+    const DependentVariables = configData.main.DepVar || [];
+    const FixFactorVariables = configData.main.FixFactor || [];
+    const CovariateVariables = configData.main.Covar || [];
+    const WlsWeightVariable = configData.main.WlsWeight
+        ? [configData.main.WlsWeight]
         : [];
 
     const slicedDataForDependent = getSlicedData({

@@ -144,7 +144,7 @@ export const RepeatedMeasuresContainer = ({
             };
 
             await analyzeRepeatedMeasures({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

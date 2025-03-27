@@ -5,7 +5,7 @@ import { convertStatisticalData } from "@/services/analyze/classify/discriminant
 import { resultDiscriminant } from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
 
 export async function analyzeDiscriminant({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -13,12 +13,12 @@ export async function analyzeDiscriminant({
     addStatistic,
 }: DiscriminantAnalysisType) {
     await init();
-    const GroupingVariable = tempData.main.GroupingVariable
-        ? [tempData.main.GroupingVariable]
+    const GroupingVariable = configData.main.GroupingVariable
+        ? [configData.main.GroupingVariable]
         : [];
-    const IndependentVariables = tempData.main.IndependentVariables || [];
-    const SelectionVariable = tempData.main.SelectionVariable
-        ? [tempData.main.SelectionVariable]
+    const IndependentVariables = configData.main.IndependentVariables || [];
+    const SelectionVariable = configData.main.SelectionVariable
+        ? [configData.main.SelectionVariable]
         : [];
 
     const slicedDataForGrouping = getSlicedData({
@@ -46,8 +46,8 @@ export async function analyzeDiscriminant({
     const da = new DiscriminantAnalysisWasm(
         slicedDataForGrouping,
         slicedDataForIndependent,
-        tempData.defineRange.minRange ?? 0,
-        tempData.defineRange.maxRange ?? 0,
+        configData.defineRange.minRange ?? 0,
+        configData.defineRange.maxRange ?? 0,
         null
     );
 
@@ -165,11 +165,7 @@ export async function analyzeDiscriminant({
         tables: [formattedResults.tables[14]],
     });
 
-    console.log(
-        JSON.stringify({
-            tables: [formattedResults.tables[14]],
-        })
-    );
+    console.log(configData);
 
     const classificationFunctionCoefficientsTable = JSON.stringify({
         tables: [formattedResults.tables[15]],

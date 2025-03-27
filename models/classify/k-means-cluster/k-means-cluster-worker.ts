@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { KMeansClusterType } from "./k-means-cluster";
 
 export type KMeansClusterAnalysisType = {
-    tempData: KMeansClusterType;
+    configData: KMeansClusterType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

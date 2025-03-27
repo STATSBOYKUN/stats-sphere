@@ -3,7 +3,7 @@ import { RocCurveAnalysisType } from "@/models/classify/roc-curve/roc-curve-work
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeRocCurve({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,9 +12,9 @@ export async function analyzeRocCurve({
 }: RocCurveAnalysisType) {
     await init();
 
-    const TestVariables = tempData.main.TestTargetVariable || [];
-    const StateVariable = tempData.main.StateTargetVariable
-        ? [tempData.main.StateTargetVariable]
+    const TestVariables = configData.main.TestTargetVariable || [];
+    const StateVariable = configData.main.StateTargetVariable
+        ? [configData.main.StateTargetVariable]
         : [];
 
     const slicedDataForTest = getSlicedData({

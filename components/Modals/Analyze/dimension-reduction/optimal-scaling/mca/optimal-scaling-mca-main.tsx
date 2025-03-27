@@ -149,7 +149,7 @@ export const OptScaMCAContainer = ({ onClose }: OptScaMCAContainerProps) => {
             };
 
             await analyzeOptScaMCA({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { TreeType } from "./tree";
 
 export type TreeAnalysisType = {
-    tempData: TreeType;
+    configData: TreeType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

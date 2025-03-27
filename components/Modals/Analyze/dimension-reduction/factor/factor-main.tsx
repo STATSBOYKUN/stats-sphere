@@ -61,7 +61,7 @@ export const FactorContainer = ({ onClose }: FactorContainerProps) => {
             };
 
             await analyzeFactor({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

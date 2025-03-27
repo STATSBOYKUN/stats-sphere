@@ -3,7 +3,7 @@ import { RepeatedMeasuresAnalysisType } from "@/models/general-linear-model/repe
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeRepeatedMeasures({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,9 +12,9 @@ export async function analyzeRepeatedMeasures({
 }: RepeatedMeasuresAnalysisType) {
     await init();
 
-    const SubjectVariables = tempData.main.SubVar || [];
-    const FactorsVariables = tempData.main.FactorsVar || [];
-    const CovariateVariables = tempData.main.Covariates || [];
+    const SubjectVariables = configData.main.SubVar || [];
+    const FactorsVariables = configData.main.FactorsVar || [];
+    const CovariateVariables = configData.main.Covariates || [];
 
     const slicedDataForSubject = getSlicedData({
         dataVariables: dataVariables,

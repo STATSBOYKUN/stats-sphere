@@ -81,7 +81,7 @@ export const OptScaOveralsContainer = ({
             };
 
             await analyzeOptScaOverals({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

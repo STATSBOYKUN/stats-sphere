@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { UnivariateType } from "./univariate";
 
 export type UnivariateAnalysisType = {
-    tempData: UnivariateType;
+    configData: UnivariateType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

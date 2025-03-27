@@ -2,7 +2,7 @@ import { DiscriminantType } from "@/models/classify/discriminant/discriminant";
 import { Analytic, Log, Statistic } from "@/lib/db";
 
 export type DiscriminantAnalysisType = {
-    tempData: DiscriminantType;
+    configData: DiscriminantType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

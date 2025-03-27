@@ -82,7 +82,7 @@ export const TreeContainer = ({ onClose }: TreeContainerProps) => {
             };
 
             await analyzeTree({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

@@ -3,7 +3,7 @@ import { TwoStepClusterAnalysisType } from "@/models/classify/two-step-cluster/t
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeTwoStepCluster({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,8 +12,8 @@ export async function analyzeTwoStepCluster({
 }: TwoStepClusterAnalysisType) {
     await init();
 
-    const CategoricalVariables = tempData.main.CategoricalVar || [];
-    const ContinousVariables = tempData.main.ContinousVar || [];
+    const CategoricalVariables = configData.main.CategoricalVar || [];
+    const ContinousVariables = configData.main.ContinousVar || [];
 
     const slicedDataForCategorical = getSlicedData({
         dataVariables: dataVariables,

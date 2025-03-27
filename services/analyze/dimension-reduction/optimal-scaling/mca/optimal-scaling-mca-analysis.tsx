@@ -3,7 +3,7 @@ import { OptScaMCAAnalysisType } from "@/models/dimension-reduction/optimal-scal
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeOptScaMCA({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,9 +12,9 @@ export async function analyzeOptScaMCA({
 }: OptScaMCAAnalysisType) {
     await init();
 
-    const AnalysisVariables = tempData.main.AnalysisVars || [];
-    const SupplementVariables = tempData.main.SuppleVars || [];
-    const LabelingVariables = tempData.main.LabelingVars || [];
+    const AnalysisVariables = configData.main.AnalysisVars || [];
+    const SupplementVariables = configData.main.SuppleVars || [];
+    const LabelingVariables = configData.main.LabelingVars || [];
 
     const slicedDataForAnalysis = getSlicedData({
         dataVariables: dataVariables,

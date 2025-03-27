@@ -83,7 +83,7 @@ export const TwoStepClusterContainer = ({
             };
 
             await analyzeTwoStepCluster({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

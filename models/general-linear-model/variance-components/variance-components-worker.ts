@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { VarianceCompsType } from "./variance-components";
 
 export type VarianceCompsAnalysisType = {
-    tempData: VarianceCompsType;
+    configData: VarianceCompsType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

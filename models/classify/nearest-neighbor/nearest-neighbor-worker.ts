@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { KNNType } from "./nearest-neighbor";
 
 export type KNNAnalysisType = {
-    tempData: KNNType;
+    configData: KNNType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

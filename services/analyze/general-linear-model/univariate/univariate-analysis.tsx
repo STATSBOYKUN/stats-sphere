@@ -3,7 +3,7 @@ import { UnivariateAnalysisType } from "@/models/general-linear-model/univariate
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeUnivariate({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,12 +12,12 @@ export async function analyzeUnivariate({
 }: UnivariateAnalysisType) {
     await init();
 
-    const DependentVariables = tempData.main.DepVar || [];
-    const FixFactorVariables = tempData.main.FixFactor || [];
-    const CovariateVariables = tempData.main.Covar || [];
-    const RandomFactorVariables = tempData.main.RandFactor || [];
-    const WlsWeightVariable = tempData.main.WlsWeight
-        ? [tempData.main.WlsWeight]
+    const DependentVariables = configData.main.DepVar || [];
+    const FixFactorVariables = configData.main.FixFactor || [];
+    const CovariateVariables = configData.main.Covar || [];
+    const RandomFactorVariables = configData.main.RandFactor || [];
+    const WlsWeightVariable = configData.main.WlsWeight
+        ? [configData.main.WlsWeight]
         : [];
 
     const slicedDataForDependent = getSlicedData({

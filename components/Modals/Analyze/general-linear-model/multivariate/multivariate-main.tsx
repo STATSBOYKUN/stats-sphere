@@ -150,7 +150,7 @@ export const MultivariateContainer = ({
             };
 
             await analyzeMultivariate({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

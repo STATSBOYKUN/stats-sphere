@@ -3,7 +3,7 @@ import { TreeAnalysisType } from "@/models/classify/tree/tree-worker";
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeTree({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,12 +12,12 @@ export async function analyzeTree({
 }: TreeAnalysisType) {
     await init();
 
-    const DependentVariable = tempData.main.DependentTargetVar
-        ? [tempData.main.DependentTargetVar]
+    const DependentVariable = configData.main.DependentTargetVar
+        ? [configData.main.DependentTargetVar]
         : [];
-    const IndependentVariables = tempData.main.IndependentTargetVar || [];
-    const InfluenceVariable = tempData.main.InfluenceTargetVar
-        ? [tempData.main.InfluenceTargetVar]
+    const IndependentVariables = configData.main.IndependentTargetVar || [];
+    const InfluenceVariable = configData.main.InfluenceTargetVar
+        ? [configData.main.InfluenceTargetVar]
         : [];
     const slicedDataForDependent = getSlicedData({
         dataVariables: dataVariables,

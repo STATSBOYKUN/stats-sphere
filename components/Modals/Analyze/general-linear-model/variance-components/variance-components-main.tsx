@@ -84,7 +84,7 @@ export const VarianceCompsContainer = ({
             };
 
             await analyzeVarianceComps({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { OptScaCatpcaType } from "./optimal-scaling-captca";
 
 export type OptScaCatpcaAnalysisType = {
-    tempData: OptScaCatpcaType;
+    configData: OptScaCatpcaType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

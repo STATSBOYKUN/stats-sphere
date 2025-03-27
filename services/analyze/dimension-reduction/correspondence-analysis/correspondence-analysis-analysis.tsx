@@ -3,7 +3,7 @@ import { CorrespondenceAnalysisType } from "@/models/dimension-reduction/corresp
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeCorrespondence({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,11 +12,11 @@ export async function analyzeCorrespondence({
 }: CorrespondenceAnalysisType) {
     await init();
 
-    const RowVariable = tempData.main.RowTargetVar
-        ? [tempData.main.RowTargetVar]
+    const RowVariable = configData.main.RowTargetVar
+        ? [configData.main.RowTargetVar]
         : [];
-    const ColVariable = tempData.main.ColTargetVar
-        ? [tempData.main.ColTargetVar]
+    const ColVariable = configData.main.ColTargetVar
+        ? [configData.main.ColTargetVar]
         : [];
 
     const slicedDataForRow = getSlicedData({

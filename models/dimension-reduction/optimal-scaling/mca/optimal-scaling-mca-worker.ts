@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { OptScaMCAType } from "./optimal-scaling-mca";
 
 export type OptScaMCAAnalysisType = {
-    tempData: OptScaMCAType;
+    configData: OptScaMCAType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

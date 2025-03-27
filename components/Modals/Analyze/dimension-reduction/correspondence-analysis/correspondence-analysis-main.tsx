@@ -82,7 +82,7 @@ export const CorrespondenceContainer = ({
             };
 
             await analyzeCorrespondence({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

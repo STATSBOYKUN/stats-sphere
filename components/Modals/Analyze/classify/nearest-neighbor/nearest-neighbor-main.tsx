@@ -81,7 +81,7 @@ export const KNNContainer = ({ onClose }: KNNContainerProps) => {
             };
 
             await analyzeKNN({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

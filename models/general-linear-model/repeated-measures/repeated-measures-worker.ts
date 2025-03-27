@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { RepeatedMeasuresType } from "./repeated-measures";
 
 export type RepeatedMeasuresAnalysisType = {
-    tempData: RepeatedMeasuresType;
+    configData: RepeatedMeasuresType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

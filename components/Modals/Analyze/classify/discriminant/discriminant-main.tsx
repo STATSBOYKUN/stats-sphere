@@ -99,8 +99,10 @@ export const DiscriminantContainer = ({
                 main: mainData,
             };
 
+            console.log(newFormData);
+
             await analyzeDiscriminant({
-                tempData: newFormData,
+                configData: newFormData,
                 dataVariables: dataVariables,
                 variables: variables,
                 addLog,

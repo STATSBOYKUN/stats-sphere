@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { TwoStepClusterType } from "./two-step-cluster";
 
 export type TwoStepClusterAnalysisType = {
-    tempData: TwoStepClusterType;
+    configData: TwoStepClusterType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

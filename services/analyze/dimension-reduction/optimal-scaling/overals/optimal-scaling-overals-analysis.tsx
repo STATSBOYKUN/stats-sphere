@@ -3,7 +3,7 @@ import { OptScaOveralsAnalysisType } from "@/models/dimension-reduction/optimal-
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeOptScaOverals({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,8 +12,8 @@ export async function analyzeOptScaOverals({
 }: OptScaOveralsAnalysisType) {
     await init();
 
-    const SetTargetVariable = tempData.main.SetTargetVariable || [];
-    const PlotsTargetVariable = tempData.main.PlotsTargetVariable || [];
+    const SetTargetVariable = configData.main.SetTargetVariable || [];
+    const PlotsTargetVariable = configData.main.PlotsTargetVariable || [];
 
     const slicedDataForSetTarget = getSlicedData({
         dataVariables: dataVariables,

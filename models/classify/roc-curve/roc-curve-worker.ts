@@ -2,7 +2,7 @@ import { Analytic, Log, Statistic } from "@/lib/db";
 import { RocCurveType } from "./roc-curve";
 
 export type RocCurveAnalysisType = {
-    tempData: RocCurveType;
+    configData: RocCurveType;
     dataVariables: any[];
     variables: any[];
     addLog: (log: Omit<Log, "id">) => Promise<number>;

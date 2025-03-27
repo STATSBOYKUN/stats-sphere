@@ -3,7 +3,7 @@ import { OptScaCatpcaAnalysisType } from "@/models/dimension-reduction/optimal-s
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeOptScaCatpca({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,9 +12,9 @@ export async function analyzeOptScaCatpca({
 }: OptScaCatpcaAnalysisType) {
     await init();
 
-    const AnalysisVariables = tempData.main.AnalysisVars || [];
-    const SupplementVariables = tempData.main.SuppleVars || [];
-    const LabelingVariables = tempData.main.LabelingVars || [];
+    const AnalysisVariables = configData.main.AnalysisVars || [];
+    const SupplementVariables = configData.main.SuppleVars || [];
+    const LabelingVariables = configData.main.LabelingVars || [];
 
     const slicedDataForAnalysis = getSlicedData({
         dataVariables: dataVariables,

@@ -5,7 +5,7 @@ import { convertClusterAnalysisData } from "./k-means-cluster-analysis-formatter
 import { resultKMeans } from "./k-means-cluster-analysis-output";
 
 export async function analyzeKMeansCluster({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -14,9 +14,9 @@ export async function analyzeKMeansCluster({
 }: KMeansClusterAnalysisType) {
     await init();
 
-    const TargetVariables = tempData.main.TargetVar || [];
-    const CaseTargetVariable = tempData.main.CaseTarget
-        ? [tempData.main.CaseTarget]
+    const TargetVariables = configData.main.TargetVar || [];
+    const CaseTargetVariable = configData.main.CaseTarget
+        ? [configData.main.CaseTarget]
         : [];
 
     const slicedDataForTarget = getSlicedData({
@@ -35,7 +35,7 @@ export async function analyzeKMeansCluster({
     const varDefsForCaseTarget = getVarDefs(variables, CaseTargetVariable);
 
     console.log({
-        tempData,
+        configData,
         slicedDataForTarget,
         slicedDataForCaseTarget,
         varDefsForTarget,
@@ -43,7 +43,7 @@ export async function analyzeKMeansCluster({
     });
 
     const kmeans = new KMeansClusteringWasm(
-        tempData,
+        configData,
         slicedDataForTarget,
         slicedDataForCaseTarget,
         varDefsForTarget,

@@ -3,7 +3,7 @@ import { RocAnalysisAnalysisType } from "@/models/classify/roc-analysis/roc-anal
 import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeRocAnalysis({
-    tempData,
+    configData,
     dataVariables,
     variables,
     addLog,
@@ -12,12 +12,12 @@ export async function analyzeRocAnalysis({
 }: RocAnalysisAnalysisType) {
     await init();
 
-    const TestVariables = tempData.main.TestTargetVariable || [];
-    const StateVariable = tempData.main.StateTargetVariable
-        ? [tempData.main.StateTargetVariable]
+    const TestVariables = configData.main.TestTargetVariable || [];
+    const StateVariable = configData.main.StateTargetVariable
+        ? [configData.main.StateTargetVariable]
         : [];
-    const TargetGroupVariable = tempData.main.TargetGroupVar
-        ? [tempData.main.TargetGroupVar]
+    const TargetGroupVariable = configData.main.TargetGroupVar
+        ? [configData.main.TargetGroupVar]
         : [];
 
     const slicedDataForTest = getSlicedData({
