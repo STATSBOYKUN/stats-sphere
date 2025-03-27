@@ -1,7 +1,16 @@
-use serde_json::{json, Value};
-use crate::models::config::{Config, MainConfig, DefineRangeConfig, SetValueConfig, 
-                           StatisticsConfig, MethodConfig, ClassifyConfig, 
-                           SaveConfig, BootstrapConfig};
+use serde_json::{ json, Value };
+use crate::discriminant::models::config::{
+    Config,
+    MainConfig,
+    DefineRangeConfig,
+    SetValueConfig,
+    StatisticsConfig,
+    MethodConfig,
+    ClassifyConfig,
+    SaveConfig,
+    BootstrapConfig,
+};
+use crate::discriminant::wasm::function::VarDef;
 
 /// Generate sample group data for testing
 pub fn sample_group_data() -> Vec<Value> {
@@ -14,7 +23,7 @@ pub fn sample_group_data() -> Vec<Value> {
         json!({"marital": 2}),
         json!({"marital": 3}),
         json!({"marital": 3}),
-        json!({"marital": 3}),
+        json!({"marital": 3})
     ]
 }
 
@@ -29,13 +38,70 @@ pub fn sample_independent_data() -> Vec<Value> {
         json!({"incbef": 28000.0}),
         json!({"incbef": 60000.0}),
         json!({"incbef": 55000.0}),
-        json!({"incbef": 50000.0}),
+        json!({"incbef": 50000.0})
+    ]
+}
+
+/// Generate sample selection data for testing
+pub fn sample_selection_data() -> Vec<Value> {
+    vec![
+        json!({"select": 1.0}),
+        json!({"select": 0.0}),
+        json!({"select": 1.0}),
+        json!({"select": 0.0}),
+        json!({"select": 1.0}),
+        json!({"select": 0.0}),
+        json!({"select": 1.0}),
+        json!({"select": 0.0}),
+        json!({"select": 1.0})
     ]
 }
 
 /// Generate sample prior probabilities
 pub fn sample_prior_probs() -> Vec<f64> {
     vec![0.33, 0.33, 0.34]
+}
+
+/// Generate sample variable definitions for group variables
+pub fn sample_group_var_defs() -> Vec<Vec<VarDef>> {
+    vec![
+        vec![VarDef {
+            name: "marital".to_string(),
+            r#type: "String".to_string(),
+            label: "Marital Status".to_string(),
+            values: "None".to_string(),
+            missing: "None".to_string(),
+            measure: "Nominal".to_string(),
+        }]
+    ]
+}
+
+/// Generate sample variable definitions for independent variables
+pub fn sample_independent_var_defs() -> Vec<Vec<VarDef>> {
+    vec![
+        vec![VarDef {
+            name: "incbef".to_string(),
+            r#type: "Numeric".to_string(),
+            label: "Income".to_string(),
+            values: "None".to_string(),
+            missing: "None".to_string(),
+            measure: "Scale".to_string(),
+        }]
+    ]
+}
+
+/// Generate sample variable definitions for selection variables
+pub fn sample_selection_var_defs() -> Vec<Vec<VarDef>> {
+    vec![
+        vec![VarDef {
+            name: "select".to_string(),
+            r#type: "Numeric".to_string(),
+            label: "Selection Flag".to_string(),
+            values: "None".to_string(),
+            missing: "None".to_string(),
+            measure: "Nominal".to_string(),
+        }]
+    ]
 }
 
 /// Generate sample config object
@@ -46,14 +112,14 @@ pub fn sample_config() -> Config {
             independent_variables: vec!["incbef".to_string()],
             together: true,
             stepwise: false,
-            selection_variable: Some("marital2".to_string()),
+            selection_variable: Some("select".to_string()),
         },
-        define_range: DefineRangeConfig {
+        defineRange: DefineRangeConfig {
             min_range: Some(0.0),
             max_range: Some(10.0),
         },
-        set_value: SetValueConfig {
-            value: None,
+        setValue: SetValueConfig {
+            value: Some(1.0),
         },
         statistics: StatisticsConfig {
             means: true,
@@ -129,14 +195,14 @@ pub fn sample_config_json() -> String {
             ],
             "Together": true,
             "Stepwise": false,
-            "SelectionVariable": "marital2"
+            "SelectionVariable": "select"
         },
         "defineRange": {
             "minRange": 0,
             "maxRange": 10
         },
         "setValue": {
-            "Value": null
+            "Value": 1.0
         },
         "statistics": {
             "Means": true,

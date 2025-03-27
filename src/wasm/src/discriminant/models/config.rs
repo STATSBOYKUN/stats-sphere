@@ -5,8 +5,8 @@ use crate::discriminant::utils::error::DiscriminantError;
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Config {
     pub main: MainConfig,
-    pub define_range: DefineRangeConfig,
-    pub set_value: SetValueConfig,
+    pub defineRange: DefineRangeConfig,
+    pub setValue: SetValueConfig,
     pub statistics: StatisticsConfig,
     pub method: MethodConfig,
     pub classify: ClassifyConfig,
@@ -232,11 +232,11 @@ impl Config {
                 stepwise: false,
                 selection_variable: None,
             },
-            define_range: DefineRangeConfig {
+            defineRange: DefineRangeConfig {
                 min_range: None,
                 max_range: None,
             },
-            set_value: SetValueConfig {
+            setValue: SetValueConfig {
                 value: None,
             },
             statistics: StatisticsConfig {

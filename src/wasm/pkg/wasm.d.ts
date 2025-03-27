@@ -1,5 +1,46 @@
 /* tslint:disable */
 /* eslint-disable */
+export function mse(data: Float64Array, forecast: Float64Array): number;
+export function rmse(data: Float64Array, forecast: Float64Array): number;
+export function mae(data: Float64Array, forecast: Float64Array): number;
+export function mpe(data: Float64Array, forecast: Float64Array): number;
+export function mape(data: Float64Array, forecast: Float64Array): number;
+/**
+ * WASM Binding: Parse SPSS-style configuration into internal format
+ */
+export function parse_clustering_config(config_json: any): any;
+export function start(): void;
+export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
+export function first_difference(data: Float64Array): Float64Array;
+export function second_difference(data: Float64Array): Float64Array;
+export function seasonal_difference(data: Float64Array, season: number): Float64Array;
+/**
+ * Perform discriminant analysis with given data and configuration
+ *
+ * # Arguments
+ * * `group_variable` - JSON string containing group data
+ * * `independent_variable` - JSON string containing independent variable data
+ * * `selection_data` - JSON string containing selection data for filtering
+ * * `config_json` - JSON object containing configuration
+ * * `group_var_defs` - Definitions for group variables
+ * * `independent_var_defs` - Definitions for independent variables
+ * * `selection_var_defs` - Definitions for selection variables
+ *
+ * # Returns
+ * * JSON string with analysis results
+ */
+export function perform_discriminant_analysis(group_variable: any, independent_variable: any, selection_data: any, config_json: any, group_var_defs: any, independent_var_defs: any, selection_var_defs: any): any;
+/**
+ * Classify new data with trained model
+ *
+ * # Arguments
+ * * `trained_model` - JSON string containing trained model
+ * * `new_data` - JSON array of feature values
+ *
+ * # Returns
+ * * JSON string with classification results
+ */
+export function classify_new_data(trained_model: any, new_data: any): any;
 /**
  * Standardize data from JavaScript
  *
@@ -45,20 +86,6 @@ export function impute_missing_values(data_json: any, method: string): any;
  * * Result object with analysis data or error
  */
 export function perform_analysis(data_json: any, config_json: any): any;
-export function start(): void;
-/**
- * WASM Binding: Parse SPSS-style configuration into internal format
- */
-export function parse_clustering_config(config_json: any): any;
-export function mse(data: Float64Array, forecast: Float64Array): number;
-export function rmse(data: Float64Array, forecast: Float64Array): number;
-export function mae(data: Float64Array, forecast: Float64Array): number;
-export function mpe(data: Float64Array, forecast: Float64Array): number;
-export function mape(data: Float64Array, forecast: Float64Array): number;
-export function first_difference(data: Float64Array): Float64Array;
-export function second_difference(data: Float64Array): Float64Array;
-export function seasonal_difference(data: Float64Array, season: number): Float64Array;
-export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
 export class Autocorrelation {
   free(): void;
   constructor(data: Float64Array, data_header: string, lag: number);
@@ -110,15 +137,15 @@ export class Decomposition {
   set_seasonal_indices(seasonal_indices: Float64Array): void;
   set_trend_equation(trend_equation: string): void;
   calculate_centered_moving_average(): Float64Array;
-  additive_decomposition(): Float64Array;
-  decomposition_evaluation(forecast: Float64Array): any;
   multiplicative_decomposition(trend: string): Float64Array;
   calculate_multiplicative_seasonal_component(centered_ma: Float64Array): Float64Array;
   calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
   linear_trend(deseasonalizing: Float64Array): Float64Array;
   exponential_trend(deseasonalizing: Float64Array): Float64Array;
+  additive_decomposition(): Float64Array;
   calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
   calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
+  decomposition_evaluation(forecast: Float64Array): any;
 }
 /**
  * WebAssembly binding for discriminant analysis
@@ -126,19 +153,21 @@ export class Decomposition {
 export class DiscriminantAnalysisWasm {
   free(): void;
   /**
-   * Create a new discriminant analysis
+   * Create a new discriminant analysis from config
    *
    * # Arguments
    * * `group_variable` - JSON string containing group data
    * * `independent_variable` - JSON string containing independent variable data
-   * * `min_range` - Minimum range for scaling
-   * * `max_range` - Maximum range for scaling
-   * * `prior_probs` - JSON string containing prior probabilities (optional)
+   * * `selection_data` - JSON string containing selection data for filtering
+   * * `config_json` - JSON string containing configuration
+   * * `group_var_defs` - Definitions for group variables
+   * * `independent_var_defs` - Definitions for independent variables
+   * * `selection_var_defs` - Definitions for selection variables
    *
    * # Returns
    * * New instance of DiscriminantAnalysisWasm
    */
-  constructor(group_variable: any, independent_variable: any, min_range: number, max_range: number, prior_probs: any);
+  constructor(group_variable: any, independent_variable: any, selection_data: any, config_json: any, group_var_defs: any, independent_var_defs: any, selection_var_defs: any);
   /**
    * Compute canonical discriminant functions
    */
@@ -457,27 +486,38 @@ export class Smoothing {
   calculate_sma(distance: number): Float64Array;
   calculate_dma(distance: number): Float64Array;
   calculate_wma(distance: number): Float64Array;
-  smoothing_evaluation(forecast: Float64Array): any;
   calculate_ses(alpha: number): Float64Array;
   calculate_des(alpha: number): Float64Array;
   calculate_holt(alpha: number, beta: number): Float64Array;
   calculate_winter(alpha: number, beta: number, gamma: number, period: number): Float64Array;
+  smoothing_evaluation(forecast: Float64Array): any;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_smoothing_free: (a: number, b: number) => void;
-  readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
-  readonly smoothing_get_data_header: (a: number) => [number, number];
-  readonly smoothing_get_data: (a: number) => [number, number];
-  readonly smoothing_get_time: (a: number) => [number, number];
-  readonly smoothing_get_time_header: (a: number) => [number, number];
-  readonly smoothing_set_data_header: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_data: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_time: (a: number, b: number, c: number) => void;
-  readonly smoothing_set_time_header: (a: number, b: number, c: number) => void;
+  readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
+  readonly discriminantanalysiswasm_new: (a: any, b: any, c: any, d: any, e: any, f: any, g: any) => [number, number, number];
+  readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
+  readonly discriminantanalysiswasm_univariate_f_lambda: (a: number, b: number) => [number, number, number];
+  readonly discriminantanalysiswasm_box_m_test: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_wilks_lambda: (a: number) => any;
+  readonly discriminantanalysiswasm_classify: (a: number, b: any) => [number, number, number];
+  readonly discriminantanalysiswasm_cross_validate: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_group_centroids: (a: number) => any;
+  readonly discriminantanalysiswasm_standardized_coefficients: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_structure_matrix: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_canonical_correlations: (a: number) => any;
+  readonly discriminantanalysiswasm_classification_functions: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
+  readonly mse: (a: number, b: number, c: number, d: number) => number;
+  readonly rmse: (a: number, b: number, c: number, d: number) => number;
+  readonly mae: (a: number, b: number, c: number, d: number) => number;
+  readonly mpe: (a: number, b: number, c: number, d: number) => number;
+  readonly mape: (a: number, b: number, c: number, d: number) => number;
   readonly __wbg_decomposition_free: (a: number, b: number) => void;
   readonly decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
   readonly decomposition_get_data: (a: number) => [number, number];
@@ -495,33 +535,18 @@ export interface InitOutput {
   readonly decomposition_set_irregular_component: (a: number, b: number, c: number) => void;
   readonly decomposition_set_seasonal_indices: (a: number, b: number, c: number) => void;
   readonly decomposition_set_trend_equation: (a: number, b: number, c: number) => void;
-  readonly preprocess_data: (a: any, b: number, c: number, d: number) => [number, number, number];
-  readonly handle_missing_values: (a: any, b: number, c: number) => [number, number, number];
-  readonly impute_missing_values: (a: any, b: number, c: number) => [number, number, number];
-  readonly smoothing_calculate_sma: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_dma: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_wma: (a: number, b: number) => [number, number];
   readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
-  readonly discriminantanalysiswasm_new: (a: any, b: any, c: number, d: number, e: any) => [number, number, number];
-  readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
-  readonly discriminantanalysiswasm_univariate_f_lambda: (a: number, b: number) => [number, number, number];
-  readonly discriminantanalysiswasm_box_m_test: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_wilks_lambda: (a: number) => any;
-  readonly discriminantanalysiswasm_classify: (a: number, b: any) => [number, number, number];
-  readonly discriminantanalysiswasm_cross_validate: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_group_centroids: (a: number) => any;
-  readonly discriminantanalysiswasm_standardized_coefficients: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_structure_matrix: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_canonical_correlations: (a: number) => any;
-  readonly discriminantanalysiswasm_classification_functions: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
-  readonly perform_analysis: (a: any, b: any) => [number, number, number];
-  readonly start: () => void;
-  readonly smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
   readonly parse_clustering_config: (a: any) => [number, number, number];
+  readonly start: () => void;
   readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
   readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
   readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number, number];
@@ -537,20 +562,6 @@ export interface InitOutput {
   readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
   readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
   readonly hierarchicalclusteringwasm_get_warnings: (a: number) => [number, number, number];
-  readonly smoothing_calculate_ses: (a: number, b: number) => [number, number];
-  readonly smoothing_calculate_des: (a: number, b: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
-  readonly mse: (a: number, b: number, c: number, d: number) => number;
-  readonly rmse: (a: number, b: number, c: number, d: number) => number;
-  readonly mae: (a: number, b: number, c: number, d: number) => number;
-  readonly mpe: (a: number, b: number, c: number, d: number) => number;
-  readonly mape: (a: number, b: number, c: number, d: number) => number;
-  readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
-  readonly first_difference: (a: number, b: number) => [number, number];
-  readonly second_difference: (a: number, b: number) => [number, number];
-  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
-  readonly smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
-  readonly smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly __wbg_kmeansclusteringwasm_free: (a: number, b: number) => void;
   readonly kmeansclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
   readonly kmeansclusteringwasm_perform_analysis: (a: number) => [number, number, number];
@@ -571,13 +582,24 @@ export interface InitOutput {
   readonly kmeansclusteringwasm_get_cluster_membership_table: (a: number) => [number, number, number];
   readonly kmeansclusteringwasm_get_anova_table_formatted: (a: number) => [number, number, number];
   readonly kmeansclusteringwasm_get_distance_matrix_table: (a: number) => [number, number, number];
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-  readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly __wbg_smoothing_free: (a: number, b: number) => void;
+  readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
+  readonly smoothing_get_data_header: (a: number) => [number, number];
+  readonly smoothing_get_data: (a: number) => [number, number];
+  readonly smoothing_get_time: (a: number) => [number, number];
+  readonly smoothing_get_time_header: (a: number) => [number, number];
+  readonly smoothing_set_data_header: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_data: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_time: (a: number, b: number, c: number) => void;
+  readonly smoothing_set_time_header: (a: number, b: number, c: number) => void;
+  readonly smoothing_calculate_sma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_dma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_wma: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_ses: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_des: (a: number, b: number) => [number, number];
+  readonly smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
+  readonly smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+  readonly smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
   readonly __wbg_autocorrelation_free: (a: number, b: number) => void;
   readonly autocorrelation_new: (a: number, b: number, c: number, d: number, e: number) => number;
   readonly autocorrelation_get_data: (a: number) => [number, number];
@@ -609,14 +631,23 @@ export interface InitOutput {
   readonly autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
   readonly autocorrelation_df_ljung_box: (a: number) => [number, number];
   readonly autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
+  readonly first_difference: (a: number, b: number) => [number, number];
+  readonly second_difference: (a: number, b: number) => [number, number];
+  readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
+  readonly perform_discriminant_analysis: (a: any, b: any, c: any, d: any, e: any, f: any, g: any) => [number, number, number];
+  readonly classify_new_data: (a: any, b: any) => [number, number, number];
+  readonly preprocess_data: (a: any, b: number, c: number, d: number) => [number, number, number];
+  readonly handle_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly impute_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly perform_analysis: (a: any, b: any) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_4: WebAssembly.Table;
+  readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
-  readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_start: () => void;
 }
 

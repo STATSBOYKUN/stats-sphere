@@ -46,14 +46,15 @@ export async function analyzeDiscriminant({
     const da = new DiscriminantAnalysisWasm(
         slicedDataForGrouping,
         slicedDataForIndependent,
-        configData.defineRange.minRange ?? 0,
-        configData.defineRange.maxRange ?? 0,
-        null
+        slicedDataForSelection,
+        configData,
+        varDefsForGrouping,
+        varDefsForIndependent,
+        varDefsForSelection
     );
 
     da.compute_canonical_discriminant_functions();
     da.cross_validate();
-    da.perform_stepwise_analysis();
 
     const results = da.get_results();
     const formattedResults = convertStatisticalData(results);
@@ -164,8 +165,6 @@ export async function analyzeDiscriminant({
     const priorProbabilitiesTable = JSON.stringify({
         tables: [formattedResults.tables[14]],
     });
-
-    console.log(configData);
 
     const classificationFunctionCoefficientsTable = JSON.stringify({
         tables: [formattedResults.tables[15]],

@@ -1,16 +1,36 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 use serde_json::Value;
 use std::collections::HashMap;
 
 use crate::discriminant::models::config::Config;
 use crate::discriminant::models::result::{
-    BoxMResult, CaseProcessingSummary, ChiSquareResult, ClassificationResult,
-    ClassificationResults, CriteriaType, DiscriminantResults, EigenStats, FLambdaResult,
-    GroupStatistics, PairwiseComparison, StepInfo, StepwiseCriteria, StepwiseDisplay,
-    StepwiseMethod, StepwiseStatistics, VariableInAnalysis, VariableNotInAnalysis,
+    BoxMResult,
+    CaseProcessingSummary,
+    ChiSquareResult,
+    ClassificationResult,
+    ClassificationResults,
+    CriteriaType,
+    DiscriminantResults,
+    EigenStats,
+    FLambdaResult,
+    GroupStatistics,
+    PairwiseComparison,
+    StepInfo,
+    StepwiseCriteria,
+    StepwiseDisplay,
+    StepwiseMethod,
+    StepwiseStatistics,
+    VariableInAnalysis,
+    VariableNotInAnalysis,
 };
-use crate::discriminant::utils::converter::{argmax, extract_field_name, extract_field_value, round_to_decimal};
+use crate::discriminant::utils::converter::{
+    argmax,
+    extract_field_name,
+    extract_field_value,
+    round_to_decimal,
+};
 use crate::discriminant::utils::error::DiscriminantError;
+use crate::discriminant::wasm::function::{ VarDef, extract_var_defs, filter_data_by_selection };
 
 /// Core implementation of discriminant analysis
 ///
@@ -104,70 +124,125 @@ pub struct DiscriminantAnalysis {
 
     /// Stepwise statistics result
     pub stepwise_statistics: Option<StepwiseStatistics>,
+
+    /// Variable definitions for metadata
+    pub var_defs: Option<Vec<VarDef>>,
 }
 
 impl DiscriminantAnalysis {
     /// Creates a new DiscriminantAnalysis instance
     ///
     /// # Arguments
-    /// * `group_data` - Group membership data
-    /// * `independent_data` - Independent variable data
-    /// * `min_range` - Minimum range for group values
-    /// * `max_range` - Maximum range for group values
-    /// * `prior_probs` - Optional prior probabilities for groups
+    /// * `group_variable` - Group membership data
+    /// * `independent_variable` - Independent variable data
+    /// * `selection_data` - Optional selection data for filtering
+    /// * `config` - Configuration settings
+    /// * `group_var_defs` - Definitions for group variables
+    /// * `independent_var_defs` - Definitions for independent variables
+    /// * `selection_var_defs` - Optional definitions for selection variables
     ///
     /// # Returns
     /// * New DiscriminantAnalysis instance or error
     pub fn new(
-        group_data: Vec<Vec<Value>>,
-        independent_data: Vec<Vec<Value>>,
-        min_range: f64,
-        max_range: f64,
-        prior_probs: Option<Vec<f64>>,
+        group_variable: Vec<Value>,
+        independent_variable: Vec<Value>,
+        selection_data: Option<Vec<Value>>,
+        config: &Config,
+        group_var_defs: Vec<Vec<VarDef>>,
+        independent_var_defs: Vec<Vec<VarDef>>,
+        selection_var_defs: Option<Vec<Vec<VarDef>>>
     ) -> Result<Self, DiscriminantError> {
-        if group_data.is_empty() {
-            return Err(DiscriminantError::InvalidInput(
-                "No group data provided".into(),
-            ));
+        if group_variable.is_empty() {
+            return Err(DiscriminantError::InvalidInput("No group data provided".into()));
         }
 
-        if independent_data.is_empty() {
-            return Err(DiscriminantError::InvalidInput(
-                "No independent variables provided".into(),
-            ));
+        if independent_variable.is_empty() {
+            return Err(DiscriminantError::InvalidInput("No independent variables provided".into()));
         }
 
-        // Extract group field name
-        let group_field_name = if !group_data[0].is_empty() {
-            match extract_field_name(&group_data[0][0]) {
-                Some(name) => name,
-                None => {
-                    return Err(DiscriminantError::InvalidInput(
-                        "Could not determine group field name".into(),
-                    ))
-                }
+        // Extract all variable definitions into a flat array
+        let all_var_defs = extract_var_defs(
+            &group_var_defs,
+            &independent_var_defs,
+            selection_var_defs.as_deref()
+        );
+
+        // Extract settings from config
+        let min_range = config.defineRange.min_range.unwrap_or(0.0);
+        let max_range = config.defineRange.max_range.unwrap_or(f64::MAX);
+
+        // Filter data based on selection criteria if available
+        let (filtered_group_data, filtered_independent_data) = if
+            let (Some(sel_data), Some(sel_defs), Some(selection_var)) = (
+                selection_data.as_ref(),
+                selection_var_defs.as_ref(),
+                config.main.selection_variable.as_ref(),
+            )
+        {
+            if let Some(filter_value) = config.setValue.value {
+                // Extract selection variable name
+                let selection_var_name = if !sel_defs.is_empty() && !sel_defs[0].is_empty() {
+                    sel_defs[0][0].name.clone()
+                } else {
+                    selection_var.clone()
+                };
+
+                // Apply filtering
+                let filtered_group = filter_data_by_selection(
+                    &group_variable,
+                    &sel_data,
+                    &selection_var_name,
+                    filter_value
+                );
+                let filtered_independent = filter_data_by_selection(
+                    &independent_variable,
+                    &sel_data,
+                    &selection_var_name,
+                    filter_value
+                );
+
+                (filtered_group, filtered_independent)
+            } else {
+                (group_variable, independent_variable)
             }
         } else {
-            return Err(DiscriminantError::InvalidInput(
-                "Group data is empty".into(),
-            ));
+            (group_variable, independent_variable)
+        };
+
+        // Determine prior probabilities based on config
+        let prior_probs_opt: Option<Vec<f64>> = if config.classify.all_group_equal {
+            // Equal priors - will be calculated based on number of groups
+            None
+        } else if config.classify.group_size {
+            // Proportional to group size (will be calculated internally)
+            None
+        } else {
+            // Custom priors would be extracted from config if available
+            None
+        };
+
+        // Get group field name from the var_defs
+        let group_field_name = if !group_var_defs.is_empty() && !group_var_defs[0].is_empty() {
+            group_var_defs[0][0].name.clone()
+        } else {
+            // Fall back to the config's grouping variable
+            config.main.grouping_variable.clone()
         };
 
         // Extract unique group values
         let mut unique_groups = Vec::new();
 
-        for group_list in &group_data {
-            for group_item in group_list {
-                if let Some(group_value) = group_item
+        for group_item in &filtered_group_data {
+            if
+                let Some(group_value) = group_item
                     .get(&group_field_name)
                     .and_then(|val| val.as_u64())
                     .map(|val| val as usize)
-                {
-                    // Only include groups within the specified range
-                    if group_value >= min_range as usize && group_value <= max_range as usize {
-                        if !unique_groups.contains(&group_value) {
-                            unique_groups.push(group_value);
-                        }
+            {
+                // Only include groups within the specified range
+                if group_value >= (min_range as usize) && group_value <= (max_range as usize) {
+                    if !unique_groups.contains(&group_value) {
+                        unique_groups.push(group_value);
                     }
                 }
             }
@@ -181,64 +256,33 @@ impl DiscriminantAnalysis {
             return Err(DiscriminantError::NotEnoughGroups);
         }
 
-        // Determine the total number of cases from the independent data
-        let total_cases = if !independent_data.is_empty() && !independent_data[0].is_empty() {
-            independent_data[0].len()
-        } else {
-            return Err(DiscriminantError::InsufficientData);
-        };
-
         // Determine number of groups
         let g = unique_groups.len();
         if g < 2 {
             return Err(DiscriminantError::NotEnoughGroups);
         }
 
-        // Number of independent variables (each array in independent_data is a variable)
-        let p = independent_data.len();
+        // Get independent variable names from var_defs
+        let mut var_field_names = Vec::new();
+        for var_def_group in &independent_var_defs {
+            if !var_def_group.is_empty() {
+                var_field_names.push(var_def_group[0].name.clone());
+            }
+        }
+
+        // Number of independent variables
+        let p = var_field_names.len();
         if p == 0 {
             return Err(DiscriminantError::NotEnoughVariables);
         }
 
-        // Extract variable field names
-        let mut var_field_names = Vec::with_capacity(p);
-        for var_data in &independent_data {
-            if !var_data.is_empty() {
-                match extract_field_name(&var_data[0]) {
-                    Some(name) => var_field_names.push(name),
-                    None => {
-                        return Err(DiscriminantError::InvalidInput(
-                            "Could not determine variable field name".into(),
-                        ))
-                    }
-                }
-            } else {
-                return Err(DiscriminantError::InvalidInput(
-                    "Variable data is empty".into(),
-                ));
-            }
-        }
+        // Total number of cases
+        let total_cases = filtered_group_data.len();
 
         // Create a mapping from group value to index
         let mut group_to_index = HashMap::new();
         for (i, &group) in unique_groups.iter().enumerate() {
             group_to_index.insert(group, i);
-        }
-
-        // Determine the number of cases
-        let num_cases = if !group_data[0].is_empty() {
-            group_data[0].len()
-        } else {
-            return Err(DiscriminantError::InsufficientData);
-        };
-
-        // Check that all variables have the same number of cases
-        for var_data in &independent_data {
-            if var_data.len() != num_cases {
-                return Err(DiscriminantError::InvalidInput(
-                    "All variables must have the same number of cases".into(),
-                ));
-            }
         }
 
         // Initially all variables are selected
@@ -249,55 +293,42 @@ impl DiscriminantAnalysis {
         let mut grouped_weights: Vec<Vec<f64>> = vec![Vec::new(); g];
 
         // Process the data case by case
-        for case_idx in 0..num_cases {
-            // Get the group for this case
-            if case_idx >= group_data[0].len() {
-                continue; // Skip if out of bounds
-            }
-
-            // Extract the group field value
-            let group_field_value = match group_data[0][case_idx]
-                .get(&group_field_name)
-                .and_then(|val| val.as_f64())
+        for (case_idx, group_item) in filtered_group_data.iter().enumerate() {
+            // Extract the group value for classification
+            let group_value = match
+                group_item
+                    .get(&group_field_name)
+                    .and_then(|val| val.as_u64())
+                    .map(|val| val as usize)
             {
                 Some(val) => val,
-                None => continue, // Skip if no valid group value
-            };
-
-            // Check if the group field value is within the specified range
-            if group_field_value < min_range || group_field_value > max_range {
-                continue; // Skip if outside the min/max range
-            }
-
-            // Now extract the group value for classification (assuming it's an integer)
-            let group_value = match group_data[0][case_idx]
-                .get(&group_field_name)
-                .and_then(|val| val.as_u64())
-                .map(|val| val as usize)
-            {
-                Some(val) => val,
-                None => continue, // Skip if not a valid group value
+                None => {
+                    continue;
+                } // Skip if not a valid group value
             };
 
             // Get the group index
             let group_idx = match group_to_index.get(&group_value) {
                 Some(&idx) => idx,
-                None => continue, // Skip if group not in mapping
+                None => {
+                    continue;
+                } // Skip if group not in mapping
             };
 
             // Get the values for all variables for this case
             let mut case_values = Vec::with_capacity(p);
             let mut all_values_valid = true;
 
-            for var_idx in 0..p {
-                if var_idx >= independent_data.len() || case_idx >= independent_data[var_idx].len()
-                {
-                    all_values_valid = false;
-                    break;
-                }
+            // Check if we have data for this case
+            if case_idx >= filtered_independent_data.len() {
+                continue;
+            }
 
-                let field_name = &var_field_names[var_idx];
-                match extract_field_value(&independent_data[var_idx][case_idx], field_name) {
+            // Extract values for each variable
+            for (var_idx, var_name) in var_field_names.iter().enumerate() {
+                match
+                    filtered_independent_data[case_idx].get(var_name).and_then(|val| val.as_f64())
+                {
                     Some(val) => case_values.push(val),
                     None => {
                         all_values_valid = false;
@@ -317,7 +348,10 @@ impl DiscriminantAnalysis {
         }
 
         // Count cases in each group
-        let m: Vec<usize> = grouped_data.iter().map(|group| group.len()).collect();
+        let m: Vec<usize> = grouped_data
+            .iter()
+            .map(|group| group.len())
+            .collect();
 
         // Validate number of cases
         for (i, &count) in m.iter().enumerate() {
@@ -336,19 +370,21 @@ impl DiscriminantAnalysis {
         let n: f64 = n_j.iter().sum();
 
         // Compute prior probabilities
-        let priors = match prior_probs {
+        let priors = match prior_probs_opt {
             Some(p) => {
                 if p.len() != g {
-                    return Err(DiscriminantError::InvalidInput(format!(
-                        "Prior probabilities must have length {}",
-                        g
-                    )));
+                    return Err(
+                        DiscriminantError::InvalidInput(
+                            format!("Prior probabilities must have length {}", g)
+                        )
+                    );
                 }
                 p
             }
             None => {
-                // Default priors: 0.5 for each group (equal priors)
-                vec![0.5; g]
+                // Equal priors for each group
+                let equal_prior = 1.0 / (g as f64);
+                vec![equal_prior; g]
             }
         };
 
@@ -356,15 +392,31 @@ impl DiscriminantAnalysis {
         let max_steps = 10; // Default maximum steps
         let stepwise_criteria = StepwiseCriteria {
             criteria_type: CriteriaType::FValue,
-            entry: 3.84,   // Default F-to-enter
-            removal: 2.71, // Default F-to-remove
-            v_to_enter: 0.0,
+            entry: config.method.f_entry,
+            removal: config.method.f_removal,
+            v_to_enter: config.method.v_enter,
         };
         let stepwise_display = StepwiseDisplay {
-            pairwise_distances: true, // Default: show pairwise distances
-            summary_steps: true,      // Default: display summary steps
+            pairwise_distances: config.method.pairwise,
+            summary_steps: config.method.summary,
         };
-        let stepwise_method = StepwiseMethod::Wilks; // Default method
+
+        // Determine stepwise method
+        let stepwise_method = if config.method.wilks {
+            StepwiseMethod::Wilks
+        } else if config.method.unexplained {
+            StepwiseMethod::Unexplained
+        } else if config.method.mahalonobis {
+            StepwiseMethod::Mahalanobis
+        } else if config.method.f_ratio {
+            StepwiseMethod::SmallestF
+        } else if config.method.raos {
+            StepwiseMethod::RaoV
+        } else {
+            StepwiseMethod::Wilks // Default to Wilks' lambda
+        };
+
+        // Set tolerance
         let tolerance = 0.001; // Default tolerance
 
         // Create instance with basic data
@@ -398,6 +450,7 @@ impl DiscriminantAnalysis {
             stepwise_method,
             tolerance,
             stepwise_statistics: None,
+            var_defs: Some(all_var_defs),
         };
 
         // Compute basic statistics
@@ -446,16 +499,15 @@ impl DiscriminantAnalysis {
         // 6. Update prior probabilities if needed
         if config.classify.all_group_equal {
             // Set equal priors
-            let equal_prior = 1.0 / self.g as f64;
+            let equal_prior = 1.0 / (self.g as f64);
             self.priors = vec![equal_prior; self.g];
         } else if config.classify.group_size {
             // Set priors proportional to group size
             let total_cases = self.m.iter().sum::<usize>() as f64;
             if total_cases > 0.0 {
-                self.priors = self
-                    .m
+                self.priors = self.m
                     .iter()
-                    .map(|&count| count as f64 / total_cases)
+                    .map(|&count| (count as f64) / total_cases)
                     .collect();
             }
         } else if config.classify.sep_group {
@@ -489,10 +541,14 @@ impl DiscriminantAnalysis {
 
         summary.push_str("\nGroup Information:\n");
         for (i, &group_val) in self.group_values.iter().enumerate() {
-            summary.push_str(&format!(
-                "  Group {}: {} cases (weighted sum: {:.2})\n",
-                group_val, self.m[i], self.n_j[i]
-            ));
+            summary.push_str(
+                &format!(
+                    "  Group {}: {} cases (weighted sum: {:.2})\n",
+                    group_val,
+                    self.m[i],
+                    self.n_j[i]
+                )
+            );
         }
 
         summary.push_str("\nVariables:\n");
@@ -781,13 +837,13 @@ impl DiscriminantAnalysis {
     /// # Returns
     /// * Error if computation fails
     fn compute_within_groups_covariance(&mut self) -> Result<(), DiscriminantError> {
-        if self.n <= self.g as f64 {
+        if self.n <= (self.g as f64) {
             return Err(DiscriminantError::InsufficientData);
         }
 
         for i in 0..self.p {
             for j in 0..self.p {
-                self.c_matrix[i][j] = self.w_matrix[i][j] / (self.n - self.g as f64);
+                self.c_matrix[i][j] = self.w_matrix[i][j] / (self.n - (self.g as f64));
             }
         }
 
@@ -886,13 +942,13 @@ impl DiscriminantAnalysis {
 
         // Calculate percentages
         let valid_percent = if self.total_cases > 0 {
-            (valid_count as f64 / self.total_cases as f64) * 100.0
+            ((valid_count as f64) / (self.total_cases as f64)) * 100.0
         } else {
             0.0
         };
 
         let excluded_missing_group_percent = if self.total_cases > 0 {
-            (excluded_missing_group as f64 / self.total_cases as f64) * 100.0
+            ((excluded_missing_group as f64) / (self.total_cases as f64)) * 100.0
         } else {
             0.0
         };
@@ -958,13 +1014,12 @@ impl DiscriminantAnalysis {
             std_deviations,
             unweighted_counts,
             weighted_counts,
-            total_means: self
-                .means_overall
+            total_means: self.means_overall
                 .iter()
                 .map(|&v| round_to_decimal(v, 2))
                 .collect(),
             total_std_deviations: (0..self.p)
-                .map(|i| round_to_decimal((self.t_prime_matrix[i][i]).sqrt(), 3))
+                .map(|i| round_to_decimal(self.t_prime_matrix[i][i].sqrt(), 3))
                 .collect(),
             total_unweighted_count: self.n as usize,
             total_weighted_count: round_to_decimal(self.n, 3),
@@ -980,10 +1035,9 @@ impl DiscriminantAnalysis {
     /// * F-Lambda result for the variable
     pub fn univariate_f_lambda(&self, i: usize) -> Result<FLambdaResult, DiscriminantError> {
         if i >= self.p {
-            return Err(DiscriminantError::InvalidInput(format!(
-                "Variable index {} out of bounds",
-                i
-            )));
+            return Err(
+                DiscriminantError::InvalidInput(format!("Variable index {} out of bounds", i))
+            );
         }
 
         let t_ii = self.t_matrix[i][i];
@@ -991,20 +1045,21 @@ impl DiscriminantAnalysis {
 
         // Check for zero variance
         if t_ii <= 0.0 || w_ii <= 0.0 {
-            return Err(DiscriminantError::ComputationError(format!(
-                "Zero variance for variable {}: t_ii={}, w_ii={}",
-                i, t_ii, w_ii
-            )));
+            return Err(
+                DiscriminantError::ComputationError(
+                    format!("Zero variance for variable {}: t_ii={}, w_ii={}", i, t_ii, w_ii)
+                )
+            );
         }
 
         // F_i = ((t_ii - w_ii) * (n - g)) / (w_ii * (g - 1))
-        let f_i = ((t_ii - w_ii) * (self.n - self.g as f64)) / (w_ii * (self.g - 1) as f64);
+        let f_i = ((t_ii - w_ii) * (self.n - (self.g as f64))) / (w_ii * ((self.g - 1) as f64));
 
         // Lambda_i = w_ii / t_ii
         let lambda_i = w_ii / t_ii;
 
         let df1 = self.g - 1;
-        let df2 = (self.n - self.g as f64) as usize;
+        let df2 = (self.n - (self.g as f64)) as usize;
 
         // P-value (placeholder for actual calculation)
         let sig = 0.05; // This would be calculated properly
@@ -1027,11 +1082,15 @@ impl DiscriminantAnalysis {
         let m = std::cmp::min(self.q, self.g - 1);
 
         if m == 0 {
-            return Err(DiscriminantError::ComputationError(format!(
-                "Cannot compute canonical discriminant functions: min(q={}, g-1={}) = 0",
-                self.q,
-                self.g - 1
-            )));
+            return Err(
+                DiscriminantError::ComputationError(
+                    format!(
+                        "Cannot compute canonical discriminant functions: min(q={}, g-1={}) = 0",
+                        self.q,
+                        self.g - 1
+                    )
+                )
+            );
         }
 
         // Calculate T - W (between-groups sum of squares and cross-products)
@@ -1064,9 +1123,11 @@ impl DiscriminantAnalysis {
 
         // Get eigenvalues and eigenvectors
         if self.eigenvalues.is_empty() || self.canonical_coefficients.is_empty() {
-            return Err(DiscriminantError::ComputationError(
-                "Cannot compute standardized coefficients: eigenvalues not computed".to_string(),
-            ));
+            return Err(
+                DiscriminantError::ComputationError(
+                    "Cannot compute standardized coefficients: eigenvalues not computed".to_string()
+                )
+            );
         }
 
         // This is a placeholder. In a real implementation, we would calculate standardized
@@ -1094,7 +1155,7 @@ impl DiscriminantAnalysis {
 
         for i in 0..self.p {
             for j in 0..m {
-                structure[i][j] = 0.3 + (i as f64 * 0.1) + (j as f64 * 0.05);
+                structure[i][j] = 0.3 + (i as f64) * 0.1 + (j as f64) * 0.05;
             }
         }
 
@@ -1133,9 +1194,9 @@ impl DiscriminantAnalysis {
 
         for k in 0..m {
             // Placeholder chi-square value and p-value
-            let chi_square = 10.5 - (k as f64 * 2.0);
+            let chi_square = 10.5 - (k as f64) * 2.0;
             let df = (self.p - k) * (self.g - k - 1);
-            let p_value = 0.01 + (k as f64 * 0.02);
+            let p_value = 0.01 + (k as f64) * 0.02;
 
             results.push(ChiSquareResult {
                 chi_square: round_to_decimal(chi_square, 3),
@@ -1194,13 +1255,15 @@ impl DiscriminantAnalysis {
 
         for j in 0..self.g {
             for k in 0..m {
-                centroids[j][k] = (j as f64 - self.g as f64 / 2.0) + (k as f64 * 0.1);
+                centroids[j][k] = (j as f64) - (self.g as f64) / 2.0 + (k as f64) * 0.1;
             }
         }
 
         // Round values to 3 decimal places
         centroids.iter_mut().for_each(|row| {
-            row.iter_mut().for_each(|v| *v = round_to_decimal(*v, 3));
+            row.iter_mut().for_each(|v| {
+                *v = round_to_decimal(*v, 3);
+            });
         });
 
         centroids
@@ -1225,7 +1288,7 @@ impl DiscriminantAnalysis {
 
         // Placeholder constant terms
         for j in 0..m {
-            coeffs[self.p][j] = -2.0 + (j as f64 * 0.5);
+            coeffs[self.p][j] = -2.0 + (j as f64) * 0.5;
         }
 
         Ok(coeffs)
@@ -1244,13 +1307,13 @@ impl DiscriminantAnalysis {
 
         for i in 0..self.p {
             for j in 0..self.g {
-                coeffs[i][j] = 0.5 + (i as f64 * 0.1) + (j as f64 * 0.2);
+                coeffs[i][j] = 0.5 + (i as f64) * 0.1 + (j as f64) * 0.2;
             }
         }
 
         // Placeholder constant terms
         for j in 0..self.g {
-            coeffs[self.p][j] = -5.0 + (j as f64 * 2.0);
+            coeffs[self.p][j] = -5.0 + (j as f64) * 2.0;
         }
 
         Ok(coeffs)
@@ -1265,11 +1328,11 @@ impl DiscriminantAnalysis {
     /// * Classification result
     pub fn classify(&self, x: &[f64]) -> Result<ClassificationResult, DiscriminantError> {
         if x.len() != self.p {
-            return Err(DiscriminantError::InvalidInput(format!(
-                "Input vector must have {} elements, got {}",
-                self.p,
-                x.len()
-            )));
+            return Err(
+                DiscriminantError::InvalidInput(
+                    format!("Input vector must have {} elements, got {}", self.p, x.len())
+                )
+            );
         }
 
         // Number of functions
@@ -1290,8 +1353,8 @@ impl DiscriminantAnalysis {
         let mut chi_square_probs = vec![0.0; self.g];
 
         for j in 0..self.g {
-            mahalanobis_distances[j] = 1.0 + (j as f64 * 0.5);
-            chi_square_probs[j] = 0.9 - (j as f64 * 0.1);
+            mahalanobis_distances[j] = 1.0 + (j as f64) * 0.5;
+            chi_square_probs[j] = 0.9 - (j as f64) * 0.1;
         }
 
         // Placeholder posterior probabilities
@@ -1299,16 +1362,18 @@ impl DiscriminantAnalysis {
         let total: f64 = (1..=self.g).map(|i| i as f64).sum();
 
         for j in 0..self.g {
-            posterior[j] = (j + 1) as f64 / total;
+            posterior[j] = ((j + 1) as f64) / total;
         }
 
         // Determine predicted group
         let predicted_group = match argmax(&posterior) {
-            Some(idx) => idx,
+            Some(idx) => self.group_values[idx],
             None => {
-                return Err(DiscriminantError::ComputationError(
-                    "Failed to determine predicted group".into(),
-                ))
+                return Err(
+                    DiscriminantError::ComputationError(
+                        "Failed to determine predicted group".into()
+                    )
+                );
             }
         };
 
@@ -1358,8 +1423,9 @@ impl DiscriminantAnalysis {
 
             if row_sum > 0 {
                 for i in 0..self.g {
-                    original_pct[j][i] = (original_count[j][i] as f64 / row_sum as f64) * 100.0;
-                    cross_val_pct[j][i] = (cross_val_count[j][i] as f64 / row_sum as f64) * 100.0;
+                    original_pct[j][i] = ((original_count[j][i] as f64) / (row_sum as f64)) * 100.0;
+                    cross_val_pct[j][i] =
+                        ((cross_val_count[j][i] as f64) / (row_sum as f64)) * 100.0;
                 }
 
                 original_correct += original_count[j][j];
@@ -1367,19 +1433,29 @@ impl DiscriminantAnalysis {
             }
         }
 
-        let original_correct_pct = (original_correct as f64 / total_cases as f64) * 100.0;
-        let cross_val_correct_pct = (cross_val_correct as f64 / total_cases as f64) * 100.0;
+        let original_correct_pct = ((original_correct as f64) / (total_cases as f64)) * 100.0;
+        let cross_val_correct_pct = ((cross_val_correct as f64) / (total_cases as f64)) * 100.0;
 
         Ok(ClassificationResults {
             original_count,
             original_percentage: original_pct
                 .into_iter()
-                .map(|row| row.into_iter().map(|v| round_to_decimal(v, 1)).collect())
+                .map(|row|
+                    row
+                        .into_iter()
+                        .map(|v| round_to_decimal(v, 1))
+                        .collect()
+                )
                 .collect(),
             cross_val_count,
             cross_val_percentage: cross_val_pct
                 .into_iter()
-                .map(|row| row.into_iter().map(|v| round_to_decimal(v, 1)).collect())
+                .map(|row|
+                    row
+                        .into_iter()
+                        .map(|v| round_to_decimal(v, 1))
+                        .collect()
+                )
                 .collect(),
             original_correct_pct: round_to_decimal(original_correct_pct, 1),
             cross_val_correct_pct: round_to_decimal(cross_val_correct_pct, 1),
@@ -1397,11 +1473,10 @@ impl DiscriminantAnalysis {
         }
 
         // Placeholder test results
-        let log_determinants = self
-            .group_values
+        let log_determinants = self.group_values
             .iter()
             .enumerate()
-            .map(|(idx, &val)| (val, 5.0 + idx as f64 * 0.2))
+            .map(|(idx, &val)| (val, 5.0 + (idx as f64) * 0.2))
             .collect();
 
         Ok(BoxMResult {
@@ -1434,16 +1509,16 @@ impl DiscriminantAnalysis {
                 variable_index: i,
                 variable_name: self.variable_names[i].clone(),
                 action: "Entered".to_string(),
-                statistic: 0.8 - (i as f64 * 0.2),
+                statistic: 0.8 - (i as f64) * 0.2,
                 df1: (self.g - 1) * (i + 1),
                 df2: i + 1,
-                df3: self.n as usize - self.g - i,
-                wilks_lambda: 0.8 - (i as f64 * 0.2),
+                df3: (self.n as usize) - self.g - i,
+                wilks_lambda: 0.8 - (i as f64) * 0.2,
                 wilks_df1: (self.g - 1) * (i + 1),
                 wilks_df2: i + 1,
-                exact_f: 10.0 - (i as f64 * 3.0),
+                exact_f: 10.0 - (i as f64) * 3.0,
                 exact_f_df1: (self.g - 1) * (i + 1),
-                exact_f_df2: self.n as usize - self.g - i,
+                exact_f_df2: (self.n as usize) - self.g - i,
                 significance: 0.001,
             });
             wilks_lambda_steps.push(steps[i].clone());
@@ -1453,8 +1528,8 @@ impl DiscriminantAnalysis {
                 step: i + 1,
                 variable_index: i,
                 variable_name: self.variable_names[i].clone(),
-                tolerance: 1.0 - (i as f64 * 0.1),
-                f_to_remove: 10.0 - (i as f64 * 3.0),
+                tolerance: 1.0 - (i as f64) * 0.1,
+                f_to_remove: 10.0 - (i as f64) * 3.0,
             });
         }
 
@@ -1464,22 +1539,22 @@ impl DiscriminantAnalysis {
                 step: 2,
                 variable_index: i,
                 variable_name: self.variable_names[i].clone(),
-                tolerance: 1.0 - (i as f64 * 0.1),
+                tolerance: 1.0 - (i as f64) * 0.1,
                 min_tolerance: self.tolerance,
-                f_to_enter: 1.5 - (i as f64 * 0.3),
-                wilks_lambda: 0.7 + (i as f64 * 0.05),
+                f_to_enter: 1.5 - (i as f64) * 0.3,
+                wilks_lambda: 0.7 + (i as f64) * 0.05,
             });
         }
 
         // Add placeholder pairwise comparisons
         if self.stepwise_display.pairwise_distances {
             for i in 0..self.g {
-                for j in (i + 1)..self.g {
+                for j in i + 1..self.g {
                     pairwise_comparisons.push(PairwiseComparison {
                         step: 2,
                         group1: self.group_values[i],
                         group2: self.group_values[j],
-                        f_value: 8.0 + (i as f64 * 0.5) + (j as f64 * 0.5),
+                        f_value: 8.0 + (i as f64) * 0.5 + (j as f64) * 0.5,
                         significance: 0.01,
                     });
                 }

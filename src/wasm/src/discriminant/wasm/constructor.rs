@@ -3,6 +3,7 @@ use serde_json::Value;
 use crate::discriminant::stats::core::DiscriminantAnalysis;
 use crate::discriminant::utils::error::DiscriminantError;
 use crate::discriminant::models::config::Config;
+use crate::discriminant::wasm::function::{ VarDef, extract_var_defs };
 
 /// WebAssembly binding for discriminant analysis
 #[wasm_bindgen]
@@ -17,7 +18,11 @@ impl DiscriminantAnalysisWasm {
     /// # Arguments
     /// * `group_variable` - JSON string containing group data
     /// * `independent_variable` - JSON string containing independent variable data
+    /// * `selection_data` - JSON string containing selection data for filtering
     /// * `config_json` - JSON string containing configuration
+    /// * `group_var_defs` - Definitions for group variables
+    /// * `independent_var_defs` - Definitions for independent variables
+    /// * `selection_var_defs` - Definitions for selection variables
     ///
     /// # Returns
     /// * New instance of DiscriminantAnalysisWasm
@@ -25,46 +30,59 @@ impl DiscriminantAnalysisWasm {
     pub fn new(
         group_variable: &JsValue,
         independent_variable: &JsValue,
-        config_json: &JsValue
+        selection_data: &JsValue,
+        config_json: &JsValue,
+        group_var_defs: &JsValue,
+        independent_var_defs: &JsValue,
+        selection_var_defs: &JsValue
     ) -> Result<DiscriminantAnalysisWasm, JsValue> {
         // Convert JS values to Rust types
-        let group_data: Vec<Vec<Value>> = serde_wasm_bindgen::from_value(group_variable.clone())
+        let group_data: Vec<Value> = serde_wasm_bindgen
+            ::from_value(group_variable.clone())
             .map_err(|e| JsValue::from_str(&format!("Failed to parse group data: {}", e)))?;
 
-        let independent_data: Vec<Vec<Value>> = serde_wasm_bindgen::from_value(independent_variable.clone())
+        let independent_data: Vec<Value> = serde_wasm_bindgen
+            ::from_value(independent_variable.clone())
             .map_err(|e| JsValue::from_str(&format!("Failed to parse independent data: {}", e)))?;
-            
-        // Parse configuration
-        let config: Config = serde_wasm_bindgen::from_value(config_json.clone())
-            .map_err(|e| JsValue::from_str(&format!("Failed to parse configuration: {}", e)))?;
-            
-        // Extract settings from config
-        let min_range = config.define_range.min_range.unwrap_or(0.0);
-        let max_range = config.define_range.max_range.unwrap_or(f64::MAX);
-        
-        // Determine prior probabilities
-        let prior_probs_opt = if config.classify.all_group_equal {
-            // Equal priors
-            None
-        } else if config.classify.group_size {
-            // Proportional to group size (will be calculated internally)
-            None
-        } else {
-            // Custom priors would be extracted from config if available
-            None
-        };
 
-        // Create inner discriminant analysis object
+        let selection_data_parsed: Option<Vec<Value>> = serde_wasm_bindgen
+            ::from_value(selection_data.clone())
+            .ok();
+
+        // Parse variable definitions
+        let group_var_defs_parsed: Vec<Vec<VarDef>> = serde_wasm_bindgen
+            ::from_value(group_var_defs.clone())
+            .map_err(|e|
+                JsValue::from_str(&format!("Failed to parse group variable definitions: {}", e))
+            )?;
+
+        let independent_var_defs_parsed: Vec<Vec<VarDef>> = serde_wasm_bindgen
+            ::from_value(independent_var_defs.clone())
+            .map_err(|e|
+                JsValue::from_str(
+                    &format!("Failed to parse independent variable definitions: {}", e)
+                )
+            )?;
+
+        let selection_var_defs_parsed: Option<Vec<Vec<VarDef>>> = serde_wasm_bindgen
+            ::from_value(selection_var_defs.clone())
+            .ok();
+
+        // Parse configuration
+        let config: Config = serde_wasm_bindgen
+            ::from_value(config_json.clone())
+            .map_err(|e| JsValue::from_str(&format!("Failed to parse configuration: {}", e)))?;
+
+        // Create inner discriminant analysis object with the new signature
         let mut inner = DiscriminantAnalysis::new(
             group_data,
             independent_data,
-            min_range,
-            max_range,
-            prior_probs_opt
+            selection_data_parsed,
+            &config,
+            group_var_defs_parsed,
+            independent_var_defs_parsed,
+            selection_var_defs_parsed
         ).map_err(format_error)?;
-        
-        // Apply configuration settings
-        inner.apply_config(&config).map_err(format_error)?;
 
         Ok(DiscriminantAnalysisWasm { inner })
     }
@@ -72,8 +90,7 @@ impl DiscriminantAnalysisWasm {
     /// Compute canonical discriminant functions
     #[wasm_bindgen]
     pub fn compute_canonical_discriminant_functions(&mut self) -> Result<(), JsValue> {
-        self.inner.compute_canonical_discriminant_functions()
-            .map_err(format_error)
+        self.inner.compute_canonical_discriminant_functions().map_err(format_error)
     }
 
     /// Get univariate F-statistics and Wilks' Lambda for a variable
@@ -85,10 +102,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with the F-Lambda result
     #[wasm_bindgen]
     pub fn univariate_f_lambda(&self, variable_index: usize) -> Result<JsValue, JsValue> {
-        let result = self.inner.univariate_f_lambda(variable_index)
-            .map_err(format_error)?;
+        let result = self.inner.univariate_f_lambda(variable_index).map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&result)
+        serde_wasm_bindgen
+            ::to_value(&result)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
     }
 
@@ -98,10 +115,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with the Box's M test result
     #[wasm_bindgen]
     pub fn box_m_test(&self) -> Result<JsValue, JsValue> {
-        let result = self.inner.box_m_test()
-            .map_err(format_error)?;
+        let result = self.inner.box_m_test().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&result)
+        serde_wasm_bindgen
+            ::to_value(&result)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
     }
 
@@ -125,13 +142,14 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with classification result
     #[wasm_bindgen]
     pub fn classify(&self, x: &JsValue) -> Result<JsValue, JsValue> {
-        let x_vec: Vec<f64> = serde_wasm_bindgen::from_value(x.clone())
+        let x_vec: Vec<f64> = serde_wasm_bindgen
+            ::from_value(x.clone())
             .map_err(|e| JsValue::from_str(&format!("Failed to parse input vector: {}", e)))?;
 
-        let result = self.inner.classify(&x_vec)
-            .map_err(format_error)?;
+        let result = self.inner.classify(&x_vec).map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&result)
+        serde_wasm_bindgen
+            ::to_value(&result)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
     }
 
@@ -141,10 +159,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with cross-validation results
     #[wasm_bindgen]
     pub fn cross_validate(&self) -> Result<JsValue, JsValue> {
-        let result = self.inner.cross_validate()
-            .map_err(format_error)?;
+        let result = self.inner.cross_validate().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&result)
+        serde_wasm_bindgen
+            ::to_value(&result)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize result: {}", e)))
     }
 
@@ -165,10 +183,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with standardized coefficients
     #[wasm_bindgen]
     pub fn standardized_coefficients(&self) -> Result<JsValue, JsValue> {
-        let coeffs = self.inner.standardized_coefficients()
-            .map_err(format_error)?;
+        let coeffs = self.inner.standardized_coefficients().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&coeffs)
+        serde_wasm_bindgen
+            ::to_value(&coeffs)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize coefficients: {}", e)))
     }
 
@@ -178,10 +196,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with structure matrix
     #[wasm_bindgen]
     pub fn structure_matrix(&self) -> Result<JsValue, JsValue> {
-        let matrix = self.inner.structure_matrix()
-            .map_err(format_error)?;
+        let matrix = self.inner.structure_matrix().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&matrix)
+        serde_wasm_bindgen
+            ::to_value(&matrix)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize matrix: {}", e)))
     }
 
@@ -202,10 +220,10 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with classification function coefficients
     #[wasm_bindgen]
     pub fn classification_functions(&self) -> Result<JsValue, JsValue> {
-        let functions = self.inner.classification_functions()
-            .map_err(format_error)?;
+        let functions = self.inner.classification_functions().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&functions)
+        serde_wasm_bindgen
+            ::to_value(&functions)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize functions: {}", e)))
     }
 
@@ -215,23 +233,23 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with all results
     #[wasm_bindgen]
     pub fn get_results(&self) -> Result<JsValue, JsValue> {
-        let results = self.inner.get_results()
-            .map_err(format_error)?;
+        let results = self.inner.get_results().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&results)
+        serde_wasm_bindgen
+            ::to_value(&results)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize results: {}", e)))
     }
 
     /// Perform stepwise discriminant analysis
     #[wasm_bindgen]
     pub fn perform_stepwise_analysis(&mut self) -> Result<JsValue, JsValue> {
-        let result = self.inner.perform_stepwise_analysis()
-            .map_err(format_error)?;
+        let result = self.inner.perform_stepwise_analysis().map_err(format_error)?;
 
-        serde_wasm_bindgen::to_value(&result)
+        serde_wasm_bindgen
+            ::to_value(&result)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize stepwise results: {}", e)))
     }
-    
+
     /// Get model summary information
     #[wasm_bindgen]
     pub fn get_model_summary(&self) -> String {
