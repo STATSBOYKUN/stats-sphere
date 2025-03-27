@@ -1,8 +1,8 @@
 use wasm_bindgen::prelude::*;
 use serde_json::Value;
-use crate::discriminant::main::types::results::{BoxMResult, DiscriminantError, DiscriminantResults};
-
-use super::core::DiscriminantAnalysis;
+use crate::discriminant::stats::core::DiscriminantAnalysis;
+use crate::discriminant::utils::error::DiscriminantError;
+use crate::discriminant::models::config::Config;
 
 /// WebAssembly binding for discriminant analysis
 #[wasm_bindgen]
@@ -12,14 +12,12 @@ pub struct DiscriminantAnalysisWasm {
 
 #[wasm_bindgen]
 impl DiscriminantAnalysisWasm {
-    /// Create a new discriminant analysis
+    /// Create a new discriminant analysis from config
     ///
     /// # Arguments
     /// * `group_variable` - JSON string containing group data
     /// * `independent_variable` - JSON string containing independent variable data
-    /// * `min_range` - Minimum range for scaling
-    /// * `max_range` - Maximum range for scaling
-    /// * `prior_probs` - JSON string containing prior probabilities (optional)
+    /// * `config_json` - JSON string containing configuration
     ///
     /// # Returns
     /// * New instance of DiscriminantAnalysisWasm
@@ -27,9 +25,7 @@ impl DiscriminantAnalysisWasm {
     pub fn new(
         group_variable: &JsValue,
         independent_variable: &JsValue,
-        min_range: f64,
-        max_range: f64,
-        prior_probs: &JsValue
+        config_json: &JsValue
     ) -> Result<DiscriminantAnalysisWasm, JsValue> {
         // Convert JS values to Rust types
         let group_data: Vec<Vec<Value>> = serde_wasm_bindgen::from_value(group_variable.clone())
@@ -37,24 +33,38 @@ impl DiscriminantAnalysisWasm {
 
         let independent_data: Vec<Vec<Value>> = serde_wasm_bindgen::from_value(independent_variable.clone())
             .map_err(|e| JsValue::from_str(&format!("Failed to parse independent data: {}", e)))?;
-
-        // Parse prior probabilities (optional)
-        let prior_probs_opt = if prior_probs.is_null() {
+            
+        // Parse configuration
+        let config: Config = serde_wasm_bindgen::from_value(config_json.clone())
+            .map_err(|e| JsValue::from_str(&format!("Failed to parse configuration: {}", e)))?;
+            
+        // Extract settings from config
+        let min_range = config.define_range.min_range.unwrap_or(0.0);
+        let max_range = config.define_range.max_range.unwrap_or(f64::MAX);
+        
+        // Determine prior probabilities
+        let prior_probs_opt = if config.classify.all_group_equal {
+            // Equal priors
+            None
+        } else if config.classify.group_size {
+            // Proportional to group size (will be calculated internally)
             None
         } else {
-            let priors: Vec<f64> = serde_wasm_bindgen::from_value(prior_probs.clone())
-                .map_err(|e| JsValue::from_str(&format!("Failed to parse prior probabilities: {}", e)))?;
-            Some(priors)
+            // Custom priors would be extracted from config if available
+            None
         };
 
         // Create inner discriminant analysis object
-        let inner = DiscriminantAnalysis::new(
+        let mut inner = DiscriminantAnalysis::new(
             group_data,
             independent_data,
             min_range,
             max_range,
             prior_probs_opt
         ).map_err(format_error)?;
+        
+        // Apply configuration settings
+        inner.apply_config(&config).map_err(format_error)?;
 
         Ok(DiscriminantAnalysisWasm { inner })
     }
@@ -205,111 +215,8 @@ impl DiscriminantAnalysisWasm {
     /// * JSON string with all results
     #[wasm_bindgen]
     pub fn get_results(&self) -> Result<JsValue, JsValue> {
-        // Calculate case processing summary
-        let case_processing_summary = self.inner.calculate_case_processing_summary();
-
-        // Calculate group statistics
-        let group_statistics = self.inner.calculate_group_statistics();
-
-        // Univariate F tests
-        let mut wilks_lambda = Vec::with_capacity(self.inner.p);
-        for i in 0..self.inner.p {
-            if let Ok(result) = self.inner.univariate_f_lambda(i) {
-                wilks_lambda.push(result);
-            }
-        }
-
-        // Box's M test
-        let box_m = match self.inner.box_m_test() {
-            Ok(result) => result,
-            Err(e) => {
-                // Create default BoxMResult with error info
-                BoxMResult {
-                    m: 0.0,
-                    f: 0.0,
-                    df1: 0.0,
-                    df2: 0.0,
-                    p_value: 1.0,
-                    log_determinants: Vec::new(),
-                    pooled_log_determinant: 0.0,
-                }
-            }
-        };
-
-        // Calculate eigenvalue statistics
-        let eigen_stats = self.inner.eigen_statistics();
-
-        // Wilks' Lambda for functions
-        let functions_lambda = self.inner.wilks_lambda();
-
-        // Standardized canonical discriminant function coefficients
-        let std_coefficients = match self.inner.standardized_coefficients() {
-            Ok(coeffs) => coeffs,
-            Err(_) => vec![vec![0.0; 0]; 0],
-        };
-
-        // Structure matrix
-        let structure_matrix = match self.inner.structure_matrix() {
-            Ok(matrix) => matrix,
-            Err(_) => vec![vec![0.0; 0]; 0],
-        };
-
-        // Unstandardized canonical discriminant function coefficients
-        let unstd_coefficients = match self.inner.unstandardized_coefficients() {
-            Ok(coeffs) => coeffs,
-            Err(_) => vec![vec![0.0; 0]; 0],
-        };
-
-        // Group centroids
-        let group_centroids = self.inner.group_centroids();
-
-        // Classification functions
-        let classification_functions = match self.inner.classification_functions() {
-            Ok(funcs) => funcs,
-            Err(_) => vec![vec![0.0; 0]; 0],
-        };
-
-        // Perform cross-validation
-        let classification_results = match self.inner.cross_validate() {
-            Ok(results) => results,
-            Err(_) => {
-                // Create default ClassificationResults
-                crate::discriminant::main::types::results::ClassificationResults {
-                    original_count: vec![vec![0; 0]; 0],
-                    original_percentage: vec![vec![0.0; 0]; 0],
-                    cross_val_count: vec![vec![0; 0]; 0],
-                    cross_val_percentage: vec![vec![0.0; 0]; 0],
-                    original_correct_pct: 0.0,
-                    cross_val_correct_pct: 0.0,
-                }
-            }
-        };
-
-        // Create results object
-        let results = crate::discriminant::main::types::results::DiscriminantResults {
-            case_processing_summary,
-            group_statistics,
-            wilks_lambda,
-            pooled_covariance: self.inner.c_matrix.clone(),
-            pooled_correlation: self.inner.r_matrix.clone(),
-            group_covariance: self.inner.c_group_matrices.clone(),
-            total_covariance: self.inner.t_prime_matrix.clone(),
-            box_m,
-            eigen_stats,
-            functions_lambda,
-            std_coefficients,
-            stepwise_statistics: self.inner.stepwise_statistics.clone(),
-            structure_matrix,
-            unstd_coefficients,
-            group_centroids,
-            classification_functions,
-            classification_results,
-            means_by_group: self.inner.means_by_group.clone(),
-            means_overall: self.inner.means_overall.clone(),
-            variable_names: self.inner.variable_names.clone(),
-            group_name: self.inner.group_name.clone(),
-            group_values: self.inner.group_values.clone(),
-        };
+        let results = self.inner.get_results()
+            .map_err(format_error)?;
 
         serde_wasm_bindgen::to_value(&results)
             .map_err(|e| JsValue::from_str(&format!("Failed to serialize results: {}", e)))
