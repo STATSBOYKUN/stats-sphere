@@ -296,6 +296,77 @@ export function parse_clustering_config(config_json) {
     return takeFromExternrefTable0(ret[0]);
 }
 
+/**
+ * Standardize data from JavaScript
+ *
+ * # Arguments
+ * * `data_json` - JSON data array
+ * * `method_str` - Standardization method
+ * * `by_case` - Whether to standardize by case (true) or by variable (false)
+ *
+ * # Returns
+ * * Standardized data array
+ * @param {any} data_json
+ * @param {string} method_str
+ * @param {boolean} by_case
+ * @returns {any}
+ */
+export function preprocess_data(data_json, method_str, by_case) {
+    const ptr0 = passStringToWasm0(method_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.preprocess_data(data_json, ptr0, len0, by_case);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Handle missing values from JavaScript
+ *
+ * # Arguments
+ * * `data_json` - JSON data array
+ * * `strategy_str` - Missing value strategy
+ *
+ * # Returns
+ * * Processed data array and valid case indices
+ * @param {any} data_json
+ * @param {string} strategy_str
+ * @returns {any}
+ */
+export function handle_missing_values(data_json, strategy_str) {
+    const ptr0 = passStringToWasm0(strategy_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.handle_missing_values(data_json, ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
+/**
+ * Impute missing values from JavaScript
+ *
+ * # Arguments
+ * * `data_json` - JSON data array
+ * * `method` - Imputation method ("mean", "zero", etc.)
+ *
+ * # Returns
+ * * Imputed data array
+ * @param {any} data_json
+ * @param {string} method
+ * @returns {any}
+ */
+export function impute_missing_values(data_json, method) {
+    const ptr0 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.impute_missing_values(data_json, ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
+}
+
 export function start() {
     wasm.start();
 }
@@ -419,77 +490,6 @@ export function perform_discriminant_analysis(group_variable, independent_variab
  */
 export function classify_new_data(trained_model, new_data) {
     const ret = wasm.classify_new_data(trained_model, new_data);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Standardize data from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `method_str` - Standardization method
- * * `by_case` - Whether to standardize by case (true) or by variable (false)
- *
- * # Returns
- * * Standardized data array
- * @param {any} data_json
- * @param {string} method_str
- * @param {boolean} by_case
- * @returns {any}
- */
-export function preprocess_data(data_json, method_str, by_case) {
-    const ptr0 = passStringToWasm0(method_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.preprocess_data(data_json, ptr0, len0, by_case);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Handle missing values from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `strategy_str` - Missing value strategy
- *
- * # Returns
- * * Processed data array and valid case indices
- * @param {any} data_json
- * @param {string} strategy_str
- * @returns {any}
- */
-export function handle_missing_values(data_json, strategy_str) {
-    const ptr0 = passStringToWasm0(strategy_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.handle_missing_values(data_json, ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Impute missing values from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `method` - Imputation method ("mean", "zero", etc.)
- *
- * # Returns
- * * Imputed data array
- * @param {any} data_json
- * @param {string} method
- * @returns {any}
- */
-export function impute_missing_values(data_json, method) {
-    const ptr0 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.impute_missing_values(data_json, ptr0, len0);
     if (ret[2]) {
         throw takeFromExternrefTable0(ret[1]);
     }

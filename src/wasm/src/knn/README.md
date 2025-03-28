@@ -19,7 +19,7 @@ src/
 |       mod.rs              # Ekspor fungsi statistik
 |       
 +---test/                   # Modul pengujian
-|       data.rs             # Data untuk pengujian
+|       sample.rs             # Data untuk pengujian
 |       example.rs          # Contoh penggunaan dan test case
 |       mod.rs              # Ekspor modul test
 |       

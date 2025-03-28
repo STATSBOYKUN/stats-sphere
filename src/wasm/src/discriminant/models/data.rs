@@ -1,8 +1,18 @@
 use serde_json::Value;
-use std::collections::HashMap;
 use crate::discriminant::utils::error::DiscriminantError;
 use crate::discriminant::utils::converter;
-use crate::discriminant::wasm::function::VarDef;
+use serde::{ Deserialize, Serialize };
+
+/// Variable definition structure
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct VarDef {
+    pub name: String,
+    pub r#type: String,
+    pub label: String,
+    pub values: String,
+    pub missing: String,
+    pub measure: String,
+}
 
 /// Input data for discriminant analysis
 #[derive(Clone, Debug)]

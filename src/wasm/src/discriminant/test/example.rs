@@ -12,8 +12,7 @@ mod tests {
         BootstrapConfig,
     };
     use crate::discriminant::stats::core::DiscriminantAnalysis;
-    use crate::discriminant::test::data;
-    use crate::discriminant::wasm::function::{ VarDef, extract_var_defs };
+    use crate::discriminant::models::data::VarDef;
     use serde_json::json;
 
     /// Create a test configuration
@@ -26,11 +25,11 @@ mod tests {
                 stepwise: false,
                 selection_variable: None,
             },
-            defineRange: DefineRangeConfig {
+            define_range: DefineRangeConfig {
                 min_range: Some(0.0),
                 max_range: Some(10.0),
             },
-            setValue: SetValueConfig {
+            set_value: SetValueConfig {
                 value: None,
             },
             statistics: StatisticsConfig {
@@ -223,7 +222,7 @@ mod tests {
         ];
 
         // Create discriminant analysis object with the new signature
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data.clone(),
             independent_data.clone(),
             None, // No selection data
@@ -261,7 +260,7 @@ mod tests {
         ];
 
         // Create discriminant analysis object with the new signature
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data,
             independent_data,
             None, // No selection data
@@ -304,7 +303,7 @@ mod tests {
         // Create config with selection variable
         let mut config = create_test_config();
         config.main.selection_variable = Some("select".to_string());
-        config.setValue.value = Some(1.0);
+        config.set_value.value = Some(1.0);
 
         // Create var defs
         let group_var_defs = create_test_var_defs();
@@ -330,7 +329,7 @@ mod tests {
         ];
 
         // Create discriminant analysis object with the new signature
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data,
             independent_data,
             Some(selection_data), // Provide selection data
@@ -444,7 +443,7 @@ mod tests {
         config.method.wilks = false;
         config.method.mahalonobis = true;
 
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data.clone(),
             independent_data.clone(),
             None, // No selection data
@@ -463,7 +462,7 @@ mod tests {
         config.method.mahalonobis = false;
         config.method.f_ratio = true;
 
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data.clone(),
             independent_data.clone(),
             None, // No selection data
@@ -484,7 +483,7 @@ mod tests {
         config.method.f_value = false;
         config.method.f_probability = true;
 
-        let mut analysis = DiscriminantAnalysis::new(
+        let analysis = DiscriminantAnalysis::new(
             group_data,
             independent_data,
             None, // No selection data

@@ -23,14 +23,10 @@ use crate::discriminant::models::result::{
     VariableInAnalysis,
     VariableNotInAnalysis,
 };
-use crate::discriminant::utils::converter::{
-    argmax,
-    extract_field_name,
-    extract_field_value,
-    round_to_decimal,
-};
+use crate::discriminant::utils::converter::{ argmax, round_to_decimal };
 use crate::discriminant::utils::error::DiscriminantError;
-use crate::discriminant::wasm::function::{ VarDef, extract_var_defs, filter_data_by_selection };
+use crate::discriminant::wasm::function::{ extract_var_defs, filter_data_by_selection };
+use crate::discriminant::models::data::VarDef;
 
 /// Core implementation of discriminant analysis
 ///
@@ -127,6 +123,9 @@ pub struct DiscriminantAnalysis {
 
     /// Variable definitions for metadata
     pub var_defs: Option<Vec<VarDef>>,
+
+    /// Configuration used for analysis
+    pub config: Config,
 }
 
 impl DiscriminantAnalysis {
@@ -168,8 +167,8 @@ impl DiscriminantAnalysis {
         );
 
         // Extract settings from config
-        let min_range = config.defineRange.min_range.unwrap_or(0.0);
-        let max_range = config.defineRange.max_range.unwrap_or(f64::MAX);
+        let min_range = config.define_range.min_range.unwrap_or(0.0);
+        let max_range = config.define_range.max_range.unwrap_or(f64::MAX);
 
         // Filter data based on selection criteria if available
         let (filtered_group_data, filtered_independent_data) = if
@@ -179,7 +178,7 @@ impl DiscriminantAnalysis {
                 config.main.selection_variable.as_ref(),
             )
         {
-            if let Some(filter_value) = config.setValue.value {
+            if let Some(filter_value) = config.set_value.value {
                 // Extract selection variable name
                 let selection_var_name = if !sel_defs.is_empty() && !sel_defs[0].is_empty() {
                     sel_defs[0][0].name.clone()
@@ -256,12 +255,6 @@ impl DiscriminantAnalysis {
             return Err(DiscriminantError::NotEnoughGroups);
         }
 
-        // Determine number of groups
-        let g = unique_groups.len();
-        if g < 2 {
-            return Err(DiscriminantError::NotEnoughGroups);
-        }
-
         // Get independent variable names from var_defs
         let mut var_field_names = Vec::new();
         for var_def_group in &independent_var_defs {
@@ -287,6 +280,8 @@ impl DiscriminantAnalysis {
 
         // Initially all variables are selected
         let q = p;
+
+        let g = unique_groups.len();
 
         // Prepare data structures
         let mut grouped_data: Vec<Vec<Vec<f64>>> = vec![Vec::new(); g];
@@ -451,10 +446,28 @@ impl DiscriminantAnalysis {
             tolerance,
             stepwise_statistics: None,
             var_defs: Some(all_var_defs),
+            config: config.clone(),
         };
+
+        // Apply configuration settings
+        da.apply_config(config)?;
 
         // Compute basic statistics
         da.compute_basic_statistics()?;
+
+        // Compute discriminant functions based on method
+        if config.main.stepwise {
+            // Perform stepwise analysis if requested
+            da.perform_stepwise_analysis()?;
+        } else {
+            // Direct method
+            da.compute_canonical_discriminant_functions()?;
+        }
+
+        // // Perform bootstrap if requested
+        // if config.bootstrap.perform_boot_strapping {
+        //     da.perform_bootstrap_analysis()?;
+        // }
 
         Ok(da)
     }
@@ -556,6 +569,31 @@ impl DiscriminantAnalysis {
             summary.push_str(&format!("  {}: {}\n", i + 1, name));
         }
 
+        if self.config.main.stepwise {
+            summary.push_str("\nMethod: Stepwise\n");
+            match self.stepwise_method {
+                StepwiseMethod::Wilks => summary.push_str("  Criterion: Wilks' Lambda\n"),
+                StepwiseMethod::Unexplained =>
+                    summary.push_str("  Criterion: Unexplained Variance\n"),
+                StepwiseMethod::Mahalanobis =>
+                    summary.push_str("  Criterion: Mahalanobis Distance\n"),
+                StepwiseMethod::SmallestF => summary.push_str("  Criterion: Smallest F Ratio\n"),
+                StepwiseMethod::RaoV => summary.push_str("  Criterion: Rao's V\n"),
+            }
+        } else {
+            summary.push_str("\nMethod: Direct Entry\n");
+        }
+
+        if self.config.bootstrap.perform_boot_strapping {
+            summary.push_str(
+                &format!(
+                    "\nBootstrap: Yes (samples: {}, seed: {})\n",
+                    self.config.bootstrap.num_of_samples,
+                    self.config.bootstrap.seed_value
+                )
+            );
+        }
+
         summary
     }
 
@@ -564,41 +602,75 @@ impl DiscriminantAnalysis {
     /// # Returns
     /// * Complete results structure or error
     pub fn get_results(&self) -> Result<DiscriminantResults, DiscriminantError> {
-        // Calculate case processing summary
+        // Calculate case processing summary (always included)
         let case_processing_summary = self.calculate_case_processing_summary();
 
-        // Calculate group statistics
-        let group_statistics = self.calculate_group_statistics();
-
-        // Univariate F tests
-        let mut wilks_lambda = Vec::with_capacity(self.p);
-        for i in 0..self.p {
-            if let Ok(result) = self.univariate_f_lambda(i) {
-                wilks_lambda.push(result);
-            }
-        }
-
-        // Box's M test
-        let box_m = match self.box_m_test() {
-            Ok(result) => result,
-            Err(_) => {
-                // Create default BoxMResult with error info
-                BoxMResult {
-                    m: 0.0,
-                    f: 0.0,
-                    df1: 0.0,
-                    df2: 0.0,
-                    p_value: 1.0,
-                    log_determinants: Vec::new(),
-                    pooled_log_determinant: 0.0,
-                }
+        // Calculate group statistics if means are requested
+        let group_statistics = if self.config.statistics.means {
+            self.calculate_group_statistics()
+        } else {
+            // Default minimal group statistics
+            GroupStatistics {
+                group_values: self.group_values.clone(),
+                variable_names: self.variable_names.clone(),
+                means: vec![vec![0.0; self.p]; self.g],
+                std_deviations: vec![vec![0.0; self.p]; self.g],
+                unweighted_counts: self.m.clone(),
+                weighted_counts: self.n_j.clone(),
+                total_means: vec![0.0; self.p],
+                total_std_deviations: vec![0.0; self.p],
+                total_unweighted_count: self.total_cases,
+                total_weighted_count: self.n,
             }
         };
 
-        // Calculate eigenvalue statistics
+        // Univariate F tests (ANOVA) if requested
+        let wilks_lambda = if self.config.statistics.anova {
+            let mut lambda = Vec::with_capacity(self.p);
+            for i in 0..self.p {
+                if let Ok(result) = self.univariate_f_lambda(i) {
+                    lambda.push(result);
+                }
+            }
+            lambda
+        } else {
+            Vec::new()
+        };
+
+        // Box's M test if requested
+        let box_m = if self.config.statistics.box_m {
+            match self.box_m_test() {
+                Ok(result) => result,
+                Err(_) => {
+                    // Create default BoxMResult with error info
+                    BoxMResult {
+                        m: 0.0,
+                        f: 0.0,
+                        df1: 0.0,
+                        df2: 0.0,
+                        p_value: 1.0,
+                        log_determinants: Vec::new(),
+                        pooled_log_determinant: 0.0,
+                    }
+                }
+            }
+        } else {
+            // Default BoxMResult
+            BoxMResult {
+                m: 0.0,
+                f: 0.0,
+                df1: 0.0,
+                df2: 0.0,
+                p_value: 1.0,
+                log_determinants: Vec::new(),
+                pooled_log_determinant: 0.0,
+            }
+        };
+
+        // Calculate eigenvalue statistics (always include for discriminant functions)
         let eigen_stats = self.eigen_statistics();
 
-        // Wilks' Lambda for functions
+        // Wilks' Lambda for functions (always include for discriminant functions)
         let functions_lambda = self.wilks_lambda();
 
         // Standardized canonical discriminant function coefficients
@@ -613,34 +685,54 @@ impl DiscriminantAnalysis {
             Err(_) => vec![vec![0.0; 0]; 0],
         };
 
-        // Unstandardized canonical discriminant function coefficients
-        let unstd_coefficients = match self.unstandardized_coefficients() {
-            Ok(coeffs) => coeffs,
-            Err(_) => vec![vec![0.0; 0]; 0],
+        // Unstandardized canonical discriminant function coefficients if requested
+        let unstd_coefficients = if self.config.statistics.unstandardized {
+            match self.unstandardized_coefficients() {
+                Ok(coeffs) => coeffs,
+                Err(_) => vec![vec![0.0; 0]; 0],
+            }
+        } else {
+            vec![vec![0.0; 0]; 0]
         };
 
-        // Group centroids
+        // Group centroids (always include for discriminant functions)
         let group_centroids = self.group_centroids();
 
-        // Classification functions
-        let classification_functions = match self.classification_functions() {
-            Ok(funcs) => funcs,
-            Err(_) => vec![vec![0.0; 0]; 0],
+        // Fisher's classification functions if requested
+        let classification_functions = if self.config.statistics.fisher {
+            match self.classification_functions() {
+                Ok(funcs) => funcs,
+                Err(_) => vec![vec![0.0; 0]; 0],
+            }
+        } else {
+            vec![vec![0.0; 0]; 0]
         };
 
-        // Perform cross-validation
-        let classification_results = match self.cross_validate() {
-            Ok(results) => results,
-            Err(_) => {
-                // Create default ClassificationResults
-                ClassificationResults {
-                    original_count: vec![vec![0; 0]; 0],
-                    original_percentage: vec![vec![0.0; 0]; 0],
-                    cross_val_count: vec![vec![0; 0]; 0],
-                    cross_val_percentage: vec![vec![0.0; 0]; 0],
-                    original_correct_pct: 0.0,
-                    cross_val_correct_pct: 0.0,
+        // Classification results if classify.summary is requested
+        let classification_results = if self.config.classify.summary {
+            match self.cross_validate() {
+                Ok(results) => results,
+                Err(_) => {
+                    // Create default ClassificationResults
+                    ClassificationResults {
+                        original_count: vec![vec![0; 0]; 0],
+                        original_percentage: vec![vec![0.0; 0]; 0],
+                        cross_val_count: vec![vec![0; 0]; 0],
+                        cross_val_percentage: vec![vec![0.0; 0]; 0],
+                        original_correct_pct: 0.0,
+                        cross_val_correct_pct: 0.0,
+                    }
                 }
+            }
+        } else {
+            // Default empty classification results
+            ClassificationResults {
+                original_count: vec![vec![0; 0]; 0],
+                original_percentage: vec![vec![0.0; 0]; 0],
+                cross_val_count: vec![vec![0; 0]; 0],
+                cross_val_percentage: vec![vec![0.0; 0]; 0],
+                original_correct_pct: 0.0,
+                cross_val_correct_pct: 0.0,
             }
         };
 
@@ -649,22 +741,50 @@ impl DiscriminantAnalysis {
             case_processing_summary,
             group_statistics,
             wilks_lambda,
-            pooled_covariance: self.c_matrix.clone(),
-            pooled_correlation: self.r_matrix.clone(),
-            group_covariance: self.c_group_matrices.clone(),
-            total_covariance: self.t_prime_matrix.clone(),
+            pooled_covariance: if self.config.statistics.wg_covariance {
+                self.c_matrix.clone()
+            } else {
+                Vec::new()
+            },
+            pooled_correlation: if self.config.statistics.wg_correlation {
+                self.r_matrix.clone()
+            } else {
+                Vec::new()
+            },
+            group_covariance: if self.config.statistics.sg_covariance {
+                self.c_group_matrices.clone()
+            } else {
+                Vec::new()
+            },
+            total_covariance: if self.config.statistics.total_covariance {
+                self.t_prime_matrix.clone()
+            } else {
+                Vec::new()
+            },
             box_m,
             eigen_stats,
             functions_lambda,
             std_coefficients,
-            stepwise_statistics: self.stepwise_statistics.clone(),
+            stepwise_statistics: if self.config.main.stepwise {
+                self.stepwise_statistics.clone()
+            } else {
+                None
+            },
             structure_matrix,
             unstd_coefficients,
             group_centroids,
             classification_functions,
             classification_results,
-            means_by_group: self.means_by_group.clone(),
-            means_overall: self.means_overall.clone(),
+            means_by_group: if self.config.statistics.means {
+                self.means_by_group.clone()
+            } else {
+                Vec::new()
+            },
+            means_overall: if self.config.statistics.means {
+                self.means_overall.clone()
+            } else {
+                Vec::new()
+            },
             variable_names: self.variable_names.clone(),
             group_name: self.group_name.clone(),
             group_values: self.group_values.clone(),
@@ -678,29 +798,31 @@ impl DiscriminantAnalysis {
     /// # Returns
     /// * Error if computation fails
     pub fn compute_basic_statistics(&mut self) -> Result<(), DiscriminantError> {
-        // 1. Calculate means for each group
+        // Always calculate means for each group and overall means
         self.compute_group_means()?;
-
-        // 2. Calculate overall means
         self.compute_overall_means()?;
 
-        // 3. Calculate Within-Groups Sums of Squares and Cross-Product Matrix (W)
+        // Always calculate Within-Groups and Total matrices (needed for core functionality)
         self.compute_within_groups_matrix()?;
-
-        // 4. Calculate Total Sums of Squares and Cross-Product Matrix (T)
         self.compute_total_matrix()?;
 
-        // 5. Calculate Within-Groups Covariance Matrix (C)
+        // Always calculate Within-Groups Covariance Matrix (needed for many calculations)
         self.compute_within_groups_covariance()?;
 
-        // 6. Calculate Individual Group Covariance Matrices
-        self.compute_group_covariance_matrices()?;
+        // Calculate Individual Group Covariance Matrices if requested
+        if self.config.statistics.sg_covariance {
+            self.compute_group_covariance_matrices()?;
+        }
 
-        // 7. Calculate Within-Groups Correlation Matrix (R)
-        self.compute_within_groups_correlation()?;
+        // Calculate Within-Groups Correlation Matrix if requested
+        if self.config.statistics.wg_correlation {
+            self.compute_within_groups_correlation()?;
+        }
 
-        // 8. Calculate Total Covariance Matrix (T')
-        self.compute_total_covariance()?;
+        // Calculate Total Covariance Matrix if requested
+        if self.config.statistics.total_covariance {
+            self.compute_total_covariance()?;
+        }
 
         Ok(())
     }

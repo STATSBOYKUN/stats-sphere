@@ -3,7 +3,7 @@ use serde_json::Value;
 use crate::discriminant::stats::core::DiscriminantAnalysis;
 use crate::discriminant::utils::error::DiscriminantError;
 use crate::discriminant::models::config::Config;
-use crate::discriminant::wasm::function::{ VarDef, extract_var_defs };
+use crate::discriminant::models::data::VarDef;
 
 /// WebAssembly binding for discriminant analysis
 #[wasm_bindgen]
@@ -74,7 +74,7 @@ impl DiscriminantAnalysisWasm {
             .map_err(|e| JsValue::from_str(&format!("Failed to parse configuration: {}", e)))?;
 
         // Create inner discriminant analysis object with the new signature
-        let mut inner = DiscriminantAnalysis::new(
+        let inner = DiscriminantAnalysis::new(
             group_data,
             independent_data,
             selection_data_parsed,

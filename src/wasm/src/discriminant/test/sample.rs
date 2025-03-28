@@ -10,7 +10,7 @@ use crate::discriminant::models::config::{
     SaveConfig,
     BootstrapConfig,
 };
-use crate::discriminant::wasm::function::VarDef;
+use crate::discriminant::models::data::VarDef;
 
 /// Generate sample group data for testing
 pub fn sample_group_data() -> Vec<Value> {
@@ -114,11 +114,11 @@ pub fn sample_config() -> Config {
             stepwise: false,
             selection_variable: Some("select".to_string()),
         },
-        defineRange: DefineRangeConfig {
+        define_range: DefineRangeConfig {
             min_range: Some(0.0),
             max_range: Some(10.0),
         },
-        setValue: SetValueConfig {
+        set_value: SetValueConfig {
             value: Some(1.0),
         },
         statistics: StatisticsConfig {
@@ -197,11 +197,11 @@ pub fn sample_config_json() -> String {
             "Stepwise": false,
             "SelectionVariable": "select"
         },
-        "defineRange": {
+        "define_range": {
             "minRange": 0,
             "maxRange": 10
         },
-        "setValue": {
+        "set_value": {
             "Value": 1.0
         },
         "statistics": {

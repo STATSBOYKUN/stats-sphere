@@ -9,38 +9,6 @@ export function mape(data: Float64Array, forecast: Float64Array): number;
  * WASM Binding: Parse SPSS-style configuration into internal format
  */
 export function parse_clustering_config(config_json: any): any;
-export function start(): void;
-export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
-export function first_difference(data: Float64Array): Float64Array;
-export function second_difference(data: Float64Array): Float64Array;
-export function seasonal_difference(data: Float64Array, season: number): Float64Array;
-/**
- * Perform discriminant analysis with given data and configuration
- *
- * # Arguments
- * * `group_variable` - JSON string containing group data
- * * `independent_variable` - JSON string containing independent variable data
- * * `selection_data` - JSON string containing selection data for filtering
- * * `config_json` - JSON object containing configuration
- * * `group_var_defs` - Definitions for group variables
- * * `independent_var_defs` - Definitions for independent variables
- * * `selection_var_defs` - Definitions for selection variables
- *
- * # Returns
- * * JSON string with analysis results
- */
-export function perform_discriminant_analysis(group_variable: any, independent_variable: any, selection_data: any, config_json: any, group_var_defs: any, independent_var_defs: any, selection_var_defs: any): any;
-/**
- * Classify new data with trained model
- *
- * # Arguments
- * * `trained_model` - JSON string containing trained model
- * * `new_data` - JSON array of feature values
- *
- * # Returns
- * * JSON string with classification results
- */
-export function classify_new_data(trained_model: any, new_data: any): any;
 /**
  * Standardize data from JavaScript
  *
@@ -75,6 +43,38 @@ export function handle_missing_values(data_json: any, strategy_str: string): any
  * * Imputed data array
  */
 export function impute_missing_values(data_json: any, method: string): any;
+export function start(): void;
+export function partial_kj(k: number, j: number, partial_autocorrelate: Float64Array): number;
+export function first_difference(data: Float64Array): Float64Array;
+export function second_difference(data: Float64Array): Float64Array;
+export function seasonal_difference(data: Float64Array, season: number): Float64Array;
+/**
+ * Perform discriminant analysis with given data and configuration
+ *
+ * # Arguments
+ * * `group_variable` - JSON string containing group data
+ * * `independent_variable` - JSON string containing independent variable data
+ * * `selection_data` - JSON string containing selection data for filtering
+ * * `config_json` - JSON object containing configuration
+ * * `group_var_defs` - Definitions for group variables
+ * * `independent_var_defs` - Definitions for independent variables
+ * * `selection_var_defs` - Definitions for selection variables
+ *
+ * # Returns
+ * * JSON string with analysis results
+ */
+export function perform_discriminant_analysis(group_variable: any, independent_variable: any, selection_data: any, config_json: any, group_var_defs: any, independent_var_defs: any, selection_var_defs: any): any;
+/**
+ * Classify new data with trained model
+ *
+ * # Arguments
+ * * `trained_model` - JSON string containing trained model
+ * * `new_data` - JSON array of feature values
+ *
+ * # Returns
+ * * JSON string with classification results
+ */
+export function classify_new_data(trained_model: any, new_data: any): any;
 /**
  * Perform hierarchical clustering analysis from JavaScript
  *
@@ -497,22 +497,26 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
-  readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
-  readonly discriminantanalysiswasm_new: (a: any, b: any, c: any, d: any, e: any, f: any, g: any) => [number, number, number];
-  readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
-  readonly discriminantanalysiswasm_univariate_f_lambda: (a: number, b: number) => [number, number, number];
-  readonly discriminantanalysiswasm_box_m_test: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_wilks_lambda: (a: number) => any;
-  readonly discriminantanalysiswasm_classify: (a: number, b: any) => [number, number, number];
-  readonly discriminantanalysiswasm_cross_validate: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_group_centroids: (a: number) => any;
-  readonly discriminantanalysiswasm_standardized_coefficients: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_structure_matrix: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_canonical_correlations: (a: number) => any;
-  readonly discriminantanalysiswasm_classification_functions: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
-  readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
+  readonly __wbg_kmeansclusteringwasm_free: (a: number, b: number) => void;
+  readonly kmeansclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
+  readonly kmeansclusteringwasm_perform_analysis: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_initial_centers: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_final_centers: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iterations: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_membership: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_distances: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_sizes: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_anova_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_variable_names: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_iteration_count: (a: number) => number;
+  readonly kmeansclusteringwasm_get_missing_count: (a: number) => number;
+  readonly kmeansclusteringwasm_get_warnings: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_results: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_case_statistics: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_case_counts_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_cluster_membership_table: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_anova_table_formatted: (a: number) => [number, number, number];
+  readonly kmeansclusteringwasm_get_distance_matrix_table: (a: number) => [number, number, number];
   readonly mse: (a: number, b: number, c: number, d: number) => number;
   readonly rmse: (a: number, b: number, c: number, d: number) => number;
   readonly mae: (a: number, b: number, c: number, d: number) => number;
@@ -546,42 +550,26 @@ export interface InitOutput {
   readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
   readonly parse_clustering_config: (a: any) => [number, number, number];
+  readonly preprocess_data: (a: any, b: number, c: number, d: number) => [number, number, number];
+  readonly handle_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly impute_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly __wbg_discriminantanalysiswasm_free: (a: number, b: number) => void;
+  readonly discriminantanalysiswasm_new: (a: any, b: any, c: any, d: any, e: any, f: any, g: any) => [number, number, number];
+  readonly discriminantanalysiswasm_compute_canonical_discriminant_functions: (a: number) => [number, number];
+  readonly discriminantanalysiswasm_univariate_f_lambda: (a: number, b: number) => [number, number, number];
+  readonly discriminantanalysiswasm_box_m_test: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_wilks_lambda: (a: number) => any;
+  readonly discriminantanalysiswasm_classify: (a: number, b: any) => [number, number, number];
+  readonly discriminantanalysiswasm_cross_validate: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_group_centroids: (a: number) => any;
+  readonly discriminantanalysiswasm_standardized_coefficients: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_structure_matrix: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_canonical_correlations: (a: number) => any;
+  readonly discriminantanalysiswasm_classification_functions: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_get_results: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_perform_stepwise_analysis: (a: number) => [number, number, number];
+  readonly discriminantanalysiswasm_get_model_summary: (a: number) => [number, number];
   readonly start: () => void;
-  readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
-  readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
-  readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_preprocess_data: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_calculate_distances: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_cluster: (a: number) => [number, number];
-  readonly hierarchicalclusteringwasm_get_clusters: (a: number, b: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_clusters_range: (a: number, b: number, c: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_evaluate: (a: number, b: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_results: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_dendrogram_data: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_variable_names: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
-  readonly hierarchicalclusteringwasm_get_warnings: (a: number) => [number, number, number];
-  readonly __wbg_kmeansclusteringwasm_free: (a: number, b: number) => void;
-  readonly kmeansclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
-  readonly kmeansclusteringwasm_perform_analysis: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_initial_centers: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_final_centers: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_iterations: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_cluster_membership: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_distances: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_cluster_sizes: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_anova_table: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_variable_names: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_iteration_count: (a: number) => number;
-  readonly kmeansclusteringwasm_get_missing_count: (a: number) => number;
-  readonly kmeansclusteringwasm_get_warnings: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_results: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_case_statistics: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_case_counts_table: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_cluster_membership_table: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_anova_table_formatted: (a: number) => [number, number, number];
-  readonly kmeansclusteringwasm_get_distance_matrix_table: (a: number) => [number, number, number];
   readonly __wbg_smoothing_free: (a: number, b: number) => void;
   readonly smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
   readonly smoothing_get_data_header: (a: number) => [number, number];
@@ -636,9 +624,21 @@ export interface InitOutput {
   readonly seasonal_difference: (a: number, b: number, c: number) => [number, number];
   readonly perform_discriminant_analysis: (a: any, b: any, c: any, d: any, e: any, f: any, g: any) => [number, number, number];
   readonly classify_new_data: (a: any, b: any) => [number, number, number];
-  readonly preprocess_data: (a: any, b: number, c: number, d: number) => [number, number, number];
-  readonly handle_missing_values: (a: any, b: number, c: number) => [number, number, number];
-  readonly impute_missing_values: (a: any, b: number, c: number) => [number, number, number];
+  readonly __wbg_hierarchicalclusteringwasm_free: (a: number, b: number) => void;
+  readonly hierarchicalclusteringwasm_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
+  readonly hierarchicalclusteringwasm_perform_analysis: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_preprocess_data: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_calculate_distances: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_cluster: (a: number) => [number, number];
+  readonly hierarchicalclusteringwasm_get_clusters: (a: number, b: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_clusters_range: (a: number, b: number, c: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_evaluate: (a: number, b: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_results: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_dendrogram_data: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_variable_names: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_label_data: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_config: (a: number) => [number, number, number];
+  readonly hierarchicalclusteringwasm_get_warnings: (a: number) => [number, number, number];
   readonly perform_analysis: (a: any, b: any) => [number, number, number];
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;

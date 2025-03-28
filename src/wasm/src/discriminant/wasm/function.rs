@@ -1,20 +1,9 @@
 use wasm_bindgen::prelude::*;
 use serde_json::Value;
-use serde::{ Deserialize, Serialize };
 use crate::discriminant::stats::core::DiscriminantAnalysis;
 use crate::discriminant::models::config::Config;
 use crate::discriminant::utils::error::DiscriminantError;
-
-/// Variable definition structure
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct VarDef {
-    pub name: String,
-    pub r#type: String,
-    pub label: String,
-    pub values: String,
-    pub missing: String,
-    pub measure: String,
-}
+use crate::discriminant::models::data::VarDef;
 
 /// Format DiscriminantError to JsValue
 fn format_error(err: DiscriminantError) -> JsValue {
