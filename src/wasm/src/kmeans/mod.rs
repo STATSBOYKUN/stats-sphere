@@ -1,6 +1,7 @@
-mod stats;
-mod types;
-mod utils;
-mod wasm;
+pub mod models;
+pub mod stats;
+pub mod utils;
+pub mod wasm;
 
-use wasm_bindgen::prelude::*;
+#[cfg(test)]
+pub mod test;

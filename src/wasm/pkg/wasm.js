@@ -167,12 +167,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8ArrayMemory0().subarray(ptr, ptr + len));
 }
 
-function takeFromExternrefTable0(idx) {
-    const value = wasm.__wbindgen_export_4.get(idx);
-    wasm.__externref_table_dealloc(idx);
-    return value;
-}
-
 let cachedFloat64ArrayMemory0 = null;
 
 function getFloat64ArrayMemory0() {
@@ -187,6 +181,38 @@ function passArrayF64ToWasm0(arg, malloc) {
     getFloat64ArrayMemory0().set(arg, ptr / 8);
     WASM_VECTOR_LEN = arg.length;
     return ptr;
+}
+
+function passArrayJsValueToWasm0(array, malloc) {
+    const ptr = malloc(array.length * 4, 4) >>> 0;
+    for (let i = 0; i < array.length; i++) {
+        const add = addToExternrefTable0(array[i]);
+        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
+    }
+    WASM_VECTOR_LEN = array.length;
+    return ptr;
+}
+
+function getArrayF64FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_export_4.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
+}
+
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_export_4.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
 }
 /**
  * @param {Float64Array} data
@@ -258,119 +284,6 @@ export function mape(data, forecast) {
     return ret;
 }
 
-function passArrayJsValueToWasm0(array, malloc) {
-    const ptr = malloc(array.length * 4, 4) >>> 0;
-    for (let i = 0; i < array.length; i++) {
-        const add = addToExternrefTable0(array[i]);
-        getDataViewMemory0().setUint32(ptr + 4 * i, add, true);
-    }
-    WASM_VECTOR_LEN = array.length;
-    return ptr;
-}
-
-function getArrayF64FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getFloat64ArrayMemory0().subarray(ptr / 8, ptr / 8 + len);
-}
-
-function getArrayJsValueFromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    const mem = getDataViewMemory0();
-    const result = [];
-    for (let i = ptr; i < ptr + 4 * len; i += 4) {
-        result.push(wasm.__wbindgen_export_4.get(mem.getUint32(i, true)));
-    }
-    wasm.__externref_drop_slice(ptr, len);
-    return result;
-}
-/**
- * WASM Binding: Parse SPSS-style configuration into internal format
- * @param {any} config_json
- * @returns {any}
- */
-export function parse_clustering_config(config_json) {
-    const ret = wasm.parse_clustering_config(config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Standardize data from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `method_str` - Standardization method
- * * `by_case` - Whether to standardize by case (true) or by variable (false)
- *
- * # Returns
- * * Standardized data array
- * @param {any} data_json
- * @param {string} method_str
- * @param {boolean} by_case
- * @returns {any}
- */
-export function preprocess_data(data_json, method_str, by_case) {
-    const ptr0 = passStringToWasm0(method_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.preprocess_data(data_json, ptr0, len0, by_case);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Handle missing values from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `strategy_str` - Missing value strategy
- *
- * # Returns
- * * Processed data array and valid case indices
- * @param {any} data_json
- * @param {string} strategy_str
- * @returns {any}
- */
-export function handle_missing_values(data_json, strategy_str) {
-    const ptr0 = passStringToWasm0(strategy_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.handle_missing_values(data_json, ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Impute missing values from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `method` - Imputation method ("mean", "zero", etc.)
- *
- * # Returns
- * * Imputed data array
- * @param {any} data_json
- * @param {string} method
- * @returns {any}
- */
-export function impute_missing_values(data_json, method) {
-    const ptr0 = passStringToWasm0(method, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    const ret = wasm.impute_missing_values(data_json, ptr0, len0);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-export function start() {
-    wasm.start();
-}
-
 let cachedUint32ArrayMemory0 = null;
 
 function getUint32ArrayMemory0() {
@@ -384,13 +297,6 @@ function getArrayU32FromWasm0(ptr, len) {
     ptr = ptr >>> 0;
     return getUint32ArrayMemory0().subarray(ptr / 4, ptr / 4 + len);
 }
-
-function passArray32ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 4, 4) >>> 0;
-    getUint32ArrayMemory0().set(arg, ptr / 4);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
 /**
  * @param {number} k
  * @param {number} j
@@ -402,6 +308,24 @@ export function partial_kj(k, j, partial_autocorrelate) {
     const len0 = WASM_VECTOR_LEN;
     const ret = wasm.partial_kj(k, j, ptr0, len0);
     return ret;
+}
+
+/**
+ * @param {any} group_data
+ * @param {any} independent_data
+ * @param {any} selection_data
+ * @param {any} config_data
+ * @param {any} group_data_defs
+ * @param {any} independent_data_defs
+ * @param {any} selection_data_defs
+ * @returns {any}
+ */
+export function analyze_discriminant(group_data, independent_data, selection_data, config_data, group_data_defs, independent_data_defs, selection_data_defs) {
+    const ret = wasm.analyze_discriminant(group_data, independent_data, selection_data, config_data, group_data_defs, independent_data_defs, selection_data_defs);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return takeFromExternrefTable0(ret[0]);
 }
 
 /**
@@ -444,77 +368,11 @@ export function seasonal_difference(data, season) {
     return v2;
 }
 
-/**
- * Perform discriminant analysis with given data and configuration
- *
- * # Arguments
- * * `group_variable` - JSON string containing group data
- * * `independent_variable` - JSON string containing independent variable data
- * * `selection_data` - JSON string containing selection data for filtering
- * * `config_json` - JSON object containing configuration
- * * `group_var_defs` - Definitions for group variables
- * * `independent_var_defs` - Definitions for independent variables
- * * `selection_var_defs` - Definitions for selection variables
- *
- * # Returns
- * * JSON string with analysis results
- * @param {any} group_variable
- * @param {any} independent_variable
- * @param {any} selection_data
- * @param {any} config_json
- * @param {any} group_var_defs
- * @param {any} independent_var_defs
- * @param {any} selection_var_defs
- * @returns {any}
- */
-export function perform_discriminant_analysis(group_variable, independent_variable, selection_data, config_json, group_var_defs, independent_var_defs, selection_var_defs) {
-    const ret = wasm.perform_discriminant_analysis(group_variable, independent_variable, selection_data, config_json, group_var_defs, independent_var_defs, selection_var_defs);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Classify new data with trained model
- *
- * # Arguments
- * * `trained_model` - JSON string containing trained model
- * * `new_data` - JSON array of feature values
- *
- * # Returns
- * * JSON string with classification results
- * @param {any} trained_model
- * @param {any} new_data
- * @returns {any}
- */
-export function classify_new_data(trained_model, new_data) {
-    const ret = wasm.classify_new_data(trained_model, new_data);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
-}
-
-/**
- * Perform hierarchical clustering analysis from JavaScript
- *
- * # Arguments
- * * `data_json` - JSON data array
- * * `config_json` - Configuration object
- *
- * # Returns
- * * Result object with analysis data or error
- * @param {any} data_json
- * @param {any} config_json
- * @returns {any}
- */
-export function perform_analysis(data_json, config_json) {
-    const ret = wasm.perform_analysis(data_json, config_json);
-    if (ret[2]) {
-        throw takeFromExternrefTable0(ret[1]);
-    }
-    return takeFromExternrefTable0(ret[0]);
+function passArray32ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 4, 4) >>> 0;
+    getUint32ArrayMemory0().set(arg, ptr / 4);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
 }
 
 const AutocorrelationFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -533,6 +391,96 @@ export class Autocorrelation {
     free() {
         const ptr = this.__destroy_into_raw();
         wasm.__wbg_autocorrelation_free(ptr, 0);
+    }
+    /**
+     * @param {Float64Array} difference
+     * @returns {Float64Array}
+     */
+    calculate_acf(difference) {
+        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} autocorelate
+     * @returns {Float64Array}
+     */
+    calculate_acf_se(autocorelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} autocorrelate
+     * @returns {Float64Array}
+     */
+    calculate_ljung_box(autocorrelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_ljung_box(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} ljung_box
+     * @returns {Float64Array}
+     */
+    pvalue_ljung_box(ljung_box) {
+        const ptr0 = passArrayF64ToWasm0(ljung_box, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_pvalue_ljung_box(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @returns {Uint32Array}
+     */
+    df_ljung_box() {
+        const ret = wasm.autocorrelation_df_ljung_box(this.__wbg_ptr);
+        var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
+    }
+    /**
+     * @param {Float64Array} autocorrelate
+     * @returns {Float64Array}
+     */
+    calculate_pacf(autocorrelate) {
+        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_pacf(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {Float64Array} partial_autocorelate
+     * @returns {Float64Array}
+     */
+    calculate_pacf_se(partial_autocorelate) {
+        const ptr0 = passArrayF64ToWasm0(partial_autocorelate, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.autocorrelation_calculate_pacf_se(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v2;
+    }
+    /**
+     * @param {string} difference
+     * @param {number} seasonally
+     */
+    autocorelate(difference, seasonally) {
+        const ptr0 = passStringToWasm0(difference, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.autocorrelation_autocorelate(this.__wbg_ptr, ptr0, len0, seasonally);
     }
     /**
      * @param {Float64Array} data
@@ -720,96 +668,6 @@ export class Autocorrelation {
         const ptr0 = passArrayF64ToWasm0(pvalue_lb, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         wasm.autocorrelation_set_pvalue_lb(this.__wbg_ptr, ptr0, len0);
-    }
-    /**
-     * @param {Float64Array} difference
-     * @returns {Float64Array}
-     */
-    calculate_acf(difference) {
-        const ptr0 = passArrayF64ToWasm0(difference, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorelate
-     * @returns {Float64Array}
-     */
-    calculate_acf_se(autocorelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_acf_se(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorrelate
-     * @returns {Float64Array}
-     */
-    calculate_pacf(autocorrelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_pacf(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} partial_autocorelate
-     * @returns {Float64Array}
-     */
-    calculate_pacf_se(partial_autocorelate) {
-        const ptr0 = passArrayF64ToWasm0(partial_autocorelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_pacf_se(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} autocorrelate
-     * @returns {Float64Array}
-     */
-    calculate_ljung_box(autocorrelate) {
-        const ptr0 = passArrayF64ToWasm0(autocorrelate, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_calculate_ljung_box(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} ljung_box
-     * @returns {Float64Array}
-     */
-    pvalue_ljung_box(ljung_box) {
-        const ptr0 = passArrayF64ToWasm0(ljung_box, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.autocorrelation_pvalue_ljung_box(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @returns {Uint32Array}
-     */
-    df_ljung_box() {
-        const ret = wasm.autocorrelation_df_ljung_box(this.__wbg_ptr);
-        var v1 = getArrayU32FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
-        return v1;
-    }
-    /**
-     * @param {string} difference
-     * @param {number} seasonally
-     */
-    autocorelate(difference, seasonally) {
-        const ptr0 = passStringToWasm0(difference, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        wasm.autocorrelation_autocorelate(this.__wbg_ptr, ptr0, len0, seasonally);
     }
 }
 
@@ -1000,6 +858,15 @@ export class Decomposition {
     /**
      * @returns {Float64Array}
      */
+    additive_decomposition() {
+        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @returns {Float64Array}
+     */
     calculate_centered_moving_average() {
         const ret = wasm.decomposition_calculate_centered_moving_average(this.__wbg_ptr);
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
@@ -1070,13 +937,16 @@ export class Decomposition {
         return v2;
     }
     /**
+     * @param {Float64Array} detrended
      * @returns {Float64Array}
      */
-    additive_decomposition() {
-        const ret = wasm.decomposition_additive_decomposition(this.__wbg_ptr);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+    calculate_additive_seasonal_component(detrended) {
+        const ptr0 = passArrayF64ToWasm0(detrended, wasm.__wbindgen_malloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.decomposition_calculate_additive_seasonal_component(this.__wbg_ptr, ptr0, len0);
+        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
+        return v2;
     }
     /**
      * @param {Float64Array} centered_ma
@@ -1086,18 +956,6 @@ export class Decomposition {
         const ptr0 = passArrayF64ToWasm0(centered_ma, wasm.__wbindgen_malloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.decomposition_calculate_additive_trend_component(this.__wbg_ptr, ptr0, len0);
-        var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v2;
-    }
-    /**
-     * @param {Float64Array} detrended
-     * @returns {Float64Array}
-     */
-    calculate_additive_seasonal_component(detrended) {
-        const ptr0 = passArrayF64ToWasm0(detrended, wasm.__wbindgen_malloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.decomposition_calculate_additive_seasonal_component(this.__wbg_ptr, ptr0, len0);
         var v2 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v2;
@@ -1114,717 +972,74 @@ export class Decomposition {
     }
 }
 
-const DiscriminantAnalysisWasmFinalization = (typeof FinalizationRegistry === 'undefined')
+const DiscriminantAnalysisFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_discriminantanalysiswasm_free(ptr >>> 0, 1));
-/**
- * WebAssembly binding for discriminant analysis
- */
-export class DiscriminantAnalysisWasm {
+    : new FinalizationRegistry(ptr => wasm.__wbg_discriminantanalysis_free(ptr >>> 0, 1));
+
+export class DiscriminantAnalysis {
 
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        DiscriminantAnalysisWasmFinalization.unregister(this);
+        DiscriminantAnalysisFinalization.unregister(this);
         return ptr;
     }
 
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_discriminantanalysiswasm_free(ptr, 0);
+        wasm.__wbg_discriminantanalysis_free(ptr, 0);
     }
     /**
-     * Create a new discriminant analysis from config
-     *
-     * # Arguments
-     * * `group_variable` - JSON string containing group data
-     * * `independent_variable` - JSON string containing independent variable data
-     * * `selection_data` - JSON string containing selection data for filtering
-     * * `config_json` - JSON string containing configuration
-     * * `group_var_defs` - Definitions for group variables
-     * * `independent_var_defs` - Definitions for independent variables
-     * * `selection_var_defs` - Definitions for selection variables
-     *
-     * # Returns
-     * * New instance of DiscriminantAnalysisWasm
-     * @param {any} group_variable
-     * @param {any} independent_variable
+     * @param {any} group_data
+     * @param {any} independent_data
      * @param {any} selection_data
-     * @param {any} config_json
-     * @param {any} group_var_defs
-     * @param {any} independent_var_defs
-     * @param {any} selection_var_defs
+     * @param {any} config_data
+     * @param {any} group_data_defs
+     * @param {any} independent_data_defs
+     * @param {any} selection_data_defs
      */
-    constructor(group_variable, independent_variable, selection_data, config_json, group_var_defs, independent_var_defs, selection_var_defs) {
-        const ret = wasm.discriminantanalysiswasm_new(group_variable, independent_variable, selection_data, config_json, group_var_defs, independent_var_defs, selection_var_defs);
+    constructor(group_data, independent_data, selection_data, config_data, group_data_defs, independent_data_defs, selection_data_defs) {
+        const ret = wasm.discriminantanalysis_new(group_data, independent_data, selection_data, config_data, group_data_defs, independent_data_defs, selection_data_defs);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         this.__wbg_ptr = ret[0] >>> 0;
-        DiscriminantAnalysisWasmFinalization.register(this, this.__wbg_ptr, this);
+        DiscriminantAnalysisFinalization.register(this, this.__wbg_ptr, this);
         return this;
     }
     /**
-     * Compute canonical discriminant functions
-     */
-    compute_canonical_discriminant_functions() {
-        const ret = wasm.discriminantanalysiswasm_compute_canonical_discriminant_functions(this.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * Get univariate F-statistics and Wilks' Lambda for a variable
-     *
-     * # Arguments
-     * * `variable_index` - Index of the variable (0-based)
-     *
-     * # Returns
-     * * JSON string with the F-Lambda result
-     * @param {number} variable_index
-     * @returns {any}
-     */
-    univariate_f_lambda(variable_index) {
-        const ret = wasm.discriminantanalysiswasm_univariate_f_lambda(this.__wbg_ptr, variable_index);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Perform Box's M test for equality of covariance matrices
-     *
-     * # Returns
-     * * JSON string with the Box's M test result
-     * @returns {any}
-     */
-    box_m_test() {
-        const ret = wasm.discriminantanalysiswasm_box_m_test(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get Wilks' Lambda for the discriminant functions
-     *
-     * # Returns
-     * * JSON string with Wilks' Lambda results
-     * @returns {any}
-     */
-    wilks_lambda() {
-        const ret = wasm.discriminantanalysiswasm_wilks_lambda(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Classify a new observation
-     *
-     * # Arguments
-     * * `x` - JSON array of feature values
-     *
-     * # Returns
-     * * JSON string with classification result
-     * @param {any} x
-     * @returns {any}
-     */
-    classify(x) {
-        const ret = wasm.discriminantanalysiswasm_classify(this.__wbg_ptr, x);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Perform cross-validation
-     *
-     * # Returns
-     * * JSON string with cross-validation results
-     * @returns {any}
-     */
-    cross_validate() {
-        const ret = wasm.discriminantanalysiswasm_cross_validate(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get group centroids
-     *
-     * # Returns
-     * * JSON string with group centroids
-     * @returns {any}
-     */
-    group_centroids() {
-        const ret = wasm.discriminantanalysiswasm_group_centroids(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Get standardized coefficients
-     *
-     * # Returns
-     * * JSON string with standardized coefficients
-     * @returns {any}
-     */
-    standardized_coefficients() {
-        const ret = wasm.discriminantanalysiswasm_standardized_coefficients(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get structure matrix
-     *
-     * # Returns
-     * * JSON string with structure matrix
-     * @returns {any}
-     */
-    structure_matrix() {
-        const ret = wasm.discriminantanalysiswasm_structure_matrix(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get canonical correlations
-     *
-     * # Returns
-     * * JSON string with canonical correlations
-     * @returns {any}
-     */
-    canonical_correlations() {
-        const ret = wasm.discriminantanalysiswasm_canonical_correlations(this.__wbg_ptr);
-        return ret;
-    }
-    /**
-     * Get classification functions
-     *
-     * # Returns
-     * * JSON string with classification function coefficients
-     * @returns {any}
-     */
-    classification_functions() {
-        const ret = wasm.discriminantanalysiswasm_classification_functions(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get complete discriminant analysis results
-     *
-     * # Returns
-     * * JSON string with all results
      * @returns {any}
      */
     get_results() {
-        const ret = wasm.discriminantanalysiswasm_get_results(this.__wbg_ptr);
+        const ret = wasm.discriminantanalysis_get_results(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * Perform stepwise discriminant analysis
      * @returns {any}
      */
-    perform_stepwise_analysis() {
-        const ret = wasm.discriminantanalysiswasm_perform_stepwise_analysis(this.__wbg_ptr);
+    get_executed_functions() {
+        const ret = wasm.discriminantanalysis_get_executed_functions(this.__wbg_ptr);
         if (ret[2]) {
             throw takeFromExternrefTable0(ret[1]);
         }
         return takeFromExternrefTable0(ret[0]);
     }
     /**
-     * Get model summary information
-     * @returns {string}
-     */
-    get_model_summary() {
-        let deferred1_0;
-        let deferred1_1;
-        try {
-            const ret = wasm.discriminantanalysiswasm_get_model_summary(this.__wbg_ptr);
-            deferred1_0 = ret[0];
-            deferred1_1 = ret[1];
-            return getStringFromWasm0(ret[0], ret[1]);
-        } finally {
-            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
-        }
-    }
-}
-
-const HierarchicalClusteringWasmFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_hierarchicalclusteringwasm_free(ptr >>> 0, 1));
-/**
- * WebAssembly binding for hierarchical clustering
- */
-export class HierarchicalClusteringWasm {
-
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        HierarchicalClusteringWasmFinalization.unregister(this);
-        return ptr;
-    }
-
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_hierarchicalclusteringwasm_free(ptr, 0);
-    }
-    /**
-     * Create a new hierarchical clustering instance with SPSS-style input format
-     * @param {any} tempData
-     * @param {any} slicedDataForCluster
-     * @param {any} slicedDataForLabelCases
-     * @param {any} varDefsForCluster
-     * @param {any} varDefsForLabelCases
-     */
-    constructor(tempData, slicedDataForCluster, slicedDataForLabelCases, varDefsForCluster, varDefsForLabelCases) {
-        const ret = wasm.hierarchicalclusteringwasm_new(tempData, slicedDataForCluster, slicedDataForLabelCases, varDefsForCluster, varDefsForLabelCases);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        HierarchicalClusteringWasmFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Perform complete hierarchical clustering analysis
      * @returns {any}
      */
-    perform_analysis() {
-        const ret = wasm.hierarchicalclusteringwasm_perform_analysis(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
+    get_all_errors() {
+        const ret = wasm.discriminantanalysis_get_all_errors(this.__wbg_ptr);
+        return ret;
     }
     /**
-     * Preprocess data (standardize and handle missing values)
-     */
-    preprocess_data() {
-        const ret = wasm.hierarchicalclusteringwasm_preprocess_data(this.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * Calculate distance matrix
-     */
-    calculate_distances() {
-        const ret = wasm.hierarchicalclusteringwasm_calculate_distances(this.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * Perform hierarchical clustering
-     */
-    cluster() {
-        const ret = wasm.hierarchicalclusteringwasm_cluster(this.__wbg_ptr);
-        if (ret[1]) {
-            throw takeFromExternrefTable0(ret[0]);
-        }
-    }
-    /**
-     * Get cluster membership for a specific number of clusters
-     * @param {number} num_clusters
      * @returns {any}
      */
-    get_clusters(num_clusters) {
-        const ret = wasm.hierarchicalclusteringwasm_get_clusters(this.__wbg_ptr, num_clusters);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get cluster memberships for a range of solutions
-     * @param {number} min_clusters
-     * @param {number} max_clusters
-     * @returns {any}
-     */
-    get_clusters_range(min_clusters, max_clusters) {
-        const ret = wasm.hierarchicalclusteringwasm_get_clusters_range(this.__wbg_ptr, min_clusters, max_clusters);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Evaluate clustering solution
-     * @param {number} num_clusters
-     * @returns {any}
-     */
-    evaluate(num_clusters) {
-        const ret = wasm.hierarchicalclusteringwasm_evaluate(this.__wbg_ptr, num_clusters);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get complete results
-     * @returns {any}
-     */
-    get_results() {
-        const ret = wasm.hierarchicalclusteringwasm_get_results(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get dendrogram data for visualization
-     * @returns {any}
-     */
-    get_dendrogram_data() {
-        const ret = wasm.hierarchicalclusteringwasm_get_dendrogram_data(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get variable names
-     * @returns {any}
-     */
-    get_variable_names() {
-        const ret = wasm.hierarchicalclusteringwasm_get_variable_names(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get label data
-     * @returns {any}
-     */
-    get_label_data() {
-        const ret = wasm.hierarchicalclusteringwasm_get_label_data(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get original configuration
-     * @returns {any}
-     */
-    get_config() {
-        const ret = wasm.hierarchicalclusteringwasm_get_config(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get accumulated warnings
-     * @returns {any}
-     */
-    get_warnings() {
-        const ret = wasm.hierarchicalclusteringwasm_get_warnings(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-}
-
-const KMeansClusteringWasmFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_kmeansclusteringwasm_free(ptr >>> 0, 1));
-/**
- * WASM bindings for K-Means clustering.
- */
-export class KMeansClusteringWasm {
-
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        KMeansClusteringWasmFinalization.unregister(this);
-        return ptr;
-    }
-
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_kmeansclusteringwasm_free(ptr, 0);
-    }
-    /**
-     * Create a new K-Means clustering instance.
-     *
-     * # Arguments
-     * * `temp_data` - Configuration settings (JsValue)
-     * * `sliced_data_for_target` - Target data (JsValue)
-     * * `sliced_data_for_case_target` - Case target data (JsValue)
-     * * `var_defs_for_target` - Variable definitions for targets (JsValue)
-     * * `var_defs_for_case_target` - Variable definitions for case targets (JsValue)
-     *
-     * # Returns
-     * * `Result<KMeansClusteringWasm, JsValue>` - New instance or error
-     * @param {any} temp_data
-     * @param {any} sliced_data_for_target
-     * @param {any} sliced_data_for_case_target
-     * @param {any} var_defs_for_target
-     * @param {any} var_defs_for_case_target
-     */
-    constructor(temp_data, sliced_data_for_target, sliced_data_for_case_target, var_defs_for_target, var_defs_for_case_target) {
-        const ret = wasm.kmeansclusteringwasm_new(temp_data, sliced_data_for_target, sliced_data_for_case_target, var_defs_for_target, var_defs_for_case_target);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        this.__wbg_ptr = ret[0] >>> 0;
-        KMeansClusteringWasmFinalization.register(this, this.__wbg_ptr, this);
-        return this;
-    }
-    /**
-     * Perform K-Means clustering analysis.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Clustering results as JS object or error
-     * @returns {any}
-     */
-    perform_analysis() {
-        const ret = wasm.kmeansclusteringwasm_perform_analysis(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get initial cluster centers.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Initial centers as JS array or error
-     * @returns {any}
-     */
-    get_initial_centers() {
-        const ret = wasm.kmeansclusteringwasm_get_initial_centers(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get final cluster centers.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Final centers as JS array or error
-     * @returns {any}
-     */
-    get_final_centers() {
-        const ret = wasm.kmeansclusteringwasm_get_final_centers(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get iteration history.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Iteration changes as JS array or error
-     * @returns {any}
-     */
-    get_iterations() {
-        const ret = wasm.kmeansclusteringwasm_get_iterations(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get cluster membership for each data point.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Cluster assignments as JS array or error
-     * @returns {any}
-     */
-    get_cluster_membership() {
-        const ret = wasm.kmeansclusteringwasm_get_cluster_membership(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get distances from each point to its cluster center.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Distances as JS array or error
-     * @returns {any}
-     */
-    get_distances() {
-        const ret = wasm.kmeansclusteringwasm_get_distances(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get the number of data points in each cluster.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Cluster sizes as JS array or error
-     * @returns {any}
-     */
-    get_cluster_sizes() {
-        const ret = wasm.kmeansclusteringwasm_get_cluster_sizes(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get ANOVA statistics if available.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
-     * @returns {any}
-     */
-    get_anova_table() {
-        const ret = wasm.kmeansclusteringwasm_get_anova_table(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get variable names used in clustering.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Variable names as JS array or error
-     * @returns {any}
-     */
-    get_variable_names() {
-        const ret = wasm.kmeansclusteringwasm_get_variable_names(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get number of iterations performed.
-     *
-     * # Returns
-     * * `usize` - Number of iterations
-     * @returns {number}
-     */
-    get_iteration_count() {
-        const ret = wasm.kmeansclusteringwasm_get_iteration_count(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Get count of missing values encountered.
-     *
-     * # Returns
-     * * `usize` - Number of missing values
-     * @returns {number}
-     */
-    get_missing_count() {
-        const ret = wasm.kmeansclusteringwasm_get_missing_count(this.__wbg_ptr);
-        return ret >>> 0;
-    }
-    /**
-     * Get all warnings accumulated during processing.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Warnings as JS array or error
-     * @returns {any}
-     */
-    get_warnings() {
-        const ret = wasm.kmeansclusteringwasm_get_warnings(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get the complete clustering results.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Complete clustering results as JS object or error
-     * @returns {any}
-     */
-    get_results() {
-        const ret = wasm.kmeansclusteringwasm_get_results(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get the number of cases in each cluster.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Case statistics as JS object or error
-     * @returns {any}
-     */
-    get_case_statistics() {
-        const ret = wasm.kmeansclusteringwasm_get_case_statistics(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get specific case counts table formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Case counts table as JS object or error
-     * @returns {any}
-     */
-    get_case_counts_table() {
-        const ret = wasm.kmeansclusteringwasm_get_case_counts_table(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get cluster membership table formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Cluster membership table as JS object or error
-     * @returns {any}
-     */
-    get_cluster_membership_table() {
-        const ret = wasm.kmeansclusteringwasm_get_cluster_membership_table(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get ANOVA table formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - ANOVA table as JS object or error
-     * @returns {any}
-     */
-    get_anova_table_formatted() {
-        const ret = wasm.kmeansclusteringwasm_get_anova_table_formatted(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
-    }
-    /**
-     * Get distances between final cluster centers formatted as in SPSS output.
-     *
-     * # Returns
-     * * `Result<JsValue, JsValue>` - Distance matrix as JS object or error
-     * @returns {any}
-     */
-    get_distance_matrix_table() {
-        const ret = wasm.kmeansclusteringwasm_get_distance_matrix_table(this.__wbg_ptr);
-        if (ret[2]) {
-            throw takeFromExternrefTable0(ret[1]);
-        }
-        return takeFromExternrefTable0(ret[0]);
+    clear_errors() {
+        const ret = wasm.discriminantanalysis_clear_errors(this.__wbg_ptr);
+        return ret;
     }
 }
 
@@ -1946,36 +1161,6 @@ export class Smoothing {
         wasm.smoothing_set_time_header(this.__wbg_ptr, ptr0, len0);
     }
     /**
-     * @param {number} distance
-     * @returns {Float64Array}
-     */
-    calculate_sma(distance) {
-        const ret = wasm.smoothing_calculate_sma(this.__wbg_ptr, distance);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
-     * @param {number} distance
-     * @returns {Float64Array}
-     */
-    calculate_dma(distance) {
-        const ret = wasm.smoothing_calculate_dma(this.__wbg_ptr, distance);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
-     * @param {number} distance
-     * @returns {Float64Array}
-     */
-    calculate_wma(distance) {
-        const ret = wasm.smoothing_calculate_wma(this.__wbg_ptr, distance);
-        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
-        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
-        return v1;
-    }
-    /**
      * @param {number} alpha
      * @returns {Float64Array}
      */
@@ -2015,6 +1200,36 @@ export class Smoothing {
      */
     calculate_winter(alpha, beta, gamma, period) {
         const ret = wasm.smoothing_calculate_winter(this.__wbg_ptr, alpha, beta, gamma, period);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {number} distance
+     * @returns {Float64Array}
+     */
+    calculate_sma(distance) {
+        const ret = wasm.smoothing_calculate_sma(this.__wbg_ptr, distance);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {number} distance
+     * @returns {Float64Array}
+     */
+    calculate_dma(distance) {
+        const ret = wasm.smoothing_calculate_dma(this.__wbg_ptr, distance);
+        var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
+        return v1;
+    }
+    /**
+     * @param {number} distance
+     * @returns {Float64Array}
+     */
+    calculate_wma(distance) {
+        const ret = wasm.smoothing_calculate_wma(this.__wbg_ptr, distance);
         var v1 = getArrayF64FromWasm0(ret[0], ret[1]).slice();
         wasm.__wbindgen_free(ret[0], ret[1] * 8, 8);
         return v1;
@@ -2088,9 +1303,6 @@ function __wbg_get_imports() {
         const ret = Object.entries(arg0);
         return ret;
     };
-    imports.wbg.__wbg_error_524f506f44df1645 = function(arg0) {
-        console.error(arg0);
-    };
     imports.wbg.__wbg_get_67b2ba62fc30de12 = function() { return handleError(function (arg0, arg1) {
         const ret = Reflect.get(arg0, arg1);
         return ret;
@@ -2102,9 +1314,6 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_getwithrefkey_1dc361bd10053bfe = function(arg0, arg1) {
         const ret = arg0[arg1];
         return ret;
-    };
-    imports.wbg.__wbg_info_3daf2e093e091b66 = function(arg0) {
-        console.info(arg0);
     };
     imports.wbg.__wbg_instanceof_ArrayBuffer_e14585432e3737fc = function(arg0) {
         let result;
@@ -2204,12 +1413,13 @@ function __wbg_get_imports() {
         const ret = Math.sqrt(arg0);
         return ret;
     };
+    imports.wbg.__wbg_stringify_f7ed6987935b4a24 = function() { return handleError(function (arg0) {
+        const ret = JSON.stringify(arg0);
+        return ret;
+    }, arguments) };
     imports.wbg.__wbg_value_cd1ffa7b1ab794f1 = function(arg0) {
         const ret = arg0.value;
         return ret;
-    };
-    imports.wbg.__wbg_warn_4ca3906c248c47c4 = function(arg0) {
-        console.warn(arg0);
     };
     imports.wbg.__wbindgen_as_number = function(arg0) {
         const ret = +arg0;
@@ -2265,10 +1475,6 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbindgen_is_function = function(arg0) {
         const ret = typeof(arg0) === 'function';
-        return ret;
-    };
-    imports.wbg.__wbindgen_is_null = function(arg0) {
-        const ret = arg0 === null;
         return ret;
     };
     imports.wbg.__wbindgen_is_object = function(arg0) {

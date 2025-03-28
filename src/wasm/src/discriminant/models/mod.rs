@@ -1,15 +1,8 @@
-// Models module exports all data structures
-
-// Configuration for discriminant analysis
 pub mod config;
-
-// Input data structures
 pub mod data;
-
-// Result structures
 pub mod result;
 
-// Re-export common types
-pub use config::Config;
-pub use data::Data;
-pub use result::DiscriminantResults;
+// Re-export important types
+pub use config::DiscriminantConfig;
+pub use data::{ AnalysisData, DataRecord, DataValue, VariableDefinition };
+pub use result::DiscriminantResult;

@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { HierClusAnalysisType } from "@/models/classify/hierarchical-cluster/hierarchical-cluster-worker";
-import init, { HierarchicalClusteringWasm } from "@/src/wasm/pkg/wasm";
+import init from "@/src/wasm/pkg/wasm";
 import { convertClusteringData } from "./hierarchical-cluster-analysis-formatter";
 import { json } from "d3";
 import { resultHierClus } from "./hierarchical-cluster-analysis-output";
@@ -36,55 +36,55 @@ export async function analyzeHierClus({
     const varDefsForCluster = getVarDefs(variables, ClusterVariables);
     const varDefsForLabelCases = getVarDefs(variables, LabelCasesVariable);
 
-    const hc = new HierarchicalClusteringWasm(
-        configData,
-        slicedDataForCluster,
-        slicedDataForLabelCases,
-        varDefsForCluster,
-        varDefsForLabelCases
-    );
+    // const hc = new HierarchicalClusteringWasm(
+    //     configData,
+    //     slicedDataForCluster,
+    //     slicedDataForLabelCases,
+    //     varDefsForCluster,
+    //     varDefsForLabelCases
+    // );
 
-    // perform anaylsis and etc
-    hc.perform_analysis();
+    // // perform anaylsis and etc
+    // hc.perform_analysis();
 
-    // get results
-    const results = hc.get_results();
-    const formattedResults = convertClusteringData(results);
+    // // get results
+    // const results = hc.get_results();
+    // const formattedResults = convertClusteringData(results);
 
-    /*
-     * 🧩 Analysis Case Process 🧩
-     */
+    // /*
+    //  * 🧩 Analysis Case Process 🧩
+    //  */
 
-    /*
-     * 📊 Proximity Matrix 📊
-     */
-    const proximityMatrix = JSON.stringify({
-        tables: [formattedResults.tables[1]],
-    });
+    // /*
+    //  * 📊 Proximity Matrix 📊
+    //  */
+    // const proximityMatrix = JSON.stringify({
+    //     tables: [formattedResults.tables[1]],
+    // });
 
-    /*
-     * 📊 Aggloromeration Schedule 📊
-     */
-    const agglomerationSchedule = JSON.stringify({
-        tables: [formattedResults.tables[2]],
-    });
+    // /*
+    //  * 📊 Aggloromeration Schedule 📊
+    //  */
+    // const agglomerationSchedule = JSON.stringify({
+    //     tables: [formattedResults.tables[2]],
+    // });
 
-    /*
-     * 📊 Cluster Membership 📊
-     */
-    const clusterMembership = JSON.stringify({
-        tables: [formattedResults.tables[0]],
-    });
+    // /*
+    //  * 📊 Cluster Membership 📊
+    //  */
+    // const clusterMembership = JSON.stringify({
+    //     tables: [formattedResults.tables[0]],
+    // });
 
-    /*
-     * 🎉 Final Result Process 🎯
-     * */
-    await resultHierClus({
-        addLog,
-        addAnalytic,
-        addStatistic,
-        proximityMatrixTable: proximityMatrix,
-        agglomerationScheduleTable: agglomerationSchedule,
-        clusterMembershipTable: clusterMembership,
-    });
+    // /*
+    //  * 🎉 Final Result Process 🎯
+    //  * */
+    // await resultHierClus({
+    //     addLog,
+    //     addAnalytic,
+    //     addStatistic,
+    //     proximityMatrixTable: proximityMatrix,
+    //     agglomerationScheduleTable: agglomerationSchedule,
+    //     clusterMembershipTable: clusterMembership,
+    // });
 }
