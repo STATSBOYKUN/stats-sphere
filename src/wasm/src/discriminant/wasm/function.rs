@@ -5,7 +5,7 @@ use crate::discriminant::models::{
     config::DiscriminantConfig,
     data::{ DataRecord, VariableDefinition },
 };
-use crate::discriminant::utils::error::string_to_js_error;
+use crate::discriminant::utils::converter::string_to_js_error;
 use crate::discriminant::wasm::constructor::DiscriminantAnalysis;
 
 // Tambahan fungsi-fungsi pendukung untuk API berbasis fungsi (bukan constructor)

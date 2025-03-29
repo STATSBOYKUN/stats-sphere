@@ -12,7 +12,7 @@ pub fn calculate_group_means(
     // Implementasi perhitungan mean per grup
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_group_means");
+    web_sys::console::log_1(&"Executing calculate_group_means".into());
     Ok(result)
 }
 
@@ -23,7 +23,7 @@ pub fn calculate_group_std_deviations(
     // Implementasi perhitungan standar deviasi per grup
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_group_std_deviations");
+    web_sys::console::log_1(&"Executing calculate_group_std_deviations".into());
     Ok(result)
 }
 
@@ -34,7 +34,8 @@ pub fn calculate_univariate_anova(
     // Implementasi ANOVA untuk setiap variabel independen
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_univariate_anova");
+    web_sys::console::log_1(&"Executing calculate_univariate_anova".into());
+
     Ok(result)
 }
 
@@ -45,7 +46,7 @@ pub fn calculate_box_m_test(
     // Implementasi Box's M test
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_box_m_test");
+    web_sys::console::log_1(&"Executing calculate_box_m_test".into());
     Ok(result)
 }
 
@@ -56,7 +57,7 @@ pub fn calculate_discriminant_functions(
     // Implementasi perhitungan fungsi diskriminan
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_discriminant_functions");
+    web_sys::console::log_1(&"Executing calculate_discriminant_functions".into());
     Ok(result)
 }
 
@@ -68,7 +69,7 @@ pub fn calculate_classification_results(
     // Implementasi klasifikasi hasil
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_classification_results");
+    web_sys::console::log_1(&"Executing calculate_classification_results".into());
     Ok(result)
 }
 
@@ -80,18 +81,6 @@ pub fn calculate_leave_one_out_validation(
     // Implementasi validasi leave-one-out
     // Placeholder untuk saat ini
     let mut result = HashMap::new();
-    log("Executing calculate_leave_one_out_validation");
+    web_sys::console::log_1(&"Executing calculate_leave_one_out_validation".into());
     Ok(result)
-}
-
-// Helper function untuk logging
-fn log(message: &str) {
-    #[cfg(feature = "wasm")]
-    {
-        web_sys::console::log_1(&message.into());
-    }
-    #[cfg(not(feature = "wasm"))]
-    {
-        println!("{}", message);
-    }
 }

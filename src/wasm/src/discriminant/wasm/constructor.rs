@@ -6,7 +6,10 @@ use crate::discriminant::models::{
     result::{ DiscriminantResult, ProcessingSummary },
 };
 use crate::discriminant::stats::core;
-use crate::discriminant::utils::error::{ string_to_js_error, ErrorCollector };
+use crate::discriminant::utils::{
+    converter::string_to_js_error,
+    error::{ AnalysisResult, ErrorCollector },
+};
 
 #[wasm_bindgen]
 pub struct DiscriminantAnalysis {
@@ -153,6 +156,11 @@ impl DiscriminantAnalysis {
 
         // Log configuration to track which methods will be executed
         web_sys::console::log_1(&format!("Config: {:?}", self.config).into());
+
+        // Test F-Removal Value
+        web_sys::console::log_1(
+            &format!("F-Removal Value: {:?}", self.config.method.f_removal).into()
+        );
 
         // Setup basic processing summary
         let total_cases = self.data.group_data
