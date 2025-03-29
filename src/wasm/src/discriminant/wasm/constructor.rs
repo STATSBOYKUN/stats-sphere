@@ -2,14 +2,11 @@ use wasm_bindgen::prelude::*;
 
 use crate::discriminant::models::{
     config::DiscriminantConfig,
-    data::{ AnalysisData, DataRecord, DataValue, VariableDefinition },
-    result::{ DiscriminantResult, ProcessingSummary },
+    data::{ AnalysisData, DataRecord, VariableDefinition },
+    result::DiscriminantResult,
 };
-use crate::discriminant::stats::core;
-use crate::discriminant::utils::{
-    converter::string_to_js_error,
-    error::{ AnalysisResult, ErrorCollector },
-};
+use crate::discriminant::utils::{ converter::string_to_js_error, error::ErrorCollector };
+use crate::discriminant::wasm::function;
 
 #[wasm_bindgen]
 pub struct DiscriminantAnalysis {
@@ -31,7 +28,7 @@ impl DiscriminantAnalysis {
         independent_data_defs: JsValue,
         selection_data_defs: JsValue
     ) -> Result<DiscriminantAnalysis, JsValue> {
-        // Inisialisasi error collector
+        // Initialize error collector
         let mut error_collector = ErrorCollector::default();
 
         // Log raw config for debugging
@@ -122,6 +119,19 @@ impl DiscriminantAnalysis {
             }
         };
 
+        // Validate important configuration
+        if config.main.grouping_variable.is_empty() {
+            let msg = "Grouping variable must be selected for discriminant analysis".to_string();
+            error_collector.add_error("config.validation.grouping_variable", &msg);
+            return Err(string_to_js_error(msg));
+        }
+
+        if config.main.independent_variables.is_empty() {
+            let msg = "At least one independent variable must be selected".to_string();
+            error_collector.add_error("config.validation.independent_variables", &msg);
+            return Err(string_to_js_error(msg));
+        }
+
         // Store data
         let data = AnalysisData {
             group_data,
@@ -140,161 +150,32 @@ impl DiscriminantAnalysis {
             error_collector,
         };
 
-        // Run the analysis
-        match analysis.run_analysis() {
-            Ok(_) => Ok(analysis),
+        // Run the analysis using the function from function.rs
+        match
+            function::run_analysis(&analysis.data, &analysis.config, &mut analysis.error_collector)
+        {
+            Ok(result) => {
+                analysis.result = result;
+                Ok(analysis)
+            }
             Err(e) => Err(e),
         }
     }
 
-    // Run the analysis
-    fn run_analysis(&mut self) -> Result<(), JsValue> {
-        web_sys::console::log_1(&"Starting discriminant analysis".into());
-
-        // Initialize result with executed functions tracking
-        let mut executed_functions = Vec::new();
-
-        // Log configuration to track which methods will be executed
-        web_sys::console::log_1(&format!("Config: {:?}", self.config).into());
-
-        // Test F-Removal Value
-        web_sys::console::log_1(
-            &format!("F-Removal Value: {:?}", self.config.method.f_removal).into()
-        );
-
-        // Setup basic processing summary
-        let total_cases = self.data.group_data
-            .iter()
-            .map(|grp| grp.len())
-            .sum();
-        let valid_cases = total_cases; // Simplification for now
-        let excluded_cases = 0; // Simplification for now
-
-        // Add executed function names to track
-        executed_functions.push("process_analysis_cases".to_string());
-
-        // Basic statistics calculations
-        if self.config.statistics.means {
-            executed_functions.push("calculate_group_means".to_string());
-            match core::calculate_group_means(&self.data, &self.config) {
-                Ok(_) => {}
-                Err(e) => {
-                    self.error_collector.add_error("calculate_group_means", &e);
-                    // Continue execution despite errors for non-critical functions
-                }
-            }
-        }
-
-        if self.config.statistics.anova {
-            executed_functions.push("calculate_univariate_anova".to_string());
-            match core::calculate_univariate_anova(&self.data, &self.config) {
-                Ok(_) => {}
-                Err(e) => {
-                    self.error_collector.add_error("calculate_univariate_anova", &e);
-                    // Continue execution despite errors for non-critical functions
-                }
-            }
-        }
-
-        if self.config.statistics.box_m {
-            executed_functions.push("calculate_box_m_test".to_string());
-            match core::calculate_box_m_test(&self.data, &self.config) {
-                Ok(_) => {}
-                Err(e) => {
-                    self.error_collector.add_error("calculate_box_m_test", &e);
-                    // Continue execution despite errors for non-critical functions
-                }
-            }
-        }
-
-        // Always calculate discriminant functions - this is critical
-        executed_functions.push("calculate_discriminant_functions".to_string());
-        let discriminant_functions = match
-            core::calculate_discriminant_functions(&self.data, &self.config)
-        {
-            Ok(df) => df,
-            Err(e) => {
-                self.error_collector.add_error("calculate_discriminant_functions", &e);
-                return Err(string_to_js_error(e));
-            }
-        };
-
-        // Classification results if requested
-        if self.config.classify.case || self.config.classify.summary {
-            executed_functions.push("calculate_classification_results".to_string());
-            match
-                core::calculate_classification_results(
-                    &self.data,
-                    &self.config,
-                    &discriminant_functions
-                )
-            {
-                Ok(_) => {}
-                Err(e) => {
-                    self.error_collector.add_error("calculate_classification_results", &e);
-                    // Continue execution despite errors for non-critical functions
-                }
-            }
-        }
-
-        // Leave-one-out validation if requested
-        if self.config.classify.leave {
-            executed_functions.push("calculate_leave_one_out_validation".to_string());
-            match
-                core::calculate_leave_one_out_validation(
-                    &self.data,
-                    &self.config,
-                    &discriminant_functions
-                )
-            {
-                Ok(_) => {}
-                Err(e) => {
-                    self.error_collector.add_error("calculate_leave_one_out_validation", &e);
-                    // Continue execution despite errors for non-critical functions
-                }
-            }
-        }
-
-        // Create a simple result with executed functions for now
-        self.result = Some(DiscriminantResult {
-            processing_summary: ProcessingSummary {
-                valid_cases: valid_cases,
-                excluded_cases: excluded_cases,
-                total_cases: total_cases,
-            },
-            group_statistics: None,
-            equality_tests: None,
-            canonical_functions: None,
-            structure_matrix: None,
-            classification_results: None,
-            executed_functions: executed_functions.clone(),
-        });
-
-        Ok(())
-    }
-
+    // Use functions from function.rs
     pub fn get_results(&self) -> Result<JsValue, JsValue> {
-        match &self.result {
-            Some(result) => Ok(serde_wasm_bindgen::to_value(result).unwrap()),
-            None => Err(string_to_js_error("No analysis results available".to_string())),
-        }
+        function::get_results(&self.result)
     }
 
     pub fn get_executed_functions(&self) -> Result<JsValue, JsValue> {
-        match &self.result {
-            Some(result) => Ok(serde_wasm_bindgen::to_value(&result.executed_functions).unwrap()),
-            None => Err(string_to_js_error("No analysis has been performed".to_string())),
-        }
+        function::get_executed_functions(&self.result)
     }
 
-    // Fungsi untuk mendapatkan semua error yang terjadi
     pub fn get_all_errors(&self) -> JsValue {
-        JsValue::from_str(&self.error_collector.get_error_summary())
+        function::get_all_errors(&self.error_collector)
     }
 
-    // Fungsi untuk membersihkan error collector
     pub fn clear_errors(&mut self) -> JsValue {
-        self.error_collector.clear();
-        JsValue::from_str("Error collector cleared")
+        function::clear_errors(&mut self.error_collector)
     }
 }

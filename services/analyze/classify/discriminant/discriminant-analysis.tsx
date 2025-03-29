@@ -58,6 +58,7 @@ export async function analyzeDiscriminant({
     const errors = da.get_all_errors();
     console.log("executed", executed);
     console.log("errors", errors);
+    console.log("results", results);
     // const formattedResults = convertStatisticalData(results);
 
     // /*

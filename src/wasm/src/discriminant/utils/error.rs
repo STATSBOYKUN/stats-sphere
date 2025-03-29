@@ -1,4 +1,3 @@
-use wasm_bindgen::JsValue;
 use std::collections::HashMap;
 
 // Tipe data untuk menghimpun error dari berbagai fungsi
