@@ -20,13 +20,14 @@ web-sys = { version = "0.3", features = ["console"] }
 nalgebra = { version = "0.32", features = ["std"] }
 csv = "1.1"
 ndarray = { version = "0.15.4", features = ["serde"] }
-arima = "0.3.0"
-anyhow = "1.0"         
+arima = "0.3.0"       
 num = "0.4"           
 finitediff = "0.1"   
 rand = "0.8"
 rand_distr = "0.4" 
-unit-root = "0.6.0"
+liblbfgs = "0.1.0"
+anyhow = "1.0"
+tracing = "0.1.41"
 
 [dependencies.getrandom]
 version = "0.2"

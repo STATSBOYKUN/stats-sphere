@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
-use crate::Arima;
-use arima::estimate;
+use crate::{Arima, est_coef};
+// use arima::estimate;
 
 #[wasm_bindgen]
 impl Arima{
@@ -9,7 +9,8 @@ impl Arima{
         let p = self.get_ar_order() as usize;
         let q = self.get_ma_order() as usize;
         let d = self.get_i_order() as usize;
-        let coef = estimate::fit(&data, p, d, q).unwrap();
+        // let coef = estimate::fit(&data, p, d, q).unwrap();
+        let coef = est_coef(p, d, q, data.clone()).unwrap();
 
         self.set_constant(coef[0]);
         if p == 0 && q > 0 {

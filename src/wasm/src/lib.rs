@@ -12,7 +12,16 @@ pub use time_series::unit_root_test::read_critical_values::*;
 pub use time_series::unit_root_test::read_pvalue::*;
 pub use time_series::unit_root_test::dickey_fuller::dickey_fuller::DickeyFuller;
 pub use time_series::unit_root_test::augmented_dickey_fuller::augmented_dickey_fuller::AugmentedDickeyFuller;
+
 pub use time_series::arima::arima::Arima;
+pub use time_series::arima::est_coef_process::autocov::autocov;
+pub use time_series::arima::est_coef_process::burg_alg::burg_alg;
+pub use time_series::arima::est_coef_process::durb_lev_alg::durb_lev_alg;
+pub use time_series::arima::est_coef_process::innov_alg::innov_alg;
+pub use time_series::arima::est_coef_process::yul_walk_est::yul_walk_est;
+pub use time_series::arima::est_coef_process::hann_ris_alg::hann_ris_alg;
+pub use time_series::arima::est_coef_process::cmle::cmle;
+pub use time_series::arima::est_coef_process::est_coef::est_coef;
 
 pub mod regression;
 pub use regression::simple_linear_regression::simple_linear_regression::SimpleLinearRegression;

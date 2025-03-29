@@ -1,0 +1,164 @@
+use wasm_bindgen::prelude::*;
+use crate::{Arima, first_difference, invert_matrix};
+use nalgebra::DMatrix;
+use finitediff::FiniteDiff;
+
+#[wasm_bindgen]
+impl Arima{
+    pub fn intercept_se(&self) -> Vec<f64>{
+        let mut data = self.get_data();
+        let p = self.get_ar_coef().len();
+        let q = self.get_ma_coef().len();
+        let d = self.get_i_order();
+        if d > 0 {
+            for _ in 0..d{
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        }
+        
+        let total_size = 1 + p + q;
+        let f = |coef: &Vec<f64>| {
+            let intercept = coef[0];
+            let ar ;
+            let ma ;
+            if p > 0 && q > 0{
+                ar = coef[1..p+1].to_vec();
+                ma = coef[p+1..].to_vec();
+            } else if p > 0 {
+                ar = coef[1..p+1].to_vec();
+                ma = Vec::new();
+            } else {
+                ar = Vec::new();
+                ma = coef[1..q+1].to_vec();
+            }
+            let residuals: Vec<f64> = self.est_res(intercept, ar, ma, data.clone());
+
+            let mut css: f64 = 0.0;
+            for residual in &residuals {
+                css += residual * residual;
+            }
+            let n = data.len() as f64;
+            let df = n - p as f64 - total_size as f64;
+            let var_res = css / df;
+            let log_like = - n / 2.0 * (2.0 * std::f64::consts::PI * var_res).ln() - css / (2.0 * var_res);
+            log_like
+        };
+
+        let mut coef = Vec::new();
+        coef.push(self.get_constant());
+        if p > 0 {
+            for ar in self.get_ar_coef() {
+                coef.push(ar);
+            };
+        }
+        if q > 0 {
+            for ma in self.get_ma_coef(){
+                coef.push(ma);
+            };
+        }
+        let hessian: Vec<Vec<f64>> = coef.forward_hessian_nograd(&f);
+        let n = hessian.len(); // Ukuran matriks (n x n)
+        let flat_hessian: Vec<f64> = hessian.clone().into_iter().flatten().collect();
+        let matrix = DMatrix::from_row_slice(n, n, &flat_hessian);
+        let det = matrix.determinant();
+
+        if det == 0.0 {
+            vec![0.0]
+        } else {
+            let var_res = self.res_variance();
+            let mut se = Vec::new();
+            let inv_hessian = invert_matrix(&hessian).unwrap();
+            se.push((2.0 * var_res * inv_hessian[0][0].abs()).sqrt());
+            se
+        }
+
+        // let mut coef1 = Vec::new();
+        // coef1.push(self.get_constant() + 0.0001);
+        // let g1 = (f(&coef1) - f(&coef)) / 0.0001;
+        // [g1].to_vec()
+    }
+
+    pub fn coeficient_se(&self) -> Vec<f64>{
+        let mut data = self.get_data();
+        let p = self.get_ar_coef().len();
+        let q = self.get_ma_coef().len();
+        let d = self.get_i_order();
+        if d > 0 {
+            for _ in 0..d{
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        }
+        
+        let total_size = 1 + p + q;
+        let f = |coef: &Vec<f64>| {
+            assert_eq!(coef.len(), total_size);
+
+            let intercept = coef[0];
+            let ar ;
+            let ma ;
+            if p > 0 && q > 0{
+                ar = coef[1..p+1].to_vec();
+                ma = coef[p+1..].to_vec();
+            } else if p > 0 {
+                ar = coef[1..p+1].to_vec();
+                ma = Vec::new();
+            } else {
+                ar = Vec::new();
+                ma = coef[1..q+1].to_vec();
+            }
+            
+            let residuals: Vec<f64> = self.est_res(intercept, ar, ma, data.clone());
+
+            let mut css: f64 = 0.0;
+            for residual in &residuals {
+                css += residual * residual;
+            }
+            css
+        };
+
+        let mut coef = Vec::new();
+        coef.push(self.get_constant());
+        if p > 0 {
+            for ar in self.get_ar_coef() {
+                coef.push(ar);
+            };
+        }
+        if q > 0 {
+            for ma in self.get_ma_coef(){
+                coef.push(ma);
+            };
+        }
+        let hessian: Vec<Vec<f64>> = coef.forward_hessian_nograd(&f);
+        let n = hessian.len(); // Ukuran matriks (n x n)
+        let flat_hessian: Vec<f64> = hessian.clone().into_iter().flatten().collect();
+        let matrix = DMatrix::from_row_slice(n, n, &flat_hessian);
+        let det = matrix.determinant();
+
+        if det == 0.0 {
+            vec![0.0]
+        } else {
+            let inv_hessian = invert_matrix(&hessian).unwrap();
+            let var_res = self.res_variance();
+            let mut se = Vec::new();
+            for i in 1..total_size{
+                se.push((2.0 * var_res * inv_hessian[i][i].abs()).sqrt());
+            }
+            se
+        }
+    }
+
+    pub fn estimate_se(&self) -> Vec<f64>{
+        let mut se = Vec::new();
+        let intercept_se = self.intercept_se();
+        se.push(intercept_se[0]);
+        if self.get_ar_order() > 0 || self.get_ma_order() > 0{
+            let coef_se = self.coeficient_se();
+            for coef_se_value in coef_se{
+                se.push(coef_se_value);
+            }
+        }
+        se
+    }
+}
