@@ -1,4 +1,9 @@
 use crate::discriminant::models::{ result::WilksLambdaTest, AnalysisData, DiscriminantConfig };
+use crate::discriminant::stats::common::{
+    calculate_pooled_covariance_matrix,
+    calculate_p_value_from_chi_square,
+    extract_values_by_index,
+};
 
 pub fn calculate_wilks_lambda_test(
     data: &AnalysisData,
@@ -6,12 +11,15 @@ pub fn calculate_wilks_lambda_test(
 ) -> Result<WilksLambdaTest, String> {
     web_sys::console::log_1(&"Executing calculate_wilks_lambda_test".into());
 
+    // Variables to use
+    let variables = &config.main.independent_variables;
+    let num_vars = variables.len();
+
     // Calculate pooled within-groups covariance matrix (W)
-    let num_vars = config.main.independent_variables.len();
-    let pooled_within = calculate_pooled_within_matrix(data, num_vars);
+    let pooled_within = calculate_pooled_covariance_matrix(data, variables);
 
     // Calculate total covariance matrix (T)
-    let total_cov = calculate_total_covariance_matrix(data, num_vars);
+    let total_cov = calculate_total_covariance_matrix(data, variables);
 
     // Calculate Wilks' lambda = |W|/|T|
     let (w_log_det, t_log_det) = calculate_log_determinants(&pooled_within, &total_cov);
@@ -31,32 +39,29 @@ pub fn calculate_wilks_lambda_test(
     let chi_square = -(n - 1.0 - (p + g) / 2.0) * wilks_lambda.ln();
 
     // Degrees of freedom
-    let df = p * (g - 1.0);
+    let df = (p * (g - 1.0)) as i32;
 
     // Calculate significance (p-value)
-    // Simplified approximation - in a real implementation use proper chi-square distribution
     let significance = calculate_p_value_from_chi_square(chi_square, df as usize);
 
     Ok(WilksLambdaTest {
         test_of_functions: vec!["1".to_string()],
         wilks_lambda: vec![wilks_lambda],
         chi_square: vec![chi_square],
-        df: vec![df as usize],
+        df: vec![df],
         significance: vec![significance],
     })
 }
 
 // Calculate total covariance matrix
-fn calculate_total_covariance_matrix(data: &AnalysisData, num_vars: usize) -> Vec<Vec<f64>> {
+fn calculate_total_covariance_matrix(data: &AnalysisData, variables: &[String]) -> Vec<Vec<f64>> {
+    let num_vars = variables.len();
     let mut total_matrix = vec![vec![0.0; num_vars]; num_vars];
 
     // Collect all values regardless of group
     let mut all_values = Vec::with_capacity(num_vars);
     for var_idx in 0..num_vars {
-        let values: Vec<f64> = data.group_data
-            .iter()
-            .flat_map(|group| group.iter().map(|case| case[var_idx]))
-            .collect();
+        let values = extract_values_by_index(&data.group_data, var_idx, variables);
         all_values.push(values);
     }
 
@@ -90,71 +95,6 @@ fn calculate_total_covariance_matrix(data: &AnalysisData, num_vars: usize) -> Ve
     }
 
     total_matrix
-}
-
-// Calculate pooled within-groups covariance matrix
-fn calculate_pooled_within_matrix(data: &AnalysisData, num_vars: usize) -> Vec<Vec<f64>> {
-    let mut pooled_matrix = vec![vec![0.0; num_vars]; num_vars];
-    let mut total_df = 0;
-
-    for group_data in data.group_data.iter() {
-        if group_data.len() <= 1 {
-            continue;
-        }
-
-        let df = group_data.len() - 1;
-        total_df += df;
-
-        // Calculate means for this group
-        let mut means = Vec::with_capacity(num_vars);
-        for var_idx in 0..num_vars {
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
-
-            means.push(
-                if values.is_empty() {
-                    0.0
-                } else {
-                    values.iter().sum::<f64>() / (values.len() as f64)
-                }
-            );
-        }
-
-        // Calculate and add weighted covariance
-        for var1_idx in 0..num_vars {
-            for var2_idx in 0..num_vars {
-                let values1: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var1_idx])
-                    .collect();
-                let values2: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var2_idx])
-                    .collect();
-
-                let cov = calculate_covariance(
-                    &values1,
-                    &values2,
-                    means[var1_idx],
-                    means[var2_idx]
-                );
-                pooled_matrix[var1_idx][var2_idx] += (df as f64) * cov;
-            }
-        }
-    }
-
-    // Divide by total degrees of freedom
-    if total_df > 0 {
-        for i in 0..num_vars {
-            for j in 0..num_vars {
-                pooled_matrix[i][j] /= total_df as f64;
-            }
-        }
-    }
-
-    pooled_matrix
 }
 
 // Helper function to calculate covariance
@@ -194,27 +134,4 @@ fn calculate_log_determinants(matrix1: &[Vec<f64>], matrix2: &[Vec<f64>]) -> (f6
     }
 
     (log_det1, log_det2)
-}
-
-// Helper function to approximate p-value from chi-square statistic
-fn calculate_p_value_from_chi_square(chi_square: f64, df: usize) -> f64 {
-    // Simple approximation for demonstration
-    if chi_square <= 0.0 {
-        return 1.0;
-    }
-
-    // Rough approximation based on chi-square value and degrees of freedom
-    let ratio = chi_square / (df as f64);
-
-    if ratio > 3.0 {
-        0.001
-    } else if ratio > 2.0 {
-        0.01
-    } else if ratio > 1.5 {
-        0.05
-    } else if ratio > 1.0 {
-        0.1
-    } else {
-        0.5
-    }
 }

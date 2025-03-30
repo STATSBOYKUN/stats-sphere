@@ -1,11 +1,12 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ result::CanonicalFunctions, AnalysisData, DiscriminantConfig };
-use crate::discriminant::util::{
-    calculate_covariance,
+use crate::discriminant::stats::common::{
     calculate_pooled_within_matrix,
     calculate_between_groups_matrix,
     solve_eigenvalue_problem,
+    calculate_group_means,
+    extract_group_values,
 };
 
 pub fn calculate_canonical_functions(
@@ -16,7 +17,8 @@ pub fn calculate_canonical_functions(
 
     // Number of discriminant functions is min(number of groups - 1, number of variables)
     let num_groups = data.group_data.len();
-    let num_vars = config.main.independent_variables.len();
+    let variables = &config.main.independent_variables;
+    let num_vars = variables.len();
     let num_functions = std::cmp::min(num_groups - 1, num_vars);
 
     if num_functions == 0 {
@@ -24,10 +26,10 @@ pub fn calculate_canonical_functions(
     }
 
     // Calculate within-groups covariance matrix (W)
-    let pooled_within = calculate_pooled_within_matrix(data, num_vars);
+    let pooled_within = calculate_pooled_within_matrix(data, variables);
 
     // Calculate between-groups covariance matrix (B)
-    let between_groups = calculate_between_groups_matrix(data, num_vars);
+    let between_groups = calculate_between_groups_matrix(data, variables);
 
     // Solve the eigenvalue problem: (W^-1 * B) * V = λ * V
     // In practice, we would use a linear algebra library for this
@@ -58,9 +60,6 @@ pub fn calculate_canonical_functions(
         .map(|&eigen| (eigen / (1.0 + eigen)).sqrt())
         .collect();
 
-    // Variables names
-    let variables = config.main.independent_variables.clone();
-
     // Calculate unstandardized coefficients
     let mut coefficients = HashMap::new();
     for (i, var) in variables.iter().enumerate() {
@@ -88,20 +87,7 @@ pub fn calculate_canonical_functions(
         let group_name = (group_idx + 1).to_string();
 
         // Calculate group means
-        let mut group_means = Vec::with_capacity(num_vars);
-        for var_idx in 0..num_vars {
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
-
-            let mean = if values.is_empty() {
-                0.0
-            } else {
-                values.iter().sum::<f64>() / (values.len() as f64)
-            };
-            group_means.push(mean);
-        }
+        let group_means = calculate_group_means(group_data, variables);
 
         // Apply discriminant functions to get centroids
         let mut centroid_values = Vec::with_capacity(num_functions);

@@ -1,5 +1,9 @@
 use crate::discriminant::models::{ result::EqualityTests, AnalysisData, DiscriminantConfig };
-use crate::discriminant::util::calculate_p_value_from_f;
+use crate::discriminant::stats::common::{
+    calculate_p_value_from_f,
+    extract_values_by_index,
+    extract_group_values,
+};
 
 pub fn calculate_equality_tests(
     data: &AnalysisData,
@@ -29,10 +33,7 @@ pub fn calculate_equality_tests(
     // For each variable, perform univariate F test
     for (var_idx, _) in variables.iter().enumerate() {
         // Calculate total sum of squares
-        let all_values: Vec<f64> = data.group_data
-            .iter()
-            .flat_map(|group| group.iter().map(|case| case[var_idx]))
-            .collect();
+        let all_values = extract_values_by_index(&data.group_data, var_idx, &variables);
 
         let overall_mean = all_values.iter().sum::<f64>() / (all_values.len() as f64);
         let total_ss = all_values
@@ -43,10 +44,7 @@ pub fn calculate_equality_tests(
         // Calculate between-groups sum of squares
         let mut between_ss = 0.0;
         for group_data in data.group_data.iter() {
-            let group_values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
+            let group_values = extract_group_values(group_data, var_idx, &variables);
 
             if !group_values.is_empty() {
                 let group_mean = group_values.iter().sum::<f64>() / (group_values.len() as f64);

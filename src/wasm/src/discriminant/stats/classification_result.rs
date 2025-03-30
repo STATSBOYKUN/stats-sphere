@@ -4,8 +4,10 @@ use crate::discriminant::models::{
     result::ClassificationResults,
     AnalysisData,
     DiscriminantConfig,
+    DataRecord,
 };
-use crate::discriminant::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::common::extract_case_values;
 
 pub fn calculate_classification_results(
     data: &AnalysisData,
@@ -14,6 +16,7 @@ pub fn calculate_classification_results(
     web_sys::console::log_1(&"Executing calculate_classification_results".into());
 
     let num_groups = data.group_data.len();
+    let variables = &config.main.independent_variables;
 
     // Create group labels
     let group_labels: Vec<String> = (0..num_groups).map(|i| format!("Group_{}", i + 1)).collect();
@@ -37,8 +40,11 @@ pub fn calculate_classification_results(
 
         // For each case in this group
         for case in group_data {
+            // Extract numeric values from DataRecord
+            let case_values = extract_case_values(case, variables);
+
             // Classify this case
-            let predicted_group = classify_case(case, &canonical_functions, data, config);
+            let predicted_group = classify_case(&case_values, &canonical_functions, data, config);
 
             // Update counts
             counts[predicted_group] += 1;
@@ -82,9 +88,12 @@ pub fn calculate_classification_results(
                     config
                 ).unwrap_or_else(|_| canonical_functions.clone());
 
+                // Extract numeric values from the case
+                let case_values = extract_case_values(&case_to_classify, variables);
+
                 // Classify the left-out case
                 let predicted_group = classify_case(
-                    &case_to_classify,
+                    &case_values,
                     &leave_one_out_functions,
                     &temp_data,
                     config
@@ -121,7 +130,7 @@ pub fn calculate_classification_results(
 
 // Function to classify a case using the discriminant functions
 fn classify_case(
-    case: &[f64],
+    case_values: &[f64],
     canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
     data: &AnalysisData,
     config: &DiscriminantConfig
@@ -139,8 +148,8 @@ fn classify_case(
         // Apply coefficients
         for (var_idx, var_name) in variables.iter().enumerate() {
             if let Some(coefs) = canonical_functions.coefficients.get(var_name) {
-                if func_idx < coefs.len() {
-                    score += case[var_idx] * coefs[func_idx];
+                if func_idx < coefs.len() && var_idx < case_values.len() {
+                    score += case_values[var_idx] * coefs[func_idx];
                 }
             }
         }

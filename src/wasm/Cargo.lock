@@ -471,7 +471,6 @@ dependencies = [
  "getrandom",
  "js-sys",
  "nalgebra 0.32.6",
- "once_cell",
  "rayon",
  "serde",
  "serde-wasm-bindgen",

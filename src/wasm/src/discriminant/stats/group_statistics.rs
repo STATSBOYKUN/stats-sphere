@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ result::GroupStatistics, AnalysisData, DiscriminantConfig };
+use crate::discriminant::stats::common::extract_group_values;
 
 pub fn calculate_group_statistics(
     data: &AnalysisData,
@@ -24,10 +25,7 @@ pub fn calculate_group_statistics(
 
         for var_idx in 0..variables.len() {
             // Extract values for this variable in this group
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
+            let values = extract_group_values(group_data, var_idx, &variables);
 
             // Calculate mean
             let mean_value = if values.is_empty() {

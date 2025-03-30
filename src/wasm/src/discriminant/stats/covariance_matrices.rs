@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ result::CovarianceMatrices, AnalysisData, DiscriminantConfig };
-use crate::discriminant::util::calculate_covariance;
+use crate::discriminant::stats::common::{
+    calculate_covariance,
+    extract_group_values,
+    calculate_group_means,
+};
 
 pub fn calculate_covariance_matrices(
     data: &AnalysisData,
@@ -11,7 +15,6 @@ pub fn calculate_covariance_matrices(
 
     // Extract group and variable names
     let groups: Vec<String> = (0..data.group_data.len()).map(|i| (i + 1).to_string()).collect();
-
     let variables: Vec<String> = config.main.independent_variables.clone();
 
     // Initialize matrices structure
@@ -23,37 +26,17 @@ pub fn calculate_covariance_matrices(
         let mut group_matrix: HashMap<String, HashMap<String, f64>> = HashMap::new();
 
         // Calculate means for each variable in this group
-        let mut means = Vec::with_capacity(variables.len());
-        for var_idx in 0..variables.len() {
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
-
-            means.push(
-                if values.is_empty() {
-                    0.0
-                } else {
-                    values.iter().sum::<f64>() / (values.len() as f64)
-                }
-            );
-        }
+        let means = calculate_group_means(group_data, &variables);
 
         for (var1_idx, var1_name) in variables.iter().enumerate() {
             let mut var_row: HashMap<String, f64> = HashMap::new();
 
             // Extract values for variable 1
-            let values1: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var1_idx])
-                .collect();
+            let values1 = extract_group_values(group_data, var1_idx, &variables);
 
             for (var2_idx, var2_name) in variables.iter().enumerate() {
                 // Extract values for variable 2
-                let values2: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var2_idx])
-                    .collect();
+                let values2 = extract_group_values(group_data, var2_idx, &variables);
 
                 // Calculate covariance
                 let cov = calculate_covariance(

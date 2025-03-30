@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use crate::discriminant::models::{ AnalysisData, DiscriminantConfig };
+use crate::discriminant::models::{ AnalysisData, DiscriminantConfig, DataRecord };
 use crate::discriminant::models::result::{ DiscriminantHistograms, GroupHistogram };
-use crate::discriminant::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::common::extract_case_values;
 
 pub fn generate_discriminant_histograms(
     data: &AnalysisData,
@@ -12,6 +13,7 @@ pub fn generate_discriminant_histograms(
 
     // Calculate canonical functions to get discriminant scores
     let canonical_functions_result = calculate_canonical_functions(data, config)?;
+    let variables = &config.main.independent_variables;
 
     // Number of functions
     let num_functions = canonical_functions_result.eigenvalues.len();
@@ -27,6 +29,7 @@ pub fn generate_discriminant_histograms(
     // For each group and discriminant function
     for group_idx in 0..num_groups {
         let group_name = &groups[group_idx];
+        let group_data = &data.group_data[group_idx];
 
         for func_idx in 0..num_functions {
             let func_name = &functions[func_idx];
@@ -34,10 +37,10 @@ pub fn generate_discriminant_histograms(
 
             // Calculate discriminant scores for all cases in this group
             let scores = calculate_discriminant_scores(
-                &data.group_data[group_idx],
+                group_data,
                 func_idx,
                 &canonical_functions_result,
-                config
+                variables
             );
 
             if scores.is_empty() {
@@ -60,22 +63,24 @@ pub fn generate_discriminant_histograms(
 
 // Calculate discriminant scores for cases in a group
 fn calculate_discriminant_scores(
-    group_data: &[Vec<f64>],
+    group_data: &[DataRecord],
     func_idx: usize,
     canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
-    config: &DiscriminantConfig
+    variables: &[String]
 ) -> Vec<f64> {
-    let variables = &config.main.independent_variables;
     let mut scores = Vec::with_capacity(group_data.len());
 
     for case in group_data {
+        // Extract numeric values from the case
+        let case_values = extract_case_values(case, variables);
+
         let mut score = 0.0;
 
         // Apply coefficients to calculate discriminant score
         for (var_idx, var_name) in variables.iter().enumerate() {
             if let Some(coefs) = canonical_functions.coefficients.get(var_name) {
-                if func_idx < coefs.len() {
-                    score += case[var_idx] * coefs[func_idx];
+                if func_idx < coefs.len() && var_idx < case_values.len() {
+                    score += case_values[var_idx] * coefs[func_idx];
                 }
             }
         }

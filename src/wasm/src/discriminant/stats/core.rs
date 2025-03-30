@@ -14,3 +14,4 @@ pub use crate::discriminant::stats::save_model::*;
 pub use crate::discriminant::stats::stepwise_statistics::*;
 pub use crate::discriminant::stats::structure_matrix::*;
 pub use crate::discriminant::stats::wilks_lambda::*;
+pub use crate::discriminant::stats::common::*;

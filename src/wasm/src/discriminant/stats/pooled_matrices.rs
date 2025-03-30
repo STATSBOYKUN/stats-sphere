@@ -1,6 +1,11 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ result::PooledMatrices, AnalysisData, DiscriminantConfig };
+use crate::discriminant::stats::common::{
+    calculate_covariance,
+    extract_group_values,
+    calculate_group_means,
+};
 
 pub fn calculate_pooled_matrices(
     data: &AnalysisData,
@@ -28,33 +33,13 @@ pub fn calculate_pooled_matrices(
         total_n += n_cases;
 
         // Calculate means for each variable in this group
-        let mut means = Vec::with_capacity(variables.len());
-        for var_idx in 0..variables.len() {
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
-
-            means.push(
-                if values.is_empty() {
-                    0.0
-                } else {
-                    values.iter().sum::<f64>() / (values.len() as f64)
-                }
-            );
-        }
+        let means = calculate_group_means(group_data, &variables);
 
         // Calculate within-group sums of squares and cross-products
         for var1_idx in 0..variables.len() {
             for var2_idx in 0..variables.len() {
-                let values1: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var1_idx])
-                    .collect();
-                let values2: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var2_idx])
-                    .collect();
+                let values1 = extract_group_values(group_data, var1_idx, &variables);
+                let values2 = extract_group_values(group_data, var2_idx, &variables);
 
                 let sum_products = values1
                     .iter()

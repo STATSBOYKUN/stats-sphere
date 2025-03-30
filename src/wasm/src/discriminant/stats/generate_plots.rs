@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ AnalysisData, DiscriminantConfig };
-use crate::discriminant::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
 
 pub fn generate_plots(
     data: &AnalysisData,

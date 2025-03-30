@@ -1,8 +1,10 @@
 use crate::discriminant::models::{ result::BoxMTest, AnalysisData, DiscriminantConfig };
-use crate::discriminant::util::{
+use crate::discriminant::stats::common::{
     calculate_covariance,
     calculate_log_determinant,
     calculate_p_value_from_f,
+    calculate_group_means,
+    extract_group_values,
 };
 
 pub fn calculate_box_m_test(
@@ -14,8 +16,9 @@ pub fn calculate_box_m_test(
     // Number of groups
     let num_groups = data.group_data.len();
 
-    // Number of variables
-    let num_vars = config.main.independent_variables.len();
+    // Get variable names
+    let variables = &config.main.independent_variables;
+    let num_vars = variables.len();
 
     // Calculate covariance matrices for each group
     let mut group_covariance_matrices = Vec::with_capacity(num_groups);
@@ -31,35 +34,15 @@ pub fn calculate_box_m_test(
         group_sizes.push(n_cases);
 
         // Calculate means for each variable in this group
-        let mut means = Vec::with_capacity(num_vars);
-        for var_idx in 0..num_vars {
-            let values: Vec<f64> = group_data
-                .iter()
-                .map(|case| case[var_idx])
-                .collect();
-
-            means.push(
-                if values.is_empty() {
-                    0.0
-                } else {
-                    values.iter().sum::<f64>() / (values.len() as f64)
-                }
-            );
-        }
+        let means = calculate_group_means(group_data, variables);
 
         // Calculate covariance matrix for this group
         let mut cov_matrix = vec![vec![0.0; num_vars]; num_vars];
 
         for var1_idx in 0..num_vars {
             for var2_idx in 0..num_vars {
-                let values1: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var1_idx])
-                    .collect();
-                let values2: Vec<f64> = group_data
-                    .iter()
-                    .map(|case| case[var2_idx])
-                    .collect();
+                let values1 = extract_group_values(group_data, var1_idx, variables);
+                let values2 = extract_group_values(group_data, var2_idx, variables);
 
                 cov_matrix[var1_idx][var2_idx] = calculate_covariance(
                     &values1,
@@ -70,7 +53,7 @@ pub fn calculate_box_m_test(
             }
         }
 
-        group_covariance_matrices.push(cov_matrix);
+        group_covariance_matrices.push(cov_matrix.clone());
 
         // Calculate log determinant of covariance matrix
         let log_det = calculate_log_determinant(&cov_matrix);
@@ -115,17 +98,16 @@ pub fn calculate_box_m_test(
     }
 
     // Calculate F approximation
-    let p = num_vars;
-    let g = group_sizes.len();
+    let p = num_vars as f64;
+    let g = group_sizes.len() as f64;
 
-    let c1 =
-        (2.0 * p.pow(2) + 3.0 * (p as f64) - 1.0) / (6.0 * ((p + 1) as f64) * ((g - 1) as f64));
+    let c1 = (2.0 * p.powi(2) + 3.0 * p - 1.0) / (6.0 * (p + 1.0) * (g - 1.0));
 
-    let c2 = calculate_c2(g, &group_sizes, total_n);
+    let c2 = calculate_c2(group_sizes.len(), &group_sizes, total_n);
 
     let f_approx = box_m * (1.0 - c1 - c2 / box_m);
 
-    let df1 = 0.5 * ((p * (p + 1) * (g - 1)) as f64);
+    let df1 = 0.5 * ((num_vars * (num_vars + 1) * (group_sizes.len() - 1)) as f64);
     let df2 = calculate_df2(c1, c2, df1);
 
     // Calculate p-value
