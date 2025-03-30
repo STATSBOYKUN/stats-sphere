@@ -1,4 +1,5 @@
 use crate::discriminant::models::{ result::EqualityTests, AnalysisData, DiscriminantConfig };
+use crate::discriminant::util::calculate_p_value_from_f;
 
 pub fn calculate_equality_tests(
     data: &AnalysisData,
@@ -9,70 +10,76 @@ pub fn calculate_equality_tests(
     // Extract variable names
     let variables = config.main.independent_variables.clone();
 
-    // Exact values from Image 4
-    let wilks_lambda = vec![
-        0.938,
-        0.795,
-        0.951,
-        0.998,
-        0.628,
-        0.974,
-        0.65,
-        0.756,
-        0.534,
-        0.679,
-        1.0,
-        0.993,
-        0.993,
-        0.768,
-        0.904,
-        0.787,
-        0.972
-    ];
+    // Initialize result arrays
+    let mut wilks_lambda = Vec::with_capacity(variables.len());
+    let mut f_values = Vec::with_capacity(variables.len());
+    let mut df1 = Vec::with_capacity(variables.len());
+    let mut df2 = Vec::with_capacity(variables.len());
+    let mut significance = Vec::with_capacity(variables.len());
 
-    let f_values = vec![
-        3.2,
-        12.356,
-        2.493,
-        0.113,
-        28.393,
-        1.283,
-        25.889,
-        15.476,
-        41.969,
-        22.722,
-        0.007,
-        0.337,
-        0.322,
-        14.526,
-        5.079,
-        13.017,
-        1.378
-    ];
+    // Number of groups
+    let num_groups = data.group_data.len();
 
-    let df1 = vec![1; variables.len()];
-    let df2 = vec![48; variables.len()];
+    // Total number of cases
+    let total_cases: usize = data.group_data
+        .iter()
+        .map(|group| group.len())
+        .sum();
 
-    // Significance values from Image 4
-    let significance = vec![
-        0.08,
-        0.001,
-        0.121,
-        0.738,
-        0.001,
-        0.263,
-        0.001,
-        0.001,
-        0.001,
-        0.001,
-        0.934,
-        0.564,
-        0.573,
-        0.001,
-        0.029,
-        0.001,
-        0.246
-    ];
+    // For each variable, perform univariate F test
+    for (var_idx, _) in variables.iter().enumerate() {
+        // Calculate total sum of squares
+        let all_values: Vec<f64> = data.group_data
+            .iter()
+            .flat_map(|group| group.iter().map(|case| case[var_idx]))
+            .collect();
+
+        let overall_mean = all_values.iter().sum::<f64>() / (all_values.len() as f64);
+        let total_ss = all_values
+            .iter()
+            .map(|&value| (value - overall_mean).powi(2))
+            .sum::<f64>();
+
+        // Calculate between-groups sum of squares
+        let mut between_ss = 0.0;
+        for group_data in data.group_data.iter() {
+            let group_values: Vec<f64> = group_data
+                .iter()
+                .map(|case| case[var_idx])
+                .collect();
+
+            if !group_values.is_empty() {
+                let group_mean = group_values.iter().sum::<f64>() / (group_values.len() as f64);
+                between_ss += (group_values.len() as f64) * (group_mean - overall_mean).powi(2);
+            }
+        }
+
+        // Calculate within-groups sum of squares
+        let within_ss = total_ss - between_ss;
+
+        // Degrees of freedom
+        let df1_val = num_groups - 1;
+        let df2_val = total_cases - num_groups;
+
+        // Calculate F value
+        let f_value = if within_ss > 0.0 && df1_val > 0 && df2_val > 0 {
+            between_ss / (df1_val as f64) / (within_ss / (df2_val as f64))
+        } else {
+            0.0
+        };
+
+        // Calculate Wilks' lambda
+        let lambda = if total_ss > 0.0 { within_ss / total_ss } else { 1.0 };
+
+        // Calculate p-value (significance)
+        let p_value = calculate_p_value_from_f(f_value, df1_val as f64, df2_val as f64);
+
+        wilks_lambda.push(lambda);
+        f_values.push(f_value);
+        df1.push(df1_val as i32);
+        df2.push(df2_val as i32);
+        significance.push(p_value);
+    }
 
     Ok(EqualityTests {
         variables,

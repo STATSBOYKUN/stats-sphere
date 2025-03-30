@@ -1,4 +1,5 @@
 pub mod core;
+pub mod common;
 pub mod basic_processing;
 pub mod bootstrapping;
 pub mod box_m_test;
