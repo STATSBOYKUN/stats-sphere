@@ -53,6 +53,15 @@ export async function analyzeDiscriminant({
         varDefsForSelection
     );
 
+    console.log(
+        slicedDataForGrouping,
+        slicedDataForIndependent,
+        slicedDataForSelection,
+        varDefsForGrouping,
+        varDefsForIndependent,
+        varDefsForSelection
+    );
+
     const results = da.get_results();
     const executed = da.get_executed_functions();
     const errors = da.get_all_errors();

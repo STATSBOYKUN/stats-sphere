@@ -1,4 +1,17 @@
 pub mod core;
-
-// Re-export important functions
-pub use core::*;
+pub mod basic_processing;
+pub mod bootstrapping;
+pub mod box_m_test;
+pub mod canonical_functions;
+pub mod classification_result;
+pub mod covariance_matrices;
+pub mod equality_test;
+pub mod generate_histograms;
+pub mod generate_plots;
+pub mod group_statistics;
+pub mod log_determinants;
+pub mod pooled_matrices;
+pub mod save_model;
+pub mod stepwise_statistics;
+pub mod structure_matrix;
+pub mod wilks_lambda;

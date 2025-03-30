@@ -15,18 +15,48 @@ pub struct DiscriminantResult {
     pub structure_matrix: Option<StructureMatrix>,
     #[serde(rename = "classification_results")]
     pub classification_results: Option<ClassificationResults>,
+    #[serde(rename = "box_m_test")]
+    pub box_m_test: Option<BoxMTest>,
+    #[serde(rename = "pooled_matrices")]
+    pub pooled_matrices: Option<PooledMatrices>,
+    #[serde(rename = "covariance_matrices")]
+    pub covariance_matrices: Option<CovarianceMatrices>,
+    #[serde(rename = "log_determinants")]
+    pub log_determinants: Option<LogDeterminants>,
+    #[serde(rename = "stepwise_statistics")]
+    pub stepwise_statistics: Option<StepwiseStatistics>,
+    #[serde(rename = "wilks_lambda_test")]
+    pub wilks_lambda_test: Option<WilksLambdaTest>,
+    #[serde(rename = "discriminant_histograms")]
+    pub discriminant_histograms: Option<DiscriminantHistograms>,
     #[serde(rename = "executed_functions")]
     pub executed_functions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ProcessingSummary {
-    #[serde(rename = "valid_count")] // Mengubah dari valid_cases ke valid_count
+    #[serde(rename = "valid_count")]
     pub valid_cases: usize,
-    #[serde(rename = "excluded_count")] // Mengubah nama untuk konsistensi
+    #[serde(rename = "excluded_count")]
     pub excluded_cases: usize,
-    #[serde(rename = "total_count")] // Mengubah nama untuk konsistensi
+    #[serde(rename = "total_count")]
     pub total_cases: usize,
+    #[serde(rename = "valid_percent")]
+    pub valid_percent: Option<f64>,
+    #[serde(rename = "missing_group_codes")]
+    pub missing_group_codes: Option<usize>,
+    #[serde(rename = "missing_group_percent")]
+    pub missing_group_percent: Option<f64>,
+    #[serde(rename = "missing_disc_vars")]
+    pub missing_disc_vars: Option<usize>,
+    #[serde(rename = "missing_disc_percent")]
+    pub missing_disc_percent: Option<f64>,
+    #[serde(rename = "both_missing")]
+    pub both_missing: Option<usize>,
+    #[serde(rename = "both_missing_percent")]
+    pub both_missing_percent: Option<f64>,
+    #[serde(rename = "total_excluded_percent")]
+    pub total_excluded_percent: Option<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -82,4 +112,148 @@ pub struct ClassificationResults {
     pub original_percentage: HashMap<String, Vec<f64>>,
     #[serde(rename = "cross_validated_percentage")]
     pub cross_validated_percentage: Option<HashMap<String, Vec<f64>>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BoxMTest {
+    #[serde(rename = "box_m")]
+    pub box_m: f64,
+    #[serde(rename = "f_approx")]
+    pub f_approx: f64,
+    pub df1: f64,
+    pub df2: f64,
+    #[serde(rename = "p_value")]
+    pub p_value: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PooledMatrices {
+    pub variables: Vec<String>,
+    #[serde(rename = "covariance")]
+    pub covariance: HashMap<String, HashMap<String, f64>>,
+    #[serde(rename = "correlation")]
+    pub correlation: HashMap<String, HashMap<String, f64>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CovarianceMatrices {
+    pub groups: Vec<String>,
+    pub variables: Vec<String>,
+    #[serde(rename = "matrices")]
+    pub matrices: HashMap<String, HashMap<String, HashMap<String, f64>>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LogDeterminants {
+    pub groups: Vec<String>,
+    pub ranks: Vec<i32>,
+    #[serde(rename = "log_determinants")]
+    pub log_determinants: Vec<f64>,
+    #[serde(rename = "pooled_log_determinant")]
+    pub pooled_log_determinant: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct StepwiseStatistics {
+    #[serde(rename = "variables_entered")]
+    pub variables_entered: Vec<String>,
+    #[serde(rename = "variables_removed")]
+    pub variables_removed: Vec<Option<String>>,
+    #[serde(rename = "wilks_lambda")]
+    pub wilks_lambda: Vec<f64>,
+    #[serde(rename = "f_values")]
+    pub f_values: Vec<f64>,
+    pub df1: Vec<i32>,
+    pub df2: Vec<i32>,
+    pub df3: Vec<i32>,
+    #[serde(rename = "exact_f")]
+    pub exact_f: Vec<f64>,
+    #[serde(rename = "exact_df1")]
+    pub exact_df1: Vec<i32>,
+    #[serde(rename = "exact_df2")]
+    pub exact_df2: Vec<i32>,
+    #[serde(rename = "significance")]
+    pub significance: Vec<f64>,
+    #[serde(rename = "variables_in_analysis")]
+    pub variables_in_analysis: HashMap<String, Vec<VariableInAnalysis>>,
+    #[serde(rename = "variables_not_in_analysis")]
+    pub variables_not_in_analysis: HashMap<String, Vec<VariableNotInAnalysis>>,
+    #[serde(rename = "pairwise_comparisons")]
+    pub pairwise_comparisons: HashMap<String, Vec<PairwiseComparison>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct VariableInAnalysis {
+    pub variable: String,
+    pub tolerance: f64,
+    #[serde(rename = "f_to_remove")]
+    pub f_to_remove: f64,
+    #[serde(rename = "wilks_lambda")]
+    pub wilks_lambda: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct VariableNotInAnalysis {
+    pub variable: String,
+    pub tolerance: f64,
+    #[serde(rename = "min_tolerance")]
+    pub min_tolerance: f64,
+    #[serde(rename = "f_to_enter")]
+    pub f_to_enter: f64,
+    #[serde(rename = "wilks_lambda")]
+    pub wilks_lambda: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PairwiseComparison {
+    pub step: i32,
+    pub category1: i32,
+    pub category2: i32,
+    #[serde(rename = "f_value")]
+    pub f_value: f64,
+    pub significance: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WilksLambdaTest {
+    #[serde(rename = "test_of_functions")]
+    pub test_of_functions: Vec<String>,
+    #[serde(rename = "wilks_lambda")]
+    pub wilks_lambda: Vec<f64>,
+    #[serde(rename = "chi_square")]
+    pub chi_square: Vec<f64>,
+    pub df: Vec<i32>,
+    pub significance: Vec<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DiscriminantHistograms {
+    #[serde(rename = "functions")]
+    pub functions: Vec<String>,
+    #[serde(rename = "groups")]
+    pub groups: Vec<String>,
+    #[serde(rename = "histograms")]
+    pub histograms: HashMap<String, GroupHistogram>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GroupHistogram {
+    #[serde(rename = "bin_count")]
+    pub bin_count: i32,
+    #[serde(rename = "bin_width")]
+    pub bin_width: f64,
+    #[serde(rename = "min_value")]
+    pub min_value: f64,
+    #[serde(rename = "max_value")]
+    pub max_value: f64,
+    #[serde(rename = "mean")]
+    pub mean: f64,
+    #[serde(rename = "std_dev")]
+    pub std_dev: f64,
+    #[serde(rename = "sample_size")]
+    pub sample_size: i32,
+    #[serde(rename = "bin_frequencies")]
+    pub bin_frequencies: Vec<i32>,
+    #[serde(rename = "bin_edges")]
+    pub bin_edges: Vec<f64>,
 }

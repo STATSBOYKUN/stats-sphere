@@ -61,11 +61,14 @@ pub fn run_analysis(
         };
     }
 
-    // If Box's M test requested
+    // Step 4: Box's M test if requested
+    let mut box_m_test = None;
     if config.statistics.box_m {
         executed_functions.push("calculate_box_m_test".to_string());
         match core::calculate_box_m_test(data, config) {
-            Ok(_) => {}
+            Ok(test) => {
+                box_m_test = Some(test);
+            }
             Err(e) => {
                 error_collector.add_error("calculate_box_m_test", &e);
                 // Continue execution despite errors for non-critical functions
@@ -73,7 +76,82 @@ pub fn run_analysis(
         };
     }
 
-    // Step 4: Calculate canonical functions (always executed)
+    // Step 5: Pooled matrices if requested
+    let mut pooled_matrices = None;
+    if config.statistics.wg_correlation || config.statistics.wg_covariance {
+        executed_functions.push("calculate_pooled_matrices".to_string());
+        match core::calculate_pooled_matrices(data, config) {
+            Ok(matrices) => {
+                pooled_matrices = Some(matrices);
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_pooled_matrices", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
+    // Step 6: Covariance matrices if requested
+    let mut covariance_matrices = None;
+    if config.statistics.sg_covariance || config.statistics.total_covariance {
+        executed_functions.push("calculate_covariance_matrices".to_string());
+        match core::calculate_covariance_matrices(data, config) {
+            Ok(matrices) => {
+                covariance_matrices = Some(matrices);
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_covariance_matrices", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
+    // Step 7: Log determinants if Box's M test is requested
+    let mut log_determinants = None;
+    if config.statistics.box_m {
+        executed_functions.push("calculate_log_determinants".to_string());
+        match core::calculate_log_determinants(data, config) {
+            Ok(determinants) => {
+                log_determinants = Some(determinants);
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_log_determinants", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
+    // Step 8: If stepwise analysis is requested
+    let mut stepwise_statistics = None;
+    let mut wilks_lambda_test = None;
+
+    if config.main.stepwise {
+        // Stepwise statistics
+        executed_functions.push("calculate_stepwise_statistics".to_string());
+        match core::calculate_stepwise_statistics(data, config) {
+            Ok(statistics) => {
+                stepwise_statistics = Some(statistics);
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_stepwise_statistics", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        }
+
+        // Wilks' Lambda test
+        executed_functions.push("calculate_wilks_lambda_test".to_string());
+        match core::calculate_wilks_lambda_test(data, config) {
+            Ok(test) => {
+                wilks_lambda_test = Some(test);
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_wilks_lambda_test", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
+    // Step 9: Calculate canonical functions (always executed)
     executed_functions.push("calculate_canonical_functions".to_string());
     let canonical_functions = match core::calculate_canonical_functions(data, config) {
         Ok(functions) => Some(functions),
@@ -83,7 +161,7 @@ pub fn run_analysis(
         }
     };
 
-    // Step 5: Calculate structure matrix
+    // Step 10: Calculate structure matrix
     executed_functions.push("calculate_structure_matrix".to_string());
     let structure_matrix = match core::calculate_structure_matrix(data, config) {
         Ok(matrix) => Some(matrix),
@@ -93,7 +171,7 @@ pub fn run_analysis(
         }
     };
 
-    // Step 6: Classification results if requested
+    // Step 11: Classification results if requested
     let mut classification_results = None;
     if config.classify.case || config.classify.summary {
         executed_functions.push("calculate_classification_results".to_string());
@@ -108,7 +186,7 @@ pub fn run_analysis(
         };
     }
 
-    // Step 7: Bootstrap analysis if requested
+    // Step 12: Bootstrap analysis if requested and not in stepwise mode
     if config.bootstrap.perform_boot_strapping && !config.main.stepwise {
         executed_functions.push("perform_bootstrap_analysis".to_string());
         match core::perform_bootstrap_analysis(data, config) {
@@ -120,7 +198,7 @@ pub fn run_analysis(
         };
     }
 
-    // Step 8: Generate plots if requested
+    // Step 13: Generate plots if requested
     if config.classify.combine || config.classify.sep_grp || config.classify.terr {
         executed_functions.push("generate_plots".to_string());
         match core::generate_plots(data, config) {
@@ -132,7 +210,7 @@ pub fn run_analysis(
         };
     }
 
-    // Step 9: Save results if requested
+    // Step 14: Save results if requested
     if
         config.save.predicted ||
         config.save.discriminant ||
@@ -149,6 +227,21 @@ pub fn run_analysis(
         };
     }
 
+    // Step 15: Generate discriminant histograms
+    let mut discriminant_histograms = None;
+    if config.classify.combine || config.classify.sep_grp {
+        executed_functions.push("generate_discriminant_histograms".to_string());
+        match core::generate_discriminant_histograms(data, config) {
+            Ok(histograms) => {
+                discriminant_histograms = Some(histograms);
+            }
+            Err(e) => {
+                error_collector.add_error("generate_discriminant_histograms", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
     // Create the final result
     let result = DiscriminantResult {
         processing_summary,
@@ -157,6 +250,13 @@ pub fn run_analysis(
         canonical_functions,
         structure_matrix,
         classification_results,
+        box_m_test,
+        pooled_matrices,
+        covariance_matrices,
+        log_determinants,
+        stepwise_statistics,
+        wilks_lambda_test,
+        discriminant_histograms,
         executed_functions,
     };
 

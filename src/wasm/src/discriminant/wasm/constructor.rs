@@ -31,9 +31,6 @@ impl DiscriminantAnalysis {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
 
-        // Log raw config for debugging
-        web_sys::console::log_1(&format!("Raw config: {:?}", config_data).into());
-
         // Parse input data using serde_wasm_bindgen
         let group_data: Vec<Vec<DataRecord>> = match serde_wasm_bindgen::from_value(group_data) {
             Ok(data) => data,
