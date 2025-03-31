@@ -1,4 +1,4 @@
-pub fn cmle(p: usize, q: usize, intercept: f64, phi: Vec<f64>, theta: Vec<f64>, data: Vec<f64>) ->f64 {
+pub fn css(p: usize, q: usize, intercept: f64, phi: Vec<f64>, theta: Vec<f64>, data: Vec<f64>) ->f64 {
     let mut residuals = Vec::new();
     if p > 0 && q > 0 {
         for i in 0..data.len() {
@@ -42,9 +42,5 @@ pub fn cmle(p: usize, q: usize, intercept: f64, phi: Vec<f64>, theta: Vec<f64>, 
         }
     }
     let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
-    let n = data.len() as f64;
-    let df = n - 2.0 * p as f64 - q as f64 - 1.0;
-    let var_res = css / df;
-    let log_like = - n / 2.0 * (2.0 * std::f64::consts::PI * var_res).ln() - css / (2.0 * var_res);
-    log_like
+    css
 }

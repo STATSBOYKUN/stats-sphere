@@ -1,4 +1,4 @@
-use crate::{burg_alg, cmle, first_difference, hann_ris_alg, innov_alg};
+use crate::{burg_alg, css, first_difference, innov_alg, durb_lev_alg};
 use finitediff::FiniteDiff;
 use liblbfgs::lbfgs;
 use anyhow::Result;
@@ -14,17 +14,21 @@ pub fn est_coef(p: usize, d: usize, q: usize, data: Vec<f64>) -> Result<Vec<f64>
     }
     let mean = data.iter().sum::<f64>() / data.len() as f64;
     coef.push(mean);
-    if p > 0 && q > 0{
-        let arma_coef = hann_ris_alg(p, q, data.clone());
+    if p > 0 && q > 0 {
+        let phi = durb_lev_alg(p, data.clone());
         for i in 0..p{
-            coef.push(arma_coef[i]);
+            coef.push(phi[i]);
+        }
+        let theta = innov_alg(q, data.clone());
+        for i in 0..q{
+            coef.push(theta[i]);
         }
     } else if p > 0 {
         let phi = burg_alg(p, data.clone());
         for i in 0..p{
             coef.push(phi[i]);
         }
-    } else if q > 0 {
+    }else if q > 0 {
         let theta = innov_alg(q, data.clone());
         for i in 0..q{
             coef.push(theta[i]);
@@ -38,13 +42,13 @@ pub fn est_coef(p: usize, d: usize, q: usize, data: Vec<f64>) -> Result<Vec<f64>
             phi = coef[1..p+1].to_vec();
             theta = coef[p+1..].to_vec();
         } else if p > 0 {
-            phi = coef[1..p+1].to_vec();
+            phi = coef[1..].to_vec();
             theta = Vec::new();
         } else {
             phi = Vec::new();
-            theta = coef[1..q+1].to_vec();
+            theta = coef[1..].to_vec();
         }
-        cmle(p, q, intercept, phi, theta, data.clone())
+        css(p, q, intercept, phi, theta, data.clone())
     };
     let g = |coef: &Vec<f64>| coef.forward_diff(&f);
     let eval = |x: &[f64], gx: &mut [f64]| {

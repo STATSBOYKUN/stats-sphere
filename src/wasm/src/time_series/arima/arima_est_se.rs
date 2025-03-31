@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::*;
 use crate::{Arima, first_difference, invert_matrix};
 use nalgebra::DMatrix;
 use finitediff::FiniteDiff;
+use arima::{estimate, util};
 
 #[wasm_bindgen]
 impl Arima{
@@ -11,33 +12,16 @@ impl Arima{
         let q = self.get_ma_coef().len();
         let d = self.get_i_order();
         if d > 0 {
-            for _ in 0..d{
-                let diff = first_difference(data.clone());
-                data = diff;
-            }
+            data = util::diff(&data, d as usize);
         }
-        
+        let data = data;
         let total_size = 1 + p + q;
         let f = |coef: &Vec<f64>| {
             let intercept = coef[0];
-            let ar ;
-            let ma ;
-            if p > 0 && q > 0{
-                ar = coef[1..p+1].to_vec();
-                ma = coef[p+1..].to_vec();
-            } else if p > 0 {
-                ar = coef[1..p+1].to_vec();
-                ma = Vec::new();
-            } else {
-                ar = Vec::new();
-                ma = coef[1..q+1].to_vec();
-            }
-            let residuals: Vec<f64> = self.est_res(intercept, ar, ma, data.clone());
-
-            let mut css: f64 = 0.0;
-            for residual in &residuals {
-                css += residual * residual;
-            }
+            let ar = &coef[1..p+1];
+            let ma = &coef[p+1..];
+            let residuals = estimate::residuals(&data, intercept, Some(ar), Some(ma)).unwrap();
+            let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
             let n = data.len() as f64;
             let df = n - p as f64 - total_size as f64;
             let var_res = css / df;
@@ -72,11 +56,6 @@ impl Arima{
             se.push((2.0 * var_res * inv_hessian[0][0].abs()).sqrt());
             se
         }
-
-        // let mut coef1 = Vec::new();
-        // coef1.push(self.get_constant() + 0.0001);
-        // let g1 = (f(&coef1) - f(&coef)) / 0.0001;
-        // [g1].to_vec()
     }
 
     pub fn coeficient_se(&self) -> Vec<f64>{
@@ -96,25 +75,10 @@ impl Arima{
             assert_eq!(coef.len(), total_size);
 
             let intercept = coef[0];
-            let ar ;
-            let ma ;
-            if p > 0 && q > 0{
-                ar = coef[1..p+1].to_vec();
-                ma = coef[p+1..].to_vec();
-            } else if p > 0 {
-                ar = coef[1..p+1].to_vec();
-                ma = Vec::new();
-            } else {
-                ar = Vec::new();
-                ma = coef[1..q+1].to_vec();
-            }
-            
-            let residuals: Vec<f64> = self.est_res(intercept, ar, ma, data.clone());
-
-            let mut css: f64 = 0.0;
-            for residual in &residuals {
-                css += residual * residual;
-            }
+            let ar = &coef[1..p+1];
+            let ma = &coef[p+1..];
+            let residuals = estimate::residuals(&data, intercept, Some(ar), Some(ma)).unwrap();
+            let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
             css
         };
 

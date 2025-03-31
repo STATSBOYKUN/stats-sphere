@@ -1,55 +1,12 @@
 use wasm_bindgen::prelude::*;
 use crate::{Arima, first_difference};
+use arima::estimate;
 
 #[wasm_bindgen]
 impl Arima {
     pub fn est_res(&self, intercept: f64, ar: Vec<f64>, ma: Vec<f64>, data: Vec<f64>) -> Vec<f64> {
-        let mut residuals = Vec::new();
-        if self.get_ar_order() > 0 && self.get_ma_order() > 0 {
-            for i in 0..data.len(){
-                let mut sum_ar = 0.0;
-                for j in 1..=self.get_ar_order() as usize{
-                    if i + 1 > j {
-                        sum_ar += ar[j-1] * (data[i-j] - intercept);
-                    }
-                }
-                let mut sum_ma = 0.0;
-                for j in 1..=self.get_ma_order() as usize{
-                    if i + 1 > j {
-                        sum_ma += ma[j-1] * residuals[i-j];
-                    }
-                }
-                residuals.push(data[i] - intercept - sum_ar + sum_ma);
-            }
-            residuals
-        } else if self.get_ar_order() > 0{
-            for i in 0..data.len(){
-                let mut sum_ar = 0.0;
-                for j in 1..=self.get_ar_order() as usize{
-                    if i + 1 > j {
-                        sum_ar += ar[j-1] * (data[i-j] - intercept);
-                    }
-                }
-                residuals.push(data[i] - intercept - sum_ar);
-            }
-            residuals
-        } else if self.get_ma_order() > 0 {
-            for i in 0..data.len(){
-                let mut sum_ma = 0.0;
-                for j in 1..=self.get_ma_order() as usize{
-                    if i + 1 > j {
-                        sum_ma += ma[j-1] * residuals[i-j];
-                    }
-                }
-                residuals.push(data[i] - intercept + sum_ma);
-            }
-            residuals
-        } else {
-            for i in 0..data.len() {
-                residuals.push(data[i] - intercept);
-            }
-            residuals
-        }
+        let residuals = estimate::residuals(&data, intercept, Some(&ar), Some(&ma)).unwrap();
+        residuals
     }
 
     pub fn res_sum_of_square(&self)-> f64{

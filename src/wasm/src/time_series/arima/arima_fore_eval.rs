@@ -8,7 +8,7 @@ use crate::time_series::evaluation::basic_evaluation::*;
 impl Arima{
     pub fn forecasting_evaluation(&self)-> JsValue{
         let data = self.get_data();
-        let forecast = self.forecast(data.len());
+        let forecast = self.forecast();
         assert_eq!(data.len(), forecast.len());
 
         let mse = mse(data.clone(), forecast.clone()) as f64;
