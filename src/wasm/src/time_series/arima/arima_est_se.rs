@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-use crate::{Arima, first_difference, invert_matrix};
+use crate::{Arima, first_difference, invert_matrix, autocov};
 use nalgebra::DMatrix;
 use finitediff::FiniteDiff;
 use arima::{estimate, util};
@@ -56,6 +56,48 @@ impl Arima{
             se.push((2.0 * var_res * inv_hessian[0][0].abs()).sqrt());
             se
         }
+    }
+
+    pub fn intercept_se2(&self) -> f64{
+        let mut data = self.get_data();
+        let d = self.get_i_order();
+        if d > 0 {
+            for _ in 0..d{
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        } 
+        let mut acov = Vec::new();
+        let mut rho = Vec::new();
+        let mut sum = 0.0;
+        for i in 0..data.len(){
+            acov.push(autocov(i, &data));
+            rho.push(acov[i] / acov[0]);
+            if i > 0 {
+                sum += 2.0*(1.0 - i as f64 / data.len() as f64)*rho[i];
+            }
+        }
+        let var = acov[0] / data.len() as f64 * (1.0 + sum);
+        // let var = acov[0] / data.len() as f64;
+        // let var = sum;
+        var.sqrt()
+    }
+
+    pub fn intercept_se3(&self) -> f64{
+        let intercept = self.get_constant();
+        let ar = self.get_ar_coef();
+        let ma = self.get_ma_coef();
+        let mut data = self.get_data();
+        if self.get_i_order() > 0 {
+            for _ in 0..self.get_i_order() {
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        }
+        let residual = self.est_res2(intercept, ar.clone(), ma.clone(), data.clone());
+        let var_res = residual.iter().map(|x| x.powi(2)).sum::<f64>() / (data.len() as f64 - self.get_ar_order() as f64 - self.get_ma_order() as f64 - 1.0);
+        let var = var_res * (2.0*data.len() as f64 + 1.0) * (data.len() as f64 + 1.0) / 6.0*data.len() as f64;
+        var.sqrt()
     }
 
     pub fn coeficient_se(&self) -> Vec<f64>{
@@ -115,8 +157,8 @@ impl Arima{
 
     pub fn estimate_se(&self) -> Vec<f64>{
         let mut se = Vec::new();
-        let intercept_se = self.intercept_se();
-        se.push(intercept_se[0]);
+        let intercept_se = self.intercept_se2();
+        se.push(intercept_se);
         if self.get_ar_order() > 0 || self.get_ma_order() > 0{
             let coef_se = self.coeficient_se();
             for coef_se_value in coef_se{

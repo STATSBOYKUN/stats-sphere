@@ -22,7 +22,7 @@ export async function handleBoxJenkinsModel(
         }
 
         const arima = new Arima(new Float64Array(data), orderParameter[0], orderParameter[1], orderParameter[2]);
-        let test = Array.from(burg_alg(5, new Float64Array(data)));
+        // let test = Array.from(burg_alg(5, new Float64Array(data)));
         let coef = Array.from(arima.estimate_coef());
         let se = Array.from(arima.estimate_se()); 
         let tStat = Array.from(arima.t_stat());
@@ -139,7 +139,7 @@ export async function handleBoxJenkinsModel(
             forecast = [0];
         }
 
-        return [[...test,...coef, ...se], coefStructJson , selCritStructJson, forecastEvalJson, forecast];
+        return [[...coef, ...se], coefStructJson , selCritStructJson, forecastEvalJson, forecast];
     } catch (error) {
         let errorMessage = error as Error;
         return [[0],"" , "",JSON.stringify({ error: errorMessage.message }),[0]];
