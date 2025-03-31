@@ -33,6 +33,7 @@ export async function analyzeKMeansCluster({
 
     const varDefsForTarget = getVarDefs(variables, TargetVariables);
     const varDefsForCaseTarget = getVarDefs(variables, CaseTargetVariable);
+    console.log(configData);
 
     // console.log({
     //     configData,

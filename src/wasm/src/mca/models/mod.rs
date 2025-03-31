@@ -1,3 +1,3 @@
-mod data;
-mod config;
-mod result;
+pub mod data;
+pub mod config;
+pub mod result;

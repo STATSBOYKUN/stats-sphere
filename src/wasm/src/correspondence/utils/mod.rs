@@ -1,2 +1,2 @@
-mod converter;
-mod error;
+pub mod converter;
+pub mod error;

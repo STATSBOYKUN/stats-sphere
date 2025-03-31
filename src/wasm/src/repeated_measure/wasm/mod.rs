@@ -1,2 +1,2 @@
-mod constructor;
-mod function;
+pub mod constructor;
+pub mod function;
