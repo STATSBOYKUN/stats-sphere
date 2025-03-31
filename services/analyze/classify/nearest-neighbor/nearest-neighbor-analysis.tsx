@@ -58,17 +58,6 @@ export async function analyzeKNN({
         CaseIdentifierVariable
     );
 
-    console.log("slicedDataForTarget", slicedDataForTarget);
-    console.log("slicedDataForFeatures", slicedDataForFeatures);
-    console.log(
-        "slicedDataForFocalCaseIdentifier",
-        slicedDataForFocalCaseIdentifier
-    );
-    console.log("slicedDataForCaseIdentifier", slicedDataForCaseIdentifier);
-    console.log("varDefsForTarget", varDefsForTarget);
-    console.log("varDefsForFeatures", varDefsForFeatures);
-    console.log("varDefsForFocalCaseIdentifier", varDefsForFocalCaseIdentifier);
-    console.log("varDefsForCaseIdentifier", varDefsForCaseIdentifier);
     console.log("configData", configData);
 
     /*
