@@ -9,6 +9,54 @@ impl Arima {
         residuals
     }
 
+    pub fn est_res2(&self, intercept: f64, ar: Vec<f64>, ma: Vec<f64>, data: Vec<f64>) -> Vec<f64> {
+        let mut residuals = Vec::new();
+        let p = self.get_ar_order() as usize;
+        let q = self.get_ma_order() as usize;
+        if p > 0 && q > 0 {
+            for i in 0..data.len() {
+                let mut sum_ar = 0.0;
+                for j in 1..=p as usize {
+                    if i + 1 > j {
+                        sum_ar += ar[j - 1] * (data[i - j] - intercept);
+                    }
+                }
+                let mut sum_ma = 0.0;
+                for j in 1..=q as usize {
+                    if i + 1 > j {
+                        sum_ma += ma[j - 1] * residuals[i - j];
+                    }
+                }
+                residuals.push(data[i] - intercept - sum_ar + sum_ma);
+            }
+        } else if p > 0 {
+            for i in 0..data.len() {
+                let mut sum_ar = 0.0;
+                for j in 1..=p as usize {
+                    if i + 1 > j {
+                        sum_ar += ar[j - 1] * (data[i - j] - intercept);
+                    }
+                }
+                residuals.push(data[i] - intercept - sum_ar);
+            }
+        } else if q > 0 {
+            for i in 0..data.len() {
+                let mut sum_ma = 0.0;
+                for j in 1..=q as usize {
+                    if i + 1 > j {
+                        sum_ma += ma[j - 1] * residuals[i - j];
+                    }
+                }
+                residuals.push(data[i] - intercept + sum_ma);
+            }
+        } else {
+            for i in 0..data.len() {
+                residuals.push(data[i] - intercept);
+            }
+        }
+        residuals
+    }
+
     pub fn res_sum_of_square(&self)-> f64{
         let mut data = self.get_data();
         let d = self.get_i_order();

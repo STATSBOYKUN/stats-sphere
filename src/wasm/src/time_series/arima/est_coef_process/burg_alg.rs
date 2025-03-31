@@ -1,5 +1,7 @@
 use crate::durb_lev_alg;
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
 pub fn burg_alg(p: usize, data: Vec<f64>) -> Vec<f64> {
     let mut v = Vec::new();
     let mut u = Vec::new();
@@ -19,6 +21,9 @@ pub fn burg_alg(p: usize, data: Vec<f64>) -> Vec<f64> {
         for t in i+1..v.len(){
             utmp.push(u[t-1] - phi_durb_lev[i] * v[t]);
             vtmp.push(v[t-1] - phi_durb_lev[i] * u[t]);
+        }
+        if vtmp.len() <= i{
+            break;
         }
         for t in i+1..vtmp.len(){
             sum += utmp[t] * vtmp[t-1];

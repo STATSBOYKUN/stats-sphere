@@ -411,7 +411,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                                         <Label>p:</Label>
                                     </div>
                                     <Input type="number" className="w-[80px]" 
-                                        placeholder="1" min="0" max="10" step="1"
+                                        placeholder="1" min="0" max="5" step="1"
                                         value={arOrder}
                                         onChange={(e) => setArOrder(Number(e.target.value))}
                                     />
@@ -421,7 +421,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                                         <Label>d:</Label>
                                     </div>
                                     <Input type="number" className="w-[80px]" 
-                                        placeholder="1" min="0" max="10" step="1"
+                                        placeholder="1" min="0" max="2" step="1"
                                         value={diffOrder}
                                         onChange={(e) => setDiffOrder(Number(e.target.value))}
                                     />
@@ -431,7 +431,7 @@ const BoxJenkinsModelModal: React.FC<BoxJenkinsModelModalProps> = ({ onClose }) 
                                         <Label>q:</Label>
                                     </div>
                                     <Input type="number" className="w-[80px]" 
-                                        placeholder="1" min="0" max="10" step="1"
+                                        placeholder="1" min="0" max="5" step="1"
                                         value={maOrder}
                                         onChange={(e) => setMaOrder(Number(e.target.value))}
                                     />

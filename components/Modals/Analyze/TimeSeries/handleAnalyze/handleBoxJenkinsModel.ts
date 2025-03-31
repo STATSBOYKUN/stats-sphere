@@ -1,4 +1,4 @@
-import init, {Arima} from '../../../../../src/wasm/pkg/wasm.js';
+import init, {Arima, burg_alg} from '../../../../../src/wasm/pkg/wasm.js';
 
 export async function handleBoxJenkinsModel(
     data: (number)[], 
@@ -22,14 +22,12 @@ export async function handleBoxJenkinsModel(
         }
 
         const arima = new Arima(new Float64Array(data), orderParameter[0], orderParameter[1], orderParameter[2]);
+        let test = Array.from(burg_alg(5, new Float64Array(data)));
         let coef = Array.from(arima.estimate_coef());
         let se = Array.from(arima.estimate_se()); 
-        let zStat = Array.from(arima.z_stat());
+        let tStat = Array.from(arima.t_stat());
         let pValue = Array.from(arima.p_value());
-        let lnLikelihood = arima.ln_likelihood();
-        let aic = arima.aic();
-        let bic = arima.bic();
-        let sbc = arima.sbc();
+        let selCritValue = Array.from(arima.selection_criteria());
 
         let coefName = ['Constant'];
         // if(orderParameter[1] == 0){
@@ -47,22 +45,22 @@ export async function handleBoxJenkinsModel(
         }
 
         let coefStruct: Record<string, any> = {}; // Menggunakan objek kosong
-        // Mengecek panjang seluruh data apakah sama
+        // Jika Nilai SE elemen ke-0, maka determinan 0 maka matriks singular
         if (se[0] == 0.0) {
-            se = []; zStat = []; pValue = [];
+            se = []; tStat = []; pValue = [];
             for (let i = 0; i < coef.length; i++) {
                 se.push(NaN);
-                zStat.push(NaN);
+                tStat.push(NaN);
                 pValue.push(NaN);
             }
         }
-        if ((coefName.length + coef.length + se.length + zStat.length + pValue.length) % coef.length == 0) {
+        if ((coefName.length + coef.length + se.length + tStat.length + pValue.length) % coef.length == 0) {
             for (let i = 0; i < coef.length; i++) {
                 coefStruct[i] = { // Gunakan i sebagai key dalam objek
                     coefName: coefName[i],
                     coef: coef[i],
                     se: se[i],
-                    zStat: zStat[i],
+                    tStat: tStat[i],
                     pValue: pValue[i]
                 };
             }
@@ -72,38 +70,48 @@ export async function handleBoxJenkinsModel(
         let coefStructJson = JSON.stringify({
             tables: [{
                 title: `Coefficients Test for ARIMA (${orderParameter[0]},${orderParameter[1]},${orderParameter[2]})`,
-                columnHeaders: [{header: ""}, {header: "coef"}, {header: "std. error"}, {header: "z value"}, {header: "p-value"}],
+                columnHeaders: [{header: ""}, {header: "coef"}, {header: "std. error"}, {header: "t value"}, {header: "p-value"}],
                 rows: Object.entries(coefStruct).map(([key, value]) => ({
                     "rowHeader": [value.coefName],
                     "coef": value.coef.toFixed(3),
                     "std. error": value.se.toFixed(3),
-                    "z value": value.zStat.toFixed(3),
+                    "t value": value.tStat.toFixed(3),
                     "p-value": value.pValue.toFixed(3),
                 })),
             }]
         });
 
-        let selectionCriteriaName = [`Log-Likelihood`, `Akaike's Information Criterion`, `Bayesian Information Criterion`, `Schwartz's Bayesian Criterion`];
-        let selectionCriteriaValue = [lnLikelihood, aic, bic, sbc];
-        let selectionCriteriaStruct: Record<string, any> = {}; // Menggunakan objek kosong
+        let selCritName = orderParameter[0] == 0 && orderParameter[2] == 0 ? 
+        [
+            `S.E. of Regression`,`Sum Squared Resid`,
+            `Log Likelihood`, `Mean Dependent Var`, `S.D. Dependent Var`,
+            `Akaike Info Crit`, `Schwarz Criterion`, `Hannan-Quinn`, `Durbin-Watson`
+        ]
+        :
+        [
+            `R-Squared`, `Adj. R-Squared`, `S.E. of Regression`,`Sum Squared Resid`,
+            `Log Likelihood`, `F-Statistic`, `Prob(F-Stat)`, `Mean Dependent Var`, `S.D. Dependent Var`,
+            `Akaike Info Crit`, `Schwarz Criterion`, `Hannan-Quinn`, `Durbin-Watson`
+        ];
+        let selCritStruct: Record<string, any> = {}; // Menggunakan objek kosong
         // Mengecek panjang seluruh data apakah sama
-        if ((selectionCriteriaName.length + selectionCriteriaValue.length) % selectionCriteriaName.length == 0) {
-            for (let i = 0; i < selectionCriteriaName.length; i++) {
-                selectionCriteriaStruct[i] = { // Gunakan i sebagai key dalam objek
-                    selectionCriteriaName: selectionCriteriaName[i],
-                    selectionCriteriaValue: selectionCriteriaValue[i],
+        if ((selCritName.length + selCritValue.length) % selCritValue.length == 0) {
+            for (let i = 0; i < selCritName.length; i++) {
+                selCritStruct[i] = { // Gunakan i sebagai key dalam objek
+                    selCritName: selCritName[i],
+                    selCritValue: selCritValue[i],
                 };
             }
         } else {
             throw new Error("Data length is not equal");
         }
-        let selectionCriteriaStructJson = JSON.stringify({
+        let selCritStructJson = JSON.stringify({
             tables: [{
                 title: `Selection Criteria for ${dataHeader}`,
                 columnHeaders: [{header: ""}, {header: "value"}],
-                rows: Object.entries(selectionCriteriaStruct).map(([key, value]) => ({
-                    "rowHeader": [value.selectionCriteriaName],
-                    "value": value.selectionCriteriaValue.toFixed(3),
+                rows: Object.entries(selCritStruct).map(([key, value]) => ({
+                    "rowHeader": [value.selCritName],
+                    "value": value.selCritValue.toFixed(3),
                 })),
             }]
         });
@@ -112,7 +120,7 @@ export async function handleBoxJenkinsModel(
         let forecastEval;
         let forecastEvalJson = "";
         if (forecasting) {
-            forecast = Array.from(arima.forecast(data.length));
+            forecast = Array.from(arima.forecast());
             forecastEval = arima.forecasting_evaluation() as Record<string, number>;
             forecastEvalJson = JSON.stringify({
                 tables: [
@@ -126,12 +134,12 @@ export async function handleBoxJenkinsModel(
                     },
                 ],
             });
-            forecast = Array.from(arima.forecast(data.length + period));
+            forecast = Array.from(arima.forecast());
         } else{
             forecast = [0];
         }
 
-        return [[...coef, ...se],coefStructJson , selectionCriteriaStructJson, forecastEvalJson, forecast];
+        return [[...test,...coef, ...se], coefStructJson , selCritStructJson, forecastEvalJson, forecast];
     } catch (error) {
         let errorMessage = error as Error;
         return [[0],"" , "",JSON.stringify({ error: errorMessage.message }),[0]];

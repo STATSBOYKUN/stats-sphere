@@ -27,7 +27,19 @@ impl Arima{
         sel_crit
     }
     pub fn calculate_sse(&self)-> f64 {
-        self.res_sum_of_square()
+        let intercept = self.get_constant();
+        let ar = self.get_ar_coef();
+        let ma = self.get_ma_coef();
+        let mut data = self.get_data();
+        if self.get_i_order() > 0 {
+            for _ in 0..self.get_i_order() {
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        }
+        let residual = self.est_res2(intercept, ar.clone(), ma.clone(), data);
+        let sse = residual.iter().map(|x| x.powi(2)).sum::<f64>();
+        sse
     }
 
     pub fn calculate_mse(&self)-> f64 {
