@@ -1,4 +1,6 @@
+// structure_matrix.rs
 use std::collections::HashMap;
+use nalgebra::{ DMatrix, DVector };
 
 use crate::discriminant::models::{ result::StructureMatrix, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::common::{
@@ -10,6 +12,7 @@ use crate::discriminant::stats::common::{
     extract_group_values,
     calculate_group_means,
 };
+use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
 
 pub fn calculate_structure_matrix(
     data: &AnalysisData,
@@ -19,6 +22,9 @@ pub fn calculate_structure_matrix(
 
     let variables = config.main.independent_variables.clone();
     let num_vars = variables.len();
+
+    // First, calculate canonical functions
+    let canonical_functions = calculate_canonical_functions(data, config)?;
 
     // Number of discriminant functions
     let num_groups = data.group_data.len();
@@ -31,21 +37,36 @@ pub fn calculate_structure_matrix(
     // Calculate pooled within-groups covariance matrix
     let pooled_within = calculate_pooled_within_matrix(data, &variables);
 
-    // Calculate between-groups covariance matrix
-    let between_groups = calculate_between_groups_matrix(data, &variables);
-
-    // Calculate eigenvectors of W^-1 * B
-    let (_, eigenvectors) = solve_eigenvalue_problem(
-        &pooled_within,
-        &between_groups,
-        num_functions
-    );
-
-    // Calculate total covariance matrix
-    let total_cov = calculate_total_covariance_matrix(data, &variables);
+    // Get eigenvectors from canonical functions
+    let mut eigenvectors = vec![vec![0.0; num_functions]; num_vars];
+    for (i, var) in variables.iter().enumerate() {
+        if let Some(coef_values) = canonical_functions.coefficients.get(var) {
+            for j in 0..num_functions {
+                if j < coef_values.len() {
+                    eigenvectors[i][j] = coef_values[j];
+                }
+            }
+        }
+    }
 
     // Calculate within-groups correlation matrix
-    let within_corr = calculate_correlation_matrix(&pooled_within);
+    let mut within_corr = DMatrix::zeros(num_vars, num_vars);
+    for i in 0..num_vars {
+        for j in 0..num_vars {
+            if i == j {
+                within_corr[(i, j)] = 1.0;
+            } else {
+                let std_i = pooled_within[(i, i)].sqrt();
+                let std_j = pooled_within[(j, j)].sqrt();
+
+                if std_i > 0.0 && std_j > 0.0 {
+                    within_corr[(i, j)] = pooled_within[(i, j)] / (std_i * std_j);
+                } else {
+                    within_corr[(i, j)] = 0.0;
+                }
+            }
+        }
+    }
 
     // Calculate structure matrix (pooled within-groups correlations)
     let mut correlations = HashMap::new();
@@ -58,7 +79,7 @@ pub fn calculate_structure_matrix(
             let mut correlation = 0.0;
 
             for k in 0..num_vars {
-                correlation += within_corr[i][k] * eigenvectors[k][j];
+                correlation += within_corr[(i, k)] * eigenvectors[k][j];
             }
 
             corr_values.push(correlation);
@@ -67,83 +88,16 @@ pub fn calculate_structure_matrix(
         correlations.insert(var.clone(), corr_values);
     }
 
-    // Sort variables by magnitude of correlation with first function
+    // Sort variables by absolute magnitude of correlation with first function
     let mut sorted_variables = variables.clone();
     sorted_variables.sort_by(|a, b| {
-        let corr_a = correlations.get(a).unwrap()[0].abs();
-        let corr_b = correlations.get(b).unwrap()[0].abs();
-        corr_b.partial_cmp(&corr_a).unwrap() // Sort by descending absolute correlation
+        let corr_a = correlations.get(a).unwrap_or(&vec![0.0])[0].abs();
+        let corr_b = correlations.get(b).unwrap_or(&vec![0.0])[0].abs();
+        corr_b.partial_cmp(&corr_a).unwrap_or(std::cmp::Ordering::Equal) // Sort by descending absolute correlation
     });
 
     Ok(StructureMatrix {
         variables: sorted_variables,
         correlations,
     })
-}
-
-// Calculate total covariance matrix
-fn calculate_total_covariance_matrix(data: &AnalysisData, variables: &[String]) -> Vec<Vec<f64>> {
-    let num_vars = variables.len();
-    let mut total_matrix = vec![vec![0.0; num_vars]; num_vars];
-
-    // Collect all values regardless of group
-    let mut all_values = Vec::with_capacity(num_vars);
-    for var_idx in 0..num_vars {
-        let values = extract_values_by_index(&data.group_data, var_idx, variables);
-        all_values.push(values);
-    }
-
-    // Calculate overall means
-    let mut overall_means = Vec::with_capacity(num_vars);
-    for var_idx in 0..num_vars {
-        let mean = if all_values[var_idx].is_empty() {
-            0.0
-        } else {
-            all_values[var_idx].iter().sum::<f64>() / (all_values[var_idx].len() as f64)
-        };
-        overall_means.push(mean);
-    }
-
-    // Calculate total covariance matrix
-    let total_n = all_values[0].len();
-    if total_n <= 1 {
-        return total_matrix;
-    }
-
-    for i in 0..num_vars {
-        for j in 0..num_vars {
-            let cov = calculate_covariance(
-                &all_values[i],
-                &all_values[j],
-                overall_means[i],
-                overall_means[j]
-            );
-            total_matrix[i][j] = cov;
-        }
-    }
-
-    total_matrix
-}
-
-// Calculate correlation matrix from a covariance matrix
-fn calculate_correlation_matrix(cov_matrix: &[Vec<f64>]) -> Vec<Vec<f64>> {
-    let n = cov_matrix.len();
-    let mut corr_matrix = vec![vec![0.0; n]; n];
-
-    for i in 0..n {
-        for j in 0..n {
-            if i == j {
-                corr_matrix[i][j] = 1.0;
-            } else {
-                let var_i = cov_matrix[i][i];
-                let var_j = cov_matrix[j][j];
-
-                if var_i > 0.0 && var_j > 0.0 {
-                    corr_matrix[i][j] = cov_matrix[i][j] / (var_i.sqrt() * var_j.sqrt());
-                }
-            }
-        }
-    }
-
-    corr_matrix
 }

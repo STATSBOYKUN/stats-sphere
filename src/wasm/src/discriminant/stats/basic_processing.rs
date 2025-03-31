@@ -1,3 +1,4 @@
+// basic_processing.rs
 use crate::discriminant::models::{ result::ProcessingSummary, AnalysisData, DiscriminantConfig };
 use crate::discriminant::models::data::DataValue;
 
@@ -26,16 +27,12 @@ pub fn basic_processing_summary(
     let mut missing_disc_vars = 0;
     let mut both_missing = 0;
 
-    // Flatten all independent data for easier access
-    let all_independent_records = data.independent_data.iter().flatten().collect::<Vec<_>>();
-
-    // Process each record in group_data to check group variable
-    for (_idx_group, group) in data.group_data.iter().enumerate() {
-        for (_idx_record, record) in group.iter().enumerate() {
+    // Process each record to check for missing values
+    for group in data.group_data.iter() {
+        for record in group.iter() {
             // Check if group code is missing or out of range
             let has_missing_group = match record.values.get(group_var) {
                 Some(DataValue::Number(val)) => {
-                    // Check if value is outside defined range
                     (min_range.is_some() && val < &min_range.unwrap()) ||
                         (max_range.is_some() && val > &max_range.unwrap())
                 }
@@ -45,36 +42,18 @@ pub fn basic_processing_summary(
                 _ => false,
             };
 
-            // Check if all independent variables exist in any independent record
+            // Check if any independent variable is missing
             let mut has_missing_disc = false;
 
-            // For each independent variable in the config
             for var_name in independent_vars {
-                // Look for this variable in all independent records
-                let mut found_valid_value = false;
-
-                for ind_record in &all_independent_records {
-                    // Check if this independent record has the variable with a valid value
-                    match ind_record.values.get(var_name) {
-                        Some(DataValue::Number(val)) if !val.is_nan() => {
-                            found_valid_value = true;
-                            break;
-                        }
-                        Some(DataValue::Text(s)) if !s.trim().is_empty() => {
-                            found_valid_value = true;
-                            break;
-                        }
-                        Some(other_value) if !matches!(other_value, DataValue::Null) => {
-                            found_valid_value = true;
-                            break;
-                        }
-                        _ => {}
+                match record.values.get(var_name) {
+                    Some(DataValue::Number(val)) if !val.is_nan() => {}
+                    Some(DataValue::Text(s)) if !s.trim().is_empty() => {}
+                    Some(DataValue::Boolean(_)) => {}
+                    _ => {
+                        has_missing_disc = true;
+                        break;
                     }
-                }
-
-                // If we couldn't find a valid value for this variable in any record
-                if !found_valid_value {
-                    has_missing_disc = true;
                 }
             }
 
@@ -95,12 +74,12 @@ pub fn basic_processing_summary(
     // Calculate valid cases
     let valid_cases = total_cases - excluded_cases;
 
-    // Calculate percentages (avoid division by zero)
+    // Calculate percentages
     let calc_percent = |value: usize| -> f64 {
         if total_cases == 0 { 0.0 } else { ((value as f64) / (total_cases as f64)) * 100.0 }
     };
 
-    // Create the enhanced ProcessingSummary
+    // Create the ProcessingSummary
     Ok(ProcessingSummary {
         valid_cases,
         excluded_cases,

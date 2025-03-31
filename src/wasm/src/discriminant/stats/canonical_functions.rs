@@ -1,4 +1,6 @@
+// canonical_functions.rs
 use std::collections::HashMap;
+use nalgebra::{ DMatrix, DVector };
 
 use crate::discriminant::models::{ result::CanonicalFunctions, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::common::{
@@ -7,6 +9,8 @@ use crate::discriminant::stats::common::{
     solve_eigenvalue_problem,
     calculate_group_means,
     extract_group_values,
+    matrix_to_vec,
+    vec_to_matrix,
 };
 
 pub fn calculate_canonical_functions(
@@ -32,7 +36,6 @@ pub fn calculate_canonical_functions(
     let between_groups = calculate_between_groups_matrix(data, variables);
 
     // Solve the eigenvalue problem: (W^-1 * B) * V = λ * V
-    // In practice, we would use a linear algebra library for this
     let (eigenvalues, eigenvectors) = solve_eigenvalue_problem(
         &pooled_within,
         &between_groups,
@@ -41,10 +44,14 @@ pub fn calculate_canonical_functions(
 
     // Calculate variance percentages
     let total_eigenvalue: f64 = eigenvalues.iter().sum();
-    let variance_percentage: Vec<f64> = eigenvalues
-        .iter()
-        .map(|&eigen| (100.0 * eigen) / total_eigenvalue)
-        .collect();
+    let variance_percentage: Vec<f64> = if total_eigenvalue > 0.0 {
+        eigenvalues
+            .iter()
+            .map(|&eigen| (100.0 * eigen) / total_eigenvalue)
+            .collect()
+    } else {
+        vec![100.0; num_functions]
+    };
 
     // Calculate cumulative percentages
     let mut cumulative_percentage = Vec::with_capacity(num_functions);
@@ -57,8 +64,21 @@ pub fn calculate_canonical_functions(
     // Calculate canonical correlations
     let canonical_correlation: Vec<f64> = eigenvalues
         .iter()
-        .map(|&eigen| (eigen / (1.0 + eigen)).sqrt())
+        .map(|&eigen| {
+            let corr = (eigen / (1.0 + eigen)).sqrt();
+            if corr.is_nan() {
+                0.0
+            } else {
+                corr
+            }
+        })
         .collect();
+
+    // Extract standard deviations for standardization
+    let mut std_devs = Vec::with_capacity(num_vars);
+    for i in 0..num_vars {
+        std_devs.push(pooled_within[(i, i)].sqrt());
+    }
 
     // Calculate unstandardized coefficients
     let mut coefficients = HashMap::new();
@@ -75,8 +95,9 @@ pub fn calculate_canonical_functions(
     for (i, var) in variables.iter().enumerate() {
         let mut std_coef_values = Vec::with_capacity(num_functions);
         for j in 0..num_functions {
-            let std_dev = pooled_within[i][i].sqrt();
-            std_coef_values.push(eigenvectors[i][j] * std_dev);
+            let std_dev = std_devs[i];
+            let std_coef = if std_dev > 0.0 { eigenvectors[i][j] * std_dev } else { 0.0 };
+            std_coef_values.push(std_coef);
         }
         standardized_coefficients.insert(var.clone(), std_coef_values);
     }
@@ -84,6 +105,10 @@ pub fn calculate_canonical_functions(
     // Calculate functions at group centroids
     let mut function_at_centroids = HashMap::new();
     for (group_idx, group_data) in data.group_data.iter().enumerate() {
+        if group_data.is_empty() {
+            continue;
+        }
+
         let group_name = (group_idx + 1).to_string();
 
         // Calculate group means

@@ -43,20 +43,20 @@ export async function analyzeDiscriminant({
     const varDefsForIndependent = getVarDefs(variables, IndependentVariables);
     const varDefsForSelection = getVarDefs(variables, SelectionVariable);
 
-    const da = new DiscriminantAnalysis(
+    console.log(
         slicedDataForGrouping,
         slicedDataForIndependent,
         slicedDataForSelection,
-        configData,
         varDefsForGrouping,
         varDefsForIndependent,
         varDefsForSelection
     );
 
-    console.log(
+    const da = new DiscriminantAnalysis(
         slicedDataForGrouping,
         slicedDataForIndependent,
         slicedDataForSelection,
+        configData,
         varDefsForGrouping,
         varDefsForIndependent,
         varDefsForSelection
@@ -69,117 +69,6 @@ export async function analyzeDiscriminant({
     console.log("errors", errors);
     console.log("results", results);
     // const formattedResults = convertStatisticalData(results);
-
-    // /*
-    //  * 🧩 Analysis Case Process 🧩
-    //  */
-    // const caseProcessingSummary = JSON.stringify({
-    //     tables: [formattedResults.tables[0]],
-    // });
-
-    // /*
-    //  * 📊 Group Statistics Process 📊
-    //  */
-    // const groupStatistics = JSON.stringify({
-    //     tables: [formattedResults.tables[1]],
-    // });
-
-    // /*
-    //  * 📊 Homogeneity Test Process 📊
-    //  */
-    // const testsOfEquality = JSON.stringify({
-    //     tables: [formattedResults.tables[2]],
-    // });
-
-    // const pooledMatrices = JSON.stringify({
-    //     tables: [formattedResults.tables[3]],
-    // });
-
-    // const covarianceMatrices = JSON.stringify({
-    //     tables: [formattedResults.tables[4]],
-    // });
-
-    // /*
-    //  * 🔍 Box’s M Test Process 🔍
-    //  */
-    // const boxTestLogDeterminants = JSON.stringify({
-    //     tables: [formattedResults.tables[5]],
-    // });
-
-    // const boxTestResults = JSON.stringify({
-    //     tables: [formattedResults.tables[6]],
-    // });
-
-    // /*
-    //  * 📊 Stepwise Statistics (Optional) 📊
-    //  */
-    // const variablesEnteredTable = JSON.stringify({
-    //     tables: [formattedResults.tables[16]],
-    // });
-
-    // const variablesInAnalysisTable = JSON.stringify({
-    //     tables: [formattedResults.tables[17]],
-    // });
-
-    // const variablesNotInAnalysisTable = JSON.stringify({
-    //     tables: [formattedResults.tables[18]],
-    // });
-
-    // const wilksLambdaStepsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[19]],
-    // });
-
-    // const pairwiseGroupComparisonsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[20]],
-    // });
-
-    // /*
-    //  * 📜 Summary Canonical Process 📜
-    //  */
-    // const eigenvaluesTable = JSON.stringify({
-    //     tables: [formattedResults.tables[7]],
-    // });
-
-    // const wilksLambdaTable = JSON.stringify({
-    //     tables: [formattedResults.tables[8]],
-    // });
-
-    // /*
-    //  * 🛠️ Standardized Function Process 🛠️
-    //  */
-    // const stdCoefficientsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[9]],
-    // });
-
-    // const structureMatrixTable = JSON.stringify({
-    //     tables: [formattedResults.tables[10]],
-    // });
-
-    // /*
-    //  * 🎯 Function Group Centroids Process 🎯
-    //  */
-    // const groupCentroidsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[11]],
-    // });
-
-    // /*
-    //  * 🎯 Classification Results Process 🎯
-    //  */
-    // const classificationResultsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[12]],
-    // });
-
-    // const classificationSummaryTable = JSON.stringify({
-    //     tables: [formattedResults.tables[13]],
-    // });
-
-    // const priorProbabilitiesTable = JSON.stringify({
-    //     tables: [formattedResults.tables[14]],
-    // });
-
-    // const classificationFunctionCoefficientsTable = JSON.stringify({
-    //     tables: [formattedResults.tables[15]],
-    // });
 
     // /*
     //  * 🎉 Final Result Process 🎯

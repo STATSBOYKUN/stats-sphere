@@ -31,13 +31,27 @@ pub fn run_analysis(
         }
     };
 
+    // Filter Data
+    let filtered_data = match core::filter_valid_cases(data, config) {
+        Ok(filtered) => filtered,
+        Err(e) => {
+            error_collector.add_error("filter_valid_cases", &e);
+            return Err(string_to_js_error(e));
+        }
+    };
+
+    web_sys::console::log_1(&format!("Filtered Data: {:?}", filtered_data).into());
+
     // Step 2: Group statistics if requested
     let mut group_statistics = None;
     if config.statistics.means {
         executed_functions.push("calculate_group_statistics".to_string());
-        match core::calculate_group_statistics(data, config) {
+        match core::calculate_group_statistics(&filtered_data, config) {
             Ok(stats) => {
                 group_statistics = Some(stats);
+                web_sys::console::log_1(
+                    &format!("Group Statistics: {:?}", group_statistics).into()
+                );
             }
             Err(e) => {
                 error_collector.add_error("calculate_group_statistics", &e);
@@ -50,9 +64,10 @@ pub fn run_analysis(
     let mut equality_tests = None;
     if config.statistics.anova {
         executed_functions.push("calculate_equality_tests".to_string());
-        match core::calculate_equality_tests(data, config) {
+        match core::calculate_equality_tests(&filtered_data, config) {
             Ok(tests) => {
                 equality_tests = Some(tests);
+                web_sys::console::log_1(&format!("Equaltiy Test: {:?}", equality_tests).into());
             }
             Err(e) => {
                 error_collector.add_error("calculate_equality_tests", &e);
@@ -65,9 +80,10 @@ pub fn run_analysis(
     let mut box_m_test = None;
     if config.statistics.box_m {
         executed_functions.push("calculate_box_m_test".to_string());
-        match core::calculate_box_m_test(data, config) {
+        match core::calculate_box_m_test(&filtered_data, config) {
             Ok(test) => {
                 box_m_test = Some(test);
+                web_sys::console::log_1(&format!("Box M: {:?}", box_m_test).into());
             }
             Err(e) => {
                 error_collector.add_error("calculate_box_m_test", &e);
@@ -80,7 +96,7 @@ pub fn run_analysis(
     let mut pooled_matrices = None;
     if config.statistics.wg_correlation || config.statistics.wg_covariance {
         executed_functions.push("calculate_pooled_matrices".to_string());
-        match core::calculate_pooled_matrices(data, config) {
+        match core::calculate_pooled_matrices(&filtered_data, config) {
             Ok(matrices) => {
                 pooled_matrices = Some(matrices);
             }
@@ -95,7 +111,7 @@ pub fn run_analysis(
     let mut covariance_matrices = None;
     if config.statistics.sg_covariance || config.statistics.total_covariance {
         executed_functions.push("calculate_covariance_matrices".to_string());
-        match core::calculate_covariance_matrices(data, config) {
+        match core::calculate_covariance_matrices(&filtered_data, config) {
             Ok(matrices) => {
                 covariance_matrices = Some(matrices);
             }
@@ -110,7 +126,7 @@ pub fn run_analysis(
     let mut log_determinants = None;
     if config.statistics.box_m {
         executed_functions.push("calculate_log_determinants".to_string());
-        match core::calculate_log_determinants(data, config) {
+        match core::calculate_log_determinants(&filtered_data, config) {
             Ok(determinants) => {
                 log_determinants = Some(determinants);
             }
@@ -128,7 +144,7 @@ pub fn run_analysis(
     if config.main.stepwise {
         // Stepwise statistics
         executed_functions.push("calculate_stepwise_statistics".to_string());
-        match core::calculate_stepwise_statistics(data, config) {
+        match core::calculate_stepwise_statistics(&filtered_data, config) {
             Ok(statistics) => {
                 stepwise_statistics = Some(statistics);
             }
@@ -140,7 +156,7 @@ pub fn run_analysis(
 
         // Wilks' Lambda test
         executed_functions.push("calculate_wilks_lambda_test".to_string());
-        match core::calculate_wilks_lambda_test(data, config) {
+        match core::calculate_wilks_lambda_test(&filtered_data, config) {
             Ok(test) => {
                 wilks_lambda_test = Some(test);
             }
@@ -153,7 +169,7 @@ pub fn run_analysis(
 
     // Step 9: Calculate canonical functions (always executed)
     executed_functions.push("calculate_canonical_functions".to_string());
-    let canonical_functions = match core::calculate_canonical_functions(data, config) {
+    let canonical_functions = match core::calculate_canonical_functions(&filtered_data, config) {
         Ok(functions) => Some(functions),
         Err(e) => {
             error_collector.add_error("calculate_canonical_functions", &e);
@@ -163,7 +179,7 @@ pub fn run_analysis(
 
     // Step 10: Calculate structure matrix
     executed_functions.push("calculate_structure_matrix".to_string());
-    let structure_matrix = match core::calculate_structure_matrix(data, config) {
+    let structure_matrix = match core::calculate_structure_matrix(&filtered_data, config) {
         Ok(matrix) => Some(matrix),
         Err(e) => {
             error_collector.add_error("calculate_structure_matrix", &e);
@@ -175,7 +191,7 @@ pub fn run_analysis(
     let mut classification_results = None;
     if config.classify.case || config.classify.summary {
         executed_functions.push("calculate_classification_results".to_string());
-        match core::calculate_classification_results(data, config) {
+        match core::calculate_classification_results(&filtered_data, config) {
             Ok(results) => {
                 classification_results = Some(results);
             }
@@ -189,7 +205,7 @@ pub fn run_analysis(
     // Step 12: Bootstrap analysis if requested and not in stepwise mode
     if config.bootstrap.perform_boot_strapping && !config.main.stepwise {
         executed_functions.push("perform_bootstrap_analysis".to_string());
-        match core::perform_bootstrap_analysis(data, config) {
+        match core::perform_bootstrap_analysis(&filtered_data, config) {
             Ok(_) => {}
             Err(e) => {
                 error_collector.add_error("perform_bootstrap_analysis", &e);
@@ -201,7 +217,7 @@ pub fn run_analysis(
     // Step 13: Generate plots if requested
     if config.classify.combine || config.classify.sep_grp || config.classify.terr {
         executed_functions.push("generate_plots".to_string());
-        match core::generate_plots(data, config) {
+        match core::generate_plots(&filtered_data, config) {
             Ok(_) => {}
             Err(e) => {
                 error_collector.add_error("generate_plots", &e);
@@ -218,7 +234,7 @@ pub fn run_analysis(
         (config.save.xml_file.is_some() && !config.save.xml_file.as_ref().unwrap().is_empty())
     {
         executed_functions.push("save_model_results".to_string());
-        match core::save_model_results(data, config) {
+        match core::save_model_results(&filtered_data, config) {
             Ok(_) => {}
             Err(e) => {
                 error_collector.add_error("save_model_results", &e);
@@ -231,7 +247,7 @@ pub fn run_analysis(
     let mut discriminant_histograms = None;
     if config.classify.combine || config.classify.sep_grp {
         executed_functions.push("generate_discriminant_histograms".to_string());
-        match core::generate_discriminant_histograms(data, config) {
+        match core::generate_discriminant_histograms(&filtered_data, config) {
             Ok(histograms) => {
                 discriminant_histograms = Some(histograms);
             }

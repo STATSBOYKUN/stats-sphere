@@ -1,3 +1,5 @@
+// box_m_test.rs
+use nalgebra::DMatrix;
 use crate::discriminant::models::{ result::BoxMTest, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::common::{
     calculate_covariance,
@@ -27,7 +29,7 @@ pub fn calculate_box_m_test(
 
     for group_data in data.group_data.iter() {
         let n_cases = group_data.len();
-        if n_cases <= num_vars + 1 {
+        if n_cases <= num_vars {
             continue; // Skip groups with too few cases
         }
 
@@ -37,14 +39,14 @@ pub fn calculate_box_m_test(
         let means = calculate_group_means(group_data, variables);
 
         // Calculate covariance matrix for this group
-        let mut cov_matrix = vec![vec![0.0; num_vars]; num_vars];
+        let mut cov_matrix = DMatrix::zeros(num_vars, num_vars);
 
         for var1_idx in 0..num_vars {
             for var2_idx in 0..num_vars {
                 let values1 = extract_group_values(group_data, var1_idx, variables);
                 let values2 = extract_group_values(group_data, var2_idx, variables);
 
-                cov_matrix[var1_idx][var2_idx] = calculate_covariance(
+                cov_matrix[(var1_idx, var2_idx)] = calculate_covariance(
                     &values1,
                     &values2,
                     means[var1_idx],
@@ -66,25 +68,16 @@ pub fn calculate_box_m_test(
 
     // Calculate pooled covariance matrix
     let total_n: usize = group_sizes.iter().sum();
-    let mut pooled_cov_matrix = vec![vec![0.0; num_vars]; num_vars];
+    let mut pooled_cov_matrix = DMatrix::zeros(num_vars, num_vars);
+    let mut total_df = 0;
 
-    for g in 0..group_covariance_matrices.len() {
-        let weight = (group_sizes[g] - 1) as f64;
-
-        for i in 0..num_vars {
-            for j in 0..num_vars {
-                pooled_cov_matrix[i][j] += weight * group_covariance_matrices[g][i][j];
-            }
-        }
+    for (g, size) in group_sizes.iter().enumerate() {
+        let df = size - 1;
+        total_df += df;
+        pooled_cov_matrix += &group_covariance_matrices[g] * (df as f64);
     }
 
-    let total_degrees_of_freedom = total_n - group_covariance_matrices.len();
-
-    for i in 0..num_vars {
-        for j in 0..num_vars {
-            pooled_cov_matrix[i][j] /= total_degrees_of_freedom as f64;
-        }
-    }
+    pooled_cov_matrix /= total_df as f64;
 
     // Calculate log determinant of pooled covariance matrix
     let pooled_log_det = calculate_log_determinant(&pooled_cov_matrix);
@@ -93,8 +86,8 @@ pub fn calculate_box_m_test(
     // M = (n - g) * ln|S| - sum((n_j - 1) * ln|S_j|)
     let mut box_m = ((total_n - group_sizes.len()) as f64) * pooled_log_det;
 
-    for g in 0..group_sizes.len() {
-        box_m -= ((group_sizes[g] - 1) as f64) * group_log_determinants[g];
+    for (g, size) in group_sizes.iter().enumerate() {
+        box_m -= ((size - 1) as f64) * group_log_determinants[g];
     }
 
     // Calculate F approximation
@@ -111,7 +104,7 @@ pub fn calculate_box_m_test(
     let df2 = calculate_df2(c1, c2, df1);
 
     // Calculate p-value
-    let p_value = calculate_p_value_from_f(f_approx / df1, df1, df2);
+    let p_value = calculate_p_value_from_f(f_approx, df1, df2);
 
     Ok(BoxMTest {
         box_m,
@@ -137,5 +130,5 @@ fn calculate_c2(g: usize, group_sizes: &[usize], total_n: usize) -> f64 {
 
 // Helper function to calculate df2 for Box's M test
 fn calculate_df2(c1: f64, c2: f64, df1: f64) -> f64 {
-    (df1 * (1.0 - c1)) / c2
+    (df1 + 2.0) / (c2 / (1.0 - c1).powi(2))
 }

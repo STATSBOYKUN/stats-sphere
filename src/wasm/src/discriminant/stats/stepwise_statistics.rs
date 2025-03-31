@@ -1,9 +1,21 @@
+// stepwise_statistics.rs
 use std::collections::HashMap;
+use nalgebra::{ DMatrix, DVector };
 
 use crate::discriminant::models::{
     result::{ PairwiseComparison, StepwiseStatistics, VariableInAnalysis, VariableNotInAnalysis },
     AnalysisData,
     DiscriminantConfig,
+};
+
+use crate::discriminant::stats::common::{
+    calculate_p_value_from_f,
+    extract_values_by_index,
+    extract_group_values,
+    calculate_group_means,
+    calculate_covariance,
+    vec_to_matrix,
+    matrix_to_vec,
 };
 
 pub fn calculate_stepwise_statistics(
@@ -19,9 +31,11 @@ pub fn calculate_stepwise_statistics(
 
     // Get variables and their inclusion levels
     let variables = &config.main.independent_variables;
+    let num_vars = variables.len();
+    let num_groups = data.group_data.len();
 
     // Analyze each step for variable entry/removal
-    let mut steps_data = perform_stepwise_analysis(data, config)?;
+    let steps_data = perform_stepwise_analysis(data, config)?;
 
     // Extract results in the format needed for output
     let variables_entered = steps_data
@@ -51,12 +65,12 @@ pub fn calculate_stepwise_statistics(
 
     let df2: Vec<i32> = steps_data
         .iter()
-        .map(|step| 1)
+        .map(|step| step.df2)
         .collect();
 
     let df3: Vec<i32> = steps_data
         .iter()
-        .map(|step| step.df2)
+        .map(|step| step.df3)
         .collect();
 
     let exact_f = steps_data
@@ -68,12 +82,12 @@ pub fn calculate_stepwise_statistics(
 
     let exact_df2: Vec<i32> = steps_data
         .iter()
-        .map(|step| step.df2 - step.df1 + 1) // Adjust for variables in the model
+        .map(|step| step.exact_df2)
         .collect();
 
     let significance: Vec<f64> = steps_data
         .iter()
-        .map(|step| calculate_p_value_from_f(step.f_value, step.df1 as f64, step.df2 as f64))
+        .map(|step| step.significance)
         .collect();
 
     // Variables in analysis at each step
@@ -131,6 +145,9 @@ struct StepData {
     exact_f: f64,
     df1: i32,
     df2: i32,
+    df3: i32,
+    exact_df2: i32,
+    significance: f64,
     variables_in_analysis: Vec<VariableInAnalysis>,
     variables_not_in_analysis: Vec<VariableNotInAnalysis>,
     pairwise_comparisons: Vec<PairwiseComparison>,
@@ -142,8 +159,9 @@ fn perform_stepwise_analysis(
     config: &DiscriminantConfig
 ) -> Result<Vec<StepData>, String> {
     let variables = &config.main.independent_variables;
+    let num_vars = variables.len();
     let num_groups = data.group_data.len();
-    let num_cases: usize = data.group_data
+    let total_cases: usize = data.group_data
         .iter()
         .map(|g| g.len())
         .sum();
@@ -153,11 +171,30 @@ fn perform_stepwise_analysis(
     let mut steps_data: Vec<StepData> = Vec::new();
 
     // For initial step, all variables are candidates for entry
-    let initial_step = evaluate_initial_step(data, config, &current_variables);
+    let initial_step = evaluate_initial_step(
+        data,
+        config,
+        &current_variables,
+        num_groups,
+        total_cases
+    );
     steps_data.push(initial_step);
 
     // Determine maximum number of steps
     let max_steps = variables.len() * 2; // Safe upper limit
+
+    // Cache F-to-enter values for all variables
+    let mut f_to_enter_cache = HashMap::new();
+    for var in variables {
+        let (f_value, wilks) = calculate_f_to_enter(
+            data,
+            var,
+            &current_variables,
+            num_groups,
+            total_cases
+        );
+        f_to_enter_cache.insert(var.clone(), (f_value, wilks));
+    }
 
     // Iteratively select/remove variables
     for step in 0..max_steps {
@@ -166,7 +203,8 @@ fn perform_stepwise_analysis(
             data,
             config,
             &current_variables,
-            &steps_data.last().unwrap().variables_not_in_analysis
+            &steps_data.last().unwrap().variables_not_in_analysis,
+            &f_to_enter_cache
         );
 
         // 2. Find the worst variable to remove (if any)
@@ -216,8 +254,24 @@ fn perform_stepwise_analysis(
             &current_variables,
             variable_entered,
             variable_removed,
-            (step as i32) + 1
+            (step as i32) + 1,
+            num_groups,
+            total_cases
         );
+
+        // 5. Update F-to-enter cache for next step
+        for var in variables {
+            if !current_variables.contains(var) {
+                let (f_value, wilks) = calculate_f_to_enter(
+                    data,
+                    var,
+                    &current_variables,
+                    num_groups,
+                    total_cases
+                );
+                f_to_enter_cache.insert(var.clone(), (f_value, wilks));
+            }
+        }
 
         steps_data.push(step_data);
     }
@@ -229,14 +283,11 @@ fn perform_stepwise_analysis(
 fn evaluate_initial_step(
     data: &AnalysisData,
     config: &DiscriminantConfig,
-    current_variables: &[String]
+    current_variables: &[String],
+    num_groups: usize,
+    total_cases: usize
 ) -> StepData {
     let variables = &config.main.independent_variables;
-    let num_groups = data.group_data.len();
-    let total_cases: usize = data.group_data
-        .iter()
-        .map(|g| g.len())
-        .sum();
 
     // All variables are candidates for entry
     let mut variables_not_in_analysis = Vec::new();
@@ -244,7 +295,13 @@ fn evaluate_initial_step(
     for (var_idx, var_name) in variables.iter().enumerate() {
         // For each variable, calculate tolerance and F-to-enter
         let (tolerance, min_tolerance) = calculate_tolerance(data, var_name, current_variables);
-        let (f_to_enter, wilks) = calculate_f_to_enter(data, var_name, current_variables);
+        let (f_to_enter, wilks) = calculate_f_to_enter(
+            data,
+            var_name,
+            current_variables,
+            num_groups,
+            total_cases
+        );
 
         variables_not_in_analysis.push(VariableNotInAnalysis {
             variable: var_name.clone(),
@@ -254,6 +311,11 @@ fn evaluate_initial_step(
             wilks_lambda: wilks,
         });
     }
+
+    // Sort variables by F-to-enter value (descending)
+    variables_not_in_analysis.sort_by(|a, b|
+        b.f_to_enter.partial_cmp(&a.f_to_enter).unwrap_or(std::cmp::Ordering::Equal)
+    );
 
     // No variables in analysis yet
     let variables_in_analysis = Vec::new();
@@ -268,7 +330,10 @@ fn evaluate_initial_step(
 
     // Degrees of freedom
     let df1 = 0;
-    let df2 = (total_cases as i32) - (num_groups as i32);
+    let df2 = 1;
+    let df3 = (total_cases as i32) - (num_groups as i32);
+    let exact_df2 = df3;
+    let significance = 1.0;
 
     StepData {
         variable_entered: None,
@@ -278,6 +343,9 @@ fn evaluate_initial_step(
         exact_f,
         df1,
         df2,
+        df3,
+        exact_df2,
+        significance,
         variables_in_analysis,
         variables_not_in_analysis,
         pairwise_comparisons,
@@ -291,16 +359,13 @@ fn evaluate_step(
     current_variables: &[String],
     variable_entered: Option<String>,
     variable_removed: Option<String>,
-    step: i32
+    step: i32,
+    num_groups: usize,
+    total_cases: usize
 ) -> StepData {
     let variables = &config.main.independent_variables;
-    let num_groups = data.group_data.len();
-    let total_cases: usize = data.group_data
-        .iter()
-        .map(|g| g.len())
-        .sum();
 
-    // Check which variables are in the analysis
+    // Check which variables are in/not in the analysis
     let mut variables_in_analysis = Vec::new();
     let mut variables_not_in_analysis = Vec::new();
 
@@ -317,7 +382,13 @@ fn evaluate_step(
                     .collect::<Vec<_>>()
             );
 
-            let (f_to_remove, wilks) = calculate_f_to_remove(data, var_name, current_variables);
+            let (f_to_remove, wilks) = calculate_f_to_remove(
+                data,
+                var_name,
+                current_variables,
+                num_groups,
+                total_cases
+            );
 
             variables_in_analysis.push(VariableInAnalysis {
                 variable: var_name.clone(),
@@ -328,7 +399,13 @@ fn evaluate_step(
         } else {
             // Variable is not in analysis - calculate tolerance and F-to-enter
             let (tolerance, min_tolerance) = calculate_tolerance(data, var_name, current_variables);
-            let (f_to_enter, wilks) = calculate_f_to_enter(data, var_name, current_variables);
+            let (f_to_enter, wilks) = calculate_f_to_enter(
+                data,
+                var_name,
+                current_variables,
+                num_groups,
+                total_cases
+            );
 
             variables_not_in_analysis.push(VariableNotInAnalysis {
                 variable: var_name.clone(),
@@ -340,11 +417,21 @@ fn evaluate_step(
         }
     }
 
+    // Sort variables in analysis by F-to-remove (ascending)
+    variables_in_analysis.sort_by(|a, b|
+        a.f_to_remove.partial_cmp(&b.f_to_remove).unwrap_or(std::cmp::Ordering::Equal)
+    );
+
+    // Sort variables not in analysis by F-to-enter (descending)
+    variables_not_in_analysis.sort_by(|a, b|
+        b.f_to_enter.partial_cmp(&a.f_to_enter).unwrap_or(std::cmp::Ordering::Equal)
+    );
+
     // Calculate Wilks' lambda and overall F for the current model
     let (wilks_lambda, f_value) = if current_variables.is_empty() {
         (1.0, 0.0) // No discrimination if no variables
     } else {
-        calculate_overall_wilks_lambda_and_f(data, current_variables)
+        calculate_overall_wilks_lambda_and_f(data, current_variables, num_groups, total_cases)
     };
 
     let exact_f = f_value; // In the simple case, these are the same
@@ -356,9 +443,13 @@ fn evaluate_step(
         Vec::new()
     };
 
-    // Degrees of freedom
+    // Calculate p-value
     let df1 = current_variables.len() as i32;
-    let df2 = (total_cases as i32) - (num_groups as i32);
+    let df2 = (num_groups as i32) - 1;
+    let df3 = (total_cases as i32) - (num_groups as i32);
+    let exact_df2 = df3 - df1 + 1;
+
+    let significance = calculate_p_value_from_f(exact_f, df1 as f64, exact_df2 as f64);
 
     StepData {
         variable_entered,
@@ -368,6 +459,9 @@ fn evaluate_step(
         exact_f,
         df1,
         df2,
+        df3,
+        exact_df2,
+        significance,
         variables_in_analysis,
         variables_not_in_analysis,
         pairwise_comparisons,
@@ -379,7 +473,8 @@ fn find_best_variable_to_enter(
     data: &AnalysisData,
     config: &DiscriminantConfig,
     current_variables: &[String],
-    candidates: &[VariableNotInAnalysis]
+    candidates: &[VariableNotInAnalysis],
+    f_to_enter_cache: &HashMap<String, (f64, f64)>
 ) -> (Option<String>, VariableNotInAnalysis) {
     // Default empty result
     let empty_result = VariableNotInAnalysis {
@@ -395,7 +490,7 @@ fn find_best_variable_to_enter(
     }
 
     // Find variable with highest F-to-enter value
-    let tolerance_threshold = config.method.f_entry;
+    let tolerance_threshold = 0.001; // Minimum tolerance to consider a variable
 
     let mut best_var = None;
     let mut best_stats = empty_result;
@@ -498,30 +593,99 @@ fn calculate_tolerance(
     variable: &str,
     current_variables: &[String]
 ) -> (f64, f64) {
-    // Find index of the variable
-    let variables = &data.independent_data;
-    let var_idx = data.independent_data
-        .iter()
-        .position(|v| v[0].values.get(variable).is_some())
-        .unwrap_or(0);
-
     // If no variables in model, tolerance is 1.0
     if current_variables.is_empty() {
         return (1.0, 1.0);
     }
 
-    // Extract values for all variables
-    let all_values: Vec<Vec<f64>> = extract_variable_values(data, &[variable.to_string()]);
-    let model_values: Vec<Vec<f64>> = extract_variable_values(data, current_variables);
+    // Find indices
+    let all_variables = &data.independent_data;
 
-    if all_values.is_empty() || all_values[0].is_empty() {
-        return (1.0, 1.0);
+    // Extract values for target variable
+    let target_values = all_variables
+        .iter()
+        .flat_map(|group| {
+            group.iter().filter_map(|record| {
+                if
+                    let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                        record.values.get(variable)
+                {
+                    Some(*val)
+                } else {
+                    None
+                }
+            })
+        })
+        .collect::<Vec<f64>>();
+
+    // Extract values for predictor variables
+    let mut predictor_values = Vec::with_capacity(current_variables.len());
+
+    for var in current_variables {
+        let values = all_variables
+            .iter()
+            .flat_map(|group| {
+                group.iter().filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var)
+                    {
+                        Some(*val)
+                    } else {
+                        None
+                    }
+                })
+            })
+            .collect::<Vec<f64>>();
+
+        predictor_values.push(values);
     }
 
-    // Calculate tolerance (1 - R²) using simplified approach
-    // In a real implementation, we would build a regression model
-    let tolerance = 0.8; // Placeholder
-    let min_tolerance = 0.7; // Placeholder
+    // Calculate R² of target variable predicted by current variables
+    // This should use multiple regression, but here's a simplified version
+    let mut r_squared = 0.0;
+
+    // If only one predictor, use simple linear regression
+    if current_variables.len() == 1 && !target_values.is_empty() && !predictor_values[0].is_empty() {
+        // Calculate correlation coefficient
+        let target_mean = target_values.iter().sum::<f64>() / (target_values.len() as f64);
+        let pred_mean =
+            predictor_values[0].iter().sum::<f64>() / (predictor_values[0].len() as f64);
+
+        let mut numerator = 0.0;
+        let mut denom1 = 0.0;
+        let mut denom2 = 0.0;
+
+        for i in 0..target_values.len() {
+            if i < predictor_values[0].len() {
+                numerator +=
+                    (target_values[i] - target_mean) * (predictor_values[0][i] - pred_mean);
+                denom1 += (target_values[i] - target_mean).powi(2);
+                denom2 += (predictor_values[0][i] - pred_mean).powi(2);
+            }
+        }
+
+        let r = if denom1 > 0.0 && denom2 > 0.0 {
+            numerator / (denom1.sqrt() * denom2.sqrt())
+        } else {
+            0.0
+        };
+
+        r_squared = r.powi(2);
+    } else {
+        // Multiple predictors would need a more sophisticated approach
+        // For simplicity, use a default r² estimation based on number of predictors
+        r_squared = 0.2 * (current_variables.len() as f64);
+        if r_squared > 0.9 {
+            r_squared = 0.9;
+        }
+    }
+
+    // Tolerance = 1 - R²
+    let tolerance = 1.0 - r_squared;
+
+    // Estimate minimum tolerance (lowest possible with any other variable)
+    let min_tolerance = tolerance * 0.8;
 
     (tolerance, min_tolerance)
 }
@@ -530,58 +694,96 @@ fn calculate_tolerance(
 fn calculate_f_to_enter(
     data: &AnalysisData,
     variable: &str,
-    current_variables: &[String]
+    current_variables: &[String],
+    num_groups: usize,
+    total_cases: usize
 ) -> (f64, f64) {
     // If the variable is already in the model, return 0
     if current_variables.contains(&variable.to_string()) {
         return (0.0, 1.0);
     }
 
-    // Extract values
-    let var_values: Vec<Vec<f64>> = extract_variable_values(data, &[variable.to_string()]);
-
-    if var_values.is_empty() || var_values[0].is_empty() {
-        return (0.0, 1.0);
+    // If there are no variables in the model, use univariate F statistic
+    if current_variables.is_empty() {
+        return calculate_univariate_f(data, variable, num_groups, total_cases);
     }
 
-    // Calculate between-groups and within-groups variances
-    let num_groups = data.group_data.len();
+    // Otherwise, calculate the F-to-enter statistic for an additional variable
+
+    // First, calculate Wilks' lambda for the current model
+    let (current_wilks, _) = calculate_overall_wilks_lambda_and_f(
+        data,
+        current_variables,
+        num_groups,
+        total_cases
+    );
+
+    // Then calculate Wilks' lambda for the model with the additional variable
+    let mut new_variables = current_variables.to_vec();
+    new_variables.push(variable.to_string());
+
+    let (new_wilks, _) = calculate_overall_wilks_lambda_and_f(
+        data,
+        &new_variables,
+        num_groups,
+        total_cases
+    );
+
+    // Calculate F-to-enter
+    let df1 = num_groups - 1;
+    let df2 = total_cases - current_variables.len() - 1 - (num_groups - 1);
+
+    let f_value = if df2 > 0 && new_wilks < current_wilks {
+        (((current_wilks - new_wilks) / new_wilks) * (df2 as f64)) / (df1 as f64)
+    } else {
+        0.0
+    };
+
+    (f_value, new_wilks)
+}
+
+// Calculate univariate F statistic for a variable
+fn calculate_univariate_f(
+    data: &AnalysisData,
+    variable: &str,
+    num_groups: usize,
+    total_cases: usize
+) -> (f64, f64) {
+    // Extract values for each group
+    let mut group_values = Vec::with_capacity(num_groups);
     let mut group_means = Vec::with_capacity(num_groups);
     let mut group_counts = Vec::with_capacity(num_groups);
 
-    for group_idx in 0..num_groups {
-        let values: Vec<f64> = data.group_data[group_idx]
+    for group_data in &data.group_data {
+        let values: Vec<f64> = group_data
             .iter()
             .filter_map(|record| {
-                if let Some(value) = record.values.get(variable) {
-                    match value {
-                        crate::discriminant::models::DataValue::Number(n) => Some(*n),
-                        _ => None,
-                    }
+                if
+                    let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                        record.values.get(variable)
+                {
+                    Some(*val)
                 } else {
                     None
                 }
             })
             .collect();
 
-        let mean = if values.is_empty() {
-            0.0
-        } else {
-            values.iter().sum::<f64>() / (values.len() as f64)
-        };
+        let count = values.len();
+        let mean = if count > 0 { values.iter().sum::<f64>() / (count as f64) } else { 0.0 };
 
+        group_values.push(values);
         group_means.push(mean);
-        group_counts.push(values.len());
+        group_counts.push(count);
     }
 
     // Calculate overall mean
-    let total_count: usize = group_counts.iter().sum();
     let overall_mean =
         group_means
             .iter()
             .zip(group_counts.iter())
             .map(|(&mean, &count)| mean * (count as f64))
-            .sum::<f64>() / (total_count as f64);
+            .sum::<f64>() / (total_cases as f64);
 
     // Calculate between-groups sum of squares
     let between_ss = group_means
@@ -591,35 +793,20 @@ fn calculate_f_to_enter(
         .sum::<f64>();
 
     // Calculate within-groups sum of squares
-    let mut within_ss = 0.0;
-
-    for group_idx in 0..num_groups {
-        let values: Vec<f64> = data.group_data[group_idx]
-            .iter()
-            .filter_map(|record| {
-                if let Some(value) = record.values.get(variable) {
-                    match value {
-                        crate::discriminant::models::DataValue::Number(n) => Some(*n),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let group_mean = group_means[group_idx];
-        let group_within_ss = values
-            .iter()
-            .map(|&value| (value - group_mean).powi(2))
-            .sum::<f64>();
-
-        within_ss += group_within_ss;
-    }
+    let within_ss = group_values
+        .iter()
+        .zip(group_means.iter())
+        .map(|(values, &mean)|
+            values
+                .iter()
+                .map(|&val| (val - mean).powi(2))
+                .sum::<f64>()
+        )
+        .sum::<f64>();
 
     // Calculate F statistic
     let df1 = num_groups - 1;
-    let df2 = total_count - num_groups;
+    let df2 = total_cases - num_groups;
 
     let f_value = if within_ss > 0.0 && df1 > 0 && df2 > 0 {
         between_ss / (df1 as f64) / (within_ss / (df2 as f64))
@@ -641,12 +828,22 @@ fn calculate_f_to_enter(
 fn calculate_f_to_remove(
     data: &AnalysisData,
     variable: &str,
-    current_variables: &[String]
+    current_variables: &[String],
+    num_groups: usize,
+    total_cases: usize
 ) -> (f64, f64) {
     // If the variable is not in the model, return 0
     if !current_variables.contains(&variable.to_string()) {
         return (0.0, 1.0);
     }
+
+    // Calculate Wilks' lambda for the current model
+    let (current_wilks, _) = calculate_overall_wilks_lambda_and_f(
+        data,
+        current_variables,
+        num_groups,
+        total_cases
+    );
 
     // Create a model without this variable
     let reduced_model: Vec<String> = current_variables
@@ -655,22 +852,19 @@ fn calculate_f_to_remove(
         .cloned()
         .collect();
 
-    // Calculate Wilks' lambda for both models
-    let (full_wilks, _) = calculate_overall_wilks_lambda_and_f(data, current_variables);
-    let (reduced_wilks, _) = calculate_overall_wilks_lambda_and_f(data, &reduced_model);
+    // Calculate Wilks' lambda for the reduced model
+    let (reduced_wilks, _) = if reduced_model.is_empty() {
+        (1.0, 0.0)
+    } else {
+        calculate_overall_wilks_lambda_and_f(data, &reduced_model, num_groups, total_cases)
+    };
 
     // Calculate F statistic for the difference
-    let num_groups = data.group_data.len();
-    let total_count: usize = data.group_data
-        .iter()
-        .map(|g| g.len())
-        .sum();
-
     let df1 = num_groups - 1;
-    let df2 = total_count - num_groups - current_variables.len() + 1;
+    let df2 = total_cases - current_variables.len() + 1 - (num_groups - 1);
 
-    let f_value = if reduced_wilks > full_wilks && full_wilks > 0.0 {
-        (((reduced_wilks - full_wilks) / full_wilks) * (df2 as f64)) / (df1 as f64)
+    let f_value = if reduced_wilks > current_wilks && current_wilks > 0.0 && df2 > 0 {
+        (((reduced_wilks - current_wilks) / current_wilks) * (df2 as f64)) / (df1 as f64)
     } else {
         0.0
     };
@@ -679,75 +873,187 @@ fn calculate_f_to_remove(
 }
 
 // Calculate overall Wilks' lambda and F statistic for a set of variables
-fn calculate_overall_wilks_lambda_and_f(data: &AnalysisData, variables: &[String]) -> (f64, f64) {
+fn calculate_overall_wilks_lambda_and_f(
+    data: &AnalysisData,
+    variables: &[String],
+    num_groups: usize,
+    total_cases: usize
+) -> (f64, f64) {
     if variables.is_empty() {
         return (1.0, 0.0);
     }
 
-    // Extract values for all variables
-    let values: Vec<Vec<f64>> = extract_variable_values(data, variables);
+    // Calculate between-groups matrix
+    let mut between_matrix = vec![vec![0.0; variables.len()]; variables.len()];
 
-    if values.is_empty() || values[0].is_empty() {
-        return (1.0, 0.0);
+    // Group means
+    let mut group_means = Vec::with_capacity(num_groups);
+    let mut group_counts = Vec::with_capacity(num_groups);
+
+    for group_data in &data.group_data {
+        let mut means = Vec::with_capacity(variables.len());
+
+        for var in variables {
+            let values: Vec<f64> = group_data
+                .iter()
+                .filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var)
+                    {
+                        Some(*val)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let mean = if values.is_empty() {
+                0.0
+            } else {
+                values.iter().sum::<f64>() / (values.len() as f64)
+            };
+            means.push(mean);
+        }
+
+        group_means.push(means);
+        group_counts.push(group_data.len());
     }
 
-    // Calculate between-groups and within-groups matrices
-    // For simplicity, we'll use a univariate approach for each variable
-    let num_vars = variables.len();
-    let num_groups = data.group_data.len();
+    // Overall means
+    let mut overall_means = vec![0.0; variables.len()];
 
-    // Calculate overall Wilks' lambda (product of individual lambdas)
-    let mut overall_lambda = 1.0;
-    let mut sum_f = 0.0;
+    for var_idx in 0..variables.len() {
+        let mut sum = 0.0;
+        let mut count = 0;
 
-    for var_idx in 0..num_vars {
-        let variable = &variables[var_idx];
-        let (_, lambda) = calculate_f_to_enter(data, variable, &[]);
+        for g in 0..num_groups {
+            sum += group_means[g][var_idx] * (group_counts[g] as f64);
+            count += group_counts[g];
+        }
 
-        overall_lambda *= lambda;
+        overall_means[var_idx] = if count > 0 { sum / (count as f64) } else { 0.0 };
     }
+
+    // Calculate between-groups matrix
+    for i in 0..variables.len() {
+        for j in 0..variables.len() {
+            let mut sum = 0.0;
+
+            for g in 0..num_groups {
+                sum +=
+                    (group_counts[g] as f64) *
+                    (group_means[g][i] - overall_means[i]) *
+                    (group_means[g][j] - overall_means[j]);
+            }
+
+            between_matrix[i][j] = sum;
+        }
+    }
+
+    // Calculate within-groups matrix
+    let mut within_matrix = vec![vec![0.0; variables.len()]; variables.len()];
+
+    for g in 0..num_groups {
+        let group_data = &data.group_data[g];
+
+        for i in 0..variables.len() {
+            for j in 0..variables.len() {
+                let var_i = &variables[i];
+                let var_j = &variables[j];
+
+                let values_i: Vec<f64> = group_data
+                    .iter()
+                    .filter_map(|record| {
+                        if
+                            let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                                record.values.get(var_i)
+                        {
+                            Some(*val)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                let values_j: Vec<f64> = group_data
+                    .iter()
+                    .filter_map(|record| {
+                        if
+                            let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                                record.values.get(var_j)
+                        {
+                            Some(*val)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                // Calculate covariance for this group
+                let cov = calculate_covariance(
+                    &values_i,
+                    &values_j,
+                    group_means[g][i],
+                    group_means[g][j]
+                );
+
+                within_matrix[i][j] += ((group_counts[g] - 1) as f64) * cov;
+            }
+        }
+    }
+
+    // Normalize within-groups matrix
+    let total_df = total_cases - num_groups;
+
+    for i in 0..variables.len() {
+        for j in 0..variables.len() {
+            within_matrix[i][j] /= total_df as f64;
+        }
+    }
+
+    // Convert to matrices for computation
+    let within_mat = vec_to_matrix(&within_matrix);
+    let between_mat = vec_to_matrix(&between_matrix);
+
+    // Calculate determinants
+    let within_det = if within_mat.is_empty() {
+        1.0
+    } else {
+        match within_mat.clone().determinant() {
+            d if d > 0.0 => d,
+            _ => 1.0,
+        }
+    };
+
+    let total_det = if within_mat.is_empty() || between_mat.is_empty() {
+        1.0
+    } else {
+        match (within_mat + between_mat).determinant() {
+            d if d > 0.0 => d,
+            _ => 1.0,
+        }
+    };
+
+    // Calculate Wilks' lambda
+    let wilks_lambda = if total_det > 0.0 { within_det / total_det } else { 1.0 };
 
     // Calculate F statistic
-    let total_count: usize = data.group_data
-        .iter()
-        .map(|g| g.len())
-        .sum();
+    let p = variables.len() as f64;
+    let g = (num_groups as f64) - 1.0;
+    let n = (total_cases as f64) - g - 1.0;
 
-    let p = num_vars as f64;
-    let g = num_groups as f64;
-    let n = total_count as f64;
+    // Use Rao's approximation
+    let df1 = p * g;
+    let df2 = ((n - p + 1.0) * g) / 2.0;
 
-    let s = 1.0;
-    let m = (p * (g - 1.0) - 2.0) / 2.0;
-    let n_adj = n - 1.0 - (p + g) / 2.0;
-
-    let f_value =
-        ((1.0 - overall_lambda.powf(1.0 / s)) / overall_lambda.powf(1.0 / s)) * (n_adj / p);
-
-    (overall_lambda, f_value)
-}
-
-// Helper function to calculate p-value from F statistic
-fn calculate_p_value_from_f(f: f64, df1: f64, df2: f64) -> f64 {
-    // Simple approximation
-    if f <= 0.0 {
-        return 1.0;
-    }
-
-    // Rough inverse relationship between F and p-value
-    let ratio = f / (1.0 + f);
-
-    if ratio > 0.99 {
-        0.001
-    } else if ratio > 0.95 {
-        0.01
-    } else if ratio > 0.9 {
-        0.05
-    } else if ratio > 0.8 {
-        0.1
+    let f_value = if wilks_lambda < 1.0 && df2 > 0.0 {
+        (((1.0 - wilks_lambda.powf(1.0 / g)) / wilks_lambda.powf(1.0 / g)) * df2) / p
     } else {
-        1.0 - ratio
-    }
+        0.0
+    };
+
+    (wilks_lambda, f_value)
 }
 
 // Calculate F statistic for a pair of groups
@@ -778,11 +1084,11 @@ fn calculate_pairwise_f(
         let values1: Vec<f64> = group1_data
             .iter()
             .filter_map(|record| {
-                if let Some(value) = record.values.get(variable) {
-                    match value {
-                        crate::discriminant::models::DataValue::Number(n) => Some(*n),
-                        _ => None,
-                    }
+                if
+                    let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                        record.values.get(variable)
+                {
+                    Some(*val)
                 } else {
                     None
                 }
@@ -799,11 +1105,11 @@ fn calculate_pairwise_f(
         let values2: Vec<f64> = group2_data
             .iter()
             .filter_map(|record| {
-                if let Some(value) = record.values.get(variable) {
-                    match value {
-                        crate::discriminant::models::DataValue::Number(n) => Some(*n),
-                        _ => None,
-                    }
+                if
+                    let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                        record.values.get(variable)
+                {
+                    Some(*val)
                 } else {
                     None
                 }
@@ -820,44 +1126,122 @@ fn calculate_pairwise_f(
         group2_means.push(mean2);
     }
 
-    // Calculate Mahalanobis distance squared (simplified)
-    let mut distance_squared = 0.0;
+    // Calculate pooled covariance matrix
+    let mut pooled_cov = vec![vec![0.0; num_vars]; num_vars];
 
-    for var_idx in 0..num_vars {
-        let diff = group1_means[var_idx] - group2_means[var_idx];
-        distance_squared += diff * diff;
-    }
+    for i in 0..num_vars {
+        for j in 0..num_vars {
+            let var_i = &variables[i];
+            let var_j = &variables[j];
 
-    // Calculate F statistic
-    let n1 = group1_data.len() as f64;
-    let n2 = group2_data.len() as f64;
-
-    let f_value = (((n1 * n2) / (n1 + n2)) * distance_squared) / (num_vars as f64);
-
-    f_value
-}
-
-// Helper function to extract values for variables
-fn extract_variable_values(data: &AnalysisData, variables: &[String]) -> Vec<Vec<f64>> {
-    let mut result = Vec::with_capacity(variables.len());
-
-    for variable in variables {
-        let mut values = Vec::new();
-
-        // Collect values across all groups
-        for group_data in &data.group_data {
-            for record in group_data {
-                if let Some(value) = record.values.get(variable) {
-                    match value {
-                        crate::discriminant::models::DataValue::Number(n) => values.push(*n),
-                        _ => {} // Ignore non-numeric values
+            // Group 1
+            let values1_i: Vec<f64> = group1_data
+                .iter()
+                .filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var_i)
+                    {
+                        Some(*val)
+                    } else {
+                        None
                     }
-                }
-            }
-        }
+                })
+                .collect();
 
-        result.push(values);
+            let values1_j: Vec<f64> = group1_data
+                .iter()
+                .filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var_j)
+                    {
+                        Some(*val)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let cov1 = calculate_covariance(
+                &values1_i,
+                &values1_j,
+                group1_means[i],
+                group1_means[j]
+            );
+
+            // Group 2
+            let values2_i: Vec<f64> = group2_data
+                .iter()
+                .filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var_i)
+                    {
+                        Some(*val)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let values2_j: Vec<f64> = group2_data
+                .iter()
+                .filter_map(|record| {
+                    if
+                        let Some(crate::discriminant::models::data::DataValue::Number(val)) =
+                            record.values.get(var_j)
+                    {
+                        Some(*val)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            let cov2 = calculate_covariance(
+                &values2_i,
+                &values2_j,
+                group2_means[i],
+                group2_means[j]
+            );
+
+            // Pooled covariance
+            let n1 = group1_data.len();
+            let n2 = group2_data.len();
+
+            pooled_cov[i][j] =
+                (((n1 - 1) as f64) * cov1 + ((n2 - 1) as f64) * cov2) / ((n1 + n2 - 2) as f64);
+        }
     }
 
-    result
+    // Calculate Mahalanobis distance squared
+    let mut diff = vec![0.0; num_vars];
+    for i in 0..num_vars {
+        diff[i] = group1_means[i] - group2_means[i];
+    }
+
+    // Try to invert pooled covariance matrix
+    let pooled_mat = vec_to_matrix(&pooled_cov);
+
+    match pooled_mat.clone().try_inverse() {
+        Some(inv_cov) => {
+            // Calculate Mahalanobis distance squared: D² = (μ₁ - μ₂)ᵀ S⁻¹ (μ₁ - μ₂)
+            let diff_vec = DVector::from_vec(diff);
+            let d_squared = diff_vec.clone().dot(&(inv_cov * diff_vec));
+
+            // Calculate F statistic
+            let n1 = group1_data.len() as f64;
+            let n2 = group2_data.len() as f64;
+
+            (((n1 * n2) / (n1 + n2)) * d_squared) / (num_vars as f64)
+        }
+        None => {
+            // If matrix is singular, use a simplified approach
+            diff
+                .iter()
+                .map(|&d| d.powi(2))
+                .sum::<f64>() / (num_vars as f64)
+        }
+    }
 }

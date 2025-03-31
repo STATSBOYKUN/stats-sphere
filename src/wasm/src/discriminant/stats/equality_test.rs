@@ -1,3 +1,4 @@
+// equality_test.rs
 use crate::discriminant::models::{ result::EqualityTests, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::common::{
     calculate_p_value_from_f,
@@ -34,6 +35,15 @@ pub fn calculate_equality_tests(
     for (var_idx, _) in variables.iter().enumerate() {
         // Calculate total sum of squares
         let all_values = extract_values_by_index(&data.group_data, var_idx, &variables);
+
+        if all_values.is_empty() {
+            wilks_lambda.push(1.0);
+            f_values.push(0.0);
+            df1.push((num_groups - 1) as i32);
+            df2.push((total_cases - num_groups) as i32);
+            significance.push(1.0);
+            continue;
+        }
 
         let overall_mean = all_values.iter().sum::<f64>() / (all_values.len() as f64);
         let total_ss = all_values

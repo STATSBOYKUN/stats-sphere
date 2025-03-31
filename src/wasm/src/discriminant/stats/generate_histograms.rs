@@ -1,3 +1,4 @@
+// generate_histograms.rs
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ AnalysisData, DiscriminantConfig, DataRecord };
@@ -30,6 +31,10 @@ pub fn generate_discriminant_histograms(
     for group_idx in 0..num_groups {
         let group_name = &groups[group_idx];
         let group_data = &data.group_data[group_idx];
+
+        if group_data.is_empty() {
+            continue;
+        }
 
         for func_idx in 0..num_functions {
             let func_name = &functions[func_idx];
@@ -74,6 +79,10 @@ fn calculate_discriminant_scores(
         // Extract numeric values from the case
         let case_values = extract_case_values(case, variables);
 
+        if case_values.len() != variables.len() {
+            continue;
+        }
+
         let mut score = 0.0;
 
         // Apply coefficients to calculate discriminant score
@@ -91,7 +100,7 @@ fn calculate_discriminant_scores(
     scores
 }
 
-// Create histogram from scores
+// Create histogram from scores using Scott's rule for bin width
 fn create_histogram(scores: &[f64]) -> GroupHistogram {
     if scores.is_empty() {
         return GroupHistogram {
@@ -126,14 +135,28 @@ fn create_histogram(scores: &[f64]) -> GroupHistogram {
     let min_value = scores.iter().fold(f64::INFINITY, |a, &b| a.min(b));
     let max_value = scores.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
 
-    // Create bins - use Sturges' rule to determine number of bins
-    let bin_count = ((sample_size as f64).log2().ceil() as usize) + 1;
-    let bin_count = bin_count.max(5).min(12); // Ensure reasonable range
+    // Calculate bin width using Scott's rule
+    let bin_width = if std_dev > 0.0 && sample_size > 0 {
+        (3.5 * std_dev) / (sample_size as f64).powf(1.0 / 3.0)
+    } else {
+        1.0 // Default if std_dev is 0
+    };
 
+    // Calculate number of bins
+    let bin_count = if max_value > min_value && bin_width > 0.0 {
+        ((max_value - min_value) / bin_width).ceil() as usize
+    } else {
+        10 // Default number of bins
+    };
+
+    // Ensure reasonable number of bins
+    let bin_count = bin_count.max(5).min(20);
+
+    // Recalculate bin width for even distribution
     let bin_width = if max_value > min_value {
         (max_value - min_value) / (bin_count as f64)
     } else {
-        1.0 // Default if all values are the same
+        1.0
     };
 
     // Create bin edges
