@@ -19,7 +19,7 @@ export const TreeMainDefault: TreeMainType = {
     IndependentTargetVar: null,
     Force: false,
     InfluenceTargetVar: null,
-    GrowingMethod: null,
+    GrowingMethod: "CHAID",
 };
 
 export const TreeCategoriesDefault: TreeCategoriesType = {

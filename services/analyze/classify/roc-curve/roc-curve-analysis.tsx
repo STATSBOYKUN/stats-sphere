@@ -32,6 +32,8 @@ export async function analyzeRocCurve({
     const varDefsForTest = getVarDefs(variables, TestVariables);
     const varDefsForState = getVarDefs(variables, StateVariable);
 
+    console.log(configData);
+
     /*
      * 1. Case Processing Summary
      * 2. ROC Curve

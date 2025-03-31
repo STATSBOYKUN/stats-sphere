@@ -40,4 +40,6 @@ export async function analyzeTree({
     const varDefsForDependent = getVarDefs(variables, DependentVariable);
     const varDefsForIndependent = getVarDefs(variables, IndependentVariables);
     const varDefsForInfluence = getVarDefs(variables, InfluenceVariable);
+
+    console.log(configData);
 }
