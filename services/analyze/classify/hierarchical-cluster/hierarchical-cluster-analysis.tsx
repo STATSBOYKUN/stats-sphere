@@ -36,6 +36,8 @@ export async function analyzeHierClus({
     const varDefsForCluster = getVarDefs(variables, ClusterVariables);
     const varDefsForLabelCases = getVarDefs(variables, LabelCasesVariable);
 
+    console.log(configData);
+
     // const hc = new HierarchicalClusteringWasm(
     //     configData,
     //     slicedDataForCluster,
