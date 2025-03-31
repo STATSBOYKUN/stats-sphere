@@ -42,6 +42,8 @@ export async function analyzeRocAnalysis({
     const varDefsForState = getVarDefs(variables, StateVariable);
     const varDefsForTargetGroup = getVarDefs(variables, TargetGroupVariable);
 
+    console.log(configData);
+
     /*
      * 1. Case Processing Summary
      * 2. ROC Curve
