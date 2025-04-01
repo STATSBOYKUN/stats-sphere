@@ -1,12 +1,12 @@
 use wasm_bindgen::prelude::*;
-use crate::{Arima, first_difference, invert_matrix, autocov};
+use crate::{Arima, first_difference, invert_matrix, autocov_int};
 use nalgebra::DMatrix;
 use finitediff::FiniteDiff;
 use arima::{estimate, util};
 
 #[wasm_bindgen]
 impl Arima{
-    pub fn intercept_se(&self) -> Vec<f64>{
+    pub fn intercept_se(&self) -> f64{
         let mut data = self.get_data();
         let p = self.get_ar_coef().len();
         let q = self.get_ma_coef().len();
@@ -21,6 +21,7 @@ impl Arima{
             let ar = &coef[1..p+1];
             let ma = &coef[p+1..];
             let residuals = estimate::residuals(&data, intercept, Some(ar), Some(ma)).unwrap();
+            // let residuals = self.est_res2(intercept, ar.to_vec(), ma.to_vec(), data.clone());
             let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
             let n = data.len() as f64;
             let df = n - p as f64 - total_size as f64;
@@ -48,13 +49,11 @@ impl Arima{
         let det = matrix.determinant();
 
         if det == 0.0 {
-            vec![0.0]
+            0.0
         } else {
             let var_res = self.res_variance();
-            let mut se = Vec::new();
             let inv_hessian = invert_matrix(&hessian).unwrap();
-            se.push((2.0 * var_res * inv_hessian[0][0].abs()).sqrt());
-            se
+            (2.0 * var_res * inv_hessian[0][0].abs()).sqrt()
         }
     }
 
@@ -69,17 +68,16 @@ impl Arima{
         } 
         let mut acov = Vec::new();
         let mut rho = Vec::new();
-        let mut sum = 0.0;
+        // let mut sum = 0.0;
         for i in 0..data.len(){
-            acov.push(autocov(i, &data));
+            acov.push(autocov_int(i, &data, self.get_constant()));
             rho.push(acov[i] / acov[0]);
-            if i > 0 {
-                sum += 2.0*(1.0 - i as f64 / data.len() as f64)*rho[i];
-            }
+            // if i > 0 {
+            //     sum += 2.0*(1.0 - i as f64 / data.len() as f64)*rho[i];
+            // }
         }
-        let var = acov[0] / data.len() as f64 * (1.0 + sum);
-        // let var = acov[0] / data.len() as f64;
-        // let var = sum;
+        // let var = acov[0] / data.len() as f64 * (1.0 + sum);
+        let var = acov[0] / (data.len() as f64 - self.get_ar_order() as f64 - self.get_ma_order() as f64 - 1.0);
         var.sqrt()
     }
 
@@ -111,15 +109,11 @@ impl Arima{
                 data = diff;
             }
         }
-        
-        let total_size = 1 + p + q;
         let f = |coef: &Vec<f64>| {
-            assert_eq!(coef.len(), total_size);
-
             let intercept = coef[0];
             let ar = &coef[1..p+1];
             let ma = &coef[p+1..];
-            let residuals = estimate::residuals(&data, intercept, Some(ar), Some(ma)).unwrap();
+            let residuals = self.est_res2(intercept, ar.to_vec(), ma.to_vec(), data.clone());
             let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
             css
         };
@@ -127,15 +121,18 @@ impl Arima{
         let mut coef = Vec::new();
         coef.push(self.get_constant());
         if p > 0 {
-            for ar in self.get_ar_coef() {
-                coef.push(ar);
+            let ar = self.get_ar_coef();
+            for i in 0..p{
+                coef.push(ar[i]);
             };
         }
         if q > 0 {
-            for ma in self.get_ma_coef(){
-                coef.push(ma);
+            let ma = self.get_ma_coef();
+            for i in 0..q{
+                coef.push(ma[i]);
             };
         }
+        let coef = coef;
         let hessian: Vec<Vec<f64>> = coef.forward_hessian_nograd(&f);
         let n = hessian.len(); // Ukuran matriks (n x n)
         let flat_hessian: Vec<f64> = hessian.clone().into_iter().flatten().collect();
@@ -143,24 +140,46 @@ impl Arima{
         let det = matrix.determinant();
 
         if det == 0.0 {
-            vec![0.0]
+            vec![0.0; coef.len()-1]
         } else {
             let inv_hessian = invert_matrix(&hessian).unwrap();
             let var_res = self.res_variance();
             let mut se = Vec::new();
-            for i in 1..total_size{
+            for i in 1..coef.len(){
                 se.push((2.0 * var_res * inv_hessian[i][i].abs()).sqrt());
             }
             se
         }
     }
 
+    pub fn coeficient_se2(&self) -> Vec<f64>{
+        let mut data = self.get_data();
+        let d = self.get_i_order();
+        if d > 0 {
+            for _ in 0..d{
+                let diff = first_difference(data.clone());
+                data = diff;
+            }
+        } 
+        let mut acov = Vec::new();
+        let mut rho = Vec::new();
+        let mut se = Vec::new();
+        let size = self.get_ar_order() + self.get_ma_order();
+        for i in 0..=size as usize{
+            acov.push(autocov_int(i, &data, self.get_constant()));
+            rho.push(acov[i] / acov[0]);
+            if i > 0 {
+                se.push((acov[i] / (data.len() as f64 - self.get_ar_order() as f64 - self.get_ma_order() as f64 - 1.0)).sqrt());
+            }
+        }
+        se
+    }
     pub fn estimate_se(&self) -> Vec<f64>{
         let mut se = Vec::new();
         let intercept_se = self.intercept_se2();
         se.push(intercept_se);
         if self.get_ar_order() > 0 || self.get_ma_order() > 0{
-            let coef_se = self.coeficient_se();
+            let coef_se = self.coeficient_se2();
             for coef_se_value in coef_se{
                 se.push(coef_se_value);
             }

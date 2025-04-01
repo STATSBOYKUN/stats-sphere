@@ -22,6 +22,7 @@ pub fn est_coef(p: usize, d: usize, q: usize, data: Vec<f64>) -> Result<Vec<f64>
         let theta = innov_alg(q, data.clone());
         for i in 0..q{
             coef.push(theta[i]);
+            // coef.push(0.0);
         }
     } else if p > 0 {
         let phi = burg_alg(p, data.clone());
@@ -48,6 +49,12 @@ pub fn est_coef(p: usize, d: usize, q: usize, data: Vec<f64>) -> Result<Vec<f64>
             phi = Vec::new();
             theta = coef[1..].to_vec();
         }
+        // let cs = css(p, q, intercept, phi, theta, data.clone());
+        // let n = data.len() as f64;
+        // let df = n - 2.0*p as f64 - q as f64 - 1.0;
+        // let var_res = cs / df;
+        // let log_like = - n / 2.0 * (2.0 * std::f64::consts::PI * var_res).ln() - cs / (2.0 * var_res);
+        // log_like
         css(p, q, intercept, phi, theta, data.clone())
     };
     let g = |coef: &Vec<f64>| coef.forward_diff(&f);

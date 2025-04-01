@@ -13,13 +13,13 @@ impl Arima{
         let coef = est_coef(p, d, q, data.clone()).unwrap();
 
         self.set_constant(coef[0]);
-        if p == 0 && q > 0 {
-            self.set_ma_coef(coef[1..].to_vec());
-        } else if q == 0 && p > 0 {
-            self.set_ar_coef(coef[1..].to_vec());
-        } else if p > 0 && q > 0 {
+        if p > 0 && q > 0 {
             self.set_ar_coef(coef[1..p+1].to_vec());
             self.set_ma_coef(coef[p+1..].to_vec());
+        } else if p > 0 {
+            self.set_ar_coef(coef[1..].to_vec());
+        }else if q > 0 {
+            self.set_ma_coef(coef[1..].to_vec());
         }
 
         coef
