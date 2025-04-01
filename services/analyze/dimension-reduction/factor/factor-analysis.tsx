@@ -31,4 +31,6 @@ export async function analyzeFactor({
 
     const varDefsForTarget = getVarDefs(variables, targetVariables);
     const varDefsForValue = getVarDefs(variables, valueTarget);
+
+    console.log(configData);
 }
