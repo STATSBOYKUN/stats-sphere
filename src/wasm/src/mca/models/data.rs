@@ -28,10 +28,10 @@ pub struct VariableDefinition {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AnalysisData {
-    pub group_data: Vec<Vec<DataRecord>>,
-    pub independent_data: Vec<Vec<DataRecord>>,
-    pub selection_data: Option<Vec<Vec<DataRecord>>>,
-    pub group_data_defs: Vec<Vec<VariableDefinition>>,
-    pub independent_data_defs: Vec<Vec<VariableDefinition>>,
-    pub selection_data_defs: Option<Vec<Vec<VariableDefinition>>>,
+    pub analysis_data: Vec<Vec<DataRecord>>,
+    pub supplement_data: Vec<Vec<DataRecord>>,
+    pub labeling_data: Option<Vec<Vec<DataRecord>>>,
+    pub analysis_data_defs: Vec<Vec<VariableDefinition>>,
+    pub supplement_data_defs: Vec<Vec<VariableDefinition>>,
+    pub labeling_data_defs: Option<Vec<Vec<VariableDefinition>>>,
 }

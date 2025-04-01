@@ -37,4 +37,6 @@ export async function analyzeOptScaMCA({
     const varDefsForAnalysis = getVarDefs(variables, AnalysisVariables);
     const varDefsForSupplement = getVarDefs(variables, SupplementVariables);
     const varDefsForLabeling = getVarDefs(variables, LabelingVariables);
+
+    console.log(configData);
 }
