@@ -20,23 +20,25 @@ pub struct DecisionTreeAnalysis {
 impl DecisionTreeAnalysis {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        group_data: JsValue,
+        dependent_data: JsValue,
         independent_data: JsValue,
-        selection_data: JsValue,
+        influence_data: JsValue,
         config_data: JsValue,
-        group_data_defs: JsValue,
+        dependent_data_defs: JsValue,
         independent_data_defs: JsValue,
-        selection_data_defs: JsValue
+        influence_data_defs: JsValue
     ) -> Result<DecisionTreeAnalysis, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
 
         // Parse input data using serde_wasm_bindgen
-        let group_data: Vec<Vec<DataRecord>> = match serde_wasm_bindgen::from_value(group_data) {
+        let dependent_data: Vec<Vec<DataRecord>> = match
+            serde_wasm_bindgen::from_value(dependent_data)
+        {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse group data: {}", e);
-                error_collector.add_error("constructor.group_data", &msg);
+                let msg = format!("Failed to parse dependent data: {}", e);
+                error_collector.add_error("constructor.dependent_data", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -52,24 +54,24 @@ impl DecisionTreeAnalysis {
             }
         };
 
-        let selection_data: Option<Vec<Vec<DataRecord>>> = match
-            serde_wasm_bindgen::from_value(selection_data)
+        let influence_data: Option<Vec<Vec<DataRecord>>> = match
+            serde_wasm_bindgen::from_value(influence_data)
         {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse selection data: {}", e);
-                error_collector.add_error("constructor.selection_data", &msg);
+                let msg = format!("Failed to parse influence data: {}", e);
+                error_collector.add_error("constructor.influence_data", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
 
-        let group_data_defs: Vec<Vec<VariableDefinition>> = match
-            serde_wasm_bindgen::from_value(group_data_defs)
+        let dependent_data_defs: Vec<Vec<VariableDefinition>> = match
+            serde_wasm_bindgen::from_value(dependent_data_defs)
         {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse group data definitions: {}", e);
-                error_collector.add_error("constructor.group_data_defs", &msg);
+                let msg = format!("Failed to parse dependent data definitions: {}", e);
+                error_collector.add_error("constructor.dependent_data_defs", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -85,13 +87,13 @@ impl DecisionTreeAnalysis {
             }
         };
 
-        let selection_data_defs: Option<Vec<Vec<VariableDefinition>>> = match
-            serde_wasm_bindgen::from_value(selection_data_defs)
+        let influence_data_defs: Option<Vec<Vec<VariableDefinition>>> = match
+            serde_wasm_bindgen::from_value(influence_data_defs)
         {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse selection data definitions: {}", e);
-                error_collector.add_error("constructor.selection_data_defs", &msg);
+                let msg = format!("Failed to parse influence data definitions: {}", e);
+                error_collector.add_error("constructor.influence_data_defs", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -135,12 +137,12 @@ impl DecisionTreeAnalysis {
 
         // Store data
         let data = AnalysisData {
-            group_data,
+            dependent_data,
             independent_data,
-            selection_data,
-            group_data_defs,
+            influence_data,
+            dependent_data_defs,
             independent_data_defs,
-            selection_data_defs,
+            influence_data_defs,
         };
 
         // Create instance

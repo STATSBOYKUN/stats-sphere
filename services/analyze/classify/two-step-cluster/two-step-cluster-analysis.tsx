@@ -29,4 +29,6 @@ export async function analyzeTwoStepCluster({
 
     const varDefsForCategorical = getVarDefs(variables, CategoricalVariables);
     const varDefsForContinous = getVarDefs(variables, ContinousVariables);
+
+    console.log(configData);
 }

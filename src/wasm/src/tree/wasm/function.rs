@@ -53,7 +53,22 @@ pub fn run_analysis(
         }
     }
 
-    // Step 4: Tree Growth and Analysis
+    // Step 4: Handle Influence Variable (if present)
+    let mut influence_analysis = None;
+    if config.main.influence_target_var.is_some() {
+        executed_functions.push("process_influence_variable".to_string());
+        match core::process_influence_variable(&filtered_data, config) {
+            Ok(analysis) => {
+                influence_analysis = Some(analysis);
+            }
+            Err(e) => {
+                error_collector.add_error("process_influence_variable", &e);
+                // Continue execution despite errors
+            }
+        }
+    }
+
+    // Step 5: Tree Growth and Analysis
     let tree_result = match core::grow_decision_tree(&filtered_data, config) {
         Ok(result) => result,
         Err(e) => {
@@ -62,7 +77,7 @@ pub fn run_analysis(
         }
     };
 
-    // Step 5: Generate Tree Visualization (if requested in output config)
+    // Step 6: Generate Tree Visualization (if requested in output config)
     let mut tree_visualization = None;
     if config.output.tree_output {
         executed_functions.push("generate_tree_visualization".to_string());
@@ -77,7 +92,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 6: Classification Analysis
+    // Step 7: Classification Analysis
     let mut classification_results = None;
     if config.output.class_table {
         executed_functions.push("calculate_classification_results".to_string());
@@ -92,7 +107,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 7: Rule Generation (if requested)
+    // Step 8: Rule Generation (if requested)
     let mut rule_results = None;
     if config.output.gen_rules {
         executed_functions.push("generate_classification_rules".to_string());
@@ -107,7 +122,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 8: Save Results (if requested)
+    // Step 9: Save Results (if requested)
     if
         config.save.terminal_node ||
         config.save.predicted_value ||
