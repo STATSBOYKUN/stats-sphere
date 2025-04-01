@@ -528,11 +528,12 @@ export const OptScaOveralsDialog = forwardRef<
         };
 
         // Enhanced handleContinue that adds formatting
+        // Enhanced handleContinue that adds formatting
         const handleContinue = () => {
             // Create a deep copy of mainState
             const enhancedMainState = { ...mainState };
 
-            // Format Set Variables - now a 2D array
+            // Format Set Variables - maintain 2D array structure
             if (
                 enhancedMainState.SetTargetVariable &&
                 enhancedMainState.SetTargetVariable.length > 0
@@ -543,7 +544,7 @@ export const OptScaOveralsDialog = forwardRef<
                         (page) => page.length > 0
                     );
 
-                // Format each variable in each page
+                // Format each variable in each page while preserving 2D structure
                 const formattedPages = nonEmptyPages.map((page) =>
                     page.map((variable) => {
                         if (formattedVariables[variable]) {
@@ -559,9 +560,8 @@ export const OptScaOveralsDialog = forwardRef<
                     })
                 );
 
-                // Flatten back to 1D array for compatibility with the rest of the system
-                enhancedMainState.SetTargetVariable =
-                    formattedPages.flat() as any;
+                // Maintain 2D array structure - do not flatten
+                enhancedMainState.SetTargetVariable = formattedPages as any;
             }
 
             // Format Plots Variables

@@ -12,7 +12,11 @@ export async function analyzeOptScaOverals({
 }: OptScaOveralsAnalysisType) {
     await init();
 
-    const SetTargetVariable = configData.main.SetTargetVariable || [];
+    const SetTargetVariable =
+        configData?.main?.SetTargetVariable?.flat().map((variable) => {
+            const match = variable.match(/^(\w+)/);
+            return match ? match[1] : variable;
+        }) || [];
     const PlotsTargetVariable = configData.main.PlotsTargetVariable || [];
 
     const slicedDataForSetTarget = getSlicedData({
@@ -29,4 +33,6 @@ export async function analyzeOptScaOverals({
 
     const varDefsForSetTarget = getVarDefs(variables, SetTargetVariable);
     const varDefsForPlotsTarget = getVarDefs(variables, PlotsTargetVariable);
+
+    console.log(configData);
 }
