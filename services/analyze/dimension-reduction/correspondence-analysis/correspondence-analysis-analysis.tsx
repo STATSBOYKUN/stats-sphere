@@ -33,4 +33,6 @@ export async function analyzeCorrespondence({
 
     const varDefsForRow = getVarDefs(variables, RowVariable);
     const varDefsForCol = getVarDefs(variables, ColVariable);
+
+    console.log(configData);
 }
