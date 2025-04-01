@@ -37,4 +37,6 @@ export async function analyzeOptScaCatpca({
     const varDefsForAnalysis = getVarDefs(variables, AnalysisVariables);
     const varDefsForSupplement = getVarDefs(variables, SupplementVariables);
     const varDefsForLabeling = getVarDefs(variables, LabelingVariables);
+
+    console.log(configData);
 }

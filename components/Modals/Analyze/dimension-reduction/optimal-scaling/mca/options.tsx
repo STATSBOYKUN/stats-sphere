@@ -31,7 +31,7 @@ import {
 import {
     CONFIGURATIONMETHOD,
     NORMALIZATIONMETHOD,
-} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+} from "@/constants/dimension-reduction/optimal-scaling/optimal-sca-method";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckedState } from "@radix-ui/react-checkbox";
 

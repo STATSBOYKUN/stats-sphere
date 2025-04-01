@@ -41,7 +41,7 @@ import {
 import {
     BOOTSTRAPMETHOD,
     OPERATORMETHOD,
-} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+} from "@/constants/dimension-reduction/optimal-scaling/optimal-sca-method";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const OptScaCatpcaBootstrap = ({

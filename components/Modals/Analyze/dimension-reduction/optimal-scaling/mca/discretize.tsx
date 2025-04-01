@@ -22,7 +22,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { DISCRETIZEMETHOD } from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+import { DISCRETIZEMETHOD } from "@/constants/dimension-reduction/optimal-scaling/optimal-sca-method";
 import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";

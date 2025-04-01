@@ -28,7 +28,7 @@ import {
     CONFIGURATIONMETHOD,
     DISCRETIZEMETHOD,
     NORMALIZATIONMETHOD,
-} from "@/models/dimension-reduction/optimal-scaling/catpca/optimal-sca-method";
+} from "@/constants/dimension-reduction/optimal-scaling/optimal-sca-method";
 import {
     OptScaCatpcaOptionsProps,
     OptScaCatpcaOptionsType,
