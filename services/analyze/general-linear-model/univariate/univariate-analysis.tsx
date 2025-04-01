@@ -55,4 +55,6 @@ export async function analyzeUnivariate({
     const varDefsForRandomFactor = getVarDefs(variables, RandomFactorVariables);
     const varDefsForCovariate = getVarDefs(variables, CovariateVariables);
     const varDefsForWlsWeight = getVarDefs(variables, WlsWeightVariable);
+
+    console.log(configData);
 }
