@@ -181,7 +181,7 @@ pub struct StepwiseStatistics {
     #[serde(rename = "variables_not_in_analysis")]
     pub variables_not_in_analysis: HashMap<String, Vec<VariableNotInAnalysis>>,
     #[serde(rename = "pairwise_comparisons")]
-    pub pairwise_comparisons: HashMap<String, Vec<PairwiseComparison>>,
+    pub pairwise_comparisons: HashMap<String, HashMap<String, Vec<PairwiseComparison>>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -209,9 +209,7 @@ pub struct VariableNotInAnalysis {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PairwiseComparison {
     pub step: i32,
-    pub category1: i32,
-    pub category2: i32,
-    #[serde(rename = "f_value")]
+    pub group_name: String,
     pub f_value: f64,
     pub significance: f64,
 }

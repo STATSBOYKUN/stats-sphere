@@ -154,6 +154,9 @@ pub fn run_analysis(
         match core::calculate_stepwise_statistics(&filtered_data, config) {
             Ok(statistics) => {
                 stepwise_statistics = Some(statistics);
+                web_sys::console::log_1(
+                    &format!("Stepwise Statistics: {:?}", stepwise_statistics).into()
+                );
             }
             Err(e) => {
                 error_collector.add_error("calculate_stepwise_statistics", &e);
@@ -177,7 +180,10 @@ pub fn run_analysis(
     // Step 9: Calculate canonical functions (always executed)
     executed_functions.push("calculate_canonical_functions".to_string());
     let canonical_functions = match core::calculate_canonical_functions(&filtered_data, config) {
-        Ok(functions) => Some(functions),
+        Ok(functions) => {
+            web_sys::console::log_1(&format!("Canonical Functions: {:?}", functions).into());
+            Some(functions)
+        }
         Err(e) => {
             error_collector.add_error("calculate_canonical_functions", &e);
             return Err(string_to_js_error(e));

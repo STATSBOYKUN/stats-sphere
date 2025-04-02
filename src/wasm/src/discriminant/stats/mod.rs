@@ -13,6 +13,6 @@ pub mod group_statistics;
 pub mod log_determinants;
 pub mod pooled_matrices;
 pub mod save_model;
-pub mod stepwise_statistics;
+pub mod stepwise;
 pub mod structure_matrix;
 pub mod wilks_lambda;

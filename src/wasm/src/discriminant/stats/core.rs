@@ -11,7 +11,7 @@ pub use crate::discriminant::stats::group_statistics::*;
 pub use crate::discriminant::stats::log_determinants::*;
 pub use crate::discriminant::stats::pooled_matrices::*;
 pub use crate::discriminant::stats::save_model::*;
-pub use crate::discriminant::stats::stepwise_statistics::*;
+pub use crate::discriminant::stats::stepwise::stepwise_statistics::*;
 pub use crate::discriminant::stats::structure_matrix::*;
 pub use crate::discriminant::stats::wilks_lambda::*;
 pub use crate::discriminant::stats::common::*;
