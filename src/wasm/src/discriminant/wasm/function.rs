@@ -99,6 +99,7 @@ pub fn run_analysis(
         match core::calculate_pooled_matrices(&filtered_data, config) {
             Ok(matrices) => {
                 pooled_matrices = Some(matrices);
+                web_sys::console::log_1(&format!("Pooled Matrices: {:?}", pooled_matrices).into());
             }
             Err(e) => {
                 error_collector.add_error("calculate_pooled_matrices", &e);
@@ -114,6 +115,9 @@ pub fn run_analysis(
         match core::calculate_covariance_matrices(&filtered_data, config) {
             Ok(matrices) => {
                 covariance_matrices = Some(matrices);
+                web_sys::console::log_1(
+                    &format!("Covariance Matrices: {:?}", covariance_matrices).into()
+                );
             }
             Err(e) => {
                 error_collector.add_error("calculate_covariance_matrices", &e);
@@ -129,6 +133,9 @@ pub fn run_analysis(
         match core::calculate_log_determinants(&filtered_data, config) {
             Ok(determinants) => {
                 log_determinants = Some(determinants);
+                web_sys::console::log_1(
+                    &format!("Log Determinants: {:?}", log_determinants).into()
+                );
             }
             Err(e) => {
                 error_collector.add_error("calculate_log_determinants", &e);

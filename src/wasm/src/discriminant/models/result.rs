@@ -149,6 +149,8 @@ pub struct LogDeterminants {
     pub ranks: Vec<i32>,
     #[serde(rename = "log_determinants")]
     pub log_determinants: Vec<f64>,
+    #[serde(rename = "rank_pooled")]
+    pub rank_pooled: i32,
     #[serde(rename = "pooled_log_determinant")]
     pub pooled_log_determinant: f64,
 }
