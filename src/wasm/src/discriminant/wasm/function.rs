@@ -169,6 +169,9 @@ pub fn run_analysis(
         match core::calculate_wilks_lambda_test(&filtered_data, config) {
             Ok(test) => {
                 wilks_lambda_test = Some(test);
+                web_sys::console::log_1(
+                    &format!("Wilks' Lambda Test: {:?}", wilks_lambda_test).into()
+                );
             }
             Err(e) => {
                 error_collector.add_error("calculate_wilks_lambda_test", &e);
@@ -193,7 +196,12 @@ pub fn run_analysis(
     // Step 10: Calculate structure matrix
     executed_functions.push("calculate_structure_matrix".to_string());
     let structure_matrix = match core::calculate_structure_matrix(&filtered_data, config) {
-        Ok(matrix) => Some(matrix),
+        Ok(matrix) => {
+            web_sys::console::log_1(
+                &format!("Structure Matrix: {:?}", serde_json::to_value(matrix.clone())).into()
+            );
+            Some(matrix)
+        }
         Err(e) => {
             error_collector.add_error("calculate_structure_matrix", &e);
             None
