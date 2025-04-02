@@ -197,9 +197,7 @@ pub fn run_analysis(
     executed_functions.push("calculate_structure_matrix".to_string());
     let structure_matrix = match core::calculate_structure_matrix(&filtered_data, config) {
         Ok(matrix) => {
-            web_sys::console::log_1(
-                &format!("Structure Matrix: {:?}", serde_json::to_value(matrix.clone())).into()
-            );
+            web_sys::console::log_1(&format!("Structure Matrix: {:?}", matrix).into());
             Some(matrix)
         }
         Err(e) => {
@@ -214,6 +212,7 @@ pub fn run_analysis(
         executed_functions.push("calculate_classification_results".to_string());
         match core::calculate_classification_results(&filtered_data, config) {
             Ok(results) => {
+                web_sys::console::log_1(&format!("Classification Results: {:?}", results).into());
                 classification_results = Some(results);
             }
             Err(e) => {

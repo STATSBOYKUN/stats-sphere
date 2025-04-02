@@ -1,8 +1,7 @@
-// classification_result.rs
 use std::collections::HashMap;
-use nalgebra::{ DMatrix, DVector };
 
 use crate::discriminant::models::{
+    data::DataValue,
     result::ClassificationResults,
     AnalysisData,
     DiscriminantConfig,
@@ -17,125 +16,184 @@ pub fn calculate_classification_results(
 ) -> Result<ClassificationResults, String> {
     web_sys::console::log_1(&"Executing calculate_classification_results".into());
 
-    let num_groups = data.group_data.len();
-    let variables = &config.main.independent_variables;
+    let independent_variables = &config.main.independent_variables;
+    let grouping_variable = &config.main.grouping_variable;
 
-    // Create group labels
-    let group_labels: Vec<String> = (1..=num_groups).map(|i| i.to_string()).collect();
+    // Flatten the group data for easier processing
+    let flattened_group_data: Vec<&DataRecord> = data.group_data
+        .iter()
+        .flat_map(|records| records.iter())
+        .collect();
 
-    // Calculate discriminant functions first
-    let canonical_functions = calculate_canonical_functions(data, config)?;
+    // Extract group values by index and track unique groups
+    let mut record_groups: HashMap<usize, String> = HashMap::new();
+    let mut unique_groups = Vec::new();
 
-    // Original classification confusion matrix
-    let mut original_classification = HashMap::new();
+    for (i, record) in flattened_group_data.iter().enumerate() {
+        for (key, value) in &record.values {
+            // Check if this is the grouping variable
+            if key == grouping_variable {
+                let group_label = match value {
+                    DataValue::Number(num) => num.to_string(),
+                    DataValue::Text(text) => text.clone(),
+                    _ => {
+                        continue;
+                    }
+                };
 
-    // Original classification percentage
-    let mut original_percentage = HashMap::new();
+                record_groups.insert(i, group_label.clone());
 
-    // Classify each case
-    for (group_idx, group_data) in data.group_data.iter().enumerate() {
-        let group_name = group_labels[group_idx].clone();
+                if !unique_groups.contains(&group_label) {
+                    unique_groups.push(group_label);
+                }
 
-        // Initialize counts and percentages
-        let mut counts = vec![0; num_groups];
-        let mut percentages = vec![0.0; num_groups];
-
-        // For each case in this group
-        for case in group_data {
-            // Extract numeric values from DataRecord
-            let case_values = extract_case_values(case, variables);
-
-            // Classify this case
-            let predicted_group = classify_case(
-                &case_values,
-                &canonical_functions,
-                data,
-                config,
-                &group_labels
-            );
-
-            // Update counts
-            counts[predicted_group] += 1;
-        }
-
-        // Calculate percentages
-        let total_cases = group_data.len() as f64;
-        if total_cases > 0.0 {
-            for i in 0..num_groups {
-                percentages[i] = (100.0 * (counts[i] as f64)) / total_cases;
+                break;
             }
         }
-
-        original_classification.insert(group_name.clone(), counts);
-        original_percentage.insert(group_name, percentages);
     }
 
-    // Cross-validation results, only if leave-one-out is requested
-    let (cross_validated_classification, cross_validated_percentage) = if config.classify.leave {
-        // Initialize cross-validation matrices
-        let mut cross_validated_classification = HashMap::new();
-        let mut cross_validated_percentage = HashMap::new();
+    // Sort the groups for consistency
+    unique_groups.sort();
 
-        // For each group
-        for (group_idx, group_data) in data.group_data.iter().enumerate() {
-            if group_data.is_empty() {
+    // Create a mapping from group indices in data.group_data to the actual group names
+    let mut group_idx_to_name = HashMap::new();
+    for (group_idx, group_data) in data.group_data.iter().enumerate() {
+        if group_data.is_empty() {
+            continue;
+        }
+
+        for record in group_data {
+            if let Some(DataValue::Number(value)) = record.values.get(grouping_variable) {
+                group_idx_to_name.insert(group_idx, value.to_string());
+                break;
+            } else if let Some(DataValue::Text(value)) = record.values.get(grouping_variable) {
+                group_idx_to_name.insert(group_idx, value.clone());
+                break;
+            }
+        }
+    }
+
+    // Calculate discriminant functions
+    let canonical_functions = calculate_canonical_functions(data, config)?;
+
+    // Initialize classification matrices
+    let mut original_classification = HashMap::new();
+    let mut original_percentage = HashMap::new();
+
+    // Initialize with zeros for all possible combinations
+    for group in &unique_groups {
+        original_classification.insert(group.clone(), vec![0; unique_groups.len()]);
+        original_percentage.insert(group.clone(), vec![0.0; unique_groups.len()]);
+    }
+
+    // Classify each case and populate the matrices
+    for (group_idx, group_data) in data.group_data.iter().enumerate() {
+        if let Some(group_name) = group_idx_to_name.get(&group_idx) {
+            if !unique_groups.contains(group_name) {
                 continue;
             }
 
-            let group_name = group_labels[group_idx].clone();
-
-            // Initialize counts and percentages
-            let mut counts = vec![0; num_groups];
-            let mut percentages = vec![0.0; num_groups];
+            let group_position = unique_groups
+                .iter()
+                .position(|g| g == group_name)
+                .unwrap();
 
             // For each case in this group
-            for (case_idx, case) in group_data.iter().enumerate() {
-                // Create a temporary dataset excluding this case
-                let mut temp_data = data.clone();
+            for case in group_data {
+                // Extract numeric values from case
+                let case_values = extract_case_values(case, independent_variables);
 
-                // Store the case and then remove it from the dataset
-                let case_to_classify = group_data[case_idx].clone();
+                // Classify this case
+                let predicted_idx = classify_case(
+                    &case_values,
+                    &canonical_functions,
+                    data,
+                    config,
+                    &unique_groups
+                );
 
-                // Remove case (safely)
-                if
-                    group_idx < temp_data.group_data.len() &&
-                    case_idx < temp_data.group_data[group_idx].len()
-                {
-                    temp_data.group_data[group_idx].remove(case_idx);
-
-                    // Calculate discriminant functions on this reduced dataset
-                    let leave_one_out_functions = calculate_canonical_functions(
-                        &temp_data,
-                        config
-                    ).unwrap_or_else(|_| canonical_functions.clone());
-
-                    // Extract numeric values from the case
-                    let case_values = extract_case_values(&case_to_classify, variables);
-
-                    // Classify the left-out case
-                    let predicted_group = classify_case(
-                        &case_values,
-                        &leave_one_out_functions,
-                        &temp_data,
-                        config,
-                        &group_labels
-                    );
-
-                    // Update counts
-                    counts[predicted_group] += 1;
+                // Update the appropriate count in the matrix
+                if let Some(counts) = original_classification.get_mut(group_name) {
+                    counts[predicted_idx] += 1;
                 }
             }
 
             // Calculate percentages
-            let total_cases = group_data.len() as f64;
-            if total_cases > 0.0 {
-                for i in 0..num_groups {
-                    percentages[i] = (100.0 * (counts[i] as f64)) / total_cases;
+            if let Some(counts) = original_classification.get(group_name) {
+                let total_cases = counts.iter().sum::<i32>() as f64;
+                if total_cases > 0.0 {
+                    if let Some(percentages) = original_percentage.get_mut(group_name) {
+                        for (i, &count) in counts.iter().enumerate() {
+                            percentages[i] = ((count as f64) * 100.0) / total_cases;
+                        }
+                    }
                 }
             }
+        }
+    }
 
-            cross_validated_classification.insert(group_name.clone(), counts);
-            cross_validated_percentage.insert(group_name, percentages);
+    // Cross-validation results, only if leave-one-out is requested
+    let (cross_validated_classification, cross_validated_percentage) = if config.classify.leave {
+        let mut cross_validated_classification = HashMap::new();
+        let mut cross_validated_percentage = HashMap::new();
+
+        // Initialize with zeros for all possible combinations
+        for group in &unique_groups {
+            cross_validated_classification.insert(group.clone(), vec![0; unique_groups.len()]);
+            cross_validated_percentage.insert(group.clone(), vec![0.0; unique_groups.len()]);
+        }
+
+        // For each group
+        for (group_idx, group_data) in data.group_data.iter().enumerate() {
+            if let Some(group_name) = group_idx_to_name.get(&group_idx) {
+                if !unique_groups.contains(group_name) || group_data.is_empty() {
+                    continue;
+                }
+
+                // For each case in this group
+                for (case_idx, case) in group_data.iter().enumerate() {
+                    // Create a temporary dataset excluding this case
+                    let mut temp_data = data.clone();
+
+                    if case_idx < temp_data.group_data[group_idx].len() {
+                        // Remove the case from the temporary dataset
+                        temp_data.group_data[group_idx].remove(case_idx);
+
+                        // Recalculate discriminant functions
+                        let leave_one_out_functions = calculate_canonical_functions(
+                            &temp_data,
+                            config
+                        ).unwrap_or_else(|_| canonical_functions.clone());
+
+                        // Extract case values and classify
+                        let case_values = extract_case_values(case, independent_variables);
+                        let predicted_idx = classify_case(
+                            &case_values,
+                            &leave_one_out_functions,
+                            &temp_data,
+                            config,
+                            &unique_groups
+                        );
+
+                        // Update the cross-validation matrix
+                        if let Some(counts) = cross_validated_classification.get_mut(group_name) {
+                            counts[predicted_idx] += 1;
+                        }
+                    }
+                }
+
+                // Calculate percentages
+                if let Some(counts) = cross_validated_classification.get(group_name) {
+                    let total_cases = counts.iter().sum::<i32>() as f64;
+                    if total_cases > 0.0 {
+                        if let Some(percentages) = cross_validated_percentage.get_mut(group_name) {
+                            for (i, &count) in counts.iter().enumerate() {
+                                percentages[i] = ((count as f64) * 100.0) / total_cases;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         (Some(cross_validated_classification), Some(cross_validated_percentage))
@@ -151,7 +209,6 @@ pub fn calculate_classification_results(
     })
 }
 
-// Function to classify a case using the discriminant functions
 fn classify_case(
     case_values: &[f64],
     canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
@@ -185,11 +242,9 @@ fn classify_case(
     // Calculate squared Mahalanobis distances to each group
     let mut distances = Vec::with_capacity(num_groups);
 
-    for group_idx in 0..num_groups {
-        let group_name = &group_labels[group_idx];
-
+    for group_name in group_labels {
         if let Some(centroid) = canonical_functions.function_at_centroids.get(group_name) {
-            // Calculate squared Euclidean distance to centroid (approximation of Mahalanobis in canonical space)
+            // Calculate squared Euclidean distance to centroid
             let mut distance = 0.0;
             for (i, &score) in discriminant_scores.iter().enumerate() {
                 if i < centroid.len() {
@@ -214,13 +269,42 @@ fn classify_case(
         }
     } else {
         // Priors based on group sizes
-        let total_cases: usize = data.group_data
-            .iter()
-            .map(|g| g.len())
-            .sum();
-        for i in 0..num_groups {
-            priors[i] = if total_cases > 0 {
-                (data.group_data[i].len() as f64) / (total_cases as f64)
+        let mut group_sizes = HashMap::new();
+        let mut total_cases = 0;
+
+        // Count cases in each group
+        for (group_idx, group_data) in data.group_data.iter().enumerate() {
+            let group_size = group_data.len();
+            total_cases += group_size;
+
+            for record in group_data {
+                if
+                    let Some(DataValue::Number(value)) = record.values.get(
+                        &config.main.grouping_variable
+                    )
+                {
+                    let group_name = value.to_string();
+                    group_sizes.insert(group_name, group_size);
+                    break;
+                } else if
+                    let Some(DataValue::Text(value)) = record.values.get(
+                        &config.main.grouping_variable
+                    )
+                {
+                    group_sizes.insert(value.clone(), group_size);
+                    break;
+                }
+            }
+        }
+
+        // Set priors based on group sizes
+        for (i, group_name) in group_labels.iter().enumerate() {
+            priors[i] = if let Some(size) = group_sizes.get(group_name) {
+                if total_cases > 0 {
+                    (*size as f64) / (total_cases as f64)
+                } else {
+                    1.0 / (num_groups as f64)
+                }
             } else {
                 1.0 / (num_groups as f64)
             };
