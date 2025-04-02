@@ -46,14 +46,14 @@ export async function handleBoxJenkinsModel(
 
         let coefStruct: Record<string, any> = {}; // Menggunakan objek kosong
         // Jika Nilai SE elemen ke-0, maka determinan 0 maka matriks singular
-        if (se[0] == 0.0) {
-            se = []; tStat = []; pValue = [];
-            for (let i = 0; i < coef.length; i++) {
-                se.push(NaN);
-                tStat.push(NaN);
-                pValue.push(NaN);
+        for (let i = 0; i < se.length; i++) {
+            if (se[i] == 0.0) {
+                se[i] = NaN; // Mengganti nilai SE dengan NaN
+                tStat[i] = NaN; // Mengganti nilai SE dengan NaN
+                pValue[i] = NaN; // Mengganti nilai SE dengan NaN
             }
         }
+        
         if ((coefName.length + coef.length + se.length + tStat.length + pValue.length) % coef.length == 0) {
             for (let i = 0; i < coef.length; i++) {
                 coefStruct[i] = { // Gunakan i sebagai key dalam objek

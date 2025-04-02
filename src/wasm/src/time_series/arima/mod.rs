@@ -7,3 +7,4 @@ pub mod arima_fore_eval;
 pub mod arima_t_test;
 pub mod arima_est_res;
 pub mod est_coef_process;
+pub mod arima_est_se_new;
