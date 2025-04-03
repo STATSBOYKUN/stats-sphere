@@ -16,7 +16,7 @@ pub struct MainConfig {
     #[serde(rename = "DepVar")]
     pub dep_var: Option<String>,
     #[serde(rename = "FeatureVar")]
-    pub feature_var: Option<String>,
+    pub feature_var: Option<Vec<String>>,
     #[serde(rename = "CaseIdenVar")]
     pub case_iden_var: Option<String>,
     #[serde(rename = "FocalCaseIdenVar")]

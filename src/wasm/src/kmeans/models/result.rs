@@ -1,5 +1,3 @@
-// Clustering Analysis Result Structures
-
 use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
@@ -66,4 +64,11 @@ pub struct FinalClusterCenters {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DistancesBetweenCenters {
     pub distances: Vec<Vec<f64>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ProcessedData {
+    pub variables: Vec<String>,
+    pub data_matrix: Vec<Vec<f64>>,
+    pub case_numbers: Vec<i32>,
 }

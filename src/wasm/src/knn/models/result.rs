@@ -3,15 +3,15 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NearestNeighborAnalysis {
-    pub case_processing_summary: CaseProcessingSummary,
-    pub system_settings: SystemSettings,
-    pub predictor_importance: PredictorImportance,
-    pub classification_table: ClassificationTable,
-    pub error_summary: ErrorSummary,
-    pub predictor_space: PredictorSpace,
-    pub peers_chart: PeersChart,
-    pub nearest_neighbors: NearestNeighbors,
-    pub quadrant_map: QuadrantMap,
+    pub case_processing_summary: Option<CaseProcessingSummary>,
+    pub system_settings: Option<SystemSettings>,
+    pub predictor_importance: Option<PredictorImportance>,
+    pub classification_table: Option<ClassificationTable>,
+    pub error_summary: Option<ErrorSummary>,
+    pub predictor_space: Option<PredictorSpace>,
+    pub peers_chart: Option<PeersChart>,
+    pub nearest_neighbors: Option<NearestNeighbors>,
+    pub quadrant_map: Option<QuadrantMap>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

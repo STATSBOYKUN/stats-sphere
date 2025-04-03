@@ -11,6 +11,7 @@ pub struct KNNAnalysis {
     data: AnalysisData,
     result: Option<NearestNeighborAnalysis>,
     error_collector: ErrorCollector,
+    executed_functions: Vec<String>,
 }
 
 #[wasm_bindgen]
@@ -127,11 +128,12 @@ impl KNNAnalysis {
 
                 // Try to get a more detailed error by inspecting the config data
                 if let Ok(config_json) = js_sys::JSON::stringify(&config_data) {
-                    let config_str = config_json.as_string().unwrap_or_default();
-                    error_collector.add_error(
-                        "constructor.config.raw",
-                        &format!("Raw config: {}", config_str)
-                    );
+                    if let Some(config_str) = config_json.as_string() {
+                        error_collector.add_error(
+                            "constructor.config.raw",
+                            &format!("Raw config: {}", config_str)
+                        );
+                    }
                 }
 
                 return Err(string_to_js_error(msg));
@@ -157,12 +159,13 @@ impl KNNAnalysis {
             case_data_defs,
         };
 
-        // Create instance
+        // Create instance with executed_functions initialized
         let mut analysis = KNNAnalysis {
             config,
             data,
             result: None,
             error_collector,
+            executed_functions: Vec::new(),
         };
 
         // Run the analysis using the function from function.rs
@@ -180,6 +183,10 @@ impl KNNAnalysis {
     // Use functions from function.rs
     pub fn get_results(&self) -> Result<JsValue, JsValue> {
         function::get_results(&self.result)
+    }
+
+    pub fn get_executed_functions(&self) -> Result<JsValue, JsValue> {
+        function::get_executed_functions(&Some(self.executed_functions.clone()))
     }
 
     pub fn get_all_errors(&self) -> JsValue {
