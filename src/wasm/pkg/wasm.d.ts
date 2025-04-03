@@ -6,9 +6,6 @@ export function get_gamma_0_tab1(): Float64Array;
 export function innov_alg(q: number, data: Float64Array): Float64Array;
 export class Arima {
   free(): void;
-  est_res(intercept: number, ar: Float64Array, ma: Float64Array, data: Float64Array): Float64Array;
-  res_sum_of_square(): number;
-  res_variance(): number;
   constructor(data: Float64Array, ar_order: number, i_order: number, ma_order: number);
   get_data(): Float64Array;
   get_ar_order(): number;
@@ -47,6 +44,9 @@ export class Arima {
   forecasting_evaluation(): any;
   t_stat(): Float64Array;
   p_value(): Float64Array;
+  est_res(intercept: number, ar: Float64Array, ma: Float64Array, data: Float64Array): Float64Array;
+  res_sum_of_square(): number;
+  res_variance(): number;
 }
 export class AugmentedDickeyFuller {
   free(): void;
@@ -131,16 +131,16 @@ export class Decomposition {
   set_seasonal_indices(seasonal_indices: Float64Array): void;
   set_trend_equation(trend_equation: string): void;
   calculate_additive_trend_component(centered_ma: Float64Array): Float64Array;
+  decomposition_evaluation(forecast: Float64Array): any;
   calculate_additive_seasonal_component(detrended: Float64Array): Float64Array;
   calculate_multiplicative_seasonal_component(centered_ma: Float64Array): Float64Array;
-  decomposition_evaluation(forecast: Float64Array): any;
-  calculate_centered_moving_average(): Float64Array;
-  multiplicative_decomposition(trend: string): Float64Array;
-  additive_decomposition(): Float64Array;
   calculate_multiplicative_trend_component(trend: string, deseasonalizing: Float64Array): Float64Array;
   linear_trend(deseasonalizing: Float64Array): Float64Array;
   quadratic_trend(deseasonalizing: Float64Array): Float64Array;
   exponential_trend(deseasonalizing: Float64Array): Float64Array;
+  calculate_centered_moving_average(): Float64Array;
+  multiplicative_decomposition(trend: string): Float64Array;
+  additive_decomposition(): Float64Array;
 }
 export class DickeyFuller {
   free(): void;
@@ -540,11 +540,6 @@ export interface InitOutput {
   readonly dickeyfuller_calculate_pvalue: (a: number) => number;
   readonly dickeyfuller_calculate_critical_value: (a: number) => [number, number];
   readonly dickeyfuller_calculate_test_stat: (a: number) => number;
-  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-  readonly arima_est_res: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
-  readonly arima_res_sum_of_square: (a: number) => number;
-  readonly arima_res_variance: (a: number) => number;
-  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
   readonly __wbg_arima_free: (a: number, b: number) => void;
   readonly arima_new: (a: number, b: number, c: number, d: number, e: number) => number;
@@ -585,14 +580,19 @@ export interface InitOutput {
   readonly arima_forecasting_evaluation: (a: number) => any;
   readonly arima_t_stat: (a: number) => [number, number];
   readonly arima_p_value: (a: number) => [number, number];
-  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
-  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-  readonly decomposition_additive_decomposition: (a: number) => [number, number];
+  readonly decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
+  readonly arima_est_res: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
+  readonly arima_res_sum_of_square: (a: number) => number;
+  readonly arima_res_variance: (a: number) => number;
+  readonly decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
   readonly decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_quadratic_trend: (a: number, b: number, c: number) => [number, number];
   readonly decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
   readonly innov_alg: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_calculate_centered_moving_average: (a: number) => [number, number];
+  readonly decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
+  readonly decomposition_additive_decomposition: (a: number) => [number, number];
   readonly __wbindgen_exn_store: (a: number) => void;
   readonly __externref_table_alloc: () => number;
   readonly __wbindgen_export_2: WebAssembly.Table;

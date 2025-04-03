@@ -1,6 +1,5 @@
 use wasm_bindgen::prelude::*;
 use crate::{Arima, est_coef};
-// use arima::estimate;
 
 #[wasm_bindgen]
 impl Arima{

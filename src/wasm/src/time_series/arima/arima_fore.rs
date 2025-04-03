@@ -88,10 +88,10 @@ impl Arima{
             }
             let mut ar_adj = Vec::new();
             if ar.len() > 0 {
-                for i in 0..ar_tmp.len(){
-                    if i == 0 {
-                        ar_adj.push(2.0 + ar[0]);
-                    } else if i == ar_tmp.len()-1 {
+                for i in 1..=ar_tmp.len(){
+                    if i == 1 {
+                        ar_adj.push(2.0 + ar[1]);
+                    } else if i == ar_tmp.len() {
                         ar_adj.push(ar[ar.len()-1]);
                     } else {
                         ar_adj.push (ar_tmp[i] - 2.0*ar_tmp[i-1] - ar_tmp[i-2]);
