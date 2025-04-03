@@ -6,7 +6,12 @@ use arima::{estimate, util};
 
 #[wasm_bindgen]
 impl Arima {
-    pub fn est_se_new(&self) -> Vec<f64> {
+    pub fn est_res_test(&self, intercept: f64, ar: Vec<f64>, ma: Vec<f64>, data: Vec<f64>) -> Vec<f64> {
+        let residuals = estimate::residuals(&data, intercept, Some(&ar), Some(&ma)).unwrap();
+        residuals
+    }
+    
+    pub fn est_se_test(&self) -> Vec<f64> {
         let mut data = self.get_data();
         let p = self.get_ar_coef().len();
         let q = self.get_ma_coef().len();
@@ -23,7 +28,7 @@ impl Arima {
             let intercept = coef[0];
             let ar = &coef[1..p+1];
             let ma = &coef[p+1..];
-            let residuals = self.est_res2(intercept, ar.to_vec(), ma.to_vec(), data.clone());
+            let residuals = self.est_res(intercept, ar.to_vec(), ma.to_vec(), data.clone());
             let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
             // let n = data.len() as f64;
             // let df = n - p as f64 - n_estimated as f64;

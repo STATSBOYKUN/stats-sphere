@@ -1,4 +1,4 @@
-use crate::{burg_alg, css, first_difference, innov_alg, durb_lev_alg};
+use crate::{css, durb_lev_alg, first_difference, innov_alg};
 use finitediff::FiniteDiff;
 use liblbfgs::lbfgs;
 use anyhow::Result;
@@ -22,10 +22,9 @@ pub fn est_coef(p: usize, d: usize, q: usize, data: Vec<f64>) -> Result<Vec<f64>
         let theta = innov_alg(q, data.clone());
         for i in 0..q{
             coef.push(theta[i]);
-            // coef.push(0.0);
         }
     } else if p > 0 {
-        let phi = burg_alg(p, data.clone());
+        let phi = durb_lev_alg(p, data.clone());
         for i in 0..p{
             coef.push(phi[i]);
         }

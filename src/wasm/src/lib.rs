@@ -15,7 +15,6 @@ pub use time_series::unit_root_test::augmented_dickey_fuller::augmented_dickey_f
 
 pub use time_series::arima::arima::Arima;
 pub use time_series::arima::est_coef_process::autocov::*;
-pub use time_series::arima::est_coef_process::burg_alg::burg_alg;
 pub use time_series::arima::est_coef_process::durb_lev_alg::durb_lev_alg;
 pub use time_series::arima::est_coef_process::innov_alg::innov_alg;
 pub use time_series::arima::est_coef_process::css::css;

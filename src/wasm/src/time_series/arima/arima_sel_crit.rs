@@ -37,7 +37,7 @@ impl Arima{
                 data = diff;
             }
         }
-        let residual = self.est_res2(intercept, ar.clone(), ma.clone(), data);
+        let residual = self.est_res(intercept, ar.clone(), ma.clone(), data);
         let sse = residual.iter().map(|x| x.powi(2)).sum::<f64>();
         sse
     }

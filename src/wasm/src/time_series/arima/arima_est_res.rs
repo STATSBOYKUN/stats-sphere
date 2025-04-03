@@ -1,15 +1,9 @@
 use wasm_bindgen::prelude::*;
 use crate::{Arima, first_difference};
-use arima::estimate;
 
 #[wasm_bindgen]
 impl Arima {
     pub fn est_res(&self, intercept: f64, ar: Vec<f64>, ma: Vec<f64>, data: Vec<f64>) -> Vec<f64> {
-        let residuals = estimate::residuals(&data, intercept, Some(&ar), Some(&ma)).unwrap();
-        residuals
-    }
-
-    pub fn est_res2(&self, intercept: f64, ar: Vec<f64>, ma: Vec<f64>, data: Vec<f64>) -> Vec<f64> {
         let mut residuals = Vec::new();
         let p = self.get_ar_order() as usize;
         let q = self.get_ma_order() as usize;

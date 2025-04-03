@@ -32,7 +32,7 @@ impl Arima{
             let acov = autocov_int(0, &data, self.get_constant());
             var = acov / (data.len() as f64);
         }
-        var.sqrt()
+        var.abs().sqrt()
     }
 
     pub fn coeficient_se(&self) -> Vec<f64>{
@@ -50,9 +50,9 @@ impl Arima{
             let intercept = coef[0];
             let ar = &coef[1..p+1];
             let ma = &coef[p+1..];
-            let residuals = self.est_res2(intercept, ar.to_vec(), ma.to_vec(), data.clone());
+            let residuals = self.est_res(intercept, ar.to_vec(), ma.to_vec(), data.clone());
             let css = residuals.iter().map(|x| x.powi(2)).sum::<f64>();
-            -css
+            css
         };
 
         let mut coef = Vec::new();

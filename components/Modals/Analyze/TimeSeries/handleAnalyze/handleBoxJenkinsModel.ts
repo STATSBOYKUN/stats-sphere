@@ -1,4 +1,4 @@
-import init, {Arima, burg_alg} from '../../../../../src/wasm/pkg/wasm.js';
+import init, {Arima} from '../../../../../src/wasm/pkg/wasm.js';
 
 export async function handleBoxJenkinsModel(
     data: (number)[], 
