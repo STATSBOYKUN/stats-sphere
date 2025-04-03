@@ -27,6 +27,12 @@ pub struct DiscriminantResult {
     pub stepwise_statistics: Option<StepwiseStatistics>,
     #[serde(rename = "wilks_lambda_test")]
     pub wilks_lambda_test: Option<WilksLambdaTest>,
+    #[serde(rename = "casewise_statistics")]
+    pub casewise_statistics: Option<CasewiseStatistics>,
+    #[serde(rename = "prior_probabilities")]
+    pub prior_probabilities: Option<PriorProbabilities>,
+    #[serde(rename = "classification_function_coefficients")]
+    pub classification_function_coefficients: Option<ClassificationFunctionCoefficients>,
     #[serde(rename = "discriminant_histograms")]
     pub discriminant_histograms: Option<DiscriminantHistograms>,
     #[serde(rename = "executed_functions")]
@@ -224,6 +230,53 @@ pub struct WilksLambdaTest {
     pub chi_square: Vec<f64>,
     pub df: Vec<i32>,
     pub significance: Vec<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CasewiseStatistics {
+    #[serde(rename = "case_number")]
+    pub case_number: Vec<usize>,
+    #[serde(rename = "actual_group")]
+    pub actual_group: Vec<usize>,
+    #[serde(rename = "predicted_group")]
+    pub predicted_group: Vec<usize>,
+    #[serde(rename = "highest_group")]
+    pub highest_group: HighestGroupStatistics,
+    #[serde(rename = "second_highest_group")]
+    pub second_highest_group: HighestGroupStatistics,
+    #[serde(rename = "discriminant_scores")]
+    pub discriminant_scores: HashMap<String, Vec<f64>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HighestGroupStatistics {
+    #[serde(rename = "p_value")]
+    pub p_value: Vec<f64>,
+    pub df: Vec<usize>,
+    #[serde(rename = "p_g_equals_d")]
+    pub p_g_equals_d: Vec<f64>,
+    #[serde(rename = "squared_mahalanobis_distance")]
+    pub squared_mahalanobis_distance: Vec<f64>,
+    pub group: Vec<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PriorProbabilities {
+    pub groups: Vec<usize>,
+    #[serde(rename = "prior_probabilities")]
+    pub prior_probabilities: Vec<f64>,
+    #[serde(rename = "cases_used")]
+    pub cases_used: HashMap<String, Vec<usize>>,
+    pub total: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ClassificationFunctionCoefficients {
+    pub groups: Vec<usize>,
+    pub variables: Vec<String>,
+    pub coefficients: HashMap<String, Vec<f64>>,
+    #[serde(rename = "constant_terms")]
+    pub constant_terms: Vec<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -51,7 +51,7 @@ export const HierClusSaveDefault: HierClusSaveType = {
 export const HierClusMethodDefault: HierClusMethodType = {
     ClusMethod: "AverageBetweenGroups",
     Interval: true,
-    IntervalMethod: "Euclidean",
+    IntervalMethod: "SquaredEuclidean",
     Power: "2",
     Root: "2",
     Counts: false,

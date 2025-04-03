@@ -1,13 +1,16 @@
 use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
+use super::config::ClusMethod;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ClusteringResult {
     pub case_processing_summary: CaseProcessingSummary,
     pub case_clusters: Vec<CaseCluster>,
-    pub proximity_matrix: ProximityMatrix,
-    pub agglomeration_schedule: AgglomerationSchedule,
-    pub dendrogram: Dendrogram,
+    pub proximity_matrix: Option<ProximityMatrix>,
+    pub agglomeration_schedule: Option<AgglomerationSchedule>,
+    pub dendrogram: Option<Dendrogram>,
+    pub executed_functions: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -54,4 +57,14 @@ pub struct DendrogramNode {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Dendrogram {
     pub nodes: Vec<DendrogramNode>,
+}
+
+// Structure to track clusters during agglomeration
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ClusterState {
+    pub clusters: Vec<Vec<usize>>, // List of clusters, each containing case indices
+    pub distances: Vec<Vec<f64>>, // Distance matrix between clusters
+    pub case_labels: Vec<String>, // Labels for each case
+    pub variables: Vec<String>, // Variables used for clustering
+    pub method: ClusMethod, // Clustering method
 }

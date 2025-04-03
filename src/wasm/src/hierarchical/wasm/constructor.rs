@@ -86,13 +86,6 @@ impl HierarchicalCluster {
             return Err(string_to_js_error(msg));
         }
 
-        // Validate method configuration
-        if config.method.clus_method.is_empty() {
-            let msg = "Clustering method must be specified".to_string();
-            error_collector.add_error("config.validation.cluster_method", &msg);
-            return Err(string_to_js_error(msg));
-        }
-
         // Store data
         let data = AnalysisData {
             cluster_data,

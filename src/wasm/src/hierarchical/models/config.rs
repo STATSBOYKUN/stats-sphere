@@ -14,7 +14,7 @@ pub struct MainConfig {
     #[serde(rename = "Variables")]
     pub variables: Option<Vec<String>>,
     #[serde(rename = "LabelCases")]
-    pub label_cases: Option<Vec<String>>,
+    pub label_cases: Option<String>,
     #[serde(rename = "ClusterCases")]
     pub cluster_cases: bool,
     #[serde(rename = "ClusterVar")]
@@ -122,41 +122,70 @@ pub struct MethodConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
 pub enum ClusMethod {
     AverageBetweenGroups,
+    AverageWithinGroups,
     SingleLinkage,
     CompleteLinkage,
+    Centroid,
+    Median,
     Ward,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum IntervalMethod {
     Euclidean,
+    SquaredEuclidean,
+    Cosine,
+    Correlation,
+    Chebychev,
     Manhattan,
     Minkowski,
+    Customized,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CountsMethod {
     CHISQ,
-    PHI,
+    PH2,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BinaryMethod {
     BSEUCLID,
-    JACCARD,
+    SIZE,
+    PATTERN,
+    VARIANCE,
+    DISPER,
+    BSHAPE,
+    SM,
+    PHI,
+    LAMBDA,
+    D,
     DICE,
+    HAMANN,
+    JACCARD,
+    K1,
+    K2,
+    BLWMN,
+    OCHIAI,
+    RT,
+    RR,
+    SS1,
+    SS2,
+    SS3,
+    SS4,
+    Y,
+    Q,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StandardizeMethod {
     None,
     ZScore,
-    Range,
+    RangeNegOneToOne,
+    RangeZeroToOne,
+    MaxMagnitudeOne,
+    MeanOne,
+    StdDevOne,
 }

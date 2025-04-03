@@ -207,8 +207,59 @@ pub fn run_analysis(
     };
 
     // Step 11: Classification results if requested
+    let mut classification_function_coefficients = None;
+    let mut prior_probabilities = None;
+    if config.classify.summary {
+        executed_functions.push("calculate_prior_probabilities".to_string());
+        match core::calculate_prior_probabilities(&filtered_data, config) {
+            Ok(probabilities) => {
+                prior_probabilities = Some(probabilities);
+                web_sys::console::log_1(
+                    &format!("Prior Probabilities: {:?}", prior_probabilities).into()
+                );
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_prior_probabilities", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        }
+        executed_functions.push("calculate_summary_classification".to_string());
+        match core::calculate_summary_classification(&filtered_data, config) {
+            Ok(functions) => {
+                classification_function_coefficients = Some(functions);
+                web_sys::console::log_1(
+                    &format!(
+                        "Summary Classification: {:?}",
+                        classification_function_coefficients
+                    ).into()
+                );
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_summary_classification", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
+    let mut casewise_statistics = None;
+    if config.classify.case {
+        executed_functions.push("Casewise Statistics".to_string());
+        match core::calculate_casewise_statistics(&filtered_data, config) {
+            Ok(stats) => {
+                casewise_statistics = Some(stats);
+                web_sys::console::log_1(
+                    &format!("Casewise Statistics: {:?}", casewise_statistics).into()
+                );
+            }
+            Err(e) => {
+                error_collector.add_error("calculate_casewise_statistics", &e);
+                // Continue execution despite errors for non-critical functions
+            }
+        };
+    }
+
     let mut classification_results = None;
-    if config.classify.case || config.classify.summary {
+    if config.classify.leave {
         executed_functions.push("calculate_classification_results".to_string());
         match core::calculate_classification_results(&filtered_data, config) {
             Ok(results) => {
@@ -292,6 +343,9 @@ pub fn run_analysis(
         log_determinants,
         stepwise_statistics,
         wilks_lambda_test,
+        casewise_statistics,
+        prior_probabilities,
+        classification_function_coefficients,
         discriminant_histograms,
         executed_functions,
     };
