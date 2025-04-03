@@ -5,13 +5,13 @@ use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ClusteringResult {
-    pub anova: Option<ANOVATable>,
-    pub cases_count: Option<CaseCountTable>,
     pub initial_centers: Option<InitialClusterCenters>,
     pub iteration_history: Option<IterationHistory>,
     pub cluster_membership: Option<Vec<ClusterMembership>>,
     pub final_cluster_centers: Option<FinalClusterCenters>,
     pub distances_between_centers: Option<DistancesBetweenCenters>,
+    pub anova: Option<ANOVATable>,
+    pub cases_count: Option<CaseCountTable>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

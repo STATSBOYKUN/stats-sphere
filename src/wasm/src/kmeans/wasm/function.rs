@@ -1,10 +1,8 @@
-use std::collections::HashMap;
-
 use wasm_bindgen::prelude::*;
 
-use crate::kmeans::models::result::{ ANOVATable, CaseCountTable, InitialClusterCenters };
 use crate::kmeans::models::{ config::ClusterConfig, data::AnalysisData, result::ClusteringResult };
 use crate::kmeans::utils::{ converter::string_to_js_error, error::ErrorCollector };
+use crate::kmeans::stats::core;
 
 pub fn run_analysis(
     data: &AnalysisData,
@@ -19,133 +17,137 @@ pub fn run_analysis(
     // Log configuration to track which methods will be executed
     web_sys::console::log_1(&format!("Config: {:?}", config).into());
 
-    // Step 1: Validate input data and configuration
-    executed_functions.push("validate_input_data".to_string());
-    match validate_input_data(data, config) {
-        Ok(_) => {}
-        Err(e) => {
-            error_collector.add_error("validate_input_data", &e);
-            return Err(string_to_js_error(e));
-        }
-    }
-
-    // Step 2: Preprocess data
+    // Step 1: Preprocess data
     executed_functions.push("preprocess_data".to_string());
-    let preprocessed_data = match preprocess_data(data, config) {
-        Ok(processed) => processed,
+    let preprocessed_data = match core::preprocess_data(data, config) {
+        Ok(processed) => {
+            // Log the preprocessed data for debugging
+            web_sys::console::log_1(&format!("Preprocessed data: {:?}", processed).into());
+            processed
+        }
         Err(e) => {
             error_collector.add_error("preprocess_data", &e);
             return Err(string_to_js_error(e));
         }
     };
 
-    // Step 3: Initialize clusters
+    // Step 2: Initialize clusters
     executed_functions.push("initialize_clusters".to_string());
-    let initial_centers = match initialize_clusters(&preprocessed_data, config) {
-        Ok(centers) => centers,
-        Err(e) => {
-            error_collector.add_error("initialize_clusters", &e);
-            return Err(string_to_js_error(e));
-        }
-    };
+    let mut initial_centers = None;
+    if config.options.initial_cluster {
+        match core::initialize_clusters(&preprocessed_data, config) {
+            Ok(centers) => {
+                // Log the initial cluster centers for debugging
+                web_sys::console::log_1(&format!("Initial cluster centers: {:?}", centers).into());
+                initial_centers = Some(centers);
+            }
+            Err(e) => {
+                error_collector.add_error("initialize_clusters", &e);
+                return Err(string_to_js_error(e));
+            }
+        };
+    }
 
-    // Step 4: Perform clustering
-    executed_functions.push("perform_clustering".to_string());
-    let clustering_result = match perform_clustering(&preprocessed_data, config, &initial_centers) {
-        Ok(result) => result,
-        Err(e) => {
-            error_collector.add_error("perform_clustering", &e);
-            return Err(string_to_js_error(e));
+    // Step 3: Iteration history
+    executed_functions.push("iteration_history".to_string());
+    let mut iteration_history = None;
+    match core::generate_iteration_history(&preprocessed_data, config) {
+        Ok(history) => {
+            // Log the iteration history for debugging
+            web_sys::console::log_1(&format!("Iteration history: {:?}", history).into());
+            iteration_history = Some(history);
         }
-    };
+        Err(e) => {
+            error_collector.add_error("iteration_history", &e);
+        }
+    }
+
+    // Step 4: Cluster membership
+    executed_functions.push("cluster_membership".to_string());
+    let mut cluster_membership = None;
+    match core::generate_cluster_membership(&preprocessed_data, config) {
+        Ok(membership) => {
+            // Log the cluster membership for debugging
+            web_sys::console::log_1(&format!("Cluster membership: {:?}", membership).into());
+            cluster_membership = Some(membership);
+        }
+        Err(e) => {
+            error_collector.add_error("cluster_membership", &e);
+        }
+    }
+
+    // Step 5: Final cluster centers
+    let mut final_cluster_centers = None;
+    executed_functions.push("final_cluster_centers".to_string());
+    match core::generate_final_cluster_centers(&preprocessed_data, config) {
+        Ok(centers) => {
+            // Log the final cluster centers for debugging
+            web_sys::console::log_1(&format!("Final cluster centers: {:?}", centers).into());
+            final_cluster_centers = Some(centers);
+        }
+        Err(e) => {
+            error_collector.add_error("final_cluster_centers", &e);
+        }
+    }
+
+    // Step 6: Distances between centers
+    let mut distances_between_centers = None;
+    executed_functions.push("distances_between_centers".to_string());
+    match core::calculate_distances_between_centers(&preprocessed_data, config) {
+        Ok(distances) => {
+            // Log the distances between centers for debugging
+            web_sys::console::log_1(&format!("Distances between centers: {:?}", distances).into());
+            distances_between_centers = Some(distances);
+        }
+        Err(e) => {
+            error_collector.add_error("distances_between_centers", &e);
+        }
+    }
 
     // Additional optional analyses based on configuration
-    let anova_result = if config.options.anova {
+    let mut anova = None;
+    if config.options.anova {
         executed_functions.push("calculate_anova".to_string());
-        match calculate_anova(&preprocessed_data, &clustering_result) {
-            Ok(anova) => Some(anova),
+        match core::calculate_anova(&preprocessed_data, &config) {
+            Ok(result) => {
+                // Log the ANOVA result for debugging
+                web_sys::console::log_1(&format!("ANOVA result: {:?}", result).into());
+                anova = Some(result);
+            }
             Err(e) => {
                 error_collector.add_error("calculate_anova", &e);
-                None
             }
         }
-    } else {
-        None
-    };
+    }
+
+    // Case count table
+    let mut cases_count = None;
+    if config.options.cluster_info {
+        executed_functions.push("generate_case_count".to_string());
+        match core::generate_case_count(&preprocessed_data, &config) {
+            Ok(count) => {
+                // Log the case count for debugging
+                web_sys::console::log_1(&format!("Case count: {:?}", count).into());
+                cases_count = Some(count);
+            }
+            Err(e) => {
+                error_collector.add_error("generate_case_count", &e);
+            }
+        }
+    }
 
     // Generate final result
     let result = ClusteringResult {
-        anova: anova_result,
-        cases_count: Some(generate_case_count(&preprocessed_data, &clustering_result)),
-        initial_centers: Some(initial_centers),
-        iteration_history: None, // To be implemented
-        cluster_membership: None, // To be implemented
-        final_cluster_centers: None, // To be implemented
-        distances_between_centers: None, // To be implemented
+        initial_centers,
+        iteration_history,
+        cluster_membership,
+        final_cluster_centers,
+        distances_between_centers,
+        anova,
+        cases_count,
     };
 
     Ok(Some(result))
-}
-
-// Placeholder functions with basic error handling
-fn validate_input_data(data: &AnalysisData, config: &ClusterConfig) -> Result<(), String> {
-    // Basic validation checks
-    if data.target_data.is_empty() {
-        return Err("No target data provided".to_string());
-    }
-
-    if config.main.cluster <= 0 {
-        return Err("Number of clusters must be positive".to_string());
-    }
-
-    Ok(())
-}
-
-fn preprocess_data(data: &AnalysisData, config: &ClusterConfig) -> Result<AnalysisData, String> {
-    // Basic preprocessing
-    // Handle missing values based on configuration
-    Ok(data.clone())
-}
-
-fn initialize_clusters(
-    data: &AnalysisData,
-    config: &ClusterConfig
-) -> Result<InitialClusterCenters, String> {
-    // Basic cluster initialization logic
-    Ok(InitialClusterCenters {
-        centers: HashMap::new(),
-    })
-}
-
-fn perform_clustering(
-    data: &AnalysisData,
-    config: &ClusterConfig,
-    initial_centers: &InitialClusterCenters
-) -> Result<HashMap<String, Vec<String>>, String> {
-    // Basic clustering logic
-    Ok(HashMap::new())
-}
-
-fn calculate_anova(
-    data: &AnalysisData,
-    clustering_result: &HashMap<String, Vec<String>>
-) -> Result<ANOVATable, String> {
-    // Basic ANOVA calculation
-    Ok(ANOVATable {
-        clusters: HashMap::new(),
-    })
-}
-
-fn generate_case_count(
-    data: &AnalysisData,
-    clustering_result: &HashMap<String, Vec<String>>
-) -> CaseCountTable {
-    // Generate case count table
-    CaseCountTable {
-        valid: 0,
-        missing: 0,
-        clusters: HashMap::new(),
-    }
 }
 
 pub fn get_results(result: &Option<ClusteringResult>) -> Result<JsValue, JsValue> {

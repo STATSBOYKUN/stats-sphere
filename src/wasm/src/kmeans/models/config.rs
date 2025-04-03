@@ -11,7 +11,7 @@ pub struct ClusterConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MainConfig {
     #[serde(rename = "TargetVar")]
-    pub target_var: Option<String>,
+    pub target_var: Option<Vec<String>>,
     #[serde(rename = "CaseTarget")]
     pub case_target: Option<String>,
     #[serde(rename = "IterateClassify")]
