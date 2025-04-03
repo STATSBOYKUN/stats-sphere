@@ -1,9 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
-export const first_difference: (a: number, b: number) => [number, number];
-export const second_difference: (a: number, b: number) => [number, number];
-export const seasonal_difference: (a: number, b: number, c: number) => [number, number];
 export const __wbg_decomposition_free: (a: number, b: number) => void;
 export const decomposition_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => number;
 export const decomposition_get_data: (a: number) => [number, number];
@@ -57,6 +54,11 @@ export const autocorrelation_calculate_ljung_box: (a: number, b: number, c: numb
 export const autocorrelation_pvalue_ljung_box: (a: number, b: number, c: number) => [number, number];
 export const autocorrelation_df_ljung_box: (a: number) => [number, number];
 export const autocorrelation_autocorelate: (a: number, b: number, c: number, d: number) => void;
+export const decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
+export const decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
+export const decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
+export const decomposition_additive_decomposition: (a: number) => [number, number];
+export const decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
 export const __wbg_smoothing_free: (a: number, b: number) => void;
 export const smoothing_new: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
 export const smoothing_get_data_header: (a: number) => [number, number];
@@ -75,21 +77,19 @@ export const smoothing_calculate_des: (a: number, b: number) => [number, number]
 export const smoothing_calculate_holt: (a: number, b: number, c: number) => [number, number];
 export const smoothing_calculate_winter: (a: number, b: number, c: number, d: number, e: number) => [number, number];
 export const smoothing_smoothing_evaluation: (a: number, b: number, c: number) => any;
-export const decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
+export const decomposition_calculate_centered_moving_average: (a: number) => [number, number];
 export const decomposition_multiplicative_decomposition: (a: number, b: number, c: number) => [number, number];
-export const decomposition_additive_decomposition: (a: number) => [number, number];
+export const decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
 export const __wbg_hierarchicalcluster_free: (a: number, b: number) => void;
 export const hierarchicalcluster_new: (a: any, b: any, c: any, d: any, e: any) => [number, number, number];
 export const hierarchicalcluster_get_results: (a: number) => [number, number, number];
 export const hierarchicalcluster_get_all_errors: (a: number) => any;
 export const hierarchicalcluster_clear_errors: (a: number) => any;
-export const decomposition_calculate_multiplicative_trend_component: (a: number, b: number, c: number, d: number, e: number) => [number, number];
-export const decomposition_linear_trend: (a: number, b: number, c: number) => [number, number];
-export const decomposition_exponential_trend: (a: number, b: number, c: number) => [number, number];
-export const decomposition_calculate_additive_seasonal_component: (a: number, b: number, c: number) => [number, number];
-export const decomposition_calculate_multiplicative_seasonal_component: (a: number, b: number, c: number) => [number, number];
-export const decomposition_calculate_centered_moving_average: (a: number) => [number, number];
 export const decomposition_calculate_additive_trend_component: (a: number, b: number, c: number) => [number, number];
+export const first_difference: (a: number, b: number) => [number, number];
+export const second_difference: (a: number, b: number) => [number, number];
+export const seasonal_difference: (a: number, b: number, c: number) => [number, number];
+export const decomposition_decomposition_evaluation: (a: number, b: number, c: number) => any;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
 export const __wbindgen_exn_store: (a: number) => void;

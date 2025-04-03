@@ -1,19 +1,15 @@
 use std::collections::HashMap;
-
 use crate::hierarchical::models::{
     config::ClusterConfig,
     data::{ AnalysisData, DataValue },
     result::ProximityMatrix,
 };
-
 use super::{ calculate_distance, calculate_variable_distance };
-
 pub fn generate_proximity_matrix(
     data: &AnalysisData,
     config: &ClusterConfig
 ) -> Result<ProximityMatrix, String> {
     let mut distances = HashMap::new();
-
     // Get variables to use for calculating distances
     let variables = match &config.main.variables {
         Some(vars) => vars.clone(),
@@ -45,7 +41,6 @@ fn generate_case_proximity_matrix(
     if data.cluster_data.is_empty() {
         return Err("No data available for clustering".to_string());
     }
-
     let case_count = data.cluster_data[0].len();
 
     // Extract values for each case and variable
@@ -108,21 +103,7 @@ fn generate_case_proximity_matrix(
             let distance = if i == j {
                 0.0 // Distance to self is always 0
             } else {
-                web_sys::console::log_2(
-                    &format!(
-                        "Calculating distance between {} and {}",
-                        case_labels[i],
-                        case_labels[j]
-                    ).into(),
-                    &format!("Values: {:?} and {:?}", case_values[i], case_values[j]).into()
-                );
-                calculate_distance(
-                    &case_values[i],
-                    &case_values[j],
-                    &variables,
-                    &config.method.interval_method,
-                    config
-                )
+                calculate_distance(&case_values[i], &case_values[j], variables, config)
             };
 
             distances.insert((case_labels[i].clone(), case_labels[j].clone()), distance);
@@ -140,7 +121,6 @@ fn generate_variable_proximity_matrix(
     if data.cluster_data.is_empty() {
         return Err("No data available for clustering".to_string());
     }
-
     let case_count = data.cluster_data[0].len();
 
     // For each variable, collect its values across all cases

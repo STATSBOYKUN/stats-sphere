@@ -51,39 +51,34 @@ pub fn run_analysis(
 
     // Proximity matrix
     let mut proximity_matrix = None;
+    if config.main.disp_stats && config.statistics.prox_matrix {
+        executed_functions.push("proximity_matrix".to_string());
+        match core::generate_proximity_matrix(data, config) {
+            Ok(matrix) => {
+                web_sys::console::log_1(&format!("Proximity Matrix: {:?}", matrix).into());
+                proximity_matrix = Some(matrix);
+            }
+            Err(e) => {
+                error_collector.add_error("proximity_matrix", &e);
+                return Err(string_to_js_error(e));
+            }
+        };
+    }
 
     // Agglomeration schedule
     let mut agglomeration_schedule = None;
-
-    if config.main.disp_stats {
-        if config.statistics.prox_matrix {
-            executed_functions.push("proximity_matrix".to_string());
-            match core::generate_proximity_matrix(data, config) {
-                Ok(matrix) => {
-                    web_sys::console::log_1(&format!("Proximity Matrix: {:?}", matrix).into());
-                    proximity_matrix = Some(matrix);
-                }
-                Err(e) => {
-                    error_collector.add_error("proximity_matrix", &e);
-                    return Err(string_to_js_error(e));
-                }
-            };
-        }
-        if config.statistics.aggl_schedule {
-            executed_functions.push("agglomeration_schedule".to_string());
-            match core::generate_agglomeration_schedule(data, config) {
-                Ok(schedule) => {
-                    web_sys::console::log_1(
-                        &format!("Agglomeration Schedule: {:?}", schedule).into()
-                    );
-                    agglomeration_schedule = Some(schedule);
-                }
-                Err(e) => {
-                    error_collector.add_error("agglomeration_schedule", &e);
-                    return Err(string_to_js_error(e));
-                }
-            };
-        }
+    if config.main.disp_stats && config.statistics.aggl_schedule {
+        executed_functions.push("agglomeration_schedule".to_string());
+        match core::generate_agglomeration_schedule_wrapper(data, config) {
+            Ok(schedule) => {
+                web_sys::console::log_1(&format!("Agglomeration Schedule: {:?}", schedule).into());
+                agglomeration_schedule = Some(schedule);
+            }
+            Err(e) => {
+                error_collector.add_error("agglomeration_schedule", &e);
+                return Err(string_to_js_error(e));
+            }
+        };
     }
 
     // Dendrogram

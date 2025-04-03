@@ -4,7 +4,7 @@ use crate::hierarchical::models::{
     result::{ Dendrogram, DendrogramNode },
 };
 
-use super::generate_agglomeration_schedule;
+use super::{ generate_agglomeration_schedule, generate_agglomeration_schedule_wrapper };
 
 // Generate dendrogram data for visualization
 pub fn generate_dendrogram(
@@ -12,7 +12,7 @@ pub fn generate_dendrogram(
     config: &ClusterConfig
 ) -> Result<Dendrogram, String> {
     // Get the agglomeration schedule
-    let agglomeration = generate_agglomeration_schedule(data, config)?;
+    let agglomeration = generate_agglomeration_schedule_wrapper(data, config)?;
 
     // Get case labels
     let case_labels: Vec<String> = if let Some(label_vars) = &config.main.label_cases {

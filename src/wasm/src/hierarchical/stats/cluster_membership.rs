@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::hierarchical::models::{ config::ClusterConfig, data::AnalysisData, result::CaseCluster };
 
-use super::generate_agglomeration_schedule;
+use super::generate_agglomeration_schedule_wrapper;
 
 // Perform clustering to determine cluster membership
 pub fn perform_clustering(
@@ -10,7 +10,7 @@ pub fn perform_clustering(
     config: &ClusterConfig
 ) -> Result<Vec<CaseCluster>, String> {
     // Get the agglomeration schedule
-    let agglomeration = generate_agglomeration_schedule(data, config)?;
+    let agglomeration = generate_agglomeration_schedule_wrapper(data, config)?;
 
     // Determine the number of clusters to create
     let num_clusters = config.statistics.no_of_cluster.unwrap_or(2) as usize;
