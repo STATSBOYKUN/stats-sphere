@@ -14,6 +14,7 @@ pub struct RocAnalysis {
     data: AnalysisData,
     result: Option<KNNResult>,
     error_collector: ErrorCollector,
+    executed_functions: Vec<String>,
 }
 
 #[wasm_bindgen]
@@ -22,9 +23,11 @@ impl RocAnalysis {
     pub fn new(
         test_data: JsValue,
         state_data: JsValue,
-        config_data: JsValue,
+        group_data: JsValue,
         test_data_defs: JsValue,
-        state_data_defs: JsValue
+        state_data_defs: JsValue,
+        group_data_defs: JsValue,
+        config_data: JsValue
     ) -> Result<RocAnalysis, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
@@ -48,6 +51,15 @@ impl RocAnalysis {
             }
         };
 
+        let group_data: Vec<Vec<DataRecord>> = match serde_wasm_bindgen::from_value(group_data) {
+            Ok(data) => data,
+            Err(e) => {
+                let msg = format!("Failed to parse group data: {}", e);
+                error_collector.add_error("constructor.group_data", &msg);
+                return Err(string_to_js_error(msg));
+            }
+        };
+
         let test_data_defs: Vec<Vec<VariableDefinition>> = match
             serde_wasm_bindgen::from_value(test_data_defs)
         {
@@ -66,6 +78,17 @@ impl RocAnalysis {
             Err(e) => {
                 let msg = format!("Failed to parse state data definitions: {}", e);
                 error_collector.add_error("constructor.state_data_defs", &msg);
+                return Err(string_to_js_error(msg));
+            }
+        };
+
+        let group_data_defs: Vec<Vec<VariableDefinition>> = match
+            serde_wasm_bindgen::from_value(group_data_defs)
+        {
+            Ok(data) => data,
+            Err(e) => {
+                let msg = format!("Failed to parse group data definitions: {}", e);
+                error_collector.add_error("constructor.group_data_defs", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -107,8 +130,10 @@ impl RocAnalysis {
         let data = AnalysisData {
             test_data,
             state_data,
+            group_data,
             test_data_defs,
             state_data_defs,
+            group_data_defs,
         };
 
         // Create instance
@@ -117,6 +142,7 @@ impl RocAnalysis {
             data,
             result: None,
             error_collector,
+            executed_functions: Vec::new(),
         };
 
         // Run the analysis using the function from function.rs
@@ -134,5 +160,17 @@ impl RocAnalysis {
     // Use functions from function.rs
     pub fn get_results(&self) -> Result<JsValue, JsValue> {
         function::get_results(&self.result)
+    }
+
+    pub fn get_executed_functions(&self) -> Result<JsValue, JsValue> {
+        function::get_executed_functions(&Some(self.executed_functions.clone()))
+    }
+
+    pub fn get_all_errors(&self) -> JsValue {
+        function::get_all_errors(&self.error_collector)
+    }
+
+    pub fn clear_errors(&mut self) -> JsValue {
+        function::clear_errors(&mut self.error_collector)
     }
 }

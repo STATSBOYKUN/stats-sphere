@@ -30,6 +30,8 @@ pub struct VariableDefinition {
 pub struct AnalysisData {
     pub test_data: Vec<Vec<DataRecord>>,
     pub state_data: Vec<Vec<DataRecord>>,
+    pub group_data: Vec<Vec<DataRecord>>,
     pub test_data_defs: Vec<Vec<VariableDefinition>>,
     pub state_data_defs: Vec<Vec<VariableDefinition>>,
+    pub group_data_defs: Vec<Vec<VariableDefinition>>,
 }

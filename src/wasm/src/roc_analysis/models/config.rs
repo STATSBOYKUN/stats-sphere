@@ -18,7 +18,7 @@ pub struct MainConfig {
     #[serde(rename = "StateVarVal")]
     pub state_var_val: Option<String>,
     #[serde(rename = "TestTargetVariable")]
-    pub test_target_variable: Option<String>,
+    pub test_target_variable: Option<Vec<String>>,
     #[serde(rename = "TargetGroupVar")]
     pub target_group_var: Option<String>,
 }
