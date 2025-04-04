@@ -98,18 +98,24 @@ pub struct DataPoint {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PeersChart {
-    pub features: HashMap<String, FeatureData>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FeatureData {
-    pub focal_records: Vec<i32>,
-    pub neighbors: Vec<i32>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NearestNeighbors {
+    pub focal_neighbor_sets: Vec<FocalNeighborSet>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PeersChart {
+    pub focal_neighbor_sets: Vec<FocalNeighborSet>,
+    pub features: HashMap<String, Vec<f64>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct QuadrantMap {
+    pub focal_neighbor_sets: Vec<FocalNeighborSet>,
+    pub features: HashMap<String, Vec<f64>>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FocalNeighborSet {
     pub focal_record: i32,
     pub neighbors: Vec<NeighborDetail>,
     pub distances: Vec<f64>,
@@ -119,9 +125,4 @@ pub struct NearestNeighbors {
 pub struct NeighborDetail {
     pub id: i32,
     pub distance: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct QuadrantMap {
-    pub features: HashMap<String, FeatureData>,
 }
