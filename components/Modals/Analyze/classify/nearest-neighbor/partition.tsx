@@ -453,7 +453,7 @@ export const KNNPartition = ({
                                                 onChange={(e) =>
                                                     handleChange(
                                                         "Seed",
-                                                        e.target.value
+                                                        Number(e.target.value)
                                                     )
                                                 }
                                             />

@@ -1,1 +1,12 @@
 pub mod core;
+pub mod basic_summary;
+pub mod classification_table;
+pub mod common;
+pub mod error_summary;
+pub mod mersenne_twister;
+pub mod nearest_neighbor;
+pub mod peers_chart;
+pub mod predictor_importance;
+pub mod predictor_space;
+pub mod preprocess_data;
+pub mod quadrant_map;

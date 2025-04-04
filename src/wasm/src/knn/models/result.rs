@@ -1,3 +1,4 @@
+// result.rs
 use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
@@ -90,20 +91,19 @@ pub struct PredictorDimension {
 pub struct DataPoint {
     pub x: f64,
     pub y: f64,
+    pub z: f64,
     pub focal: bool,
-    pub purchase_outcome: bool,
+    pub target_value: bool,
     pub point_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PeersChart {
-    pub purchase_outcome: PeerChartData,
-    pub customer_age: PeerChartData,
-    pub total_purchase_amount: PeerChartData,
+    pub features: HashMap<String, FeatureData>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PeerChartData {
+pub struct FeatureData {
     pub focal_records: Vec<i32>,
     pub neighbors: Vec<i32>,
 }
@@ -123,13 +123,5 @@ pub struct NeighborDetail {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QuadrantMap {
-    pub purchase_outcome: QuadrantMapData,
-    pub customer_age: QuadrantMapData,
-    pub total_purchase_amount: QuadrantMapData,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct QuadrantMapData {
-    pub focal_records: Vec<i32>,
-    pub neighbors: Vec<i32>,
+    pub features: HashMap<String, FeatureData>,
 }

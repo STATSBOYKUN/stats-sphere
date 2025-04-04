@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { KNNAnalysisType } from "@/models/classify/nearest-neighbor/nearest-neighbor-worker";
-import init from "@/src/wasm/pkg/wasm";
+import init, { KNNAnalysis } from "@/src/wasm/pkg/wasm";
 
 export async function analyzeKNN({
     configData,
@@ -59,6 +59,26 @@ export async function analyzeKNN({
     );
 
     console.log("configData", configData);
+
+    const knn = new KNNAnalysis(
+        slicedDataForTarget,
+        slicedDataForFeatures,
+        slicedDataForFocalCaseIdentifier,
+        slicedDataForCaseIdentifier,
+        varDefsForTarget,
+        varDefsForFeatures,
+        varDefsForFocalCaseIdentifier,
+        varDefsForCaseIdentifier,
+        configData
+    );
+
+    const result = knn.get_results();
+    const error = knn.get_all_errors();
+    const executed = knn.get_executed_functions();
+
+    console.log("knn", result);
+    console.log("error", error);
+    console.log("executed", executed);
 
     /*
      * 1. Case Processing Summary

@@ -52,9 +52,9 @@ pub struct NeighborsConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FeaturesConfig {
     #[serde(rename = "ForwardSelection")]
-    pub forward_selection: Option<String>,
+    pub forward_selection: Option<Vec<String>>,
     #[serde(rename = "ForcedEntryVar")]
-    pub forced_entry_var: Option<String>,
+    pub forced_entry_var: Option<Vec<String>>,
     #[serde(rename = "FeaturesToEvaluate")]
     pub features_to_evaluate: i32,
     #[serde(rename = "ForcedFeatures")]
@@ -74,7 +74,7 @@ pub struct FeaturesConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PartitionConfig {
     #[serde(rename = "SrcVar")]
-    pub src_var: Option<String>,
+    pub src_var: Option<Vec<String>>,
     #[serde(rename = "PartitioningVariable")]
     pub partitioning_variable: Option<String>,
     #[serde(rename = "UseRandomly")]

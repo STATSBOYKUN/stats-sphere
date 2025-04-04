@@ -37,3 +37,14 @@ pub struct AnalysisData {
     pub focal_case_data_defs: Vec<Vec<VariableDefinition>>,
     pub case_data_defs: Option<Vec<Vec<VariableDefinition>>>,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct KnnData {
+    pub features: Vec<String>,
+    pub data_matrix: Vec<Vec<f64>>,
+    pub target_values: Vec<DataValue>,
+    pub case_identifiers: Vec<i32>,
+    pub training_indices: Vec<usize>,
+    pub holdout_indices: Vec<usize>,
+    pub focal_indices: Vec<usize>,
+}

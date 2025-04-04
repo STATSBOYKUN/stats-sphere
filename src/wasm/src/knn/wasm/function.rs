@@ -23,11 +23,11 @@ pub fn run_analysis(
         executed_functions.push("system_settings".to_string());
         match core::generate_mersenne_twister(data, config) {
             Ok(seed) => {
+                web_sys::console::log_1(&format!("System Setting: {:?}", seed).into());
                 system_settings = Some(seed);
             }
             Err(e) => {
                 error_collector.add_error("system_settings", &e);
-                return Err(string_to_js_error(e));
             }
         }
     }
@@ -38,6 +38,7 @@ pub fn run_analysis(
         executed_functions.push("basic_processing_summary".to_string());
         match core::basic_processing_summary(data, config) {
             Ok(summary) => {
+                web_sys::console::log_1(&format!("Summary Processing: {:?}", summary).into());
                 case_processing_summary = Some(summary);
             }
             Err(e) => {
@@ -51,6 +52,7 @@ pub fn run_analysis(
     let mut nearest_neighbors = None;
     match core::calculate_nearest_neighbors(data, config) {
         Ok(neighbors) => {
+            web_sys::console::log_1(&format!("Nearest Neighbors: {:?}", neighbors).into());
             nearest_neighbors = Some(neighbors);
         }
         Err(e) => {
@@ -63,6 +65,7 @@ pub fn run_analysis(
     let mut classification_table = None;
     match core::calculate_classification_table(data, config) {
         Ok(table) => {
+            web_sys::console::log_1(&format!("Classification Table: {:?}", table).into());
             classification_table = Some(table);
         }
         Err(e) => {
@@ -76,6 +79,7 @@ pub fn run_analysis(
         executed_functions.push("predictor_importance".to_string());
         match core::calculate_predictor_importance(data, config) {
             Ok(importance) => {
+                web_sys::console::log_1(&format!("Predictor Importance: {:?}", importance).into());
                 predictor_importance = Some(importance);
             }
             Err(e) => {
@@ -89,6 +93,7 @@ pub fn run_analysis(
     let mut predictor_space = None;
     match core::calculate_predictor_space(data, config) {
         Ok(space) => {
+            web_sys::console::log_1(&format!("Predictor Space: {:?}", space).into());
             predictor_space = Some(space);
         }
         Err(e) => {
@@ -101,6 +106,7 @@ pub fn run_analysis(
     let mut peers_chart = None;
     match core::calculate_peers_chart(data, config) {
         Ok(chart) => {
+            web_sys::console::log_1(&format!("Peers Chart: {:?}", chart).into());
             peers_chart = Some(chart);
         }
         Err(e) => {
@@ -113,6 +119,7 @@ pub fn run_analysis(
     let mut quadrant_map = None;
     match core::calculate_quadrant_map(data, config) {
         Ok(map) => {
+            web_sys::console::log_1(&format!("Quadrant Map: {:?}", map).into());
             quadrant_map = Some(map);
         }
         Err(e) => {
@@ -124,6 +131,7 @@ pub fn run_analysis(
     let mut error_summary = None;
     match core::calculate_error_summary(&classification_table) {
         Ok(summary) => {
+            web_sys::console::log_1(&format!("Error Summary: {:?}", summary).into());
             error_summary = Some(summary);
         }
         Err(e) => {
