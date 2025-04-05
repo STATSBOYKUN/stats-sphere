@@ -10,9 +10,9 @@ pub struct ClusterConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MainConfig {
     #[serde(rename = "CategoricalVar")]
-    pub categorical_var: Option<String>,
+    pub categorical_var: Option<Vec<String>>,
     #[serde(rename = "ContinousVar")]
-    pub continuous_var: Option<String>,
+    pub continuous_var: Option<Vec<String>>,
     #[serde(rename = "Log")]
     pub log: bool,
     #[serde(rename = "Euclidean")]
@@ -38,9 +38,9 @@ pub struct MainConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct OptionsConfig {
     #[serde(rename = "SrcVar")]
-    pub src_var: Vec<String>,
+    pub src_var: Option<Vec<String>>,
     #[serde(rename = "TargetVar")]
-    pub target_var: Option<String>,
+    pub target_var: Option<Vec<String>>,
     #[serde(rename = "Noise")]
     pub noise: bool,
     #[serde(rename = "NoiseCluster")]
@@ -64,9 +64,9 @@ pub struct OptionsConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct OutputConfig {
     #[serde(rename = "SrcVar")]
-    pub src_var: Vec<String>,
+    pub src_var: Option<Vec<String>>,
     #[serde(rename = "TargetVar")]
-    pub target_var: Option<String>,
+    pub target_var: Option<Vec<String>>,
     #[serde(rename = "PivotTable")]
     pub pivot_table: bool,
     #[serde(rename = "ChartTable")]

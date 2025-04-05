@@ -2,6 +2,7 @@ use wasm_bindgen::prelude::*;
 
 use crate::twostep::models::{ config::ClusterConfig, data::AnalysisData, result::ClusteringResult };
 use crate::twostep::utils::{ converter::string_to_js_error, error::ErrorCollector };
+use crate::twostep::stats::core;
 
 pub fn run_analysis(
     data: &AnalysisData,
@@ -16,107 +17,144 @@ pub fn run_analysis(
     // Log configuration to track which methods will be executed
     web_sys::console::log_1(&format!("Config: {:?}", config).into());
 
-    // Step 1: Basic data processing and validation
-    executed_functions.push("basic_data_processing".to_string());
-    let processing_summary = match basic_data_processing(data, config) {
-        Ok(summary) => summary,
-        Err(e) => {
-            error_collector.add_error("basic_data_processing", &e);
-            return Err(string_to_js_error(e));
-        }
-    };
-
-    // Step 2: Prepare data for clustering
-    let prepared_data = match prepare_clustering_data(data, config) {
-        Ok(prepared) => prepared,
+    // Step 1: Prepare data for clustering
+    executed_functions.push("prepare_clustering_data".to_string());
+    let prepared_data = match core::prepare_clustering_data(data, config) {
+        Ok(prepared) => { prepared }
         Err(e) => {
             error_collector.add_error("prepare_clustering_data", &e);
             return Err(string_to_js_error(e));
         }
     };
 
-    // Step 3: Perform clustering
-    executed_functions.push("perform_clustering".to_string());
-    let clustering_result = match perform_clustering(&prepared_data, config) {
-        Ok(result) => result,
+    // Calculate model summary
+    executed_functions.push("calculate_model_summary".to_string());
+    let model_summary = match core::calculate_model_summary(&prepared_data, config) {
+        Ok(summary) => {
+            web_sys::console::log_1(&format!("Model Summary: {:?}", summary).into());
+            Some(summary)
+        }
         Err(e) => {
-            error_collector.add_error("perform_clustering", &e);
-            return Err(string_to_js_error(e));
+            error_collector.add_error("calculate_model_summary", &e);
+            None
         }
     };
 
-    // Optional Step 4: Generate additional analytics if requested
-    let mut additional_analytics = None;
-    if config.output.pivot_table || config.output.chart_table {
-        executed_functions.push("generate_analytics".to_string());
-        match generate_analytics(&clustering_result, config) {
-            Ok(analytics) => {
-                additional_analytics = Some(analytics);
+    // Step 2: Calculate the cell distribution
+    let cell_distribution = if config.output.clust_var {
+        match core::calculate_cell_distribution(&prepared_data, config) {
+            Ok(distribution) => {
+                // Log the cell distribution for debugging
+                web_sys::console::log_1(&format!("Cell Distribution: {:?}", distribution).into());
+                Some(distribution)
             }
             Err(e) => {
-                error_collector.add_error("generate_analytics", &e);
-                // Continue execution despite errors
+                error_collector.add_error("calculate_cell_distribution", &e);
+                None
             }
         }
-    }
+    } else {
+        None
+    };
 
-    // Optional Step 5: Export results if requested
-    if config.output.export_model || config.output.export_cf_tree {
-        executed_functions.push("export_results".to_string());
-        match export_results(&clustering_result, config) {
-            Ok(_) => {}
+    // Step 3: Calculate cluster profiles
+    executed_functions.push("calculate_cluster_profiles".to_string());
+    let cluster_profiles = match core::calculate_cluster_profiles(&prepared_data, config) {
+        Ok(profiles) => {
+            // Log the cluster profiles for debugging
+            web_sys::console::log_1(&format!("Cluster Profiles: {:?}", profiles).into());
+            Some(profiles)
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_cluster_profiles", &e);
+            None
+        }
+    };
+
+    // Step 4: Calculate auto clustering if enabled
+    executed_functions.push("calculate_auto_clustering".to_string());
+    let auto_clustering = if config.main.auto {
+        match core::calculate_auto_clustering(&prepared_data, config) {
+            Ok(auto) => {
+                // Log the auto clustering for debugging
+                web_sys::console::log_1(&format!("Auto Clustering: {:?}", auto).into());
+                Some(auto)
+            }
             Err(e) => {
-                error_collector.add_error("export_results", &e);
-                // Continue execution despite errors
+                error_collector.add_error("calculate_auto_clustering", &e);
+                None
             }
         }
-    }
+    } else {
+        None
+    };
+
+    // Step 5: Calculate cluster distribution
+    executed_functions.push("calculate_cluster_distribution".to_string());
+    let cluster_distribution = match core::calculate_cluster_distribution(&prepared_data, config) {
+        Ok(distribution) => {
+            // Log the cluster distribution for debugging
+            web_sys::console::log_1(&format!("Cluster Distribution: {:?}", distribution).into());
+            Some(distribution)
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_cluster_distribution", &e);
+            None
+        }
+    };
+
+    // Step 6: Calculate clusters
+    executed_functions.push("calculate_clusters".to_string());
+    let clusters = match core::calculate_clusters(&prepared_data, config) {
+        Ok(clusters_data) => {
+            // Log the clusters for debugging
+            web_sys::console::log_1(&format!("Clusters: {:?}", clusters_data).into());
+            Some(clusters_data)
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_clusters", &e);
+            None
+        }
+    };
+
+    // Step 7: Calculate predictor importance
+    executed_functions.push("calculate_predictor_importance".to_string());
+    let predictor_importance = match core::calculate_predictor_importance(&prepared_data, config) {
+        Ok(importance) => {
+            // Log the predictor importance for debugging
+            web_sys::console::log_1(&format!("Predictor Importance: {:?}", importance).into());
+            Some(importance)
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_predictor_importance", &e);
+            None
+        }
+    };
+
+    // Cluster Sizes
+    let cluster_sizes = match core::calculate_cluster_sizes(&prepared_data, config) {
+        Ok(sizes) => Some(sizes),
+        Err(e) => {
+            error_collector.add_error("calculate_cluster_sizes", &e);
+            None
+        }
+    };
 
     // Create the final result
     let result = ClusteringResult {
-        // Populate the result fields
-        cell_distribution: clustering_result.cell_distribution,
-        cluster_profiles: clustering_result.cluster_profiles,
-        auto_clustering: clustering_result.auto_clustering,
-        cluster_distribution: clustering_result.cluster_distribution,
-        clusters: clustering_result.clusters,
-        predictor_importance: clustering_result.predictor_importance,
-        cluster_sizes: clustering_result.cluster_sizes,
+        model_summary,
+        cell_distribution,
+        cluster_profiles,
+        auto_clustering,
+        cluster_distribution,
+        clusters,
+        predictor_importance,
+        cluster_sizes,
     };
 
     Ok(Some(result))
 }
 
-// Placeholder functions to be implemented later
-fn basic_data_processing(_data: &AnalysisData, _config: &ClusterConfig) -> Result<(), String> {
-    Ok(())
-}
-
-fn prepare_clustering_data(
-    _data: &AnalysisData,
-    _config: &ClusterConfig
-) -> Result<AnalysisData, String> {
-    // Implement data preparation logic
-    Err("Not implemented".to_string())
-}
-
-fn perform_clustering(
-    _prepared_data: &AnalysisData,
-    _config: &ClusterConfig
-) -> Result<ClusteringResult, String> {
-    // Implement clustering algorithm
-    Err("Not implemented".to_string())
-}
-
-fn generate_analytics(_result: &ClusteringResult, _config: &ClusterConfig) -> Result<(), String> {
-    Ok(())
-}
-
-fn export_results(_result: &ClusteringResult, _config: &ClusterConfig) -> Result<(), String> {
-    Ok(())
-}
-
-// Additional utility functions
 pub fn get_results(result: &Option<ClusteringResult>) -> Result<JsValue, JsValue> {
     match result {
         Some(result) => Ok(serde_wasm_bindgen::to_value(result).unwrap()),
@@ -125,7 +163,6 @@ pub fn get_results(result: &Option<ClusteringResult>) -> Result<JsValue, JsValue
 }
 
 pub fn get_executed_functions(_result: &Option<ClusteringResult>) -> Result<JsValue, JsValue> {
-    // Placeholder implementation
     Err(string_to_js_error("Not implemented".to_string()))
 }
 
