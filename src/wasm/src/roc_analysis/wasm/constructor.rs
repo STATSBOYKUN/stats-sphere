@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use crate::roc_analysis::models::{
     config::RocConfig,
     data::{ AnalysisData, DataRecord, VariableDefinition },
-    result::KNNResult,
+    result::ROCAnalysisResult,
 };
 use crate::roc_analysis::utils::{ converter::string_to_js_error, error::ErrorCollector };
 use crate::roc_analysis::wasm::function;
@@ -12,7 +12,7 @@ use crate::roc_analysis::wasm::function;
 pub struct RocAnalysis {
     config: RocConfig,
     data: AnalysisData,
-    result: Option<KNNResult>,
+    result: Option<ROCAnalysisResult>,
     error_collector: ErrorCollector,
     executed_functions: Vec<String>,
 }

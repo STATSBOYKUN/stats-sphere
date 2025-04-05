@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct KNNResult {
+pub struct ROCAnalysisResult {
     #[serde(rename = "case_processing_summary")]
     pub case_processing_summary: Option<CaseProcessingSummary>,
     #[serde(rename = "coordinates_precision_recall")]

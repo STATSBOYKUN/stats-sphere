@@ -1,6 +1,10 @@
 use wasm_bindgen::prelude::*;
 
-use crate::roc_analysis::models::{ config::RocConfig, data::AnalysisData, result::KNNResult };
+use crate::roc_analysis::models::{
+    config::RocConfig,
+    data::AnalysisData,
+    result::ROCAnalysisResult,
+};
 use crate::roc_analysis::utils::{ converter::string_to_js_error, error::ErrorCollector };
 use crate::roc_analysis::stats::core;
 
@@ -8,7 +12,7 @@ pub fn run_analysis(
     data: &AnalysisData,
     config: &RocConfig,
     error_collector: &mut ErrorCollector
-) -> Result<Option<KNNResult>, JsValue> {
+) -> Result<Option<ROCAnalysisResult>, JsValue> {
     web_sys::console::log_1(&"Starting ROC Analysis".into());
 
     // Initialize result with executed functions tracking
@@ -123,7 +127,7 @@ pub fn run_analysis(
     }
 
     // Create the final result
-    let result = KNNResult {
+    let result = ROCAnalysisResult {
         case_processing_summary,
         coordinates_precision_recall,
         coordinates_roc,
@@ -135,7 +139,7 @@ pub fn run_analysis(
     Ok(Some(result))
 }
 
-pub fn get_results(result: &Option<KNNResult>) -> Result<JsValue, JsValue> {
+pub fn get_results(result: &Option<ROCAnalysisResult>) -> Result<JsValue, JsValue> {
     match result {
         Some(result) => Ok(serde_wasm_bindgen::to_value(result).unwrap()),
         None => Err(string_to_js_error("No analysis results available".to_string())),
