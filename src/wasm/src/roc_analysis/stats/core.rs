@@ -1,10 +1,10 @@
+use std::collections::HashMap;
 use crate::roc_analysis::models::{
-    config::RocConfig,
+    config::{ RocConfig, DistributionMethod },
     data::{ AnalysisData, DataValue },
     result::*,
 };
 
-// Calculate case processing summary
 pub fn calculate_case_processing_summary(
     data: &AnalysisData,
     config: &RocConfig
@@ -23,7 +23,6 @@ pub fn calculate_case_processing_summary(
     let mut negative_count = 0;
     let mut missing_count = 0;
 
-    // Count in the first dataset of state_data
     if let Some(first_dataset) = data.state_data.first() {
         for record in first_dataset {
             if let Some(value) = record.values.get(state_target_var) {
@@ -57,29 +56,21 @@ pub fn calculate_case_processing_summary(
                         }
                     }
                     DataValue::Null => {
-                        // Handle null values based on configuration
                         if config.options.miss_value_as_valid {
-                            // Count as valid but negative
                             negative_count += 1;
                         } else if config.options.exclude_miss_value {
-                            // Count as missing
                             missing_count += 1;
                         } else {
-                            // Default behavior
                             missing_count += 1;
                         }
                     }
                 }
             } else {
-                // Handle missing values based on configuration
                 if config.options.miss_value_as_valid {
-                    // Count as valid but negative
                     negative_count += 1;
                 } else if config.options.exclude_miss_value {
-                    // Count as missing
                     missing_count += 1;
                 } else {
-                    // Default behavior
                     missing_count += 1;
                 }
             }
@@ -98,8 +89,11 @@ pub fn calculate_case_processing_summary(
     })
 }
 
-// Helper function to extract test and state values
-fn extract_values(data: &AnalysisData, config: &RocConfig) -> Result<(Vec<f64>, Vec<f64>), String> {
+fn extract_values(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_target_var: &str
+) -> Result<(Vec<f64>, Vec<f64>), String> {
     if config.main.state_target_variable.is_none() {
         return Err("State target variable is not specified".to_string());
     }
@@ -110,31 +104,23 @@ fn extract_values(data: &AnalysisData, config: &RocConfig) -> Result<(Vec<f64>, 
     }
     let state_var_val = config.main.state_var_val.as_ref().unwrap();
 
-    if config.main.test_target_variable.is_none() {
-        return Err("Test target variables are not specified".to_string());
-    }
-    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
-
-    if test_target_vars.is_empty() {
-        return Err("No test target variables specified".to_string());
-    }
-    let test_target_var = &test_target_vars[0];
-
     let mut positive_values = Vec::new();
     let mut negative_values = Vec::new();
 
-    // Assuming first datasets for simplicity
-    if
-        let (Some(state_dataset), Some(test_dataset)) = (
-            data.state_data.first(),
-            data.test_data.first(),
-        )
-    {
-        if state_dataset.len() != test_dataset.len() {
-            return Err("State and test datasets have different lengths".to_string());
+    if data.state_data.is_empty() {
+        return Err("No state data provided".to_string());
+    }
+
+    let state_dataset = &data.state_data[0];
+
+    for test_dataset in &data.test_data {
+        if test_dataset.len() != state_dataset.len() {
+            continue;
         }
 
-        for (i, state_record) in state_dataset.iter().enumerate() {
+        for case_idx in 0..state_dataset.len() {
+            let state_record = &state_dataset[case_idx];
+
             if let Some(state_value) = state_record.values.get(state_target_var) {
                 let is_positive = match state_value {
                     DataValue::Text(val) => val == state_var_val,
@@ -155,34 +141,37 @@ fn extract_values(data: &AnalysisData, config: &RocConfig) -> Result<(Vec<f64>, 
                     DataValue::Null => false,
                 };
 
-                if let Some(test_record) = test_dataset.get(i) {
-                    if let Some(test_value) = test_record.values.get(test_target_var) {
-                        if let DataValue::Number(val) = test_value {
-                            if is_positive {
-                                positive_values.push(*val);
-                            } else {
-                                negative_values.push(*val);
-                            }
-                        }
+                let test_record = &test_dataset[case_idx];
+
+                if let Some(DataValue::Number(val)) = test_record.values.get(test_target_var) {
+                    if is_positive {
+                        positive_values.push(*val);
+                    } else {
+                        negative_values.push(*val);
                     }
                 }
             }
         }
-    } else {
-        return Err("Missing state or test data".to_string());
     }
 
     if positive_values.is_empty() || negative_values.is_empty() {
-        return Err("Insufficient positive or negative values found".to_string());
+        return Err(
+            format!(
+                "Insufficient positive ({}) or negative ({}) values found for test variable '{}'",
+                positive_values.len(),
+                negative_values.len(),
+                test_target_var
+            )
+        );
     }
 
     Ok((positive_values, negative_values))
 }
 
-// Helper function to extract test and state values for each group
 fn extract_grouped_values(
     data: &AnalysisData,
-    config: &RocConfig
+    config: &RocConfig,
+    test_target_var: &str
 ) -> Result<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>), String> {
     if config.main.state_target_variable.is_none() {
         return Err("State target variable is not specified".to_string());
@@ -194,19 +183,7 @@ fn extract_grouped_values(
     }
     let state_var_val = config.main.state_var_val.as_ref().unwrap();
 
-    if config.main.test_target_variable.is_none() {
-        return Err("Test target variables are not specified".to_string());
-    }
-    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
-
-    if test_target_vars.is_empty() {
-        return Err("No test target variables specified".to_string());
-    }
-    let test_target_var = &test_target_vars[0];
-
-    // Check if grouping is enabled
     if config.main.target_group_var.is_none() {
-        // If no grouping variable is specified, return an error or use standard analysis
         return Err("Target group variable is not specified for grouped analysis".to_string());
     }
 
@@ -217,9 +194,7 @@ fn extract_grouped_values(
     let mut group2_positive_values = Vec::new();
     let mut group2_negative_values = Vec::new();
 
-    // Define group identifiers based on configuration
     let (group1_identifier, group2_identifier) = if config.define_groups.specified_values {
-        // Use specified values
         if config.define_groups.group1.is_none() || config.define_groups.group2.is_none() {
             return Err("Group values not specified".to_string());
         }
@@ -228,18 +203,15 @@ fn extract_grouped_values(
             config.define_groups.group2.as_ref().unwrap().clone(),
         )
     } else if config.define_groups.cut_point {
-        // Use cut point
         if config.define_groups.cut_point_value.is_none() {
             return Err("Cut point value not specified".to_string());
         }
         let cut_point = config.define_groups.cut_point_value.unwrap();
         (format!("<{}", cut_point), format!(">={}", cut_point))
     } else if config.define_groups.use_mid_value {
-        // Use mid value logic (need to find min and max values first)
         let mut min_val = f64::MAX;
         let mut max_val = f64::MIN;
 
-        // If group_data is available, use it
         if let Some(group_dataset) = data.group_data.first() {
             if !group_dataset.is_empty() {
                 for record in group_dataset {
@@ -251,7 +223,6 @@ fn extract_grouped_values(
                     }
                 }
             } else {
-                // If group_data is empty, try using state_data
                 if let Some(state_dataset) = data.state_data.first() {
                     for record in state_dataset {
                         if let Some(group_value) = record.values.get(target_group_var) {
@@ -264,7 +235,6 @@ fn extract_grouped_values(
                 }
             }
         } else {
-            // If group_data is not available, try using state_data
             if let Some(state_dataset) = data.state_data.first() {
                 for record in state_dataset {
                     if let Some(group_value) = record.values.get(target_group_var) {
@@ -289,19 +259,15 @@ fn extract_grouped_values(
         return Err("No group definition method specified".to_string());
     };
 
-    // Try to get group data from various sources
     let (state_dataset, test_dataset, group_dataset) = if
         !data.group_data.is_empty() &&
         data.group_data.first().is_some()
     {
-        // Use dedicated group_data if available
         (data.state_data.first(), data.test_data.first(), data.group_data.first())
     } else {
-        // Otherwise, use state_data for group information
         (data.state_data.first(), data.test_data.first(), data.state_data.first())
     };
 
-    // Ensure we have all the data we need
     if state_dataset.is_none() || test_dataset.is_none() || group_dataset.is_none() {
         return Err("Missing required data for grouped analysis".to_string());
     }
@@ -322,7 +288,6 @@ fn extract_grouped_values(
                 group_dataset.get(i),
             )
         {
-            // Determine if the record is positive or negative
             let is_positive = if let Some(state_value) = state_record.values.get(state_target_var) {
                 match state_value {
                     DataValue::Text(val) => val == state_var_val,
@@ -343,26 +308,24 @@ fn extract_grouped_values(
                     DataValue::Null => false,
                 }
             } else {
-                continue; // Skip if state value is missing
+                continue;
             };
 
-            // Get test value
             let test_value = if let Some(tv) = test_record.values.get(test_target_var) {
                 match tv {
                     DataValue::Number(val) => *val,
                     _ => {
                         continue;
-                    } // Skip if not a number
+                    }
                 }
             } else {
-                continue; // Skip if test value is missing
+                continue;
             };
 
-            // Determine which group this record belongs to
             let group_value = if let Some(gv) = group_record.values.get(target_group_var) {
                 gv
             } else {
-                continue; // Skip if group value is missing
+                continue;
             };
 
             let is_group1 = match group_value {
@@ -370,7 +333,7 @@ fn extract_grouped_values(
                     if config.define_groups.specified_values {
                         val == &group1_identifier
                     } else {
-                        false // Text values not handled for non-specified groups
+                        false
                     }
                 }
                 DataValue::Number(val) => {
@@ -390,10 +353,9 @@ fn extract_grouped_values(
                 }
                 _ => {
                     continue;
-                } // Skip other types
+                }
             };
 
-            // Add value to appropriate group
             if is_group1 {
                 if is_positive {
                     group1_positive_values.push(test_value);
@@ -410,7 +372,6 @@ fn extract_grouped_values(
         }
     }
 
-    // Check if we have enough data for analysis
     if group1_positive_values.is_empty() || group1_negative_values.is_empty() {
         return Err(format!("Insufficient data for group '{}'", group1_identifier));
     }
@@ -427,7 +388,6 @@ fn extract_grouped_values(
     ))
 }
 
-// Generate cutoff points from test values
 fn generate_cutoffs(positive_values: &[f64], negative_values: &[f64]) -> Vec<f64> {
     let mut all_values = positive_values.to_vec();
     all_values.extend_from_slice(negative_values);
@@ -435,12 +395,10 @@ fn generate_cutoffs(positive_values: &[f64], negative_values: &[f64]) -> Vec<f64
 
     let mut cutoffs = Vec::new();
 
-    // Add minimum - 1 as first cutoff
     if let Some(min_val) = all_values.first() {
         cutoffs.push(min_val - 1.0);
     }
 
-    // Add average of consecutive distinct values
     let mut unique_values = Vec::new();
     for &value in all_values.iter() {
         if !unique_values.contains(&value) {
@@ -453,7 +411,6 @@ fn generate_cutoffs(positive_values: &[f64], negative_values: &[f64]) -> Vec<f64
         cutoffs.push((unique_values[i] + unique_values[i + 1]) / 2.0);
     }
 
-    // Add maximum + 1 as last cutoff
     if let Some(max_val) = unique_values.last() {
         cutoffs.push(max_val + 1.0);
     }
@@ -461,37 +418,54 @@ fn generate_cutoffs(positive_values: &[f64], negative_values: &[f64]) -> Vec<f64
     cutoffs
 }
 
-// Calculate ROC coordinates
 pub fn calculate_roc_coordinates(
     data: &AnalysisData,
     config: &RocConfig
+) -> Result<HashMap<String, Vec<RocCoordinate>>, String> {
+    if config.main.test_target_variable.is_none() {
+        return Err("Test target variables are not specified".to_string());
+    }
+    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
+
+    if test_target_vars.is_empty() {
+        return Err("No test target variables specified".to_string());
+    }
+
+    let mut coordinates_map: HashMap<String, Vec<RocCoordinate>> = HashMap::new();
+
+    for test_var in test_target_vars {
+        let var_coordinates = calculate_roc_coordinates_for_variable(data, config, test_var)?;
+        coordinates_map.insert(test_var.clone(), var_coordinates);
+    }
+
+    Ok(coordinates_map)
+}
+
+pub fn calculate_roc_coordinates_for_variable(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_var: &str
 ) -> Result<Vec<RocCoordinate>, String> {
-    // If paired sample, use regular extraction
     if config.main.paired_sample {
-        let (positive_values, negative_values) = extract_values(data, config)?;
+        let (positive_values, negative_values) = extract_values(data, config, test_var)?;
         return calculate_roc_coordinates_from_values(&positive_values, &negative_values, config);
     }
 
-    // Use grouped extraction for independent groups
     if config.main.target_group_var.is_some() {
-        // For grouped analysis, we focus on one group at a time
-        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config)?;
+        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config, test_var)?;
         return calculate_roc_coordinates_from_values(&group1_pos, &group1_neg, config);
     }
 
-    // Default to regular extraction if no grouping is specified
-    let (positive_values, negative_values) = extract_values(data, config)?;
+    let (positive_values, negative_values) = extract_values(data, config, test_var)?;
     calculate_roc_coordinates_from_values(&positive_values, &negative_values, config)
 }
 
-// Calculate ROC coordinates from positive and negative values
 fn calculate_roc_coordinates_from_values(
     positive_values: &[f64],
     negative_values: &[f64],
     config: &RocConfig
 ) -> Result<Vec<RocCoordinate>, String> {
     let cutoffs = generate_cutoffs(positive_values, negative_values);
-
     let mut coordinates = Vec::new();
 
     for cutoff in cutoffs {
@@ -516,16 +490,13 @@ fn calculate_roc_coordinates_from_values(
         });
     }
 
-    // Handle special case for missing data
     if config.options.miss_value_as_valid {
-        // Additional logic for treating missing values as valid would go here
-        // This would typically involve adding specific coordinates for missing values
+        // Additional logic for treating missing values as valid
     }
 
     Ok(coordinates)
 }
 
-// Calculate confusion matrix with proper cutoff handling
 fn calculate_confusion_matrix(
     positive_values: &[f64],
     negative_values: &[f64],
@@ -538,16 +509,9 @@ fn calculate_confusion_matrix(
     let mut false_positives = 0;
 
     let larger_is_positive = config.options.larger_test;
-    let _include_cutoff = config.options.include_cutoff;
     let exclude_cutoff = config.options.exclude_cutoff;
 
-    // Determine how to handle values that equal the cutoff
-    let include_equal = if exclude_cutoff {
-        false
-    } else {
-        // Default to include if neither is explicitly set
-        true
-    };
+    let include_equal = if exclude_cutoff { false } else { true };
 
     for &val in positive_values {
         let is_positive = if larger_is_positive {
@@ -580,37 +544,58 @@ fn calculate_confusion_matrix(
     (true_positives, false_negatives, true_negatives, false_positives)
 }
 
-// Calculate precision-recall coordinates
 pub fn calculate_precision_recall_coordinates(
     data: &AnalysisData,
     config: &RocConfig
+) -> Result<HashMap<String, Vec<PrecisionRecallCoordinate>>, String> {
+    if config.main.test_target_variable.is_none() {
+        return Err("Test target variables are not specified".to_string());
+    }
+    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
+
+    if test_target_vars.is_empty() {
+        return Err("No test target variables specified".to_string());
+    }
+
+    let mut coordinates_map: HashMap<String, Vec<PrecisionRecallCoordinate>> = HashMap::new();
+
+    for test_var in test_target_vars {
+        let var_coordinates = calculate_precision_recall_coordinates_for_variable(
+            data,
+            config,
+            test_var
+        )?;
+        coordinates_map.insert(test_var.clone(), var_coordinates);
+    }
+
+    Ok(coordinates_map)
+}
+
+pub fn calculate_precision_recall_coordinates_for_variable(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_var: &str
 ) -> Result<Vec<PrecisionRecallCoordinate>, String> {
-    // If paired sample, use regular extraction
     if config.main.paired_sample {
-        let (positive_values, negative_values) = extract_values(data, config)?;
+        let (positive_values, negative_values) = extract_values(data, config, test_var)?;
         return calculate_pr_coordinates_from_values(&positive_values, &negative_values, config);
     }
 
-    // Use grouped extraction for independent groups
     if config.main.target_group_var.is_some() {
-        // For grouped analysis, we focus on one group at a time
-        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config)?;
+        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config, test_var)?;
         return calculate_pr_coordinates_from_values(&group1_pos, &group1_neg, config);
     }
 
-    // Default to regular extraction if no grouping is specified
-    let (positive_values, negative_values) = extract_values(data, config)?;
+    let (positive_values, negative_values) = extract_values(data, config, test_var)?;
     calculate_pr_coordinates_from_values(&positive_values, &negative_values, config)
 }
 
-// Calculate precision-recall coordinates from positive and negative values
 fn calculate_pr_coordinates_from_values(
     positive_values: &[f64],
     negative_values: &[f64],
     config: &RocConfig
 ) -> Result<Vec<PrecisionRecallCoordinate>, String> {
     let cutoffs = generate_cutoffs(positive_values, negative_values);
-
     let mut coordinates = Vec::new();
 
     for cutoff in cutoffs {
@@ -624,13 +609,9 @@ fn calculate_pr_coordinates_from_values(
         let precision = if tp + fp > 0 { (tp as f64) / ((tp + fp) as f64) } else { f64::NAN };
         let recall = if tp + fn_count > 0 { (tp as f64) / ((tp + fn_count) as f64) } else { 0.0 };
 
-        // Apply interpolation based on config
         let adjusted_values = if config.display.intepol_true {
-            // Interpolation along true positives
             (precision, recall)
         } else if config.display.intepol_false {
-            // Interpolation along false positives
-            // This is a simplified approach; real implementation would be more complex
             (precision, recall)
         } else {
             (precision, recall)
@@ -643,45 +624,60 @@ fn calculate_pr_coordinates_from_values(
         });
     }
 
-    // Post-process coordinates if needed
     if config.display.prc_point {
-        // Additional processing if specific PR curve points are requested
+        // Additional processing for specific PR curve points
     }
 
     Ok(coordinates)
 }
 
-// Calculate area under ROC curve using nonparametric method (Mann-Whitney U Statistic)
 pub fn calculate_area_under_roc_curve(
     data: &AnalysisData,
     config: &RocConfig
+) -> Result<HashMap<String, AreaUnderRocCurve>, String> {
+    if config.main.test_target_variable.is_none() {
+        return Err("Test target variables are not specified".to_string());
+    }
+    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
+
+    if test_target_vars.is_empty() {
+        return Err("No test target variables specified".to_string());
+    }
+
+    let mut auc_map: HashMap<String, AreaUnderRocCurve> = HashMap::new();
+
+    for test_var in test_target_vars {
+        let auc_result = calculate_area_under_roc_curve_for_variable(data, config, test_var)?;
+        auc_map.insert(test_var.clone(), auc_result);
+    }
+
+    Ok(auc_map)
+}
+
+pub fn calculate_area_under_roc_curve_for_variable(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_var: &str
 ) -> Result<AreaUnderRocCurve, String> {
-    // If paired sample, use regular extraction
     if config.main.paired_sample {
-        let (positive_values, negative_values) = extract_values(data, config)?;
+        let (positive_values, negative_values) = extract_values(data, config, test_var)?;
         return calculate_auc_from_values(&positive_values, &negative_values, config);
     }
 
-    // Use grouped extraction for independent groups
     if config.main.target_group_var.is_some() {
-        // For grouped analysis, we still return a single AUC for the currently selected group
-        // In practice, the function would be called twice with different group configurations
-        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config)?;
+        let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config, test_var)?;
         return calculate_auc_from_values(&group1_pos, &group1_neg, config);
     }
 
-    // Default to regular extraction if no grouping is specified
-    let (positive_values, negative_values) = extract_values(data, config)?;
+    let (positive_values, negative_values) = extract_values(data, config, test_var)?;
     calculate_auc_from_values(&positive_values, &negative_values, config)
 }
 
-// Calculate AUC from positive and negative values
 fn calculate_auc_from_values(
     positive_values: &[f64],
     negative_values: &[f64],
     config: &RocConfig
 ) -> Result<AreaUnderRocCurve, String> {
-    // Calculate AUC using the Mann-Whitney U statistic approach
     let m = positive_values.len();
     let n = negative_values.len();
 
@@ -707,9 +703,8 @@ fn calculate_auc_from_values(
 
     let auc = rank_sum / ((m as f64) * (n as f64));
 
-    // Calculate standard error
     let is_nonparametric = match config.options.dist_assumpt_method {
-        crate::roc_analysis::models::config::DistributionMethod::Nonparametric => true,
+        DistributionMethod::Nonparametric => true,
         _ => false,
     };
 
@@ -724,11 +719,9 @@ fn calculate_auc_from_values(
         calculate_binegexp_std_error(positive_values, negative_values, auc)
     };
 
-    // Asymptotic significance (p-value)
     let z_statistic = (auc - 0.5) / std_error;
     let asymptotic_sig = 2.0 * (1.0 - normal_cdf(z_statistic.abs()));
 
-    // Confidence interval
     let conf_level = (config.options.conf_level as f64) / 100.0;
     let alpha = 1.0 - conf_level;
     let z_alpha = normal_quantile(1.0 - alpha / 2.0);
@@ -748,7 +741,6 @@ fn calculate_auc_from_values(
     })
 }
 
-// Calculate standard error under nonparametric assumption
 fn calculate_nonparametric_std_error(
     positive_values: &[f64],
     negative_values: &[f64],
@@ -758,7 +750,6 @@ fn calculate_nonparametric_std_error(
     let m = positive_values.len();
     let n = negative_values.len();
 
-    // Calculate Q1
     let mut q1_sum = 0.0;
     for i in 0..m {
         let mut count = 0.0;
@@ -781,7 +772,6 @@ fn calculate_nonparametric_std_error(
     }
     let q1 = q1_sum / ((m - 1) as f64);
 
-    // Calculate Q2
     let mut q2_sum = 0.0;
     for j in 0..n {
         let mut count = 0.0;
@@ -804,17 +794,14 @@ fn calculate_nonparametric_std_error(
     }
     let q2 = q2_sum / ((n - 1) as f64);
 
-    // Calculate SE
     ((auc * (1.0 - auc) + ((m - 1) as f64) * q1 + ((n - 1) as f64) * q2) / ((m * n) as f64)).sqrt()
 }
 
-// Calculate standard error under bi-negative exponential assumption
 fn calculate_binegexp_std_error(positive_values: &[f64], negative_values: &[f64], auc: f64) -> f64 {
     let m = positive_values.len();
     let n = negative_values.len();
 
     if m != n {
-        // Fallback to nonparametric if sample sizes are unequal
         return calculate_nonparametric_std_error(positive_values, negative_values, auc, true);
     }
 
@@ -829,12 +816,10 @@ fn calculate_binegexp_std_error(positive_values: &[f64], negative_values: &[f64]
     ).sqrt()
 }
 
-// Normal cumulative distribution function
 fn normal_cdf(x: f64) -> f64 {
     0.5 * (1.0 + erf(x / (2.0_f64).sqrt()))
 }
 
-// Error function approximation
 fn erf(x: f64) -> f64 {
     let sign = if x >= 0.0 { 1.0 } else { -1.0 };
     let x = x.abs();
@@ -852,7 +837,6 @@ fn erf(x: f64) -> f64 {
     sign * y
 }
 
-// Normal quantile function approximation
 fn normal_quantile(p: f64) -> f64 {
     if p <= 0.0 {
         return f64::NEG_INFINITY;
@@ -885,39 +869,82 @@ fn normal_quantile(p: f64) -> f64 {
     }
 }
 
-// Calculate overall model quality
 pub fn calculate_overall_model_quality(
     data: &AnalysisData,
     config: &RocConfig
+) -> Result<HashMap<String, f64>, String> {
+    if config.main.test_target_variable.is_none() {
+        return Err("Test target variables are not specified".to_string());
+    }
+    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
+
+    if test_target_vars.is_empty() {
+        return Err("No test target variables specified".to_string());
+    }
+
+    let mut quality_map: HashMap<String, f64> = HashMap::new();
+
+    for test_var in test_target_vars {
+        let var_quality = calculate_overall_model_quality_for_variable(data, config, test_var)?;
+        quality_map.insert(test_var.clone(), var_quality);
+    }
+
+    Ok(quality_map)
+}
+
+pub fn calculate_overall_model_quality_for_variable(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_var: &str
 ) -> Result<f64, String> {
-    // If paired sample or no grouping, use regular AUC
     if config.main.paired_sample || !config.main.target_group_var.is_some() {
-        let auc_result = calculate_area_under_roc_curve(data, config)?;
+        let auc_result = calculate_area_under_roc_curve_for_variable(data, config, test_var)?;
         return Ok(auc_result.asymptotic_95_confidence_interval.lower_bound);
     }
 
-    // For grouped data, calculate AUC for the currently selected group
-    let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config)?;
+    let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config, test_var)?;
     let auc_result = calculate_auc_from_values(&group1_pos, &group1_neg, config)?;
 
-    // Overall model quality is based on the lower bound of the confidence interval
     Ok(auc_result.asymptotic_95_confidence_interval.lower_bound)
 }
 
-// Calculate classifier evaluation metrics
 pub fn calculate_classifier_evaluation_metrics(
     data: &AnalysisData,
     config: &RocConfig
+) -> Result<HashMap<String, ClassifierEvaluationMetrics>, String> {
+    if config.main.test_target_variable.is_none() {
+        return Err("Test target variables are not specified".to_string());
+    }
+    let test_target_vars = config.main.test_target_variable.as_ref().unwrap();
+
+    if test_target_vars.is_empty() {
+        return Err("No test target variables specified".to_string());
+    }
+
+    let mut metrics_map: HashMap<String, ClassifierEvaluationMetrics> = HashMap::new();
+
+    for test_var in test_target_vars {
+        let var_metrics = calculate_classifier_evaluation_metrics_for_variable(
+            data,
+            config,
+            test_var
+        )?;
+        metrics_map.insert(test_var.clone(), var_metrics);
+    }
+
+    Ok(metrics_map)
+}
+
+pub fn calculate_classifier_evaluation_metrics_for_variable(
+    data: &AnalysisData,
+    config: &RocConfig,
+    test_var: &str
 ) -> Result<ClassifierEvaluationMetrics, String> {
-    // If paired sample or no grouping, use regular AUC
     if config.main.paired_sample || !config.main.target_group_var.is_some() {
-        let auc_result = calculate_area_under_roc_curve(data, config)?;
-        let roc_coordinates = calculate_roc_coordinates(data, config)?;
+        let auc_result = calculate_area_under_roc_curve_for_variable(data, config, test_var)?;
+        let roc_coordinates = calculate_roc_coordinates_for_variable(data, config, test_var)?;
 
-        // Calculate Gini index
         let gini_index = 2.0 * auc_result.area - 1.0;
-
-        // Find maximum K-S statistic
         let (max_k_s, cutoff) = find_max_ks(&roc_coordinates);
 
         return Ok(ClassifierEvaluationMetrics {
@@ -927,15 +954,11 @@ pub fn calculate_classifier_evaluation_metrics(
         });
     }
 
-    // For grouped data, calculate metrics for the currently selected group
-    let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config)?;
+    let (group1_pos, group1_neg, _, _) = extract_grouped_values(data, config, test_var)?;
     let auc_result = calculate_auc_from_values(&group1_pos, &group1_neg, config)?;
     let roc_coordinates = calculate_roc_coordinates_from_values(&group1_pos, &group1_neg, config)?;
 
-    // Calculate Gini index
     let gini_index = 2.0 * auc_result.area - 1.0;
-
-    // Find maximum K-S statistic
     let (max_k_s, cutoff) = find_max_ks(&roc_coordinates);
 
     Ok(ClassifierEvaluationMetrics {
@@ -945,7 +968,6 @@ pub fn calculate_classifier_evaluation_metrics(
     })
 }
 
-// Helper function to find the maximum K-S statistic and its cutoff
 fn find_max_ks(roc_coordinates: &[RocCoordinate]) -> (f64, f64) {
     let mut max_k_s = 0.0;
     let mut cutoff = 0.0;

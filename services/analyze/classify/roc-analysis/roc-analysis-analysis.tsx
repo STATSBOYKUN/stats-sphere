@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { RocAnalysisAnalysisType } from "@/models/classify/roc-analysis/roc-analysis-worker";
-import init from "@/src/wasm/pkg/wasm";
+import init, { RocAnalysis } from "@/src/wasm/pkg/wasm";
 
 export async function analyzeRocAnalysis({
     configData,
@@ -44,18 +44,21 @@ export async function analyzeRocAnalysis({
 
     console.log(configData);
 
-    // const rocAnalysis = new RocAnalysis(
-    //     slicedDataForTest,
-    //     slicedDataForState,
-    //     slicedDataForTargetGroup,
-    //     varDefsForTest,
-    //     varDefsForState,
-    //     varDefsForTargetGroup,
-    //     configData
-    // );
+    const rocAnalysis = new RocAnalysis(
+        slicedDataForTest,
+        slicedDataForState,
+        slicedDataForTargetGroup,
+        varDefsForTest,
+        varDefsForState,
+        varDefsForTargetGroup,
+        configData
+    );
 
-    // const result = rocAnalysis.get_results();
-    // console.log("result", result);
+    const result = rocAnalysis.get_results();
+    const error = rocAnalysis.get_all_errors();
+
+    console.log("result", result);
+    console.log("error", error);
 
     /*
      * 1. Case Processing Summary

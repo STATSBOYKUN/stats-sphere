@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -5,15 +6,15 @@ pub struct ROCAnalysisResult {
     #[serde(rename = "case_processing_summary")]
     pub case_processing_summary: Option<CaseProcessingSummary>,
     #[serde(rename = "coordinates_precision_recall")]
-    pub coordinates_precision_recall: Option<Vec<PrecisionRecallCoordinate>>,
+    pub coordinates_precision_recall: Option<HashMap<String, Vec<PrecisionRecallCoordinate>>>,
     #[serde(rename = "coordinates_roc")]
-    pub coordinates_roc: Option<Vec<RocCoordinate>>,
+    pub coordinates_roc: Option<HashMap<String, Vec<RocCoordinate>>>,
     #[serde(rename = "area_under_roc_curve")]
-    pub area_under_roc_curve: Option<AreaUnderRocCurve>,
+    pub area_under_roc_curve: Option<HashMap<String, AreaUnderRocCurve>>,
     #[serde(rename = "overall_model_quality")]
-    pub overall_model_quality: Option<f64>,
+    pub overall_model_quality: Option<HashMap<String, f64>>,
     #[serde(rename = "classifier_evaluation_metrics")]
-    pub classifier_evaluation_metrics: Option<ClassifierEvaluationMetrics>,
+    pub classifier_evaluation_metrics: Option<HashMap<String, ClassifierEvaluationMetrics>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

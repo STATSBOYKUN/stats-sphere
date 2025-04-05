@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { RocCurveAnalysisType } from "@/models/classify/roc-curve/roc-curve-worker";
-import init, { RocCurve } from "@/src/wasm/pkg/wasm";
+import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeRocCurve({
     configData,
@@ -34,19 +34,19 @@ export async function analyzeRocCurve({
 
     console.log(configData);
 
-    const rocCurve = new RocCurve(
-        slicedDataForTest,
-        slicedDataForState,
-        varDefsForTest,
-        varDefsForState,
-        configData
-    );
+    // const rocCurve = new RocCurve(
+    //     slicedDataForTest,
+    //     slicedDataForState,
+    //     varDefsForTest,
+    //     varDefsForState,
+    //     configData
+    // );
 
-    const result = rocCurve.get_results();
-    const error = rocCurve.get_all_errors();
+    // const result = rocCurve.get_results();
+    // const error = rocCurve.get_all_errors();
 
-    console.log("result", result);
-    console.log("error", error);
+    // console.log("result", result);
+    // console.log("error", error);
 
     /*
      * 1. Case Processing Summary
