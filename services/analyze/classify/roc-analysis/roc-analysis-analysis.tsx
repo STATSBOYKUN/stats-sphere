@@ -54,6 +54,9 @@ export async function analyzeRocAnalysis({
         configData
     );
 
+    const result = rocAnalysis.get_results();
+    console.log("result", result);
+
     /*
      * 1. Case Processing Summary
      * 2. ROC Curve
