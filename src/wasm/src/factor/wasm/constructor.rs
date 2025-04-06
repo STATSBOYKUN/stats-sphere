@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use crate::factor::models::{
     config::FactorAnalysisConfig,
     data::{ AnalysisData, DataRecord, VariableDefinition },
-    result::PrincipalComponentAnalysisResult,
+    result::FactorAnalysisResult,
 };
 use crate::factor::utils::{ converter::string_to_js_error, error::ErrorCollector };
 use crate::factor::wasm::function;
@@ -12,7 +12,7 @@ use crate::factor::wasm::function;
 pub struct FactorAnalysis {
     config: FactorAnalysisConfig,
     data: AnalysisData,
-    result: Option<PrincipalComponentAnalysisResult>,
+    result: Option<FactorAnalysisResult>,
     error_collector: ErrorCollector,
 }
 
@@ -20,9 +20,11 @@ pub struct FactorAnalysis {
 impl FactorAnalysis {
     #[wasm_bindgen(constructor)]
     pub fn new(
-        config_data: JsValue,
-        data_variables: JsValue,
-        variables: JsValue
+        target_data: JsValue,
+        value_target_data: JsValue,
+        target_data_defs: JsValue,
+        value_target_data_defs: JsValue,
+        config_data: JsValue
     ) -> Result<FactorAnalysis, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
@@ -50,24 +52,48 @@ impl FactorAnalysis {
             }
         };
 
-        // Parse data variables
-        let data_records: Vec<DataRecord> = match serde_wasm_bindgen::from_value(data_variables) {
+        // Parse target data
+        let target_data: Vec<Vec<DataRecord>> = match serde_wasm_bindgen::from_value(target_data) {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse data variables: {}", e);
-                error_collector.add_error("constructor.data_variables", &msg);
+                let msg = format!("Failed to parse target data: {}", e);
+                error_collector.add_error("constructor.target_data", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
 
-        // Parse variable definitions
-        let variable_defs: Vec<VariableDefinition> = match
-            serde_wasm_bindgen::from_value(variables)
+        // Parse value target data
+        let value_target_data: Vec<Vec<DataRecord>> = match
+            serde_wasm_bindgen::from_value(value_target_data)
         {
             Ok(data) => data,
             Err(e) => {
-                let msg = format!("Failed to parse variable definitions: {}", e);
-                error_collector.add_error("constructor.variables", &msg);
+                let msg = format!("Failed to parse value target data: {}", e);
+                error_collector.add_error("constructor.value_target_data", &msg);
+                return Err(string_to_js_error(msg));
+            }
+        };
+
+        // Parse target data definitions
+        let target_data_defs: Vec<Vec<VariableDefinition>> = match
+            serde_wasm_bindgen::from_value(target_data_defs)
+        {
+            Ok(data) => data,
+            Err(e) => {
+                let msg = format!("Failed to parse target data definitions: {}", e);
+                error_collector.add_error("constructor.target_data_defs", &msg);
+                return Err(string_to_js_error(msg));
+            }
+        };
+
+        // Parse value target data definitions
+        let value_target_data_defs: Vec<Vec<VariableDefinition>> = match
+            serde_wasm_bindgen::from_value(value_target_data_defs)
+        {
+            Ok(data) => data,
+            Err(e) => {
+                let msg = format!("Failed to parse value target data definitions: {}", e);
+                error_collector.add_error("constructor.value_target_data_defs", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -78,21 +104,6 @@ impl FactorAnalysis {
             error_collector.add_error("config.validation.target_var", &msg);
             return Err(string_to_js_error(msg));
         }
-
-        // Organize data for analysis
-        let target_data = vec![data_records];
-        let value_target_data = if config.main.value_target.is_some() {
-            vec![data_records.clone()] // Clone if value target is specified
-        } else {
-            vec![]
-        };
-
-        let target_data_defs = vec![variable_defs];
-        let value_target_data_defs = if config.main.value_target.is_some() {
-            vec![variable_defs.clone()] // Clone if value target is specified
-        } else {
-            vec![]
-        };
 
         // Create analysis data structure
         let data = AnalysisData {

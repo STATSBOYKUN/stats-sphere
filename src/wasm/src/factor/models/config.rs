@@ -1,24 +1,4 @@
-// Configuration for factor analysis
-
 use serde::{ Deserialize, Serialize };
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum ExtractionMethod {
-    #[serde(rename = "PrincipalComp")]
-    PrincipalComponents,
-    #[serde(rename = "UnweightLeastSqr")]
-    UnweightedLeastSquares,
-    #[serde(rename = "GeneralizedLeastSqr")]
-    GeneralizedLeastSquares,
-    #[serde(rename = "MaxLikelihood")]
-    MaximumLikelihood,
-    #[serde(rename = "PrincipalAxisFactoring")]
-    PrincipalAxisFactoring,
-    #[serde(rename = "AlphaFactoring")]
-    AlphaFactoring,
-    #[serde(rename = "ImageFactoring")]
-    ImageFactoring,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FactorAnalysisConfig {
@@ -34,7 +14,7 @@ pub struct FactorAnalysisConfig {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MainConfig {
     #[serde(rename = "TargetVar")]
-    pub target_var: Option<String>,
+    pub target_var: Option<Vec<String>>,
     #[serde(rename = "ValueTarget")]
     pub value_target: Option<String>,
 }
@@ -89,6 +69,24 @@ pub struct ExtractionConfig {
     pub max_factors: Option<i32>,
     #[serde(rename = "MaxIter")]
     pub max_iter: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ExtractionMethod {
+    #[serde(rename = "PrincipalComp")]
+    PrincipalComponents,
+    #[serde(rename = "UnweightLeastSqr")]
+    UnweightedLeastSquares,
+    #[serde(rename = "GeneralizedLeastSqr")]
+    GeneralizedLeastSquares,
+    #[serde(rename = "MaxLikelihood")]
+    MaximumLikelihood,
+    #[serde(rename = "PrincipalAxisFactoring")]
+    PrincipalAxisFactoring,
+    #[serde(rename = "AlphaFactoring")]
+    AlphaFactoring,
+    #[serde(rename = "ImageFactoring")]
+    ImageFactoring,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

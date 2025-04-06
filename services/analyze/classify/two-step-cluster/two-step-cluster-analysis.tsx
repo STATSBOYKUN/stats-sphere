@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { TwoStepClusterAnalysisType } from "@/models/classify/two-step-cluster/two-step-cluste-worker";
-import init, { TwoStepClusterAnalysis } from "@/src/wasm/pkg/wasm";
+import init from "@/src/wasm/pkg/wasm";
 
 export async function analyzeTwoStepCluster({
     configData,
@@ -32,17 +32,17 @@ export async function analyzeTwoStepCluster({
 
     console.log(configData);
 
-    const twostep = new TwoStepClusterAnalysis(
-        slicedDataForCategorical,
-        slicedDataForContinous,
-        varDefsForCategorical,
-        varDefsForContinous,
-        configData
-    );
+    // const twostep = new TwoStepClusterAnalysis(
+    //     slicedDataForCategorical,
+    //     slicedDataForContinous,
+    //     varDefsForCategorical,
+    //     varDefsForContinous,
+    //     configData
+    // );
 
-    const result = twostep.get_results();
-    const error = twostep.get_all_errors();
+    // const result = twostep.get_results();
+    // const error = twostep.get_all_errors();
 
-    console.log(result);
-    console.log(error);
+    // console.log(result);
+    // console.log(error);
 }

@@ -2,48 +2,35 @@ use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PrincipalComponentAnalysisResult {
+pub struct FactorAnalysisResult {
     #[serde(rename = "descriptive_statistics")]
-    pub descriptive_statistics: Vec<DescriptiveStatistic>,
-
+    pub descriptive_statistics: Option<Vec<DescriptiveStatistic>>,
     #[serde(rename = "scree_plot")]
-    pub scree_plot: ScreePlot,
-
+    pub scree_plot: Option<ScreePlot>,
     #[serde(rename = "correlation_matrix")]
-    pub correlation_matrix: CorrelationMatrix,
-
+    pub correlation_matrix: Option<CorrelationMatrix>,
     #[serde(rename = "inverse_correlation_matrix")]
-    pub inverse_correlation_matrix: InverseCorrelationMatrix,
-
+    pub inverse_correlation_matrix: Option<InverseCorrelationMatrix>,
     #[serde(rename = "kmo_bartletts_test")]
-    pub kmo_bartletts_test: KMOBartlettsTest,
-
+    pub kmo_bartletts_test: Option<KMOBartlettsTest>,
     #[serde(rename = "anti_image_matrices")]
-    pub anti_image_matrices: AntiImageMatrices,
-
+    pub anti_image_matrices: Option<AntiImageMatrices>,
     #[serde(rename = "communalities")]
-    pub communalities: Communalities,
-
+    pub communalities: Option<Communalities>,
     #[serde(rename = "total_variance_explained")]
-    pub total_variance_explained: TotalVarianceExplained,
-
+    pub total_variance_explained: Option<TotalVarianceExplained>,
     #[serde(rename = "component_matrix")]
-    pub component_matrix: ComponentMatrix,
-
+    pub component_matrix: Option<ComponentMatrix>,
     #[serde(rename = "reproduced_correlations")]
-    pub reproduced_correlations: ReproducedCorrelations,
-
+    pub reproduced_correlations: Option<ReproducedCorrelations>,
     #[serde(rename = "rotated_component_matrix")]
-    pub rotated_component_matrix: RotatedComponentMatrix,
-
+    pub rotated_component_matrix: Option<RotatedComponentMatrix>,
     #[serde(rename = "component_transformation_matrix")]
-    pub component_transformation_matrix: ComponentTransformationMatrix,
-
+    pub component_transformation_matrix: Option<ComponentTransformationMatrix>,
     #[serde(rename = "component_score_coefficient_matrix")]
-    pub component_score_coefficient_matrix: ComponentScoreCoefficientMatrix,
-
+    pub component_score_coefficient_matrix: Option<ComponentScoreCoefficientMatrix>,
     #[serde(rename = "component_score_covariance_matrix")]
-    pub component_score_covariance_matrix: ComponentScoreCovarianceMatrix,
+    pub component_score_covariance_matrix: Option<ComponentScoreCovarianceMatrix>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

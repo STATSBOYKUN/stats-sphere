@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { FactorAnalysisType } from "@/models/dimension-reduction/factor/factor-worker";
-import init from "@/src/wasm/pkg/wasm";
+import init, { FactorAnalysis } from "@/src/wasm/pkg/wasm";
 
 export async function analyzeFactor({
     configData,
@@ -33,4 +33,18 @@ export async function analyzeFactor({
     const varDefsForValue = getVarDefs(variables, valueTarget);
 
     console.log(configData);
+
+    const factor = new FactorAnalysis(
+        slicedDataForTarget,
+        slicedDataForValue,
+        varDefsForTarget,
+        varDefsForValue,
+        configData
+    );
+
+    const result = factor.get_results();
+    const error = factor.get_all_errors();
+
+    console.log(result);
+    console.log(error);
 }
