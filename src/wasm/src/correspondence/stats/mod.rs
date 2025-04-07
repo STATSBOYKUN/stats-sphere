@@ -1,1 +1,11 @@
 pub mod core;
+pub mod analysis_summary;
+pub mod common;
+pub mod correspondence_table;
+pub mod distance;
+pub mod generate_visualization;
+pub mod inertia;
+pub mod normalization;
+pub mod permutation_test;
+pub mod points;
+pub mod profiles;

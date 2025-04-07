@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use crate::correspondence::models::{
-    config::MultiCorrespondenceConfig,
+    config::CorrespondenceAnalysisConfig,
     data::{ AnalysisData, DataRecord, VariableDefinition },
     result::CorrespondenceAnalysisResult,
 };
@@ -10,7 +10,7 @@ use crate::correspondence::wasm::function;
 
 #[wasm_bindgen]
 pub struct CorrespondenceAnalysis {
-    config: MultiCorrespondenceConfig,
+    config: CorrespondenceAnalysisConfig,
     data: AnalysisData,
     result: Option<CorrespondenceAnalysisResult>,
     error_collector: ErrorCollector,
@@ -22,9 +22,9 @@ impl CorrespondenceAnalysis {
     pub fn new(
         row_data: JsValue,
         col_data: JsValue,
-        config_data: JsValue,
         row_data_defs: JsValue,
-        col_data_defs: JsValue
+        col_data_defs: JsValue,
+        config_data: JsValue
     ) -> Result<CorrespondenceAnalysis, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
@@ -70,7 +70,7 @@ impl CorrespondenceAnalysis {
             }
         };
 
-        let config: MultiCorrespondenceConfig = match
+        let config: CorrespondenceAnalysisConfig = match
             serde_wasm_bindgen::from_value(config_data.clone())
         {
             Ok(data) => data,

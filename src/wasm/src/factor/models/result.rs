@@ -1,5 +1,6 @@
 use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
+use nalgebra::DMatrix;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FactorAnalysisResult {
@@ -134,4 +135,20 @@ pub struct ComponentScoreCoefficientMatrix {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ComponentScoreCovarianceMatrix {
     pub components: Vec<Vec<f64>>,
+}
+
+pub struct ExtractionResult {
+    pub loadings: DMatrix<f64>,
+    pub eigenvalues: Vec<f64>,
+    pub communalities: Vec<f64>,
+    pub explained_variance: Vec<f64>,
+    pub cumulative_variance: Vec<f64>,
+    pub n_factors: usize,
+    pub var_names: Vec<String>,
+}
+
+pub struct RotationResult {
+    pub rotated_loadings: DMatrix<f64>,
+    pub transformation_matrix: DMatrix<f64>,
+    pub factor_correlations: Option<DMatrix<f64>>,
 }

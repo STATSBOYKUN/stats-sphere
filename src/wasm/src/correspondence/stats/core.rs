@@ -1,0 +1,10 @@
+pub use crate::correspondence::stats::analysis_summary::*;
+pub use crate::correspondence::stats::common::*;
+pub use crate::correspondence::stats::correspondence_table::*;
+pub use crate::correspondence::stats::distance::*;
+pub use crate::correspondence::stats::generate_visualization::*;
+pub use crate::correspondence::stats::inertia::*;
+pub use crate::correspondence::stats::normalization::*;
+pub use crate::correspondence::stats::permutation_test::*;
+pub use crate::correspondence::stats::points::*;
+pub use crate::correspondence::stats::profiles::*;

@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
 use crate::correspondence::models::{
-    config::MultiCorrespondenceConfig,
+    config::CorrespondenceAnalysisConfig,
     data::AnalysisData,
     result::CorrespondenceAnalysisResult,
 };
@@ -10,7 +10,7 @@ use crate::correspondence::utils::{ converter::string_to_js_error, error::ErrorC
 
 pub fn run_analysis(
     data: &AnalysisData,
-    config: &MultiCorrespondenceConfig,
+    config: &CorrespondenceAnalysisConfig,
     error_collector: &mut ErrorCollector
 ) -> Result<Option<CorrespondenceAnalysisResult>, JsValue> {
     web_sys::console::log_1(&"Starting correspondence analysis".into());
@@ -21,27 +21,21 @@ pub fn run_analysis(
     // Log configuration to track which methods will be executed
     web_sys::console::log_1(&format!("Config: {:?}", config).into());
 
-    // Step 1: Validate input data and config
-    executed_functions.push("validate_input_data".to_string());
-    match core::validate_input_data(data, config) {
-        Ok(_) => {}
-        Err(e) => {
-            error_collector.add_error("validate_input_data", &e);
-            return Err(string_to_js_error(e));
-        }
-    }
-
-    // Step 2: Create correspondence table
+    // Step 1: Create correspondence table
     executed_functions.push("create_correspondence_table".to_string());
-    let correspondence_table = match core::create_correspondence_table(data, config) {
-        Ok(table) => table,
+    let mut correspondence_table = None;
+    match core::create_correspondence_table(data, config) {
+        Ok(table) => {
+            web_sys::console::log_1(&format!("Correspondence table: {:?}", table).into());
+            correspondence_table = Some(table);
+        }
         Err(e) => {
             error_collector.add_error("create_correspondence_table", &e);
             return Err(string_to_js_error(e));
         }
-    };
+    }
 
-    // Step 3: Calculate row profiles if requested
+    // Step 2: Calculate row profiles if requested
     let mut row_profiles = None;
     if config.statistics.row_profile {
         executed_functions.push("calculate_row_profiles".to_string());
@@ -56,7 +50,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 4: Calculate column profiles if requested
+    // Step 3: Calculate column profiles if requested
     let mut column_profiles = None;
     if config.statistics.col_profile {
         executed_functions.push("calculate_column_profiles".to_string());
@@ -71,7 +65,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 5: Calculate chi-square distances if model uses chi-square
+    // Step 4: Calculate chi-square distances if model uses chi-square
     let mut chi_square_distances = None;
     if config.model.chi_square {
         executed_functions.push("calculate_chi_square_distances".to_string());
@@ -86,7 +80,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 6: Calculate euclidean distances if model uses euclidean
+    // Step 5: Calculate euclidean distances if model uses euclidean
     let mut euclidean_distances = None;
     if config.model.euclidean {
         executed_functions.push("calculate_euclidean_distances".to_string());
@@ -101,7 +95,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 7: Apply normalization based on selected method
+    // Step 6: Apply normalization based on selected method
     executed_functions.push("apply_normalization".to_string());
     let normalization_result = match core::apply_normalization(data, config) {
         Ok(result) => result,
@@ -111,17 +105,21 @@ pub fn run_analysis(
         }
     };
 
-    // Step 8: Calculate analysis summary with singular values
+    // Step 7: Calculate analysis summary with singular values
     executed_functions.push("calculate_analysis_summary".to_string());
-    let analysis_summary = match core::calculate_analysis_summary(data, config) {
-        Ok(summary) => summary,
+    let mut analysis_summary = None;
+    match core::calculate_analysis_summary(data, config) {
+        Ok(summary) => {
+            web_sys::console::log_1(&format!("Analysis summary: {:?}", summary).into());
+            analysis_summary = Some(summary);
+        }
         Err(e) => {
             error_collector.add_error("calculate_analysis_summary", &e);
             return Err(string_to_js_error(e));
         }
-    };
+    }
 
-    // Step 9: Calculate row points overview if requested
+    // Step 8: Calculate row points overview if requested
     let mut row_points = None;
     if config.statistics.row_points || config.statistics.stat_row_points {
         executed_functions.push("calculate_row_points".to_string());
@@ -136,7 +134,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 10: Calculate column points overview if requested
+    // Step 9: Calculate column points overview if requested
     let mut column_points = None;
     if config.statistics.col_points || config.statistics.stat_col_points {
         executed_functions.push("calculate_column_points".to_string());
@@ -151,7 +149,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 11: Perform permutation test if requested
+    // Step 10: Perform permutation test if requested
     let mut permutation_test_result = None;
     if config.statistics.permutation_test {
         executed_functions.push("perform_permutation_test".to_string());
@@ -166,7 +164,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 12: Calculate confidence points for row points
+    // Step 11: Calculate confidence points for row points
     let mut confidence_row_points = None;
     if config.statistics.stat_row_points {
         executed_functions.push("calculate_confidence_row_points".to_string());
@@ -181,7 +179,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 13: Calculate confidence points for column points
+    // Step 12: Calculate confidence points for column points
     let mut confidence_column_points = None;
     if config.statistics.stat_col_points {
         executed_functions.push("calculate_confidence_column_points".to_string());
@@ -196,7 +194,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 14: Generate plots if requested
+    // Step 13: Generate plots if requested
     if config.plots.biplot || config.plots.row_pts || config.plots.col_pts {
         executed_functions.push("generate_scatter_plots".to_string());
         match core::generate_scatter_plots(data, config) {
@@ -208,7 +206,7 @@ pub fn run_analysis(
         }
     }
 
-    // Step 15: Generate line plots if requested
+    // Step 14: Generate line plots if requested
     if config.plots.trans_row || config.plots.trans_col {
         executed_functions.push("generate_line_plots".to_string());
         match core::generate_line_plots(data, config) {
@@ -223,13 +221,13 @@ pub fn run_analysis(
     // Create the final result
     let result = CorrespondenceAnalysisResult {
         correspondence_table,
-        row_profiles: row_profiles.unwrap_or_default(),
-        column_profiles: column_profiles.unwrap_or_default(),
+        row_profiles,
+        column_profiles,
         summary: analysis_summary,
-        row_points: row_points.unwrap_or_default(),
-        column_points: column_points.unwrap_or_default(),
-        confidence_row_points: confidence_row_points.unwrap_or_default(),
-        confidence_column_points: confidence_column_points.unwrap_or_default(),
+        row_points,
+        column_points,
+        confidence_row_points,
+        confidence_column_points,
     };
 
     Ok(Some(result))

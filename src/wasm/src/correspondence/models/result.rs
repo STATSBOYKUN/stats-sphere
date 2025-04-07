@@ -2,14 +2,14 @@ use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CorrespondenceAnalysisResult {
-    pub correspondence_table: CorrespondenceTable,
-    pub row_profiles: RowProfiles,
-    pub column_profiles: ColumnProfiles,
-    pub summary: AnalysisSummary,
-    pub row_points: PointsAnalysis,
-    pub column_points: PointsAnalysis,
-    pub confidence_row_points: ConfidencePoints,
-    pub confidence_column_points: ConfidencePoints,
+    pub correspondence_table: Option<CorrespondenceTable>,
+    pub row_profiles: Option<RowProfiles>,
+    pub column_profiles: Option<ColumnProfiles>,
+    pub summary: Option<AnalysisSummary>,
+    pub row_points: Option<PointsAnalysis>,
+    pub column_points: Option<PointsAnalysis>,
+    pub confidence_row_points: Option<ConfidencePoints>,
+    pub confidence_column_points: Option<ConfidencePoints>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

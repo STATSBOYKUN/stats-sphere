@@ -1,7 +1,7 @@
 use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct MultiCorrespondenceConfig {
+pub struct CorrespondenceAnalysisConfig {
     pub main: MainConfig,
     #[serde(rename = "defineRangeRow")]
     pub define_range_row: DefineRangeConfig,
