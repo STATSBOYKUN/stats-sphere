@@ -1,0 +1,15 @@
+pub use crate::captca::stats::bootstrap::*;
+pub use crate::captca::stats::category_points::*;
+pub use crate::captca::stats::common::*;
+pub use crate::captca::stats::component_loading::*;
+pub use crate::captca::stats::correlation::*;
+pub use crate::captca::stats::discretization::*;
+pub use crate::captca::stats::generate_plot::*;
+pub use crate::captca::stats::iteration_history::*;
+pub use crate::captca::stats::matrix::*;
+pub use crate::captca::stats::missing_values::*;
+pub use crate::captca::stats::model_summary::*;
+pub use crate::captca::stats::object_scores::*;
+pub use crate::captca::stats::preprocessing::*;
+pub use crate::captca::stats::save_model::*;
+pub use crate::captca::stats::variance::*;

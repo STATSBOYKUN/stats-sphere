@@ -2,27 +2,27 @@ use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct AnalysisResult {
+pub struct CATPCAResult {
     #[serde(rename = "case_processing_summary")]
-    pub case_processing_summary: CaseProcessingSummary,
+    pub case_processing_summary: Option<CaseProcessingSummary>,
     #[serde(rename = "iteration_history")]
-    pub iteration_history: IterationHistory,
+    pub iteration_history: Option<IterationHistory>,
     #[serde(rename = "model_summary")]
-    pub model_summary: ModelSummary,
+    pub model_summary: Option<ModelSummary>,
     #[serde(rename = "quantifications")]
-    pub quantifications: Quantifications,
+    pub quantifications: Option<Quantifications>,
     #[serde(rename = "variance_accounted")]
-    pub variance_accounted: VarianceAccounted,
+    pub variance_accounted: Option<VarianceAccounted>,
     #[serde(rename = "correlations")]
-    pub correlations: Correlations,
+    pub correlations: Option<Correlations>,
     #[serde(rename = "object_scores")]
-    pub object_scores: ObjectScores,
+    pub object_scores: Option<ObjectScores>,
     #[serde(rename = "component_loadings")]
-    pub component_loadings: ComponentLoadings,
+    pub component_loadings: Option<ComponentLoadings>,
     #[serde(rename = "category_points")]
-    pub category_points: CategoryPoints,
+    pub category_points: Option<CategoryPoints>,
     #[serde(rename = "biplot")]
-    pub biplot: Biplot,
+    pub biplot: Option<Biplot>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

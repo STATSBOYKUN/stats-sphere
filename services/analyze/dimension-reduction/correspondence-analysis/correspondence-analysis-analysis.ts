@@ -36,17 +36,17 @@ export async function analyzeCorrespondence({
 
     console.log(configData);
 
-    const correspondence = new CorrespondenceAnalysis(
-        slicedDataForRow,
-        slicedDataForCol,
-        varDefsForRow,
-        varDefsForCol,
-        configData
-    );
+    // const correspondence = new CorrespondenceAnalysis(
+    //     slicedDataForRow,
+    //     slicedDataForCol,
+    //     varDefsForRow,
+    //     varDefsForCol,
+    //     configData
+    // );
 
-    const result = correspondence.get_results();
-    const error = correspondence.get_all_errors();
+    // const result = correspondence.get_results();
+    // const error = correspondence.get_all_errors();
 
-    console.log(result);
-    console.log(error);
+    // console.log(result);
+    // console.log(error);
 }

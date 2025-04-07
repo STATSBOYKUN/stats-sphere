@@ -39,4 +39,20 @@ export async function analyzeOptScaCatpca({
     const varDefsForLabeling = getVarDefs(variables, LabelingVariables);
 
     console.log(configData);
+
+    // const catpca = new OptScaAnalysis(
+    //     slicedDataForAnalysis,
+    //     slicedDataForSupplement,
+    //     slicedDataForLabeling,
+    //     varDefsForAnalysis,
+    //     varDefsForSupplement,
+    //     varDefsForLabeling,
+    //     configData
+    // );
+
+    // const result = catpca.get_results();
+    // const error = catpca.get_all_errors();
+
+    // console.log(result);
+    // console.log(error);
 }

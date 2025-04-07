@@ -1,59 +1,7 @@
 use serde::{ Deserialize, Serialize };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum DiscretizeMethod {
-    #[serde(rename = "Grouping")]
-    Grouping,
-    #[serde(rename = "Unspecified")]
-    Unspecified,
-    #[serde(rename = "Ranking")]
-    Ranking,
-    #[serde(rename = "Multiplying")]
-    Multiplying,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum NormalizationMethod {
-    #[serde(rename = "VariablePrincipal")]
-    VariablePrincipal,
-    #[serde(rename = "ObjectPrincipal")]
-    ObjectPrincipal,
-    #[serde(rename = "Symmetrical")]
-    Symmetrical,
-    #[serde(rename = "Independent")]
-    Independent,
-    #[serde(rename = "Custom")]
-    Custom,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum ConfigurationMethod {
-    #[serde(rename = "None")]
-    None,
-    #[serde(rename = "Inital")]
-    Initial,
-    #[serde(rename = "Fixed")]
-    Fixed,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum BootstrapMethod {
-    #[serde(rename = "Area")]
-    Area,
-    #[serde(rename = "MeanNStdDev")]
-    MeanNStdDev,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum OperatorMethod {
-    #[serde(rename = "Greater")]
-    Greater,
-    #[serde(rename = "Lower")]
-    Lower,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ScaConfig {
+pub struct CATPCAConfig {
     pub main: MainConfig,
     #[serde(rename = "defineRangeScale")]
     pub define_range_scale: DefineRangeScaleConfig,
@@ -137,6 +85,18 @@ pub struct DiscretizeConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum DiscretizeMethod {
+    #[serde(rename = "Grouping")]
+    Grouping,
+    #[serde(rename = "Unspecified")]
+    Unspecified,
+    #[serde(rename = "Ranking")]
+    Ranking,
+    #[serde(rename = "Multiplying")]
+    Multiplying,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MissingConfig {
     #[serde(rename = "CurrentTargetList")]
     pub current_target_list: Option<Vec<String>>,
@@ -208,6 +168,30 @@ pub struct OptionsConfig {
     pub promax: bool,
     pub kappa: i32,
     pub kaiser: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum NormalizationMethod {
+    #[serde(rename = "VariablePrincipal")]
+    VariablePrincipal,
+    #[serde(rename = "ObjectPrincipal")]
+    ObjectPrincipal,
+    #[serde(rename = "Symmetrical")]
+    Symmetrical,
+    #[serde(rename = "Independent")]
+    Independent,
+    #[serde(rename = "Custom")]
+    Custom,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ConfigurationMethod {
+    #[serde(rename = "None")]
+    None,
+    #[serde(rename = "Inital")]
+    Initial,
+    #[serde(rename = "Fixed")]
+    Fixed,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -338,6 +322,22 @@ pub struct BootstrapConfig {
     pub value_category: i32,
     #[serde(rename = "NumberPoints")]
     pub number_points: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum BootstrapMethod {
+    #[serde(rename = "Area")]
+    Area,
+    #[serde(rename = "MeanNStdDev")]
+    MeanNStdDev,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum OperatorMethod {
+    #[serde(rename = "Greater")]
+    Greater,
+    #[serde(rename = "Lower")]
+    Lower,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

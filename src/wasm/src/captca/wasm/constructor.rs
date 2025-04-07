@@ -1,18 +1,18 @@
 use wasm_bindgen::prelude::*;
 
 use crate::captca::models::{
-    config::ScaConfig,
+    config::CATPCAConfig,
     data::{ AnalysisData, DataRecord, VariableDefinition },
-    result::AnalysisResult,
+    result::CATPCAResult,
 };
 use crate::captca::utils::{ converter::string_to_js_error, error::ErrorCollector };
 use crate::captca::wasm::function;
 
 #[wasm_bindgen]
 pub struct OptimalScalingCatpca {
-    config: ScaConfig,
+    config: CATPCAConfig,
     data: AnalysisData,
-    result: Option<AnalysisResult>,
+    result: Option<CATPCAResult>,
     error_collector: ErrorCollector,
 }
 
@@ -98,7 +98,7 @@ impl OptimalScalingCatpca {
             }
         };
 
-        let config: ScaConfig = match serde_wasm_bindgen::from_value(config_data.clone()) {
+        let config: CATPCAConfig = match serde_wasm_bindgen::from_value(config_data.clone()) {
             Ok(data) => data,
             Err(e) => {
                 let msg =
@@ -169,134 +169,5 @@ impl OptimalScalingCatpca {
 
     pub fn clear_errors(&mut self) -> JsValue {
         function::clear_errors(&mut self.error_collector)
-    }
-
-    // Functions specific to CATPCA module
-    pub fn save_discretized_data(&self) -> Result<JsValue, JsValue> {
-        function::save_discretized_data(&self.config)
-    }
-
-    pub fn save_transformed_data(&self) -> Result<JsValue, JsValue> {
-        function::save_transformed_data(&self.config)
-    }
-
-    pub fn save_object_scores(&self) -> Result<JsValue, JsValue> {
-        function::save_object_scores(&self.config)
-    }
-
-    pub fn save_bootstrap_results(&self) -> Result<JsValue, JsValue> {
-        function::save_bootstrap_results(&self.config)
-    }
-
-    pub fn apply_discretize_method(
-        &mut self,
-        variable_name: &str,
-        method: &str
-    ) -> Result<JsValue, JsValue> {
-        // This is a stub function that would apply the discretization method
-        // to a specific variable. In reality, this would call back to function.rs
-        // to handle the actual transformation.
-        web_sys::console::log_1(
-            &format!(
-                "Applying discretize method '{}' to variable '{}'",
-                method,
-                variable_name
-            ).into()
-        );
-        Ok(JsValue::from_str(&format!("Applied {} to {}", method, variable_name)))
-    }
-
-    pub fn apply_missing_value_strategy(
-        &mut self,
-        variable_name: &str,
-        strategy: &str
-    ) -> Result<JsValue, JsValue> {
-        // This is a stub function that would apply the missing value strategy
-        // to a specific variable. In reality, this would call back to function.rs
-        // to handle the actual transformation.
-        web_sys::console::log_1(
-            &format!(
-                "Applying missing value strategy '{}' to variable '{}'",
-                strategy,
-                variable_name
-            ).into()
-        );
-        Ok(JsValue::from_str(&format!("Applied {} to {}", strategy, variable_name)))
-    }
-
-    pub fn apply_define_range_scale(
-        &mut self,
-        variable_name: &str,
-        weight: f64,
-        scaling: &str,
-        degree: i32,
-        knots: i32
-    ) -> Result<JsValue, JsValue> {
-        // This function would apply range scale definition to an analysis variable
-        web_sys::console::log_1(
-            &format!(
-                "Applying range scale to '{}': weight={}, scaling={}, degree={}, knots={}",
-                variable_name,
-                weight,
-                scaling,
-                degree,
-                knots
-            ).into()
-        );
-        Ok(JsValue::from_str(&format!("Applied range scale to {}", variable_name)))
-    }
-
-    pub fn apply_define_scale(
-        &mut self,
-        variable_name: &str,
-        scaling: &str,
-        degree: i32,
-        knots: i32
-    ) -> Result<JsValue, JsValue> {
-        // This function would apply scale definition to a supplementary variable
-        web_sys::console::log_1(
-            &format!(
-                "Applying scale to '{}': scaling={}, degree={}, knots={}",
-                variable_name,
-                scaling,
-                degree,
-                knots
-            ).into()
-        );
-        Ok(JsValue::from_str(&format!("Applied scale to {}", variable_name)))
-    }
-
-    pub fn generate_object_plots(&self) -> Result<JsValue, JsValue> {
-        if
-            !self.config.object_plots.object_points &&
-            !self.config.object_plots.biplot &&
-            !self.config.object_plots.triplot
-        {
-            return Err(string_to_js_error("No object plots selected to generate".to_string()));
-        }
-
-        // This would return plot data that would be rendered in the UI
-        Ok(JsValue::from_str("Object plot data generated"))
-    }
-
-    pub fn generate_category_plots(&self) -> Result<JsValue, JsValue> {
-        if
-            self.config.category_plots.cat_plots_var.is_none() ||
-            self.config.category_plots.cat_plots_var.as_ref().unwrap().is_empty()
-        {
-            return Err(string_to_js_error("No category variables selected for plots".to_string()));
-        }
-
-        // This would return plot data that would be rendered in the UI
-        Ok(JsValue::from_str("Category plot data generated"))
-    }
-
-    pub fn generate_loading_plots(&self) -> Result<JsValue, JsValue> {
-        if !self.config.loading_plots.display_comp_loadings {
-            return Err(string_to_js_error("Component loadings display is not enabled".to_string()));
-        }
-
-        // This would return plot data that would be rendered in the UI
-        Ok(JsValue::from_str("Loading plot data generated"))
     }
 }

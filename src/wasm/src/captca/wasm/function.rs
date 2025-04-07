@@ -1,14 +1,14 @@
 use wasm_bindgen::prelude::*;
 
-use crate::captca::models::{ config::ScaConfig, data::AnalysisData, result::AnalysisResult };
+use crate::captca::models::{ config::CATPCAConfig, data::AnalysisData, result::CATPCAResult };
 use crate::captca::stats::core;
 use crate::captca::utils::{ converter::string_to_js_error, error::ErrorCollector };
 
 pub fn run_analysis(
     data: &AnalysisData,
-    config: &ScaConfig,
+    config: &CATPCAConfig,
     error_collector: &mut ErrorCollector
-) -> Result<Option<AnalysisResult>, JsValue> {
+) -> Result<Option<CATPCAResult>, JsValue> {
     web_sys::console::log_1(&"Starting Categorical Principal Components Analysis".into());
 
     // Initialize result with executed functions tracking
@@ -20,7 +20,10 @@ pub fn run_analysis(
     // Step 1: Basic processing summary (always executed)
     executed_functions.push("basic_processing_summary".to_string());
     let case_processing_summary = match core::basic_processing_summary(data, config) {
-        Ok(summary) => summary,
+        Ok(summary) => {
+            web_sys::console::log_1(&format!("Case Processing Summary: {:?}", summary).into());
+            Some(summary)
+        }
         Err(e) => {
             error_collector.add_error("basic_processing_summary", &e);
             return Err(string_to_js_error(e));
@@ -98,10 +101,13 @@ pub fn run_analysis(
     };
 
     // Step 7: Calculate variance accounted
+    let mut variance_accounted = None;
     if config.output.variance {
         executed_functions.push("calculate_variance_accounted".to_string());
         match core::calculate_variance_accounted(&filtered_data, config) {
-            Ok(_) => {}
+            Ok(variance) => {
+                variance_accounted = Some(variance);
+            }
             Err(e) => {
                 error_collector.add_error("calculate_variance_accounted", &e);
                 // Continue execution despite errors for non-critical functions
@@ -157,8 +163,8 @@ pub fn run_analysis(
     // Step 11: Calculate category points if requested
     let mut category_points = None;
     if
-        config.categoryPlots.cat_plots_var.is_some() ||
-        config.categoryPlots.joint_cat_plots_var.is_some()
+        config.category_plots.cat_plots_var.is_some() ||
+        config.category_plots.joint_cat_plots_var.is_some()
     {
         executed_functions.push("calculate_category_points".to_string());
         match core::calculate_category_points(&filtered_data, config) {
@@ -173,7 +179,11 @@ pub fn run_analysis(
     }
 
     // Step 12: Generate plots if requested
-    if config.objectPlots.object_points || config.objectPlots.biplot || config.objectPlots.triplot {
+    if
+        config.object_plots.object_points ||
+        config.object_plots.biplot ||
+        config.object_plots.triplot
+    {
         executed_functions.push("generate_object_plots".to_string());
         match core::generate_object_plots(&filtered_data, config) {
             Ok(_) => {}
@@ -186,7 +196,7 @@ pub fn run_analysis(
 
     // Step 13: Generate biplot if requested
     let mut biplot = None;
-    if config.objectPlots.biplot {
+    if config.object_plots.biplot {
         executed_functions.push("generate_biplot".to_string());
         match core::generate_biplot(&filtered_data, config) {
             Ok(plot) => {
@@ -229,23 +239,23 @@ pub fn run_analysis(
     }
 
     // Create the final result
-    let result = AnalysisResult {
+    let result = CATPCAResult {
         case_processing_summary,
-        iteration_history: iteration_history.unwrap_or_default(),
-        model_summary: model_summary.unwrap_or_default(),
-        quantifications: quantifications.unwrap_or_default(),
-        variance_accounted: Default::default(), // Placeholder
-        correlations: correlations.unwrap_or_default(),
-        object_scores: object_scores.unwrap_or_default(),
-        component_loadings: component_loadings.unwrap_or_default(),
-        category_points: category_points.unwrap_or_default(),
-        biplot: biplot.unwrap_or_default(),
+        iteration_history,
+        model_summary,
+        quantifications,
+        variance_accounted,
+        correlations,
+        object_scores,
+        component_loadings,
+        category_points,
+        biplot,
     };
 
     Ok(Some(result))
 }
 
-pub fn get_results(result: &Option<AnalysisResult>) -> Result<JsValue, JsValue> {
+pub fn get_results(result: &Option<CATPCAResult>) -> Result<JsValue, JsValue> {
     match result {
         Some(result) => Ok(serde_wasm_bindgen::to_value(result).unwrap()),
         None => Err(string_to_js_error("No analysis results available".to_string())),
@@ -259,100 +269,4 @@ pub fn get_all_errors(error_collector: &ErrorCollector) -> JsValue {
 pub fn clear_errors(error_collector: &mut ErrorCollector) -> JsValue {
     error_collector.clear();
     JsValue::from_str("Error collector cleared")
-}
-
-pub fn save_discretized_data(config: &ScaConfig) -> Result<JsValue, JsValue> {
-    if !config.save.discretized {
-        return Err(string_to_js_error("Discretized data save option not enabled".to_string()));
-    }
-
-    if config.save.disc_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Creating new dataset: {}",
-                config.save.disc_dataset.clone().unwrap_or_default()
-            ).into()
-        );
-    } else if config.save.disc_write_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Writing to file: {}",
-                config.save.discretized_file.clone().unwrap_or_default()
-            ).into()
-        );
-    }
-
-    Ok(JsValue::from_str("Discretized data saved"))
-}
-
-pub fn save_transformed_data(config: &ScaConfig) -> Result<JsValue, JsValue> {
-    if !config.save.save_trans || !config.save.trans {
-        return Err(string_to_js_error("Transformed data save option not enabled".to_string()));
-    }
-
-    if config.save.trans_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Creating new dataset: {}",
-                config.save.trans_dataset.clone().unwrap_or_default()
-            ).into()
-        );
-    } else if config.save.trans_write_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Writing to file: {}",
-                config.save.transformed_file.clone().unwrap_or_default()
-            ).into()
-        );
-    }
-
-    Ok(JsValue::from_str("Transformed data saved"))
-}
-
-pub fn save_object_scores(config: &ScaConfig) -> Result<JsValue, JsValue> {
-    if !config.save.save_obj_scores || !config.save.obj_scores {
-        return Err(string_to_js_error("Object scores save option not enabled".to_string()));
-    }
-
-    if config.save.obj_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Creating new dataset: {}",
-                config.save.obj_dataset.clone().unwrap_or_default()
-            ).into()
-        );
-    } else if config.save.obj_write_newdata {
-        web_sys::console::log_1(
-            &format!(
-                "Writing to file: {}",
-                config.save.obj_scores_file.clone().unwrap_or_default()
-            ).into()
-        );
-    }
-
-    Ok(JsValue::from_str("Object scores saved"))
-}
-
-pub fn save_bootstrap_results(config: &ScaConfig) -> Result<JsValue, JsValue> {
-    if !config.bootstrap.perform_bt {
-        return Err(string_to_js_error("Bootstrap analysis not performed".to_string()));
-    }
-
-    if config.save.bt_new_dataset {
-        web_sys::console::log_1(
-            &format!(
-                "Creating new dataset for bootstrap: {}",
-                config.save.bt_dataset_name.clone().unwrap_or_default()
-            ).into()
-        );
-    } else if config.save.bt_write_data_file {
-        web_sys::console::log_1(
-            &format!(
-                "Writing bootstrap to file: {}",
-                config.save.bt_file_text.clone().unwrap_or_default()
-            ).into()
-        );
-    }
-
-    Ok(JsValue::from_str("Bootstrap results saved"))
 }
