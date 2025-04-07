@@ -82,11 +82,11 @@ pub struct MainConfig {
     #[serde(rename = "DepVar")]
     pub dep_var: Option<String>,
     #[serde(rename = "FixFactor")]
-    pub fix_factor: Option<String>,
+    pub fix_factor: Option<Vec<String>>,
     #[serde(rename = "RandFactor")]
-    pub rand_factor: Option<String>,
+    pub rand_factor: Option<Vec<String>>,
     #[serde(rename = "Covar")]
-    pub covar: Option<String>,
+    pub covar: Option<Vec<String>>,
     #[serde(rename = "WlsWeight")]
     pub wls_weight: Option<String>,
 }

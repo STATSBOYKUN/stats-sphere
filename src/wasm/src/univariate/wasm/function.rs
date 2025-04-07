@@ -145,16 +145,15 @@ pub fn run_analysis(
 
     // Create the final result
     let result = UnivariateResult {
-        between_subjects_factors: processing_summary.between_subjects_factors,
+        between_subjects_factors: processing_summary,
         descriptive_statistics,
         levene_test,
-        tests_of_between_subjects_effects: tests_between_subjects_effects.unwrap(),
+        tests_of_between_subjects_effects,
         parameter_estimates,
-        general_estimable_function: processing_summary.general_estimable_function,
-        contrast_coefficients: processing_summary.contrast_coefficients,
+        general_estimable_function,
+        contrast_coefficients,
         lack_of_fit_tests,
         spread_vs_level_plots,
-        executed_functions,
     };
 
     Ok(Some(result))

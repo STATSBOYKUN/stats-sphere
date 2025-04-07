@@ -1,1 +1,13 @@
 pub mod core;
+pub mod between_subjects_effects;
+pub mod common;
+pub mod contrast_coefficients;
+pub mod descriptive_statistics;
+pub mod estimable_function;
+pub mod factors;
+pub mod heteroscedasticity;
+pub mod lack_of_fit;
+pub mod levene_test;
+pub mod parameter_estimates;
+pub mod spread_vs_level;
+pub mod summary_processing;

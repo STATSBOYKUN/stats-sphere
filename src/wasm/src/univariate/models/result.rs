@@ -1,19 +1,17 @@
-// result.rs
-
 use serde::{ Deserialize, Serialize };
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UnivariateResult {
-    pub between_subjects_factors: BetweenSubjectFactors,
-    pub descriptive_statistics: DescriptiveStatistics,
-    pub levene_test: LeveneTest,
-    pub tests_of_between_subjects_effects: TestsBetweenSubjectsEffects,
-    pub parameter_estimates: ParameterEstimates,
-    pub general_estimable_function: GeneralEstimableFunction,
-    pub contrast_coefficients: ContrastCoefficients,
-    pub lack_of_fit_tests: LackOfFitTests,
-    pub spread_vs_level_plots: SpreadVsLevelPlots,
+    pub between_subjects_factors: Option<HashMap<String, BetweenSubjectFactors>>,
+    pub descriptive_statistics: Option<HashMap<String, DescriptiveStatistics>>,
+    pub levene_test: Option<LeveneTest>,
+    pub tests_of_between_subjects_effects: Option<TestsBetweenSubjectsEffects>,
+    pub parameter_estimates: Option<ParameterEstimates>,
+    pub general_estimable_function: Option<GeneralEstimableFunction>,
+    pub contrast_coefficients: Option<ContrastCoefficients>,
+    pub lack_of_fit_tests: Option<LackOfFitTests>,
+    pub spread_vs_level_plots: Option<SpreadVsLevelPlots>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -28,9 +26,6 @@ pub struct DescriptiveStatistics {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DescriptiveStatisticsEntry {
-    pub gender: usize,
-    pub lowup: usize,
-    pub section: usize,
     pub mean: f64,
     pub std_deviation: f64,
     pub n: usize,
@@ -95,8 +90,8 @@ pub struct GeneralEstimableFunction {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ContrastCoefficients {
-    pub intercept: Vec<f64>,
-    pub gpa: Vec<f64>,
+    pub parameter: Vec<String>,
+    pub coefficients: Vec<f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -120,4 +115,41 @@ pub struct SpreadVsLevelPlots {
 pub struct SpreadVsLevelPoint {
     pub level_mean: f64,
     pub spread_standard_deviation: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HeteroscedasticityTests {
+    pub breusch_pagan: Option<BPTest>,
+    pub white: Option<WhiteTest>,
+    pub modified_breusch_pagan: Option<ModifiedBPTest>,
+    pub f_test: Option<FTest>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BPTest {
+    pub statistic: f64,
+    pub df: usize,
+    pub p_value: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct WhiteTest {
+    pub statistic: f64,
+    pub df: usize,
+    pub p_value: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ModifiedBPTest {
+    pub statistic: f64,
+    pub df: usize,
+    pub p_value: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FTest {
+    pub statistic: f64,
+    pub df1: usize,
+    pub df2: usize,
+    pub p_value: f64,
 }
