@@ -1,10 +1,9 @@
-// generate_histograms.rs
 use std::collections::HashMap;
 
-use crate::discriminant::models::{ AnalysisData, DiscriminantConfig, DataRecord };
+use crate::discriminant::models::{ AnalysisData, DiscriminantConfig };
 use crate::discriminant::models::result::{ DiscriminantHistograms, GroupHistogram };
 use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
-use crate::discriminant::stats::common::extract_case_values;
+use super::core::{ extract_case_values, calculate_mean, calculate_variance };
 
 pub fn generate_discriminant_histograms(
     data: &AnalysisData,
@@ -12,16 +11,15 @@ pub fn generate_discriminant_histograms(
 ) -> Result<DiscriminantHistograms, String> {
     web_sys::console::log_1(&"Executing generate_discriminant_histograms".into());
 
-    // Calculate canonical functions to get discriminant scores
-    let canonical_functions_result = calculate_canonical_functions(data, config)?;
+    // Calculate canonical functions
+    let canonical_functions = calculate_canonical_functions(data, config)?;
     let variables = &config.main.independent_variables;
 
-    // Number of functions
-    let num_functions = canonical_functions_result.eigenvalues.len();
-    let functions: Vec<String> = (1..=num_functions).map(|i| i.to_string()).collect();
-
-    // Number of groups
+    // Get number of functions and groups
+    let num_functions = canonical_functions.eigenvalues.len();
     let num_groups = data.group_data.len();
+
+    let functions: Vec<String> = (1..=num_functions).map(|i| i.to_string()).collect();
     let groups: Vec<String> = (1..=num_groups).map(|i| i.to_string()).collect();
 
     // Initialize histograms
@@ -40,11 +38,11 @@ pub fn generate_discriminant_histograms(
             let func_name = &functions[func_idx];
             let histogram_key = format!("{}_{}", group_name, func_name);
 
-            // Calculate discriminant scores for all cases in this group
+            // Calculate discriminant scores
             let scores = calculate_discriminant_scores(
                 group_data,
                 func_idx,
-                &canonical_functions_result,
+                &canonical_functions,
                 variables
             );
 
@@ -52,9 +50,8 @@ pub fn generate_discriminant_histograms(
                 continue;
             }
 
-            // Calculate histogram data
+            // Create histogram
             let histogram = create_histogram(&scores);
-
             histograms.insert(histogram_key, histogram);
         }
     }
@@ -66,41 +63,41 @@ pub fn generate_discriminant_histograms(
     })
 }
 
-// Calculate discriminant scores for cases in a group
 fn calculate_discriminant_scores(
-    group_data: &[DataRecord],
+    group_data: &[crate::discriminant::models::DataRecord],
     func_idx: usize,
     canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
     variables: &[String]
 ) -> Vec<f64> {
-    let mut scores = Vec::with_capacity(group_data.len());
+    group_data
+        .iter()
+        .filter_map(|case| {
+            let case_values = extract_case_values(case, variables);
 
-    for case in group_data {
-        // Extract numeric values from the case
-        let case_values = extract_case_values(case, variables);
-
-        if case_values.len() != variables.len() {
-            continue;
-        }
-
-        let mut score = 0.0;
-
-        // Apply coefficients to calculate discriminant score
-        for (var_idx, var_name) in variables.iter().enumerate() {
-            if let Some(coefs) = canonical_functions.coefficients.get(var_name) {
-                if func_idx < coefs.len() && var_idx < case_values.len() {
-                    score += case_values[var_idx] * coefs[func_idx];
-                }
+            if case_values.len() != variables.len() {
+                return None;
             }
-        }
 
-        scores.push(score);
-    }
+            let score = variables
+                .iter()
+                .enumerate()
+                .fold(0.0, |acc, (var_idx, var_name)| {
+                    if let Some(coefs) = canonical_functions.coefficients.get(var_name) {
+                        if func_idx < coefs.len() && var_idx < case_values.len() {
+                            acc + case_values[var_idx] * coefs[func_idx]
+                        } else {
+                            acc
+                        }
+                    } else {
+                        acc
+                    }
+                });
 
-    scores
+            Some(score)
+        })
+        .collect()
 }
 
-// Create histogram from scores using Scott's rule for bin width
 fn create_histogram(scores: &[f64]) -> GroupHistogram {
     if scores.is_empty() {
         return GroupHistogram {
@@ -116,19 +113,10 @@ fn create_histogram(scores: &[f64]) -> GroupHistogram {
         };
     }
 
-    // Calculate basic statistics
+    // Calculate statistics
     let sample_size = scores.len();
-    let mean = scores.iter().sum::<f64>() / (sample_size as f64);
-
-    let variance = if sample_size > 1 {
-        scores
-            .iter()
-            .map(|&x| (x - mean).powi(2))
-            .sum::<f64>() / ((sample_size - 1) as f64)
-    } else {
-        0.0
-    };
-
+    let mean = calculate_mean(scores);
+    let variance = calculate_variance(scores, Some(mean));
     let std_dev = variance.sqrt();
 
     // Find min and max
@@ -139,20 +127,20 @@ fn create_histogram(scores: &[f64]) -> GroupHistogram {
     let bin_width = if std_dev > 0.0 && sample_size > 0 {
         (3.5 * std_dev) / (sample_size as f64).powf(1.0 / 3.0)
     } else {
-        1.0 // Default if std_dev is 0
+        1.0
     };
 
     // Calculate number of bins
     let bin_count = if max_value > min_value && bin_width > 0.0 {
         ((max_value - min_value) / bin_width).ceil() as usize
     } else {
-        10 // Default number of bins
+        10
     };
 
-    // Ensure reasonable number of bins
+    // Use a reasonable number of bins
     let bin_count = bin_count.max(5).min(20);
 
-    // Recalculate bin width for even distribution
+    // Recalculate bin width
     let bin_width = if max_value > min_value {
         (max_value - min_value) / (bin_count as f64)
     } else {
@@ -160,10 +148,7 @@ fn create_histogram(scores: &[f64]) -> GroupHistogram {
     };
 
     // Create bin edges
-    let mut bin_edges = Vec::with_capacity(bin_count + 1);
-    for i in 0..=bin_count {
-        bin_edges.push(min_value + (i as f64) * bin_width);
-    }
+    let bin_edges = (0..=bin_count).map(|i| min_value + (i as f64) * bin_width).collect();
 
     // Count frequencies
     let mut bin_frequencies = vec![0; bin_count];

@@ -1,35 +1,32 @@
+// variable_selection.rs
 use std::collections::HashMap;
+use rayon::prelude::*;
+use nalgebra::Matrix;
 
-use crate::discriminant::models::{
-    result::{ VariableInAnalysis, VariableNotInAnalysis },
-    DiscriminantConfig,
+use crate::discriminant::{
+    models::{ result::{ VariableInAnalysis, VariableNotInAnalysis }, DiscriminantConfig },
+    stats::core::calculate_p_value_from_f,
 };
 
 use super::{
     method_implementations::{ calculate_variable_f_to_enter, calculate_variable_f_to_remove },
-    statistical_tests::{ calculate_p_value_from_f, calculate_tolerance },
+    statistical_tests::calculate_tolerance,
     stepwise_statistics::MethodType,
 };
 
 // Determine the method type from config
 pub fn determine_method_type(config: &DiscriminantConfig) -> MethodType {
-    if config.method.wilks {
-        MethodType::Wilks
-    } else if config.method.unexplained {
-        MethodType::Unexplained
-    } else if config.method.mahalonobis {
-        MethodType::Mahalanobis
-    } else if config.method.f_ratio {
-        MethodType::FRatio
-    } else if config.method.raos {
-        MethodType::Raos
-    } else {
-        // Default to Wilks' lambda
-        MethodType::Wilks
+    match true {
+        _ if config.method.wilks => MethodType::Wilks,
+        _ if config.method.unexplained => MethodType::Unexplained,
+        _ if config.method.mahalonobis => MethodType::Mahalanobis,
+        _ if config.method.f_ratio => MethodType::FRatio,
+        _ if config.method.raos => MethodType::Raos,
+        _ => MethodType::Wilks, // Default
     }
 }
 
-// Analyze variables not in the model
+// Analyze variables not in the model - parallelized
 pub fn analyze_variables_not_in_model(
     variables: &[String],
     group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
@@ -41,54 +38,63 @@ pub fn analyze_variables_not_in_model(
     total_cases: usize,
     config: &DiscriminantConfig
 ) -> Vec<VariableNotInAnalysis> {
-    let mut variables_not_in_analysis = Vec::new();
     let method_type = determine_method_type(config);
 
-    for var_name in variables {
-        // Calculate tolerance for this variable
-        let (tolerance, min_tolerance) = calculate_tolerance(
-            var_name,
-            group_data,
-            group_labels,
-            current_variables
-        );
+    // Parallel analysis of variables
+    let results: Vec<Option<VariableNotInAnalysis>> = variables
+        .par_iter()
+        .map(|var_name| {
+            // Calculate tolerance
+            let (tolerance, min_tolerance) = calculate_tolerance(
+                var_name,
+                group_data,
+                group_labels,
+                current_variables
+            );
 
-        // Minimum tolerance check
-        if tolerance < 0.001 {
-            continue;
-        }
+            // Tolerance check
+            if tolerance < 0.001 {
+                return None;
+            }
 
-        // Calculate F-to-enter based on the selected method
-        let (f_to_enter, wilks_lambda) = calculate_variable_f_to_enter(
-            var_name,
-            group_data,
-            group_labels,
-            group_means,
-            overall_means,
-            current_variables,
-            num_groups,
-            total_cases,
-            method_type
-        );
+            // Calculate F-to-enter
+            let (f_to_enter, wilks_lambda) = calculate_variable_f_to_enter(
+                var_name,
+                group_data,
+                group_labels,
+                group_means,
+                overall_means,
+                current_variables,
+                num_groups,
+                total_cases,
+                method_type
+            );
 
-        variables_not_in_analysis.push(VariableNotInAnalysis {
-            variable: var_name.clone(),
-            tolerance,
-            min_tolerance,
-            f_to_enter,
-            wilks_lambda,
-        });
-    }
+            Some(VariableNotInAnalysis {
+                variable: var_name.clone(),
+                tolerance,
+                min_tolerance,
+                f_to_enter,
+                wilks_lambda,
+            })
+        })
+        .collect();
+
+    // Filter out None values and collect results
+    let mut variables_not_in_analysis: Vec<VariableNotInAnalysis> = results
+        .into_iter()
+        .filter_map(|x| x)
+        .collect();
 
     // Sort variables by F-to-enter (descending)
-    variables_not_in_analysis.sort_by(|a, b|
+    variables_not_in_analysis.sort_unstable_by(|a, b|
         b.f_to_enter.partial_cmp(&a.f_to_enter).unwrap_or(std::cmp::Ordering::Equal)
     );
 
     variables_not_in_analysis
 }
 
-// Analyze variables in the model
+// Analyze variables in the model - parallelized
 pub fn analyze_variables_in_model(
     variables: &[String],
     group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
@@ -100,54 +106,57 @@ pub fn analyze_variables_in_model(
     method_type: MethodType,
     config: &DiscriminantConfig
 ) -> Vec<VariableInAnalysis> {
-    let mut variables_in_analysis = Vec::new();
+    // Parallel analysis of variables
+    let results: Vec<VariableInAnalysis> = variables
+        .par_iter()
+        .map(|var_name| {
+            // Create a set of variables excluding the current one
+            let other_variables: Vec<String> = variables
+                .iter()
+                .filter(|&v| v != var_name)
+                .cloned()
+                .collect();
 
-    for var_name in variables {
-        // Create a set of variables excluding the current one
-        let other_variables: Vec<String> = variables
-            .iter()
-            .filter(|&v| v != var_name)
-            .cloned()
-            .collect();
+            // Calculate tolerance
+            let (tolerance, _) = calculate_tolerance(
+                var_name,
+                group_data,
+                group_labels,
+                &other_variables
+            );
 
-        // Calculate tolerance for this variable
-        let (tolerance, _) = calculate_tolerance(
-            var_name,
-            group_data,
-            group_labels,
-            &other_variables
-        );
+            // Calculate F-to-remove
+            let (f_to_remove, wilks_lambda) = calculate_variable_f_to_remove(
+                var_name,
+                group_data,
+                group_labels,
+                group_means,
+                overall_means,
+                variables,
+                num_groups,
+                total_cases,
+                method_type
+            );
 
-        // Calculate F-to-remove
-        let (f_to_remove, wilks_lambda) = calculate_variable_f_to_remove(
-            var_name,
-            group_data,
-            group_labels,
-            group_means,
-            overall_means,
-            variables,
-            num_groups,
-            total_cases,
-            method_type
-        );
-
-        variables_in_analysis.push(VariableInAnalysis {
-            variable: var_name.clone(),
-            tolerance,
-            f_to_remove,
-            wilks_lambda,
-        });
-    }
+            VariableInAnalysis {
+                variable: var_name.clone(),
+                tolerance,
+                f_to_remove,
+                wilks_lambda,
+            }
+        })
+        .collect();
 
     // Sort variables by F-to-remove (ascending)
-    variables_in_analysis.sort_by(|a, b|
+    let mut variables_in_analysis = results;
+    variables_in_analysis.sort_unstable_by(|a, b|
         a.f_to_remove.partial_cmp(&b.f_to_remove).unwrap_or(std::cmp::Ordering::Equal)
     );
 
     variables_in_analysis
 }
 
-// Find the best variable to enter the model
+// Find the best variable to enter the model with caching
 pub fn find_best_variable_to_enter(
     variables: &[String],
     group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
@@ -174,90 +183,51 @@ pub fn find_best_variable_to_enter(
     }
 
     // Analyze all candidate variables
-    let mut candidates = Vec::new();
-
-    for var_name in variables {
-        // Calculate tolerance
-        let (tolerance, min_tolerance) = calculate_tolerance(
-            var_name,
-            group_data,
-            group_labels,
-            current_variables
-        );
-
-        // Skip if tolerance is too low
-        if tolerance < 0.001 {
-            continue;
-        }
-
-        // Calculate F-to-enter based on method
-        let (f_to_enter, wilks_lambda) = calculate_variable_f_to_enter(
-            var_name,
-            group_data,
-            group_labels,
-            group_means,
-            overall_means,
-            current_variables,
-            num_groups,
-            total_cases,
-            method_type
-        );
-
-        candidates.push(VariableNotInAnalysis {
-            variable: var_name.clone(),
-            tolerance,
-            min_tolerance,
-            f_to_enter,
-            wilks_lambda,
-        });
-    }
+    let candidates = analyze_variables_not_in_model(
+        variables,
+        group_data,
+        group_labels,
+        group_means,
+        overall_means,
+        current_variables,
+        num_groups,
+        total_cases,
+        config
+    );
 
     if candidates.is_empty() {
         return (None, default_result);
     }
 
-    // Sort candidates based on the method
-    match method_type {
-        MethodType::Wilks => {
-            // For Wilks' lambda, smaller value is better
-            candidates.sort_by(|a, b|
-                a.wilks_lambda.partial_cmp(&b.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
-            );
-        }
+    // Find best candidate based on method
+    let best_candidate = match method_type {
         MethodType::Raos => {
-            // For Rao's V, we need to check against v_enter
-            candidates.sort_by(|a, b|
-                b.f_to_enter.partial_cmp(&a.f_to_enter).unwrap_or(std::cmp::Ordering::Equal)
-            );
-
             // Filter by v_enter threshold
-            let rao_candidates: Vec<_> = candidates
+            candidates
                 .iter()
-                .filter(|c| c.f_to_enter >= config.method.v_enter)
-                .collect();
-
-            if !rao_candidates.is_empty() {
-                let best = rao_candidates[0].clone();
-                return (Some(best.variable.clone()), best);
-            }
+                .find(|c| c.f_to_enter >= config.method.v_enter)
+                .or_else(|| candidates.first())
+                .cloned()
+        }
+        MethodType::Wilks => {
+            // For Wilks, smaller lambda is better
+            candidates
+                .iter()
+                .min_by(|a, b|
+                    a.wilks_lambda.partial_cmp(&b.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
+                )
+                .cloned()
         }
         _ => {
-            // For other methods, higher F value is better
-            candidates.sort_by(|a, b|
-                b.f_to_enter.partial_cmp(&a.f_to_enter).unwrap_or(std::cmp::Ordering::Equal)
-            );
+            // For other methods, first candidate is already sorted by F (highest first)
+            candidates.first().cloned()
         }
-    }
+    };
 
-    if !candidates.is_empty() {
-        let best = candidates[0].clone();
-        return (Some(best.variable.clone()), best);
-    }
-
-    (None, default_result)
+    best_candidate.map(|best| (Some(best.variable.clone()), best)).unwrap_or((None, default_result))
 }
 
-// Find the worst variable to remove from the model
+// Find the worst variable to remove from the model with caching
 pub fn find_worst_variable_to_remove(
     variables: &[String],
     group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
@@ -282,80 +252,58 @@ pub fn find_worst_variable_to_remove(
     }
 
     // Analyze all variables in the model
-    let mut candidates = Vec::new();
-
-    for var_name in variables {
-        // Calculate tolerance
-        let others: Vec<String> = variables
-            .iter()
-            .filter(|&v| v != var_name)
-            .cloned()
-            .collect();
-        let (tolerance, _) = calculate_tolerance(var_name, group_data, group_labels, &others);
-
-        // Calculate F-to-remove based on method
-        let (f_to_remove, wilks_lambda) = calculate_variable_f_to_remove(
-            var_name,
-            group_data,
-            group_labels,
-            group_means,
-            overall_means,
-            variables,
-            num_groups,
-            total_cases,
-            method_type
-        );
-
-        candidates.push(VariableInAnalysis {
-            variable: var_name.clone(),
-            tolerance,
-            f_to_remove,
-            wilks_lambda,
-        });
-    }
+    let candidates = analyze_variables_in_model(
+        variables,
+        group_data,
+        group_labels,
+        group_means,
+        overall_means,
+        num_groups,
+        total_cases,
+        method_type,
+        config
+    );
 
     if candidates.is_empty() {
         return (None, default_result);
     }
 
-    // Sort candidates based on the method
-    match method_type {
+    // Get worst candidate based on method
+    let worst_candidate = match method_type {
         MethodType::Wilks => {
-            // For Wilks' lambda, larger value is worse for removal
-            candidates.sort_by(|a, b|
-                b.wilks_lambda.partial_cmp(&a.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
-            );
+            // For Wilks, larger lambda is worse
+            candidates
+                .iter()
+                .max_by(|a, b|
+                    b.wilks_lambda.partial_cmp(&a.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
+                )
+                .cloned()
         }
         _ => {
-            // For other methods, lower F value is worse
-            candidates.sort_by(|a, b|
-                a.f_to_remove.partial_cmp(&b.f_to_remove).unwrap_or(std::cmp::Ordering::Equal)
-            );
+            // For other methods, first candidate is already sorted (lowest F first)
+            candidates.first().cloned()
         }
+    };
+
+    let worst = worst_candidate.unwrap_or(default_result);
+
+    // Apply removal criteria
+    let should_remove = if config.method.f_value {
+        worst.f_to_remove <= config.method.f_removal
+    } else if config.method.f_probability {
+        let p_value = calculate_p_value_from_f(
+            worst.f_to_remove,
+            (num_groups - 1) as f64,
+            (total_cases - variables.len() + 1 - num_groups) as f64
+        );
+        p_value >= config.method.p_removal
+    } else {
+        false
+    };
+
+    if should_remove {
+        (Some(worst.variable.clone()), worst)
+    } else {
+        (None, worst)
     }
-
-    // Check if worst candidate meets removal criteria
-    if !candidates.is_empty() {
-        let worst = candidates[0].clone();
-
-        // Apply removal criteria
-        let should_remove = if config.method.f_value {
-            worst.f_to_remove <= config.method.f_removal
-        } else if config.method.f_probability {
-            let p_value = calculate_p_value_from_f(
-                worst.f_to_remove,
-                (num_groups - 1) as f64,
-                (total_cases - variables.len() + 1 - num_groups) as f64
-            );
-            p_value >= config.method.p_removal
-        } else {
-            false
-        };
-
-        if should_remove {
-            return (Some(worst.variable.clone()), worst);
-        }
-    }
-
-    (None, default_result)
 }

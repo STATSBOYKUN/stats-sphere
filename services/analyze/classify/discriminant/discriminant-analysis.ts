@@ -52,22 +52,23 @@ export async function analyzeDiscriminant({
         varDefsForSelection
     );
 
-    // const da = new DiscriminantAnalysis(
-    //     slicedDataForGrouping,
-    //     slicedDataForIndependent,
-    //     slicedDataForSelection,
-    //     configData,
-    //     varDefsForGrouping,
-    //     varDefsForIndependent,
-    //     varDefsForSelection
-    // );
+    const da = new DiscriminantAnalysis(
+        slicedDataForGrouping,
+        slicedDataForIndependent,
+        slicedDataForSelection,
+        configData,
+        varDefsForGrouping,
+        varDefsForIndependent,
+        varDefsForSelection
+    );
 
-    // const results = da.get_results();
-    // const executed = da.get_executed_functions();
-    // const errors = da.get_all_errors();
-    // console.log("executed", executed);
-    // console.log("errors", errors);
-    // console.log("results", results);
+    const results = da.get_results();
+    const executed = da.get_executed_functions();
+    const errors = da.get_all_errors();
+    console.log("executed", executed);
+    console.log("errors", errors);
+    console.log("results", results);
+
     // const formattedResults = convertStatisticalData(results);
 
     // /*
@@ -78,25 +79,5 @@ export async function analyzeDiscriminant({
     //     addAnalytic,
     //     addStatistic,
     //     caseProcessingSummary,
-    //     groupStatistics,
-    //     testsOfEquality,
-    //     pooledMatrices,
-    //     covarianceMatrices,
-    //     boxTestLogDeterminants,
-    //     boxTestResults,
-    //     eigenvaluesTable,
-    //     wilksLambdaTable,
-    //     variablesEnteredTable,
-    //     variablesInAnalysisTable,
-    //     variablesNotInAnalysisTable,
-    //     wilksLambdaStepsTable,
-    //     pairwiseGroupComparisonsTable,
-    //     stdCoefficientsTable,
-    //     structureMatrixTable,
-    //     groupCentroidsTable,
-    //     classificationResultsTable,
-    //     classificationSummaryTable,
-    //     priorProbabilitiesTable,
-    //     classificationFunctionCoefficientsTable,
     // });
 }

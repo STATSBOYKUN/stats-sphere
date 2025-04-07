@@ -1,12 +1,7 @@
-use statrs::distribution::ContinuousCDF;
-use crate::discriminant::models::{
-    result::WilksLambdaTest,
-    AnalysisData,
-    DiscriminantConfig,
-    data::DataValue,
-};
+use crate::discriminant::models::{ result::WilksLambdaTest, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::stepwise::stepwise_statistics::calculate_stepwise_statistics;
 use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use super::core::{ extract_analyzed_dataset, calculate_p_value_from_chi_square, AnalyzedDataset };
 
 pub fn calculate_wilks_lambda_test(
     data: &AnalysisData,
@@ -14,15 +9,13 @@ pub fn calculate_wilks_lambda_test(
 ) -> Result<WilksLambdaTest, String> {
     web_sys::console::log_1(&"Executing calculate_wilks_lambda_test".into());
 
-    // First, get canonical functions which contains eigenvalues
-    // This will already handle stepwise variables correctly if enabled
+    // Extract analyzed dataset
+    let dataset = extract_analyzed_dataset(data, config)?;
+
+    // Get canonical functions
     let canonical_functions = calculate_canonical_functions(data, config)?;
 
-    // Get variables to use (handled by canonical_functions already)
-    // Get independent variables and grouping variable from the config
-    let grouping_variable = &config.main.grouping_variable;
-
-    // Get valid eigenvalues (filter out zeros and negligible values)
+    // Get valid eigenvalues
     let eigenvalues: Vec<f64> = canonical_functions.eigenvalues
         .into_iter()
         .filter(|&e| e > 1e-10)
@@ -34,30 +27,16 @@ pub fn calculate_wilks_lambda_test(
 
     let num_functions = eigenvalues.len();
 
-    // For stepwise, use only the selected variables' count
+    // Get number of variables (handle stepwise)
     let num_vars = if config.main.stepwise {
         get_stepwise_selected_variables_count(data, config)?
     } else {
         config.main.independent_variables.len()
     };
 
-    // Extract unique groups by analyzing the actual data
-    let unique_groups = extract_unique_groups(data, grouping_variable);
-    let num_groups = unique_groups.len();
-
-    if num_groups < 2 {
-        return Err("At least 2 groups are required for discriminant analysis".to_string());
+    if dataset.num_groups < 2 {
+        return Err("At least 2 groups are required".to_string());
     }
-
-    // Count total valid cases
-    let total_cases: usize = data.group_data
-        .iter()
-        .map(|g| g.len())
-        .sum();
-
-    let n = total_cases as f64;
-    let p = num_vars as f64;
-    let g = num_groups as f64;
 
     // Prepare result containers
     let mut test_of_functions = Vec::with_capacity(num_functions);
@@ -66,13 +45,18 @@ pub fn calculate_wilks_lambda_test(
     let mut dfs = Vec::with_capacity(num_functions);
     let mut significances = Vec::with_capacity(num_functions);
 
+    // Calculate parameters
+    let n = dataset.total_cases as f64;
+    let p = num_vars as f64;
+    let g = dataset.num_groups as f64;
+
     // Calculate Wilks' Lambda for all functions together
     let mut lambda = 1.0;
     for eigenvalue in &eigenvalues {
         lambda *= 1.0 / (1.0 + eigenvalue);
     }
 
-    // Calculate degrees of freedom - must be positive
+    // Calculate degrees of freedom
     let df = (p * (g - 1.0)) as i32;
     if df <= 0 {
         return Err(format!("Invalid degrees of freedom: {}", df));
@@ -88,7 +72,7 @@ pub fn calculate_wilks_lambda_test(
     dfs.push(df);
     significances.push(significance);
 
-    // Test remaining functions (2 through m, 3 through m, etc.)
+    // Test remaining functions
     for i in 1..num_functions {
         // Calculate lambda for functions i+1 to end
         let mut remaining_lambda = 1.0;
@@ -98,12 +82,11 @@ pub fn calculate_wilks_lambda_test(
 
         // Degrees of freedom for remaining functions
         let df_remaining = ((p - (i as f64)) * (g - 1.0 - (i as f64))) as i32;
-
-        // Skip if degrees of freedom is invalid
         if df_remaining <= 0 {
             continue;
         }
 
+        // wilks_lambda.rs (continued)
         let chi_sq = -(n - 1.0 - (p + g) / 2.0) * remaining_lambda.ln();
         let sig = calculate_p_value_from_chi_square(chi_sq, df_remaining as usize);
 
@@ -123,23 +106,19 @@ pub fn calculate_wilks_lambda_test(
     })
 }
 
-// Get count of variables selected by stepwise procedure
 fn get_stepwise_selected_variables_count(
     data: &AnalysisData,
     config: &DiscriminantConfig
 ) -> Result<usize, String> {
-    // If stepwise mode is not enabled, return all variables count
     if !config.main.stepwise {
         return Ok(config.main.independent_variables.len());
     }
 
-    // Calculate stepwise statistics to get the final selected variables
     match calculate_stepwise_statistics(data, config) {
         Ok(stepwise_stats) => {
-            // Get the variables in the final step
             let final_step = stepwise_stats.variables_in_analysis
                 .keys()
-                .map(|k| k.parse::<i32>().unwrap_or(0))
+                .filter_map(|k| k.parse::<i32>().ok())
                 .max()
                 .unwrap_or(0)
                 .to_string();
@@ -147,52 +126,14 @@ fn get_stepwise_selected_variables_count(
             if let Some(vars_in_model) = stepwise_stats.variables_in_analysis.get(&final_step) {
                 Ok(vars_in_model.len())
             } else {
-                // If no final step found, return all variables count
                 Ok(config.main.independent_variables.len())
             }
         }
-        Err(_) => {
-            // If stepwise analysis fails, use all variables
-            Ok(config.main.independent_variables.len())
-        }
+        Err(_) => Ok(config.main.independent_variables.len()),
     }
 }
 
-// Extract unique groups from the data
-fn extract_unique_groups(data: &AnalysisData, grouping_variable: &str) -> Vec<String> {
-    let mut unique_groups = Vec::new();
-
-    for group_records in &data.group_data {
-        for record in group_records {
-            if let Some(value) = record.values.get(grouping_variable) {
-                let group_label = match value {
-                    DataValue::Number(num) => num.to_string(),
-                    DataValue::Text(text) => text.clone(),
-                    _ => {
-                        continue;
-                    }
-                };
-
-                if !unique_groups.contains(&group_label) {
-                    unique_groups.push(group_label);
-                }
-            }
-        }
-    }
-
-    // Sort groups for consistent results
-    unique_groups.sort();
-    unique_groups
-}
-
-// Calculate p-value from chi-square
-fn calculate_p_value_from_chi_square(chi_square: f64, df: usize) -> f64 {
-    if chi_square <= 0.0 || df == 0 {
-        return 1.0;
-    }
-
-    match statrs::distribution::ChiSquared::new(df as f64) {
-        Ok(dist) => dist.sf(chi_square),
-        Err(_) => 1.0,
-    }
+// Helper function to get unique groups - moved to dataset struct
+fn extract_unique_groups(dataset: &AnalyzedDataset) -> Vec<String> {
+    dataset.group_labels.clone()
 }

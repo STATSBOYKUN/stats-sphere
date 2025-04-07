@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 use nalgebra::DMatrix;
-use statrs::distribution::{ FisherSnedecor, ContinuousCDF };
+use statrs::distribution::ContinuousCDF;
+use rayon::prelude::*;
 
-use crate::discriminant::models::{
-    result::BoxMTest,
-    AnalysisData,
-    DiscriminantConfig,
-    DataRecord,
-    DataValue,
+use crate::discriminant::models::{ result::BoxMTest, AnalysisData, DiscriminantConfig };
+
+use super::core::{
+    AnalyzedDataset,
+    extract_analyzed_dataset,
+    calculate_log_determinant,
+    calculate_covariance,
 };
-
-const EPSILON: f64 = 1e-10;
 
 pub fn calculate_box_m_test(
     data: &AnalysisData,
@@ -18,99 +18,27 @@ pub fn calculate_box_m_test(
 ) -> Result<BoxMTest, String> {
     web_sys::console::log_1(&"Executing calculate_box_m_test".into());
 
+    // Extract analyzed dataset
+    let dataset = extract_analyzed_dataset(data, config)?;
     let independent_variables = &config.main.independent_variables;
-    let grouping_variable = &config.main.grouping_variable;
-    let num_vars = independent_variables.len();
-
-    // Flatten the group data for easier processing
-    let flattened_group_data: Vec<&DataRecord> = data.group_data
-        .iter()
-        .flat_map(|records| records.iter())
-        .collect();
-
-    // Extract group values by index and track unique groups
-    let mut record_groups: HashMap<usize, String> = HashMap::new();
-    let mut unique_groups = Vec::new();
-
-    for (i, record) in flattened_group_data.iter().enumerate() {
-        for (key, value) in &record.values {
-            // Check if this is the grouping variable
-            if key == grouping_variable {
-                let group_label = match value {
-                    DataValue::Number(num) => num.to_string(),
-                    DataValue::Text(text) => text.clone(),
-                    _ => {
-                        continue;
-                    }
-                };
-
-                record_groups.insert(i, group_label.clone());
-
-                if !unique_groups.contains(&group_label) {
-                    unique_groups.push(group_label);
-                }
-
-                break;
-            }
-        }
-    }
-
-    unique_groups.sort();
-
-    // Prepare data for each group
-    let mut group_data: HashMap<String, Vec<Vec<f64>>> = HashMap::new();
-
-    // Initialize group data structure
-    for group in &unique_groups {
-        group_data.insert(group.clone(), vec![Vec::new(); num_vars]);
-    }
-
-    // Collect data for each group and variable
-    for (var_idx, variable) in independent_variables.iter().enumerate() {
-        if var_idx >= data.independent_data.len() {
-            continue;
-        }
-
-        let var_records = &data.independent_data[var_idx];
-
-        for (i, record) in var_records.iter().enumerate() {
-            if let Some(group) = record_groups.get(&i) {
-                if let Some(DataValue::Number(value)) = record.values.get(variable) {
-                    group_data.get_mut(group).unwrap()[var_idx].push(*value);
-                }
-            }
-        }
-    }
 
     // Compute per-group covariance matrices and log determinants
-    let mut group_covs = Vec::new();
-    let mut group_log_dets = Vec::new();
-    let mut group_sizes = Vec::new();
+    let (group_covs, group_log_dets, group_sizes) = compute_group_covariances(
+        &dataset,
+        independent_variables
+    )?;
 
-    for group in &unique_groups {
-        let group_matrix_data = &group_data[group];
-
-        // Ensure all variables have the same number of observations
-        let group_size = group_matrix_data[0].len();
-        if group_size <= 1 {
-            continue; // Skip groups with insufficient data
-        }
-
-        let cov_matrix = compute_group_covariance_matrix(group_matrix_data)?;
-        let log_det = compute_log_determinant(&cov_matrix);
-
-        group_covs.push(cov_matrix);
-        group_log_dets.push(log_det);
-        group_sizes.push(group_size);
+    if group_covs.is_empty() {
+        return Err("No valid groups for Box's M test".to_string());
     }
 
-    let p = num_vars;
+    let p = independent_variables.len();
     let k = group_covs.len();
     let total_sample_size: usize = group_sizes.iter().sum();
 
     // Compute pooled matrix
     let pooled_cov_matrix = compute_pooled_covariance_matrix(&group_covs, &group_sizes);
-    let pooled_log_det = compute_log_determinant(&pooled_cov_matrix);
+    let pooled_log_det = calculate_log_determinant(&pooled_cov_matrix);
 
     // Compute Box's M statistic
     let mut box_m = ((total_sample_size - k) as f64) * pooled_log_det;
@@ -124,7 +52,7 @@ pub fn calculate_box_m_test(
 
     // Compute F approximation
     let v1 = ((p * (p + 1) * (k - 1)) as f64) / 2.0;
-    let adjusted_m = box_m * (1.0 - c1 - c2 / (box_m + EPSILON));
+    let adjusted_m = box_m * (1.0 - c1 - c2 / (box_m + 1e-10));
 
     let f_approx = if adjusted_m > 0.0 && v1 > 0.0 { adjusted_m / v1 } else { 0.0 };
 
@@ -143,47 +71,114 @@ pub fn calculate_box_m_test(
     })
 }
 
-fn compute_group_covariance_matrix(group_matrix_data: &[Vec<f64>]) -> Result<DMatrix<f64>, String> {
-    let num_vars = group_matrix_data.len();
-    let num_cases = group_matrix_data[0].len();
+fn compute_group_covariances(
+    dataset: &AnalyzedDataset,
+    variables: &[String]
+) -> Result<(Vec<DMatrix<f64>>, Vec<f64>, Vec<usize>), String> {
+    let mut group_covs = Vec::new();
+    let mut group_log_dets = Vec::new();
+    let mut group_sizes = Vec::new();
+
+    // Process each group in parallel
+    let results: Vec<Option<(DMatrix<f64>, f64, usize)>> = dataset.group_labels
+        .par_iter()
+        .map(|group| {
+            // Get the data for this group
+            let mut valid_values = true;
+            for var in variables {
+                if let Some(values) = dataset.group_data.get(var).and_then(|g| g.get(group)) {
+                    if values.len() <= 1 {
+                        valid_values = false;
+                        break;
+                    }
+                } else {
+                    valid_values = false;
+                    break;
+                }
+            }
+
+            if !valid_values {
+                return None;
+            }
+
+            // Get group size
+            let group_size = dataset.group_data
+                .get(variables.first().unwrap_or(&String::new()))
+                .and_then(|v| v.get(group))
+                .map_or(0, |v| v.len());
+
+            if group_size <= 1 {
+                return None;
+            }
+
+            // Compute covariance matrix
+            let cov_matrix = compute_group_covariance_matrix(dataset, group, variables)?;
+
+            let log_det = calculate_log_determinant(&cov_matrix);
+
+            Some((cov_matrix, log_det, group_size))
+        })
+        .collect();
+
+    // Collect valid results
+    for result in results {
+        if let Some((cov, log_det, size)) = result {
+            group_covs.push(cov);
+            group_log_dets.push(log_det);
+            group_sizes.push(size);
+        }
+    }
+
+    Ok((group_covs, group_log_dets, group_sizes))
+}
+
+fn compute_group_covariance_matrix(
+    dataset: &AnalyzedDataset,
+    group: &str,
+    variables: &[String]
+) -> Result<DMatrix<f64>, String> {
+    let num_vars = variables.len();
+
+    // Check if we have enough data
+    let first_var = variables.first().ok_or_else(|| "No variables provided".to_string())?;
+    let num_cases = dataset.group_data
+        .get(first_var)
+        .and_then(|g| g.get(group))
+        .map_or(0, |v| v.len());
 
     if num_cases <= 1 {
         return Err("Group too small for covariance computation".to_string());
     }
 
-    // Compute means for each variable
-    let mut means = vec![0.0; num_vars];
-    for var_idx in 0..num_vars {
-        means[var_idx] = group_matrix_data[var_idx].iter().sum::<f64>() / (num_cases as f64);
-    }
-
     // Compute covariance matrix
     let mut cov_matrix = DMatrix::zeros(num_vars, num_vars);
 
-    for var1 in 0..num_vars {
-        for var2 in 0..num_vars {
-            let mut sum = 0.0;
-            for case_idx in 0..num_cases {
-                sum +=
-                    (group_matrix_data[var1][case_idx] - means[var1]) *
-                    (group_matrix_data[var2][case_idx] - means[var2]);
+    for (var1_idx, var1) in variables.iter().enumerate() {
+        for (var2_idx, var2) in variables.iter().enumerate() {
+            if
+                let (Some(values1), Some(values2)) = (
+                    dataset.group_data.get(var1).and_then(|g| g.get(group)),
+                    dataset.group_data.get(var2).and_then(|g| g.get(group)),
+                )
+            {
+                if !values1.is_empty() && !values2.is_empty() {
+                    let mean1 = dataset.group_means
+                        .get(group)
+                        .and_then(|m| m.get(var1))
+                        .unwrap_or(&0.0);
+                    let mean2 = dataset.group_means
+                        .get(group)
+                        .and_then(|m| m.get(var2))
+                        .unwrap_or(&0.0);
+
+                    let cov = calculate_covariance(values1, values2, Some(*mean1), Some(*mean2));
+                    cov_matrix[(var1_idx, var2_idx)] = cov;
+                }
             }
-            cov_matrix[(var1, var2)] = sum / ((num_cases - 1) as f64);
         }
     }
 
     Ok(cov_matrix)
-}
-
-fn compute_log_determinant(matrix: &DMatrix<f64>) -> f64 {
-    let svd = nalgebra::SVD::new(matrix.clone(), false, false);
-    let singular_values = svd.singular_values;
-
-    singular_values
-        .iter()
-        .filter(|&v| *v > EPSILON)
-        .map(|v| v.ln())
-        .sum()
 }
 
 fn compute_pooled_covariance_matrix(
@@ -229,7 +224,7 @@ fn compute_df2(c1: f64, c2: f64, df1: f64) -> f64 {
 }
 
 fn compute_p_value(f_approx: f64, df1: f64, df2: f64) -> f64 {
-    match FisherSnedecor::new(df1, df2) {
+    match statrs::distribution::FisherSnedecor::new(df1, df2) {
         Ok(dist) => dist.sf(f_approx).max(0.0).min(1.0),
         Err(_) => 1.0,
     }

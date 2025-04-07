@@ -1,9 +1,201 @@
-// common.rs
-use crate::discriminant::models::{ AnalysisData, DiscriminantConfig, DataRecord, DataValue };
-use nalgebra::{ DMatrix, DVector, SVD };
-use statrs::distribution::{ FisherSnedecor, ChiSquared, ContinuousCDF };
-use statrs::function::gamma::ln_gamma;
-use std::f64::consts::PI;
+use nalgebra::{ DMatrix, SVD };
+use statrs::distribution::{ ChiSquared, ContinuousCDF, FisherSnedecor };
+use std::collections::HashMap;
+use crate::discriminant::models::{ AnalysisData, DataRecord, DataValue, DiscriminantConfig };
+
+// AnalyzedDataset struct to consolidate extracted data
+pub struct AnalyzedDataset {
+    pub group_data: HashMap<String, HashMap<String, Vec<f64>>>,
+    pub group_labels: Vec<String>,
+    pub group_means: HashMap<String, HashMap<String, f64>>,
+    pub overall_means: HashMap<String, f64>,
+    pub num_groups: usize,
+    pub total_cases: usize,
+}
+
+// Consolidated grouped data extraction with caching
+pub fn extract_analyzed_dataset(
+    data: &AnalysisData,
+    config: &DiscriminantConfig
+) -> Result<AnalyzedDataset, String> {
+    let independent_variables = &config.main.independent_variables;
+    let grouping_variable = &config.main.grouping_variable;
+    let min_range = config.define_range.min_range;
+    let max_range = config.define_range.max_range;
+
+    // Extract grouped data
+    let (group_data, group_labels, total_cases) = extract_grouped_data(
+        data,
+        grouping_variable,
+        independent_variables,
+        min_range,
+        max_range
+    )?;
+
+    let num_groups = group_labels.len();
+
+    // Calculate group and overall means
+    let group_means = calculate_group_means(&group_data, &group_labels, independent_variables);
+    let overall_means = calculate_overall_means(&group_data, &group_labels, independent_variables);
+
+    Ok(AnalyzedDataset {
+        group_data,
+        group_labels,
+        group_means,
+        overall_means,
+        num_groups,
+        total_cases,
+    })
+}
+
+// Extract grouped data from analysis data
+pub fn extract_grouped_data(
+    data: &AnalysisData,
+    grouping_variable: &str,
+    independent_variables: &[String],
+    min_range: Option<f64>,
+    max_range: Option<f64>
+) -> Result<(HashMap<String, HashMap<String, Vec<f64>>>, Vec<String>, usize), String> {
+    let mut group_mappings: HashMap<String, Vec<usize>> = HashMap::new();
+
+    // Extract group data with range checking
+    for (i, record) in data.group_data.iter().flatten().enumerate() {
+        if let Some(value) = record.values.get(grouping_variable) {
+            let group_label = match value {
+                DataValue::Number(num) => {
+                    // Check if value is within range
+                    if
+                        min_range.map_or(true, |min| *num >= min) &&
+                        max_range.map_or(true, |max| *num <= max)
+                    {
+                        num.to_string()
+                    } else {
+                        continue;
+                    }
+                }
+                DataValue::Text(text) => text.clone(),
+                _ => {
+                    continue;
+                }
+            };
+
+            group_mappings.entry(group_label).or_default().push(i);
+        }
+    }
+
+    // Sort group labels for consistent processing
+    let mut group_labels: Vec<String> = group_mappings.keys().cloned().collect();
+    group_labels.sort();
+
+    // Extract values for each variable by group
+    let mut variable_values: HashMap<String, HashMap<String, Vec<f64>>> = HashMap::new();
+    let mut total_cases = 0;
+
+    for var_name in independent_variables {
+        let mut group_values: HashMap<String, Vec<f64>> = HashMap::new();
+
+        // Find this variable in independent_data
+        if
+            let Some((var_idx, _)) = data.independent_data
+                .iter()
+                .enumerate()
+                .find(
+                    |(idx, _)|
+                        *idx < independent_variables.len() &&
+                        &independent_variables[*idx] == var_name
+                )
+        {
+            let var_data = &data.independent_data[var_idx];
+
+            for group_label in &group_labels {
+                let values = if let Some(indices) = group_mappings.get(group_label) {
+                    indices
+                        .iter()
+                        .filter_map(|&idx| {
+                            if idx < var_data.len() {
+                                if
+                                    let Some(DataValue::Number(val)) =
+                                        var_data[idx].values.get(var_name)
+                                {
+                                    return Some(*val);
+                                }
+                            }
+                            None
+                        })
+                        .collect()
+                } else {
+                    Vec::new()
+                };
+
+                group_values.insert(group_label.clone(), values);
+            }
+        }
+
+        // Count total valid cases for the first variable
+        if var_name == &independent_variables[0] {
+            total_cases = group_values
+                .values()
+                .map(|v| v.len())
+                .sum();
+        }
+
+        variable_values.insert(var_name.clone(), group_values);
+    }
+
+    Ok((variable_values, group_labels, total_cases))
+}
+
+// Calculate group means for all variables
+pub fn calculate_group_means(
+    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
+    group_labels: &[String],
+    variables: &[String]
+) -> HashMap<String, HashMap<String, f64>> {
+    let mut group_means = HashMap::new();
+
+    for group_label in group_labels {
+        let mut means = HashMap::new();
+
+        for var_name in variables {
+            let mean = group_data
+                .get(var_name)
+                .and_then(|g| g.get(group_label))
+                .filter(|values| !values.is_empty())
+                .map_or(0.0, |values| calculate_mean(values));
+
+            means.insert(var_name.clone(), mean);
+        }
+
+        group_means.insert(group_label.clone(), means);
+    }
+
+    group_means
+}
+
+// Calculate overall means for all variables
+pub fn calculate_overall_means(
+    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
+    group_labels: &[String],
+    variables: &[String]
+) -> HashMap<String, f64> {
+    let mut overall_means = HashMap::new();
+
+    for var_name in variables {
+        let mut all_values = Vec::new();
+
+        for group_label in group_labels {
+            if let Some(values) = group_data.get(var_name).and_then(|g| g.get(group_label)) {
+                all_values.extend(values);
+            }
+        }
+
+        let mean = if !all_values.is_empty() { calculate_mean(&all_values) } else { 0.0 };
+
+        overall_means.insert(var_name.clone(), mean);
+    }
+
+    overall_means
+}
 
 // Extract numeric values from DataRecord by field name
 pub fn extract_values_by_name(records: &[DataRecord], field_name: &str) -> Vec<f64> {
@@ -19,7 +211,7 @@ pub fn extract_values_by_name(records: &[DataRecord], field_name: &str) -> Vec<f
         .collect()
 }
 
-// Extract numeric values from group data for a specific variable index
+// Extract values from a specific variable index from group data
 pub fn extract_values_by_index(
     group_data: &[Vec<DataRecord>],
     var_idx: usize,
@@ -37,7 +229,7 @@ pub fn extract_values_by_index(
         .collect()
 }
 
-// Extract group values for a specific variable index
+// Extract all variable values for a specific group
 pub fn extract_group_values(
     group: &[DataRecord],
     var_idx: usize,
@@ -51,7 +243,7 @@ pub fn extract_group_values(
     extract_values_by_name(group, var_name)
 }
 
-// Extract all variable values from a single case as vector
+// Extract all variable values from a single case
 pub fn extract_case_values(record: &DataRecord, variables: &[String]) -> Vec<f64> {
     variables
         .iter()
@@ -65,6 +257,129 @@ pub fn extract_case_values(record: &DataRecord, variables: &[String]) -> Vec<f64
         .collect()
 }
 
+// Calculate mean of values
+pub fn calculate_mean(values: &[f64]) -> f64 {
+    if values.is_empty() {
+        return 0.0;
+    }
+    values.iter().sum::<f64>() / (values.len() as f64)
+}
+
+// Calculate variance with optional pre-calculated mean
+pub fn calculate_variance(values: &[f64], mean: Option<f64>) -> f64 {
+    if values.len() <= 1 {
+        return 0.0;
+    }
+
+    let mean_val = mean.unwrap_or_else(|| calculate_mean(values));
+    values
+        .iter()
+        .map(|&v| (v - mean_val).powi(2))
+        .sum::<f64>() / ((values.len() - 1) as f64)
+}
+
+// Calculate standard deviation with optional pre-calculated mean
+pub fn calculate_std_dev(values: &[f64], mean: Option<f64>) -> f64 {
+    calculate_variance(values, mean).sqrt()
+}
+
+// Calculate covariance between two sets of values
+pub fn calculate_covariance(
+    values1: &[f64],
+    values2: &[f64],
+    mean1: Option<f64>,
+    mean2: Option<f64>
+) -> f64 {
+    if values1.len() <= 1 || values1.len() != values2.len() {
+        return 0.0;
+    }
+
+    let mean1_val = mean1.unwrap_or_else(|| calculate_mean(values1));
+    let mean2_val = mean2.unwrap_or_else(|| calculate_mean(values2));
+
+    values1
+        .iter()
+        .zip(values2.iter())
+        .map(|(&v1, &v2)| (v1 - mean1_val) * (v2 - mean2_val))
+        .sum::<f64>() / ((values1.len() - 1) as f64)
+}
+
+// Calculate correlation coefficient
+pub fn calculate_correlation(values1: &[f64], values2: &[f64]) -> f64 {
+    if values1.len() <= 1 || values1.len() != values2.len() {
+        return 0.0;
+    }
+
+    let mean1 = calculate_mean(values1);
+    let mean2 = calculate_mean(values2);
+
+    let std_dev1 = calculate_std_dev(values1, Some(mean1));
+    let std_dev2 = calculate_std_dev(values2, Some(mean2));
+
+    if std_dev1 <= 0.0 || std_dev2 <= 0.0 {
+        return 0.0;
+    }
+
+    calculate_covariance(values1, values2, Some(mean1), Some(mean2)) / (std_dev1 * std_dev2)
+}
+
+// Calculate log determinant of a matrix
+pub fn calculate_log_determinant(matrix: &DMatrix<f64>) -> f64 {
+    let svd = SVD::new(matrix.clone(), false, false);
+
+    svd.singular_values
+        .iter()
+        .filter(|&v| *v > 1e-10)
+        .map(|v| v.ln())
+        .sum()
+}
+
+// Calculate rank and log determinant of a matrix
+pub fn calculate_rank_and_log_det(matrix: &DMatrix<f64>) -> (i32, f64) {
+    let svd = SVD::new(matrix.clone(), false, false);
+    let singular_values = &svd.singular_values;
+
+    let max_val = singular_values.iter().fold(0.0, |max, &v| (max as f64).max(v));
+    let epsilon = 1e-10 * max_val;
+
+    let rank = singular_values
+        .iter()
+        .filter(|&v| *v > epsilon)
+        .count() as i32;
+    let log_det = singular_values
+        .iter()
+        .filter(|&v| *v > epsilon)
+        .map(|v| v.ln())
+        .sum();
+
+    (rank, log_det)
+}
+
+// Calculate p-value from F statistic
+pub fn calculate_p_value_from_f(f_value: f64, df1: f64, df2: f64) -> f64 {
+    if f_value <= 0.0 || df1 <= 0.0 || df2 <= 0.0 {
+        return 1.0;
+    }
+
+    match FisherSnedecor::new(df1, df2) {
+        Ok(dist) => dist.sf(f_value),
+        Err(_) => 1.0,
+    }
+}
+
+// Calculate p-value from chi-square statistic
+pub fn calculate_p_value_from_chi_square(chi_square: f64, df: usize) -> f64 {
+    if chi_square <= 0.0 || df == 0 {
+        return 1.0;
+    }
+
+    match ChiSquared::new(df as f64) {
+        Ok(dist) => dist.sf(chi_square),
+        Err(_) => 1.0,
+    }
+}
+
+// Filter valid cases based on config
 pub fn filter_valid_cases(
     data: &AnalysisData,
     config: &DiscriminantConfig
@@ -76,7 +391,6 @@ pub fn filter_valid_cases(
     let min_range = config.define_range.min_range;
     let max_range = config.define_range.max_range;
 
-    // First, determine which cases are valid based on group variable criteria
     let mut valid_indices = Vec::new();
     let mut filtered_group_data = Vec::new();
 
@@ -92,41 +406,37 @@ pub fn filter_valid_cases(
                     let max_valid = max_range.map_or(true, |max| val <= &max);
                     min_valid && max_valid
                 }
-                _ => false, // Any non-number or missing value is invalid
+                _ => false,
             };
 
             if is_valid_group {
                 // Check if case has all required independent variables
-                let mut has_all_independent_vars = true;
+                let has_all_independent_vars = !independent_vars.iter().any(|var_name| {
+                    let var_idx = independent_vars.iter().position(|v| v == var_name);
 
-                // Assuming each independent variable array is in the same order as main.independent_variables
-                for (var_idx, var_name) in independent_vars.iter().enumerate() {
-                    if var_idx >= data.independent_data.len() {
-                        has_all_independent_vars = false;
-                        break;
+                    if let Some(var_idx) = var_idx {
+                        if var_idx >= data.independent_data.len() {
+                            return true;
+                        }
+
+                        let var_data = &data.independent_data[var_idx];
+                        if idx >= var_data.len() {
+                            return true;
+                        }
+
+                        // Check if this variable has a valid value
+                        match var_data[idx].values.get(var_name) {
+                            Some(DataValue::Number(val)) if !val.is_nan() => false,
+                            Some(DataValue::Text(s)) if !s.trim().is_empty() => false,
+                            Some(other_value) if !matches!(other_value, DataValue::Null) => false,
+                            _ => true,
+                        }
+                    } else {
+                        true
                     }
+                });
 
-                    let var_data = &data.independent_data[var_idx];
-                    if idx >= var_data.len() {
-                        has_all_independent_vars = false;
-                        break;
-                    }
-
-                    // Check if this variable has a valid value for this case
-                    let value_valid = match var_data[idx].values.get(var_name) {
-                        Some(DataValue::Number(val)) if !val.is_nan() => true,
-                        Some(DataValue::Text(s)) if !s.trim().is_empty() => true,
-                        Some(other_value) if !matches!(other_value, DataValue::Null) => true,
-                        _ => false,
-                    };
-
-                    if !value_valid {
-                        has_all_independent_vars = false;
-                        break;
-                    }
-                }
-
-                if has_all_independent_vars {
+                if !has_all_independent_vars {
                     valid_group_indices.push(idx);
                     filtered_group.push(record.clone());
                 }
@@ -137,16 +447,13 @@ pub fn filter_valid_cases(
         filtered_group_data.push(filtered_group);
     }
 
-    // Filter independent_data to include only valid cases
-    // Maintain the structure: each element is a variable array
+    // Filter independent_data
     let mut filtered_independent_data = Vec::new();
 
     for var_data in &data.independent_data {
         let mut filtered_var_data = Vec::new();
 
-        // Process each group
         for (group_idx, group_valid_indices) in valid_indices.iter().enumerate() {
-            // For each valid case in this group, get the corresponding record
             for &case_idx in group_valid_indices {
                 if case_idx < var_data.len() {
                     filtered_var_data.push(var_data[case_idx].clone());
@@ -167,7 +474,6 @@ pub fn filter_valid_cases(
             for (group_idx, sel_group) in selection_data.iter().enumerate() {
                 let mut filtered_sel_group = Vec::new();
 
-                // Only include cases that match both valid indices and selection criteria
                 if group_idx < valid_indices.len() {
                     for &case_idx in &valid_indices[group_idx] {
                         if case_idx < sel_group.len() {
@@ -220,363 +526,4 @@ pub fn filter_valid_cases(
         independent_data_defs: data.independent_data_defs.clone(),
         selection_data_defs: data.selection_data_defs.clone(),
     })
-}
-
-// Calculate means for each variable in a group
-pub fn calculate_group_means(group_data: &[DataRecord], variables: &[String]) -> Vec<f64> {
-    let mut means = Vec::with_capacity(variables.len());
-
-    for var_idx in 0..variables.len() {
-        let values = extract_group_values(group_data, var_idx, variables);
-
-        means.push(
-            if values.is_empty() {
-                0.0
-            } else {
-                values.iter().sum::<f64>() / (values.len() as f64)
-            }
-        );
-    }
-
-    means
-}
-
-// Proper covariance calculation
-pub fn calculate_covariance(values1: &[f64], values2: &[f64], mean1: f64, mean2: f64) -> f64 {
-    if values1.len() <= 1 || values1.len() != values2.len() {
-        return 0.0;
-    }
-
-    let sum_of_products = values1
-        .iter()
-        .zip(values2.iter())
-        .map(|(&v1, &v2)| (v1 - mean1) * (v2 - mean2))
-        .sum::<f64>();
-
-    sum_of_products / ((values1.len() - 1) as f64)
-}
-
-// Convert data to matrix format for linear algebra operations
-pub fn data_to_matrix(data: &AnalysisData, variables: &[String]) -> Vec<DMatrix<f64>> {
-    let mut matrices = Vec::with_capacity(data.group_data.len());
-
-    for group_data in &data.group_data {
-        let n_cases = group_data.len();
-        if n_cases == 0 {
-            continue;
-        }
-
-        let n_vars = variables.len();
-        let mut matrix = DMatrix::zeros(n_cases, n_vars);
-
-        for (case_idx, record) in group_data.iter().enumerate() {
-            for (var_idx, var_name) in variables.iter().enumerate() {
-                if let Some(DataValue::Number(value)) = record.values.get(var_name) {
-                    matrix[(case_idx, var_idx)] = *value;
-                }
-            }
-        }
-
-        matrices.push(matrix);
-    }
-
-    matrices
-}
-
-// Calculate pooled within-groups covariance matrix using matrix operations
-pub fn calculate_pooled_within_matrix(data: &AnalysisData, variables: &[String]) -> DMatrix<f64> {
-    let num_vars = variables.len();
-    let mut pooled_matrix = DMatrix::zeros(num_vars, num_vars);
-    let mut total_df = 0;
-
-    for group_data in data.group_data.iter() {
-        if group_data.len() <= 1 {
-            continue;
-        }
-
-        let df = group_data.len() - 1;
-        total_df += df;
-
-        let means = calculate_group_means(group_data, variables);
-
-        // Create data matrix for this group
-        let n_cases = group_data.len();
-        let mut X = DMatrix::zeros(n_cases, num_vars);
-
-        for (case_idx, record) in group_data.iter().enumerate() {
-            for (var_idx, var_name) in variables.iter().enumerate() {
-                if let Some(DataValue::Number(value)) = record.values.get(var_name) {
-                    X[(case_idx, var_idx)] = *value - means[var_idx]; // Centered data
-                }
-            }
-        }
-
-        // Calculate covariance matrix X'X / (n-1)
-        let cov = (X.transpose() * X) / (df as f64);
-        pooled_matrix += cov * (df as f64);
-    }
-
-    if total_df > 0 {
-        pooled_matrix /= total_df as f64;
-    }
-
-    pooled_matrix
-}
-
-// Calculate between-groups covariance matrix using matrix operations
-pub fn calculate_between_groups_matrix(data: &AnalysisData, variables: &[String]) -> DMatrix<f64> {
-    let num_vars = variables.len();
-    let mut between_matrix = DMatrix::zeros(num_vars, num_vars);
-
-    // Calculate overall means
-    let mut overall_means = DVector::zeros(num_vars);
-    let mut total_cases = 0;
-
-    for group_data in &data.group_data {
-        let n_cases = group_data.len();
-        total_cases += n_cases;
-
-        if n_cases == 0 {
-            continue;
-        }
-
-        let group_means = calculate_group_means(group_data, variables);
-        for (var_idx, &mean) in group_means.iter().enumerate() {
-            overall_means[var_idx] += mean * (n_cases as f64);
-        }
-    }
-
-    if total_cases > 0 {
-        overall_means /= total_cases as f64;
-    }
-
-    // Calculate between-groups matrix
-    for group_data in &data.group_data {
-        let n_cases = group_data.len();
-        if n_cases == 0 {
-            continue;
-        }
-
-        let group_means = calculate_group_means(group_data, variables);
-        let mut diff = DVector::zeros(num_vars);
-
-        for (var_idx, &mean) in group_means.iter().enumerate() {
-            diff[var_idx] = mean - overall_means[var_idx];
-        }
-
-        // Fixed the moved value error by adding clone()
-        between_matrix += diff.clone() * diff.transpose() * (n_cases as f64);
-    }
-
-    between_matrix
-}
-
-// Solve eigenvalue problem W^-1 * B for discriminant analysis
-pub fn solve_eigenvalue_problem(
-    w: &DMatrix<f64>,
-    b: &DMatrix<f64>,
-    num_functions: usize
-) -> (Vec<f64>, Vec<Vec<f64>>) {
-    // Cholesky decomposition of W
-    let w_inv = match w.clone().try_inverse() {
-        Some(inv) => inv,
-        None => {
-            // If W is singular, use pseudoinverse
-            let svd = SVD::new(w.clone(), true, true);
-            let singular_values = svd.singular_values;
-            let u = svd.u.unwrap();
-            let v_t = svd.v_t.unwrap();
-
-            let mut s_inv = DMatrix::zeros(w.nrows(), w.ncols());
-            let epsilon = 1e-10 * singular_values[0];
-
-            for i in 0..singular_values.len() {
-                if singular_values[i] > epsilon {
-                    s_inv[(i, i)] = 1.0 / singular_values[i];
-                }
-            }
-
-            v_t.transpose() * s_inv * u.transpose()
-        }
-    };
-
-    // Calculate W^-1 * B
-    let wb = w_inv * b;
-
-    // Eigendecomposition of W^-1 * B
-    let svd = SVD::new(wb, true, true);
-    let singular_values = svd.singular_values;
-    let v = svd.v_t.unwrap().transpose();
-
-    // Extract eigenvalues and eigenvectors
-    let mut eigenvalues = Vec::with_capacity(num_functions);
-    let mut eigenvectors = vec![vec![0.0; num_functions]; w.nrows()];
-
-    let actual_functions = std::cmp::min(num_functions, singular_values.len());
-
-    for i in 0..actual_functions {
-        eigenvalues.push(singular_values[i]);
-        for j in 0..w.nrows() {
-            eigenvectors[j][i] = v[(j, i)];
-        }
-    }
-
-    // Fill in remaining functions if needed
-    for i in actual_functions..num_functions {
-        eigenvalues.push(0.0);
-    }
-
-    (eigenvalues, eigenvectors)
-}
-
-// Calculate log determinant of matrix using eigenvalues
-pub fn calculate_log_determinant(matrix: &DMatrix<f64>) -> f64 {
-    let svd = SVD::new(matrix.clone(), false, false);
-    let singular_values = svd.singular_values;
-
-    singular_values
-        .iter()
-        .filter(|&v| *v > 1e-10)
-        .map(|v| v.ln())
-        .sum()
-}
-
-// P-value calculation from F statistic using proper F distribution
-pub fn calculate_p_value_from_f(f_value: f64, df1: f64, df2: f64) -> f64 {
-    if f_value <= 0.0 || df1 <= 0.0 || df2 <= 0.0 {
-        return 1.0;
-    }
-
-    // Create the F distribution
-    match FisherSnedecor::new(df1, df2) {
-        Ok(dist) => {
-            // Calculate survival function (1 - CDF)
-            dist.sf(f_value)
-        }
-        Err(_) => 1.0,
-    }
-}
-
-// P-value calculation from chi-square statistic
-pub fn calculate_p_value_from_chi_square(chi_square: f64, df: usize) -> f64 {
-    if chi_square <= 0.0 || df == 0 {
-        return 1.0;
-    }
-
-    // Create the Chi-square distribution
-    match ChiSquared::new(df as f64) {
-        Ok(dist) => { dist.sf(chi_square) }
-        Err(_) => 1.0,
-    }
-}
-
-// Calculate rank and log determinant of a matrix
-pub fn calculate_rank_and_log_det(matrix: &DMatrix<f64>) -> (i32, f64) {
-    let svd = SVD::new(matrix.clone(), false, false);
-    let singular_values = svd.singular_values;
-
-    let epsilon = 1e-10 * singular_values[0];
-    let rank = singular_values
-        .iter()
-        .filter(|&v| *v > epsilon)
-        .count() as i32;
-
-    let log_det = singular_values
-        .iter()
-        .filter(|&v| *v > epsilon)
-        .map(|v| v.ln())
-        .sum();
-
-    (rank, log_det)
-}
-
-// Convert DMatrix to Vec<Vec<f64>> for compatibility
-pub fn matrix_to_vec(matrix: &DMatrix<f64>) -> Vec<Vec<f64>> {
-    let rows = matrix.nrows();
-    let cols = matrix.ncols();
-    let mut result = vec![vec![0.0; cols]; rows];
-
-    for i in 0..rows {
-        for j in 0..cols {
-            result[i][j] = matrix[(i, j)];
-        }
-    }
-
-    result
-}
-
-// Convert Vec<Vec<f64>> to DMatrix for calculations
-pub fn vec_to_matrix(data: &[Vec<f64>]) -> DMatrix<f64> {
-    if data.is_empty() || data[0].is_empty() {
-        return DMatrix::zeros(0, 0);
-    }
-
-    let rows = data.len();
-    let cols = data[0].len();
-    let mut matrix = DMatrix::zeros(rows, cols);
-
-    for i in 0..rows {
-        for j in 0..cols {
-            if j < data[i].len() {
-                matrix[(i, j)] = data[i][j];
-            }
-        }
-    }
-
-    matrix
-}
-
-// Calculate pooled covariance matrix for multiple groups
-pub fn calculate_pooled_covariance_matrix(
-    data: &AnalysisData,
-    variables: &[String]
-) -> DMatrix<f64> {
-    let num_vars = variables.len();
-    let mut pooled_cov = DMatrix::zeros(num_vars, num_vars);
-    let mut total_df = 0;
-
-    for group_data in &data.group_data {
-        if group_data.len() <= 1 {
-            continue;
-        }
-
-        let n_cases = group_data.len();
-        let df = n_cases - 1;
-        total_df += df;
-
-        let group_means = calculate_group_means(group_data, variables);
-        let mut group_cov = DMatrix::zeros(num_vars, num_vars);
-
-        for var1_idx in 0..num_vars {
-            for var2_idx in 0..num_vars {
-                let values1 = extract_group_values(group_data, var1_idx, variables);
-                let values2 = extract_group_values(group_data, var2_idx, variables);
-
-                let cov = calculate_covariance(
-                    &values1,
-                    &values2,
-                    group_means[var1_idx],
-                    group_means[var2_idx]
-                );
-
-                group_cov[(var1_idx, var2_idx)] = cov;
-            }
-        }
-
-        pooled_cov += group_cov * (df as f64);
-    }
-
-    if total_df > 0 {
-        pooled_cov /= total_df as f64;
-    }
-
-    pooled_cov
-}
-
-// Function to format number with precision
-pub fn format_number(value: f64, precision: usize) -> String {
-    if value.abs() < 1e-10 {
-        return "0.0".to_string();
-    }
-    format!("{:.1$}", value, precision)
 }

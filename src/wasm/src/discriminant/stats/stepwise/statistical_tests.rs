@@ -1,33 +1,33 @@
 use std::collections::HashMap;
-
 use nalgebra::DMatrix;
-use statrs::distribution::{ ContinuousCDF, FisherSnedecor };
+use statrs::distribution::FisherSnedecor;
+use rayon::prelude::*;
 
+use crate::discriminant::stats::core::{
+    calculate_mean,
+    calculate_correlation,
+    calculate_p_value_from_f,
+    AnalyzedDataset,
+};
 use super::matrix_calculations::calculate_between_within_matrices;
 
-// Calculate univariate F test for a variable
-pub fn calculate_univariate_f(
-    variable: &str,
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
-    num_groups: usize,
-    total_cases: usize
-) -> (f64, f64) {
+/// Calculate univariate F test for a variable
+pub fn calculate_univariate_f(variable: &str, dataset: &AnalyzedDataset) -> (f64, f64) {
     // Extract variable data
-    let overall_mean = *overall_means.get(variable).unwrap_or(&0.0);
+    let overall_mean = *dataset.overall_means.get(variable).unwrap_or(&0.0);
 
-    // Calculate between-groups sum of squares
+    // Calculate between-groups and within-groups sums of squares
     let mut between_ss = 0.0;
     let mut within_ss = 0.0;
-
-    // Count valid groups and total valid cases
     let mut valid_groups = 0;
     let mut valid_cases = 0;
 
-    for group_label in group_labels {
-        if let Some(group_values) = group_data.get(variable).and_then(|g| g.get(group_label)) {
+    for group_label in &dataset.group_labels {
+        if
+            let Some(group_values) = dataset.group_data
+                .get(variable)
+                .and_then(|g| g.get(group_label))
+        {
             if group_values.is_empty() {
                 continue;
             }
@@ -35,17 +35,16 @@ pub fn calculate_univariate_f(
             valid_groups += 1;
             valid_cases += group_values.len();
 
-            // Get group mean
-            let group_mean = group_means
+            let group_mean = dataset.group_means
                 .get(group_label)
                 .and_then(|m| m.get(variable))
                 .copied()
                 .unwrap_or(0.0);
 
-            // Calculate between-groups SS for this group
+            // Between-groups SS
             between_ss += (group_values.len() as f64) * (group_mean - overall_mean).powi(2);
 
-            // Calculate within-groups SS for this group
+            // Within-groups SS
             within_ss += group_values
                 .iter()
                 .map(|&val| (val - group_mean).powi(2))
@@ -73,58 +72,27 @@ pub fn calculate_univariate_f(
     (f_value, wilks_lambda)
 }
 
-// Calculate overall Wilks' lambda for a set of variables
-pub fn calculate_overall_wilks_lambda(
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
-    variables: &[String],
-    num_groups: usize,
-    total_cases: usize
-) -> f64 {
+/// Calculate overall Wilks' lambda for a set of variables
+pub fn calculate_overall_wilks_lambda(dataset: &AnalyzedDataset, variables: &[String]) -> f64 {
     if variables.is_empty() {
         return 1.0;
     }
 
     // Calculate between-groups and within-groups matrices
-    let (between_matrix, within_matrix) = calculate_between_within_matrices(
-        group_data,
-        group_labels,
-        group_means,
-        overall_means,
-        variables,
-        num_groups
-    );
-
-    // Convert to DMatrix format
-    let mut between_mat = DMatrix::zeros(variables.len(), variables.len());
-    let mut within_mat = DMatrix::zeros(variables.len(), variables.len());
-
-    for i in 0..variables.len() {
-        for j in 0..variables.len() {
-            between_mat[(i, j)] = between_matrix[i][j];
-            within_mat[(i, j)] = within_matrix[i][j];
-        }
-    }
+    let (between_mat, within_mat) = calculate_between_within_matrices(dataset, variables);
 
     // Wilks' lambda = |W| / |B + W|
-    // To calculate, we need determinants
-
-    // Calculate determinant of within-groups matrix
     let within_det = match within_mat.clone().determinant() {
         det if det > 0.0 => det,
         _ => 1.0, // Fallback for singular matrix
     };
 
-    // Calculate determinant of total matrix
-    let total_mat = between_mat + within_mat;
+    let total_mat = &between_mat + &within_mat;
     let total_det = match total_mat.determinant() {
         det if det > 0.0 => det,
         _ => 1.0, // Fallback for singular matrix
     };
 
-    // Calculate Wilks' lambda
     if total_det > 0.0 {
         within_det / total_det
     } else {
@@ -132,7 +100,7 @@ pub fn calculate_overall_wilks_lambda(
     }
 }
 
-// Calculate overall F statistic for a set of variables
+/// Calculate overall F statistic for a set of variables
 pub fn calculate_overall_f_statistic(
     wilks_lambda: f64,
     num_variables: usize,
@@ -163,38 +131,21 @@ pub fn calculate_overall_f_statistic(
     (f_value, df1, df2, df3)
 }
 
-// Calculate p-value from F statistic
-pub fn calculate_p_value_from_f(f_value: f64, df1: f64, df2: f64) -> f64 {
-    if f_value <= 0.0 || df1 <= 0.0 || df2 <= 0.0 {
-        return 1.0;
-    }
-
-    match FisherSnedecor::new(df1, df2) {
-        Ok(dist) => {
-            // Calculate survival function (1 - CDF)
-            dist.sf(f_value)
-        }
-        Err(_) => 1.0,
-    }
-}
-
-// Calculate tolerance for a variable
+/// Calculate tolerance for a variable
 pub fn calculate_tolerance(
     variable: &str,
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
+    dataset: &AnalyzedDataset,
     other_variables: &[String]
 ) -> (f64, f64) {
     if other_variables.is_empty() {
-        // When no other variables, tolerance is 1.0
         return (1.0, 1.0);
     }
 
     // Extract values for target variable
     let mut target_values = Vec::new();
 
-    for group_label in group_labels {
-        if let Some(values) = group_data.get(variable).and_then(|g| g.get(group_label)) {
+    for group_label in &dataset.group_labels {
+        if let Some(values) = dataset.group_data.get(variable).and_then(|g| g.get(group_label)) {
             target_values.extend(values.iter().copied());
         }
     }
@@ -204,52 +155,59 @@ pub fn calculate_tolerance(
     }
 
     // Calculate R² between this variable and others
-    let mut r_squared = 0.0;
-
     if other_variables.len() == 1 {
         // Simple case with one predictor - calculate correlation coefficient
         let other_var = &other_variables[0];
         let mut other_values = Vec::new();
 
-        for group_label in group_labels {
-            if let Some(values) = group_data.get(other_var).and_then(|g| g.get(group_label)) {
+        for group_label in &dataset.group_labels {
+            if
+                let Some(values) = dataset.group_data
+                    .get(other_var)
+                    .and_then(|g| g.get(group_label))
+            {
                 other_values.extend(values.iter().copied());
             }
         }
 
         if other_values.len() == target_values.len() && !other_values.is_empty() {
-            let target_mean = target_values.iter().sum::<f64>() / (target_values.len() as f64);
-            let other_mean = other_values.iter().sum::<f64>() / (other_values.len() as f64);
-
-            let mut numerator = 0.0;
-            let mut denom1 = 0.0;
-            let mut denom2 = 0.0;
-
-            for i in 0..target_values.len() {
-                numerator += (target_values[i] - target_mean) * (other_values[i] - other_mean);
-                denom1 += (target_values[i] - target_mean).powi(2);
-                denom2 += (other_values[i] - other_mean).powi(2);
-            }
-
-            let r = if denom1 > 0.0 && denom2 > 0.0 {
-                numerator / (denom1.sqrt() * denom2.sqrt())
-            } else {
-                0.0
-            };
-
-            r_squared = r.powi(2);
-        }
-    } else {
-        // Multiple predictors - use a simplified estimate
-        // In practice, a multiple regression would be used here
-        r_squared = 0.2 * (other_variables.len() as f64);
-        if r_squared > 0.9 {
-            r_squared = 0.9;
+            let r = calculate_correlation(&target_values, &other_values);
+            let r_squared = r.powi(2);
+            let tolerance = 1.0 - r_squared;
+            let min_tolerance = tolerance * 0.8;
+            return (tolerance, min_tolerance);
         }
     }
 
-    let tolerance = 1.0 - r_squared;
-    let min_tolerance = tolerance * 0.8; // Estimate of minimum possible tolerance
+    // Multiple predictors - more accurate computation with parallelism
+    let r_squared_values: Vec<f64> = other_variables
+        .par_iter()
+        .filter_map(|other_var| {
+            let mut other_values = Vec::new();
+
+            for group_label in &dataset.group_labels {
+                if
+                    let Some(values) = dataset.group_data
+                        .get(other_var)
+                        .and_then(|g| g.get(group_label))
+                {
+                    other_values.extend(values.iter().copied());
+                }
+            }
+
+            if other_values.len() == target_values.len() && !other_values.is_empty() {
+                let r = calculate_correlation(&target_values, &other_values);
+                Some(r.powi(2))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // Use maximum correlation for tolerance
+    let max_r_squared = r_squared_values.iter().fold(0.0, |max_val, &val| max_val.max(val));
+    let tolerance = 1.0 - max_r_squared;
+    let min_tolerance = tolerance * 0.8;
 
     (tolerance, min_tolerance)
 }
