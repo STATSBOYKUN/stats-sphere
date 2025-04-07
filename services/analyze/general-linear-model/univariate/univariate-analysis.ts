@@ -58,23 +58,23 @@ export async function analyzeUnivariate({
 
     console.log(configData);
 
-    const univariate = new UnivariateAnalysis(
-        slicedDataForDependent,
-        slicedDataForFixFactor,
-        slicedDataForRandomFactor,
-        slicedDataForCovariate,
-        slicedDataForWlsWeight,
-        varDefsForDependent,
-        varDefsForFixFactor,
-        varDefsForRandomFactor,
-        varDefsForCovariate,
-        varDefsForWlsWeight,
-        configData
-    );
+    // const univariate = new UnivariateAnalysis(
+    //     slicedDataForDependent,
+    //     slicedDataForFixFactor,
+    //     slicedDataForRandomFactor,
+    //     slicedDataForCovariate,
+    //     slicedDataForWlsWeight,
+    //     varDefsForDependent,
+    //     varDefsForFixFactor,
+    //     varDefsForRandomFactor,
+    //     varDefsForCovariate,
+    //     varDefsForWlsWeight,
+    //     configData
+    // );
 
-    const result = univariate.get_results();
-    const error = univariate.get_all_errors();
+    // const result = univariate.get_results();
+    // const error = univariate.get_all_errors();
 
-    console.log(result);
-    console.log(error);
+    // console.log(result);
+    // console.log(error);
 }
