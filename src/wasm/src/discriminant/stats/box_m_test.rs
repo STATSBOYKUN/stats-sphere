@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+// box_m_test.rs
 use nalgebra::DMatrix;
 use statrs::distribution::ContinuousCDF;
 use rayon::prelude::*;
@@ -111,12 +111,14 @@ fn compute_group_covariances(
                 return None;
             }
 
-            // Compute covariance matrix
-            let cov_matrix = compute_group_covariance_matrix(dataset, group, variables)?;
-
-            let log_det = calculate_log_determinant(&cov_matrix);
-
-            Some((cov_matrix, log_det, group_size))
+            // Compute covariance matrix - FIX: Using match instead of ? operator
+            match compute_group_covariance_matrix(dataset, group, variables) {
+                Ok(cov_matrix) => {
+                    let log_det = calculate_log_determinant(&cov_matrix);
+                    Some((cov_matrix, log_det, group_size))
+                }
+                Err(_) => None,
+            }
         })
         .collect();
 

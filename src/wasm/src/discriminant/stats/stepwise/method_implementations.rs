@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use rayon::prelude::*;
+use crate::discriminant::stats::core::AnalyzedDataset;
 
 use super::{
     matrix_calculations::{
@@ -10,7 +9,6 @@ use super::{
     },
     statistical_tests::{ calculate_overall_wilks_lambda, calculate_univariate_f },
     stepwise_statistics::MethodType,
-    core::AnalyzedDataset,
 };
 
 /// Calculate F-to-enter for a variable based on the selected method
@@ -306,7 +304,7 @@ fn calculate_f_to_enter_fratio(
     let min_f_ratio = calculate_min_f_ratio(dataset, &new_variables);
 
     // For Wilks' lambda, estimate from F
-    let df1 = 1; // For pairwise comparisons
+    let _df1 = 1; // For pairwise comparisons
     let df2 = dataset.total_cases - dataset.num_groups - new_variables.len() + 1;
 
     let wilks_lambda = if min_f_ratio > 0.0 && df2 > 0 {
@@ -347,7 +345,7 @@ fn calculate_f_to_remove_fratio(
     let wilks_lambda = if reduced_variables.is_empty() {
         1.0
     } else {
-        let df1 = 1; // For pairwise comparisons
+        let _df1 = 1; // For pairwise comparisons
         let df2 = dataset.total_cases - dataset.num_groups - reduced_variables.len() + 1;
 
         if reduced_min_f > 0.0 && df2 > 0 {

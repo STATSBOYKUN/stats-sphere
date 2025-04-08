@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use nalgebra::DMatrix;
 use rayon::prelude::*;
 
@@ -17,7 +16,6 @@ pub fn calculate_log_determinants(
     // Extract analyzed dataset
     let dataset = extract_analyzed_dataset(data, config)?;
     let independent_variables = &config.main.independent_variables;
-    let num_vars = independent_variables.len();
 
     // Initialize results
     let mut ranks = Vec::with_capacity(dataset.group_labels.len());

@@ -44,10 +44,14 @@ pub fn calculate_covariance_matrices(
         // Add "Total" to group means as well
         let mut total_means = HashMap::new();
         for variable in independent_variables {
+            // Create a static empty Vec that can be referenced safely
+            let empty_vec: Vec<f64> = Vec::new();
+
+            // Use and_then() with proper reference handling
             let all_values = dataset.group_data
                 .get(variable)
                 .and_then(|g| g.get("Total"))
-                .unwrap_or(&Vec::new());
+                .unwrap_or(&empty_vec);
 
             let mean = if all_values.is_empty() {
                 0.0

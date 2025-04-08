@@ -49,13 +49,16 @@ pub fn calculate_group_statistics(
             let var_stats = independent_variables
                 .par_iter()
                 .map(|variable| {
+                    // Create a static empty Vec that can be referenced safely
+                    let empty_vec: Vec<f64> = Vec::new();
+
                     let values = if group == "Total" {
-                        total_values.get(variable).unwrap_or(&Vec::new())
+                        total_values.get(variable).unwrap_or(&empty_vec)
                     } else {
                         dataset.group_data
                             .get(variable)
                             .and_then(|g| g.get(group))
-                            .unwrap_or(&Vec::new())
+                            .unwrap_or(&empty_vec)
                     };
 
                     if values.is_empty() {
@@ -73,10 +76,12 @@ pub fn calculate_group_statistics(
         .collect();
 
     // Combine results
-    for (group_idx, (group, var_stats)) in statistics.iter().enumerate() {
-        for (variable, mean, std_dev) in var_stats {
-            result.means.get_mut(variable).unwrap().push(*mean);
-            result.std_deviations.get_mut(variable).unwrap().push(*std_dev);
+    if config.statistics.means {
+        for (group_idx, (group, var_stats)) in statistics.iter().enumerate() {
+            for (variable, mean, std_dev) in var_stats {
+                result.means.get_mut(variable).unwrap().push(*mean);
+                result.std_deviations.get_mut(variable).unwrap().push(*std_dev);
+            }
         }
     }
 

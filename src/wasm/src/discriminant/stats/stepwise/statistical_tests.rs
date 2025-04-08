@@ -1,14 +1,6 @@
-use std::collections::HashMap;
-use nalgebra::DMatrix;
-use statrs::distribution::FisherSnedecor;
 use rayon::prelude::*;
 
-use crate::discriminant::stats::core::{
-    calculate_mean,
-    calculate_correlation,
-    calculate_p_value_from_f,
-    AnalyzedDataset,
-};
+use crate::discriminant::stats::core::{ calculate_correlation, AnalyzedDataset };
 use super::matrix_calculations::calculate_between_within_matrices;
 
 /// Calculate univariate F test for a variable
@@ -205,7 +197,9 @@ pub fn calculate_tolerance(
         .collect();
 
     // Use maximum correlation for tolerance
-    let max_r_squared = r_squared_values.iter().fold(0.0, |max_val, &val| max_val.max(val));
+    let max_r_squared = r_squared_values
+        .iter()
+        .fold(0.0, |max_val, &val| (max_val as f64).max(val));
     let tolerance = 1.0 - max_r_squared;
     let min_tolerance = tolerance * 0.8;
 

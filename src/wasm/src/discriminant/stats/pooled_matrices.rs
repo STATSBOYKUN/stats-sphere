@@ -12,7 +12,6 @@ pub fn calculate_pooled_matrices(
     // Extract analyzed dataset
     let dataset = extract_analyzed_dataset(data, config)?;
     let independent_variables = &config.main.independent_variables;
-    let num_vars = independent_variables.len();
 
     // Initialize result structures
     let mut covariance: HashMap<String, HashMap<String, f64>> = HashMap::new();

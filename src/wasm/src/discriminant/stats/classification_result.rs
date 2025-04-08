@@ -1,13 +1,17 @@
 use std::collections::HashMap;
 use rayon::prelude::*;
 
+use crate::discriminant::models::result::{ CanonicalFunctions, EigenDescription };
 use crate::discriminant::models::{
     data::DataValue,
     result::ClassificationResults,
     AnalysisData,
     DiscriminantConfig,
 };
-use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::canonical_functions::{
+    calculate_canonical_functions,
+    calculate_eigen_statistics,
+};
 use super::core::{ extract_analyzed_dataset, extract_case_values, AnalyzedDataset };
 
 pub fn calculate_classification_results(
@@ -23,6 +27,9 @@ pub fn calculate_classification_results(
     // Extract record groups mapping
     let record_groups = extract_record_groups(data, &config.main.grouping_variable);
 
+    // Get eigenvalues
+    let eigen_stats = calculate_eigen_statistics(data, config)?;
+
     // Calculate discriminant functions
     let canonical_functions = calculate_canonical_functions(data, config)?;
 
@@ -35,15 +42,24 @@ pub fn calculate_classification_results(
         original_percentage.insert(group.clone(), vec![0.0; dataset.group_labels.len()]);
     }
 
+    // Clone required data for parallel processing
+    let canonical_functions_clone = canonical_functions.clone();
+    let eigen_stats_clone = eigen_stats.clone();
+    let dataset_clone = dataset.clone();
+
     // Classify each case and populate the matrices - parallel processing
     let classifications: Vec<(String, usize)> = data.group_data
         .par_iter()
         .enumerate()
         .flat_map(|(group_idx, group_data)| {
             if let Some(group_name) = record_groups.get(&group_idx) {
-                if !dataset.group_labels.contains(group_name) {
+                if !dataset_clone.group_labels.contains(group_name) {
                     return vec![];
                 }
+
+                let cf = canonical_functions_clone.clone();
+                let es = eigen_stats_clone.clone();
+                let ds = dataset_clone.clone();
 
                 group_data
                     .par_iter()
@@ -51,12 +67,7 @@ pub fn calculate_classification_results(
                         let case_values = extract_case_values(case, independent_variables);
 
                         if case_values.len() == independent_variables.len() {
-                            let predicted_idx = classify_case(
-                                &case_values,
-                                &canonical_functions,
-                                &dataset,
-                                config
-                            );
+                            let predicted_idx = classify_case(&case_values, &cf, &es, &ds, config);
 
                             Some((group_name.clone(), predicted_idx))
                         } else {
@@ -95,7 +106,7 @@ pub fn calculate_classification_results(
 
     // Cross-validation results only if requested
     let (cross_validated_classification, cross_validated_percentage) = if config.classify.leave {
-        calculate_cross_validation(data, config, &dataset, &record_groups, &canonical_functions)?
+        calculate_cross_validation(data, config, &dataset, &record_groups)?
     } else {
         (None, None)
     };
@@ -108,7 +119,10 @@ pub fn calculate_classification_results(
     })
 }
 
-fn extract_record_groups(data: &AnalysisData, grouping_variable: &str) -> HashMap<usize, String> {
+pub fn extract_record_groups(
+    data: &AnalysisData,
+    grouping_variable: &str
+) -> HashMap<usize, String> {
     let mut record_groups = HashMap::new();
 
     // Map group indices to group names
@@ -135,8 +149,7 @@ fn calculate_cross_validation(
     data: &AnalysisData,
     config: &DiscriminantConfig,
     dataset: &AnalyzedDataset,
-    record_groups: &HashMap<usize, String>,
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions
+    record_groups: &HashMap<usize, String>
 ) -> Result<(Option<HashMap<String, Vec<i32>>>, Option<HashMap<String, Vec<f64>>>), String> {
     let independent_variables = &config.main.independent_variables;
     let mut cross_validated_classification = HashMap::new();
@@ -148,20 +161,24 @@ fn calculate_cross_validation(
         cross_validated_percentage.insert(group.clone(), vec![0.0; dataset.group_labels.len()]);
     }
 
+    // Clone dataset for parallel processing
+    let dataset_clone = dataset.clone();
+
     // Use parallel processing for cross-validation
-    let cv_results: Vec<(String, usize)> = (0..data.group_data.len())
-        .into_par_iter()
-        .flat_map(|group_idx| {
-            let group_data = &data.group_data[group_idx];
+    let cv_results: Vec<(String, usize)> = data.group_data
+        .par_iter()
+        .enumerate()
+        .flat_map(|(group_idx, group_data)| {
             let group_name = match record_groups.get(&group_idx) {
-                Some(name) if dataset.group_labels.contains(name) => name.clone(),
+                Some(name) if dataset_clone.group_labels.contains(name) => name.clone(),
                 _ => {
                     return vec![];
                 }
             };
 
             (0..group_data.len())
-                .filter_map(move |case_idx| {
+                .into_par_iter()
+                .filter_map(|case_idx| {
                     // Skip if we don't have enough data
                     if group_data.len() <= 1 {
                         return None;
@@ -177,11 +194,22 @@ fn calculate_cross_validation(
                     // Create a temporary dataset excluding this case
                     let mut temp_data = data.clone();
 
+                    // Only remove if index is valid
                     if case_idx < temp_data.group_data[group_idx].len() {
                         // Remove the case from the temporary dataset
                         temp_data.group_data[group_idx].remove(case_idx);
 
-                        // Recalculate discriminant functions
+                        // Calculate new eigen statistics for leave-one-out
+                        let leave_one_out_eigen_stats = match
+                            calculate_eigen_statistics(&temp_data, config)
+                        {
+                            Ok(eigen_stats) => eigen_stats,
+                            Err(_) => {
+                                return None;
+                            }
+                        };
+
+                        // Calculate new discriminant functions for leave-one-out
                         let leave_one_out_functions = match
                             calculate_canonical_functions(&temp_data, config)
                         {
@@ -191,7 +219,7 @@ fn calculate_cross_validation(
                             }
                         };
 
-                        // Get a refreshed dataset without this case
+                        // Get temporary dataset
                         let temp_dataset = match extract_analyzed_dataset(&temp_data, config) {
                             Ok(ds) => ds,
                             Err(_) => {
@@ -199,10 +227,11 @@ fn calculate_cross_validation(
                             }
                         };
 
-                        // Classify the case with the leave-one-out model
+                        // Classify the case using leave-one-out functions
                         let predicted_idx = classify_case(
                             &case_values,
                             &leave_one_out_functions,
+                            &leave_one_out_eigen_stats,
                             &temp_dataset,
                             config
                         );
@@ -244,12 +273,13 @@ fn calculate_cross_validation(
 
 fn classify_case(
     case_values: &[f64],
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
+    canonical_functions: &CanonicalFunctions,
+    eigen_stats: &EigenDescription,
     dataset: &AnalyzedDataset,
     config: &DiscriminantConfig
 ) -> usize {
     let variables = &config.main.independent_variables;
-    let num_functions = canonical_functions.eigenvalues.len();
+    let num_functions = eigen_stats.eigenvalue.len();
     let num_groups = dataset.group_labels.len();
 
     // Calculate discriminant scores

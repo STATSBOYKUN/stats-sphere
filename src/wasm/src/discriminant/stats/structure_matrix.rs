@@ -4,8 +4,7 @@ use rayon::prelude::*;
 
 use crate::discriminant::models::{ result::StructureMatrix, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
-use crate::discriminant::stats::stepwise::stepwise_statistics::calculate_stepwise_statistics;
-use super::core::{ extract_analyzed_dataset, AnalyzedDataset };
+use super::core::{ extract_analyzed_dataset, get_stepwise_selected_variables, AnalyzedDataset };
 
 pub fn calculate_structure_matrix(
     data: &AnalysisData,
@@ -88,43 +87,10 @@ pub fn calculate_structure_matrix(
     })
 }
 
-fn get_stepwise_selected_variables(
-    data: &AnalysisData,
-    config: &DiscriminantConfig
-) -> Result<Vec<String>, String> {
-    if !config.main.stepwise {
-        return Ok(config.main.independent_variables.clone());
-    }
-
-    match calculate_stepwise_statistics(data, config) {
-        Ok(stepwise_stats) => {
-            let final_step = stepwise_stats.variables_in_analysis
-                .keys()
-                .filter_map(|k| k.parse::<i32>().ok())
-                .max()
-                .unwrap_or(0)
-                .to_string();
-
-            if let Some(vars_in_model) = stepwise_stats.variables_in_analysis.get(&final_step) {
-                let selected_vars: Vec<String> = vars_in_model
-                    .iter()
-                    .map(|v| v.variable.clone())
-                    .collect();
-
-                if selected_vars.is_empty() {
-                    Ok(config.main.independent_variables.clone())
-                } else {
-                    Ok(selected_vars)
-                }
-            } else {
-                Ok(config.main.independent_variables.clone())
-            }
-        }
-        Err(_) => { Ok(config.main.independent_variables.clone()) }
-    }
-}
-
-fn calculate_pooled_within_matrix(dataset: &AnalyzedDataset, variables: &[String]) -> DMatrix<f64> {
+pub fn calculate_pooled_within_matrix(
+    dataset: &AnalyzedDataset,
+    variables: &[String]
+) -> DMatrix<f64> {
     let num_vars = variables.len();
     let mut pooled_within = DMatrix::zeros(num_vars, num_vars);
     let mut total_df = 0;
@@ -182,7 +148,7 @@ fn calculate_pooled_within_matrix(dataset: &AnalyzedDataset, variables: &[String
     pooled_within
 }
 
-fn calculate_within_correlation_matrix(pooled_within: &DMatrix<f64>) -> DMatrix<f64> {
+pub fn calculate_within_correlation_matrix(pooled_within: &DMatrix<f64>) -> DMatrix<f64> {
     let n = pooled_within.nrows();
     let mut within_corr = DMatrix::zeros(n, n);
 

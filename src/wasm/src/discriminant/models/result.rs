@@ -23,6 +23,8 @@ pub struct DiscriminantResult {
     pub covariance_matrices: Option<CovarianceMatrices>,
     #[serde(rename = "log_determinants")]
     pub log_determinants: Option<LogDeterminants>,
+    #[serde(rename = "eigen_description")]
+    pub eigen_description: Option<EigenDescription>,
     #[serde(rename = "stepwise_statistics")]
     pub stepwise_statistics: Option<StepwiseStatistics>,
     #[serde(rename = "wilks_lambda_test")]
@@ -87,14 +89,23 @@ pub struct EqualityTests {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct CanonicalFunctions {
-    pub eigenvalues: Vec<f64>,
+pub struct EigenDescription {
+    #[serde(rename = "functions")]
+    pub functions: Vec<String>,
+    #[serde(rename = "eigenvalue")]
+    pub eigenvalue: Vec<f64>,
+    #[serde(rename = "eigenvector")]
+    pub eigenvector: Vec<f64>,
     #[serde(rename = "variance_percentage")]
     pub variance_percentage: Vec<f64>,
     #[serde(rename = "cumulative_percentage")]
     pub cumulative_percentage: Vec<f64>,
     #[serde(rename = "canonical_correlation")]
     pub canonical_correlation: Vec<f64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CanonicalFunctions {
     pub coefficients: HashMap<String, Vec<f64>>,
     #[serde(rename = "standardized_coefficients")]
     pub standardized_coefficients: HashMap<String, Vec<f64>>,

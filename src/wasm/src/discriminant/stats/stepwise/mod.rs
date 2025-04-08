@@ -1,4 +1,3 @@
-pub mod data_extraction;
 pub mod matrix_calculations;
 pub mod method_implementations;
 pub mod pairwise_comparisons;

@@ -1,8 +1,15 @@
 use std::collections::HashMap;
 
 use crate::discriminant::models::{ AnalysisData, DiscriminantConfig };
-use crate::discriminant::models::result::{ DiscriminantHistograms, GroupHistogram };
-use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::models::result::{
+    CanonicalFunctions,
+    DiscriminantHistograms,
+    GroupHistogram,
+};
+use crate::discriminant::stats::canonical_functions::{
+    calculate_canonical_functions,
+    calculate_eigen_statistics,
+};
 use super::core::{ extract_case_values, calculate_mean, calculate_variance };
 
 pub fn generate_discriminant_histograms(
@@ -11,12 +18,15 @@ pub fn generate_discriminant_histograms(
 ) -> Result<DiscriminantHistograms, String> {
     web_sys::console::log_1(&"Executing generate_discriminant_histograms".into());
 
+    // Get eigenvalues
+    let eigen_stats = calculate_eigen_statistics(data, config)?;
+    let num_functions = eigen_stats.eigenvalue.len();
+
     // Calculate canonical functions
     let canonical_functions = calculate_canonical_functions(data, config)?;
     let variables = &config.main.independent_variables;
 
-    // Get number of functions and groups
-    let num_functions = canonical_functions.eigenvalues.len();
+    // Get number of groups
     let num_groups = data.group_data.len();
 
     let functions: Vec<String> = (1..=num_functions).map(|i| i.to_string()).collect();
@@ -66,7 +76,7 @@ pub fn generate_discriminant_histograms(
 fn calculate_discriminant_scores(
     group_data: &[crate::discriminant::models::DataRecord],
     func_idx: usize,
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
+    canonical_functions: &CanonicalFunctions,
     variables: &[String]
 ) -> Vec<f64> {
     group_data

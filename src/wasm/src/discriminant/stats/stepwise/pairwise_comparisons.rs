@@ -5,7 +5,6 @@ use crate::discriminant::{
     models::result::PairwiseComparison,
     stats::core::{ calculate_p_value_from_f, AnalyzedDataset },
 };
-use super::matrix_calculations::calculate_mahalanobis_distance;
 
 /// Generate pairwise comparisons between groups
 pub fn generate_pairwise_comparisons(
@@ -104,7 +103,7 @@ pub fn calculate_mahalanobis_distance(
     let mut pooled_cov = DMatrix::zeros(variables.len(), variables.len());
     let mut total_df = 0;
 
-    for group_label in &[group_i, group_j] {
+    for group_label in [group_i, group_j] {
         let n_g = dataset.group_data
             .get(&variables[0])
             .and_then(|g| g.get(group_label))

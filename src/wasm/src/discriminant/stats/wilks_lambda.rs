@@ -1,7 +1,10 @@
 use crate::discriminant::models::{ result::WilksLambdaTest, AnalysisData, DiscriminantConfig };
 use crate::discriminant::stats::stepwise::stepwise_statistics::calculate_stepwise_statistics;
-use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
-use super::core::{ extract_analyzed_dataset, calculate_p_value_from_chi_square, AnalyzedDataset };
+use crate::discriminant::stats::canonical_functions::{
+    calculate_canonical_functions,
+    calculate_eigen_statistics,
+};
+use super::core::{ extract_analyzed_dataset, calculate_p_value_from_chi_square };
 
 pub fn calculate_wilks_lambda_test(
     data: &AnalysisData,
@@ -12,11 +15,14 @@ pub fn calculate_wilks_lambda_test(
     // Extract analyzed dataset
     let dataset = extract_analyzed_dataset(data, config)?;
 
+    // Get eigenvalues
+    let eigen_stats = calculate_eigen_statistics(data, config)?;
+
     // Get canonical functions
     let canonical_functions = calculate_canonical_functions(data, config)?;
 
     // Get valid eigenvalues
-    let eigenvalues: Vec<f64> = canonical_functions.eigenvalues
+    let eigenvalues: Vec<f64> = eigen_stats.eigenvalue
         .into_iter()
         .filter(|&e| e > 1e-10)
         .collect();
@@ -131,9 +137,4 @@ fn get_stepwise_selected_variables_count(
         }
         Err(_) => Ok(config.main.independent_variables.len()),
     }
-}
-
-// Helper function to get unique groups - moved to dataset struct
-fn extract_unique_groups(dataset: &AnalyzedDataset) -> Vec<String> {
-    dataset.group_labels.clone()
 }

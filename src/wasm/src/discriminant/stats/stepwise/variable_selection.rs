@@ -1,11 +1,8 @@
-// variable_selection.rs
-use std::collections::HashMap;
 use rayon::prelude::*;
-use nalgebra::Matrix;
 
 use crate::discriminant::{
     models::{ result::{ VariableInAnalysis, VariableNotInAnalysis }, DiscriminantConfig },
-    stats::core::calculate_p_value_from_f,
+    stats::core::{ AnalyzedDataset, calculate_p_value_from_f },
 };
 
 use super::{
@@ -29,13 +26,8 @@ pub fn determine_method_type(config: &DiscriminantConfig) -> MethodType {
 // Analyze variables not in the model - parallelized
 pub fn analyze_variables_not_in_model(
     variables: &[String],
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
+    dataset: &AnalyzedDataset,
     current_variables: &[String],
-    num_groups: usize,
-    total_cases: usize,
     config: &DiscriminantConfig
 ) -> Vec<VariableNotInAnalysis> {
     let method_type = determine_method_type(config);
@@ -47,8 +39,7 @@ pub fn analyze_variables_not_in_model(
             // Calculate tolerance
             let (tolerance, min_tolerance) = calculate_tolerance(
                 var_name,
-                group_data,
-                group_labels,
+                dataset,
                 current_variables
             );
 
@@ -60,13 +51,8 @@ pub fn analyze_variables_not_in_model(
             // Calculate F-to-enter
             let (f_to_enter, wilks_lambda) = calculate_variable_f_to_enter(
                 var_name,
-                group_data,
-                group_labels,
-                group_means,
-                overall_means,
+                dataset,
                 current_variables,
-                num_groups,
-                total_cases,
                 method_type
             );
 
@@ -97,12 +83,7 @@ pub fn analyze_variables_not_in_model(
 // Analyze variables in the model - parallelized
 pub fn analyze_variables_in_model(
     variables: &[String],
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
-    num_groups: usize,
-    total_cases: usize,
+    dataset: &AnalyzedDataset,
     method_type: MethodType,
     config: &DiscriminantConfig
 ) -> Vec<VariableInAnalysis> {
@@ -118,23 +99,13 @@ pub fn analyze_variables_in_model(
                 .collect();
 
             // Calculate tolerance
-            let (tolerance, _) = calculate_tolerance(
-                var_name,
-                group_data,
-                group_labels,
-                &other_variables
-            );
+            let (tolerance, _) = calculate_tolerance(var_name, dataset, &other_variables);
 
             // Calculate F-to-remove
             let (f_to_remove, wilks_lambda) = calculate_variable_f_to_remove(
                 var_name,
-                group_data,
-                group_labels,
-                group_means,
-                overall_means,
+                dataset,
                 variables,
-                num_groups,
-                total_cases,
                 method_type
             );
 
@@ -159,13 +130,8 @@ pub fn analyze_variables_in_model(
 // Find the best variable to enter the model with caching
 pub fn find_best_variable_to_enter(
     variables: &[String],
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
+    dataset: &AnalyzedDataset,
     current_variables: &[String],
-    num_groups: usize,
-    total_cases: usize,
     method_type: MethodType,
     config: &DiscriminantConfig
 ) -> (Option<String>, VariableNotInAnalysis) {
@@ -183,17 +149,7 @@ pub fn find_best_variable_to_enter(
     }
 
     // Analyze all candidate variables
-    let candidates = analyze_variables_not_in_model(
-        variables,
-        group_data,
-        group_labels,
-        group_means,
-        overall_means,
-        current_variables,
-        num_groups,
-        total_cases,
-        config
-    );
+    let candidates = analyze_variables_not_in_model(variables, dataset, current_variables, config);
 
     if candidates.is_empty() {
         return (None, default_result);
@@ -230,12 +186,7 @@ pub fn find_best_variable_to_enter(
 // Find the worst variable to remove from the model with caching
 pub fn find_worst_variable_to_remove(
     variables: &[String],
-    group_data: &HashMap<String, HashMap<String, Vec<f64>>>,
-    group_labels: &[String],
-    group_means: &HashMap<String, HashMap<String, f64>>,
-    overall_means: &HashMap<String, f64>,
-    num_groups: usize,
-    total_cases: usize,
+    dataset: &AnalyzedDataset,
     method_type: MethodType,
     config: &DiscriminantConfig
 ) -> (Option<String>, VariableInAnalysis) {
@@ -252,17 +203,7 @@ pub fn find_worst_variable_to_remove(
     }
 
     // Analyze all variables in the model
-    let candidates = analyze_variables_in_model(
-        variables,
-        group_data,
-        group_labels,
-        group_means,
-        overall_means,
-        num_groups,
-        total_cases,
-        method_type,
-        config
-    );
+    let candidates = analyze_variables_in_model(variables, dataset, method_type, config);
 
     if candidates.is_empty() {
         return (None, default_result);
@@ -275,7 +216,7 @@ pub fn find_worst_variable_to_remove(
             candidates
                 .iter()
                 .max_by(|a, b|
-                    b.wilks_lambda.partial_cmp(&a.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
+                    a.wilks_lambda.partial_cmp(&b.wilks_lambda).unwrap_or(std::cmp::Ordering::Equal)
                 )
                 .cloned()
         }
@@ -293,8 +234,8 @@ pub fn find_worst_variable_to_remove(
     } else if config.method.f_probability {
         let p_value = calculate_p_value_from_f(
             worst.f_to_remove,
-            (num_groups - 1) as f64,
-            (total_cases - variables.len() + 1 - num_groups) as f64
+            (dataset.num_groups - 1) as f64,
+            (dataset.total_cases - variables.len() + 1 - dataset.num_groups) as f64
         );
         p_value >= config.method.p_removal
     } else {

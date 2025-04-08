@@ -1,7 +1,4 @@
-// stepwise_statistics.rs
 use std::collections::HashMap;
-use rayon::prelude::*;
-use statrs::distribution::ContinuousCDF;
 
 use crate::discriminant::{
     models::{
@@ -88,7 +85,7 @@ pub fn calculate_stepwise_statistics(
 
 fn perform_stepwise_analysis(
     dataset: &AnalyzedDataset,
-    variables: &[String],
+    variables: &Vec<String>,
     config: &DiscriminantConfig
 ) -> Result<Vec<StepData>, String> {
     // Initialize variables for stepwise analysis
@@ -153,13 +150,8 @@ fn process_selection_step(
     // Find best variable to enter
     let (best_var_to_enter, best_stats) = find_best_variable_to_enter(
         remaining_variables,
-        &dataset.group_data,
-        &dataset.group_labels,
-        &dataset.group_means,
-        &dataset.overall_means,
+        &dataset,
         current_variables,
-        dataset.num_groups,
-        dataset.total_cases,
         method_type,
         config
     );
@@ -241,12 +233,7 @@ fn process_variable_removal(
         // Find worst variable to remove
         let (worst_var_to_remove, worst_stats) = find_worst_variable_to_remove(
             current_variables,
-            &dataset.group_data,
-            &dataset.group_labels,
-            &dataset.group_means,
-            &dataset.overall_means,
-            dataset.num_groups,
-            dataset.total_cases,
+            &dataset,
             method_type,
             config
         );
@@ -352,17 +339,7 @@ fn create_initial_step(
     variables: &[String],
     config: &DiscriminantConfig
 ) -> StepData {
-    let initial_variables_not_in = analyze_variables_not_in_model(
-        variables,
-        &dataset.group_data,
-        &dataset.group_labels,
-        &dataset.group_means,
-        &dataset.overall_means,
-        &[],
-        dataset.num_groups,
-        dataset.total_cases,
-        config
-    );
+    let initial_variables_not_in = analyze_variables_not_in_model(variables, &dataset, &[], config);
 
     StepData {
         variable_entered: None,
@@ -395,38 +372,20 @@ fn create_step_data(
     // Analyze variables in and out of the model
     let vars_in_analysis = analyze_variables_in_model(
         current_variables,
-        &dataset.group_data,
-        &dataset.group_labels,
-        &dataset.group_means,
-        &dataset.overall_means,
-        dataset.num_groups,
-        dataset.total_cases,
+        &dataset,
         method_type,
         config
     );
 
     let vars_not_in_analysis = analyze_variables_not_in_model(
         remaining_variables,
-        &dataset.group_data,
-        &dataset.group_labels,
-        &dataset.group_means,
-        &dataset.overall_means,
+        &dataset,
         current_variables,
-        dataset.num_groups,
-        dataset.total_cases,
         config
     );
 
     // Calculate overall statistics
-    let wilks_lambda = calculate_overall_wilks_lambda(
-        &dataset.group_data,
-        &dataset.group_labels,
-        &dataset.group_means,
-        &dataset.overall_means,
-        current_variables,
-        dataset.num_groups,
-        dataset.total_cases
-    );
+    let wilks_lambda = calculate_overall_wilks_lambda(&dataset, current_variables);
 
     // Calculate F statistic
     let (f_value, df1, df2, df3) = calculate_overall_f_statistic(
@@ -446,15 +405,7 @@ fn create_step_data(
 
     // Generate pairwise comparisons if requested
     let pairwise_comparisons = if config.method.pairwise {
-        generate_pairwise_comparisons(
-            &dataset.group_data,
-            &dataset.group_labels,
-            &dataset.group_means,
-            current_variables,
-            step,
-            dataset.num_groups,
-            dataset.total_cases
-        )
+        generate_pairwise_comparisons(&dataset, current_variables, step)
     } else {
         HashMap::new()
     };

@@ -21,6 +21,9 @@ pub fn run_analysis(
     // Log configuration to track which methods will be executed
     web_sys::console::log_1(&format!("Config: {:?}", config).into());
 
+    // Log data to track the input data
+    web_sys::console::log_1(&format!("Data: {:?}", data).into());
+
     // Step 1: Basic processing summary (always executed)
     executed_functions.push("basic_processing_summary".to_string());
     let processing_summary = match core::basic_processing_summary(data, config) {
@@ -44,20 +47,16 @@ pub fn run_analysis(
 
     // Step 2: Group statistics if requested
     let mut group_statistics = None;
-    if config.statistics.means {
-        executed_functions.push("calculate_group_statistics".to_string());
-        match core::calculate_group_statistics(&filtered_data, config) {
-            Ok(stats) => {
-                group_statistics = Some(stats);
-                web_sys::console::log_1(
-                    &format!("Group Statistics: {:?}", group_statistics).into()
-                );
-            }
-            Err(e) => {
-                error_collector.add_error("calculate_group_statistics", &e);
-                // Continue execution despite errors for non-critical functions
-            }
-        };
+    executed_functions.push("calculate_group_statistics".to_string());
+    match core::calculate_group_statistics(&filtered_data, config) {
+        Ok(stats) => {
+            group_statistics = Some(stats);
+            web_sys::console::log_1(&format!("Group Statistics: {:?}", group_statistics).into());
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_group_statistics", &e);
+            // Continue execution despite errors for non-critical functions
+        }
     }
 
     // Step 3: Equality tests if requested
@@ -163,21 +162,32 @@ pub fn run_analysis(
                 // Continue execution despite errors for non-critical functions
             }
         }
+    }
 
-        // Wilks' Lambda test
-        executed_functions.push("calculate_wilks_lambda_test".to_string());
-        match core::calculate_wilks_lambda_test(&filtered_data, config) {
-            Ok(test) => {
-                wilks_lambda_test = Some(test);
-                web_sys::console::log_1(
-                    &format!("Wilks' Lambda Test: {:?}", wilks_lambda_test).into()
-                );
-            }
-            Err(e) => {
-                error_collector.add_error("calculate_wilks_lambda_test", &e);
-                // Continue execution despite errors for non-critical functions
-            }
-        };
+    // Eigen Values
+    executed_functions.push("calculate_eigen_values".to_string());
+    let eigen_description = match core::calculate_eigen_statistics(&filtered_data, config) {
+        Ok(values) => {
+            web_sys::console::log_1(&format!("Eigen Values: {:?}", values).into());
+            Some(values)
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_eigen_values", &e);
+            return Err(string_to_js_error(e));
+        }
+    };
+
+    // Wilks' Lambda test
+    executed_functions.push("calculate_wilks_lambda_test".to_string());
+    match core::calculate_wilks_lambda_test(&filtered_data, config) {
+        Ok(test) => {
+            wilks_lambda_test = Some(test);
+            web_sys::console::log_1(&format!("Wilks' Lambda Test: {:?}", wilks_lambda_test).into());
+        }
+        Err(e) => {
+            error_collector.add_error("calculate_wilks_lambda_test", &e);
+            // Continue execution despite errors for non-critical functions
+        }
     }
 
     // Step 9: Calculate canonical functions (always executed)
@@ -342,6 +352,7 @@ pub fn run_analysis(
         covariance_matrices,
         log_determinants,
         stepwise_statistics,
+        eigen_description,
         wilks_lambda_test,
         casewise_statistics,
         prior_probabilities,

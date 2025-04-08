@@ -1,8 +1,8 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { DiscriminantAnalysisType } from "@/models/classify/discriminant/discriminant-worker";
-import init from "@/src/wasm/pkg/wasm";
-import { convertStatisticalData } from "@/services/analyze/classify/discriminant/discriminant-analysis-formatter";
+import init, { DiscriminantAnalysis } from "@/src/wasm/pkg/wasm";
 import { resultDiscriminant } from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
+import { transformDiscriminantResult } from "./discriminant-analysis-formatter";
 
 export async function analyzeDiscriminant({
     configData,
@@ -56,28 +56,30 @@ export async function analyzeDiscriminant({
         slicedDataForGrouping,
         slicedDataForIndependent,
         slicedDataForSelection,
-        configData,
         varDefsForGrouping,
         varDefsForIndependent,
-        varDefsForSelection
+        varDefsForSelection,
+        configData
     );
 
     const results = da.get_results();
     const executed = da.get_executed_functions();
     const errors = da.get_all_errors();
+
     console.log("executed", executed);
     console.log("errors", errors);
     console.log("results", results);
 
-    // const formattedResults = convertStatisticalData(results);
+    const formattedResults = transformDiscriminantResult(results);
+    console.log("formattedResults", formattedResults);
 
-    // /*
-    //  * 🎉 Final Result Process 🎯
-    //  * */
-    // await resultDiscriminant({
-    //     addLog,
-    //     addAnalytic,
-    //     addStatistic,
-    //     caseProcessingSummary,
-    // });
+    /*
+     * 🎉 Final Result Process 🎯
+     * */
+    await resultDiscriminant({
+        addLog,
+        addAnalytic,
+        addStatistic,
+        formattedResult: formattedResults ?? [],
+    });
 }

@@ -23,10 +23,10 @@ impl DiscriminantAnalysis {
         group_data: JsValue,
         independent_data: JsValue,
         selection_data: JsValue,
-        config_data: JsValue,
         group_data_defs: JsValue,
         independent_data_defs: JsValue,
-        selection_data_defs: JsValue
+        selection_data_defs: JsValue,
+        config_data: JsValue
     ) -> Result<DiscriminantAnalysis, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();

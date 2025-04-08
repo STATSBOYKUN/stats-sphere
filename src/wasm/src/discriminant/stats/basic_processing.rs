@@ -33,12 +33,18 @@ pub fn basic_processing_summary(
             };
 
             let has_missing_disc = independent_vars.iter().any(|var_name| {
-                match record.values.get(var_name) {
-                    Some(DataValue::Number(val)) if !val.is_nan() => false,
-                    Some(DataValue::Text(s)) if !s.trim().is_empty() => false,
-                    Some(DataValue::Boolean(_)) => false,
-                    _ => true,
-                }
+                // Check if the variable exists in any of the independent record groups
+                data.independent_data.iter().all(|group|
+                    group.iter().any(|ind_record| {
+                        match ind_record.values.get(var_name) {
+                            Some(DataValue::Number(val)) => val.is_nan(),
+                            Some(DataValue::Text(s)) => s.trim().is_empty(),
+                            Some(DataValue::Null) => true,
+                            None => true,
+                            _ => false,
+                        }
+                    })
+                )
             });
 
             if has_missing_group && has_missing_disc {

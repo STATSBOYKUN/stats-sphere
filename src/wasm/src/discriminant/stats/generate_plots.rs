@@ -1,7 +1,11 @@
 use std::collections::HashMap;
 
+use crate::discriminant::models::result::CanonicalFunctions;
 use crate::discriminant::models::{ AnalysisData, DiscriminantConfig };
-use crate::discriminant::stats::canonical_functions::calculate_canonical_functions;
+use crate::discriminant::stats::canonical_functions::{
+    calculate_canonical_functions,
+    calculate_eigen_statistics,
+};
 use super::core::extract_case_values;
 
 pub fn generate_plots(
@@ -12,20 +16,24 @@ pub fn generate_plots(
 
     let mut result = HashMap::new();
 
+    // Get eigenvalues
+    let eigen_stats = calculate_eigen_statistics(data, config)?;
+
+    // Check if at least 1 function is available
+    if eigen_stats.eigenvalue.is_empty() {
+        return Err("No discriminant functions available for plotting".to_string());
+    }
+
     // Calculate canonical functions
     let canonical_functions = calculate_canonical_functions(data, config)?;
     let variables = &config.main.independent_variables;
-
-    // Check if at least 1 function is available
-    if canonical_functions.eigenvalues.is_empty() {
-        return Err("No discriminant functions available for plotting".to_string());
-    }
 
     // Calculate discriminant scores for all cases
     let discriminant_scores = calculate_all_discriminant_scores(
         data,
         &canonical_functions,
-        variables
+        variables,
+        eigen_stats.eigenvalue.len()
     )?;
 
     // Generate requested plots
@@ -58,11 +66,11 @@ pub fn generate_plots(
 
 fn calculate_all_discriminant_scores(
     data: &AnalysisData,
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
-    variables: &[String]
+    canonical_functions: &CanonicalFunctions,
+    variables: &[String],
+    num_functions: usize
 ) -> Result<Vec<Vec<Vec<f64>>>, String> {
     let num_groups = data.group_data.len();
-    let num_functions = canonical_functions.eigenvalues.len();
 
     let mut all_scores = Vec::with_capacity(num_groups);
 
@@ -100,7 +108,7 @@ fn calculate_all_discriminant_scores(
 
 fn generate_combined_groups_plot(
     discriminant_scores: &[Vec<Vec<f64>>],
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions
+    canonical_functions: &CanonicalFunctions
 ) -> String {
     // Calculate plot boundaries
     let (min_x, max_x, min_y, max_y) = calculate_plot_boundaries(discriminant_scores);
@@ -165,7 +173,7 @@ fn generate_combined_groups_plot(
 
 fn generate_separate_groups_plot(
     discriminant_scores: &[Vec<Vec<f64>>],
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions
+    canonical_functions: &CanonicalFunctions
 ) -> String {
     let num_groups = discriminant_scores.len();
 
@@ -182,7 +190,7 @@ fn generate_separate_groups_plot(
 }
 
 fn generate_territorial_map(
-    canonical_functions: &crate::discriminant::models::result::CanonicalFunctions,
+    canonical_functions: &CanonicalFunctions,
     discriminant_scores: &[Vec<Vec<f64>>]
 ) -> String {
     // Extract centroids

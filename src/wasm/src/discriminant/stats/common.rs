@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use crate::discriminant::models::{ AnalysisData, DataRecord, DataValue, DiscriminantConfig };
 
 // AnalyzedDataset struct to consolidate extracted data
+#[derive(Debug, Clone)]
 pub struct AnalyzedDataset {
     pub group_data: HashMap<String, HashMap<String, Vec<f64>>>,
     pub group_labels: Vec<String>,
@@ -391,72 +392,134 @@ pub fn filter_valid_cases(
     let min_range = config.define_range.min_range;
     let max_range = config.define_range.max_range;
 
-    let mut valid_indices = Vec::new();
-    let mut filtered_group_data = Vec::new();
+    // Track valid indices for each group
+    let mut valid_indices: Vec<Vec<usize>> = Vec::new();
 
+    // Initialize with all indices
     for group in &data.group_data {
-        let mut valid_group_indices = Vec::new();
-        let mut filtered_group = Vec::new();
+        valid_indices.push((0..group.len()).collect());
+    }
 
-        for (idx, record) in group.iter().enumerate() {
-            // Check if group value is within range
-            let is_valid_group = match record.values.get(group_var) {
-                Some(DataValue::Number(val)) => {
-                    let min_valid = min_range.map_or(true, |min| val >= &min);
-                    let max_valid = max_range.map_or(true, |max| val <= &max);
-                    min_valid && max_valid
-                }
-                _ => false,
-            };
-
-            if is_valid_group {
-                // Check if case has all required independent variables
-                let has_all_independent_vars = !independent_vars.iter().any(|var_name| {
-                    let var_idx = independent_vars.iter().position(|v| v == var_name);
-
-                    if let Some(var_idx) = var_idx {
-                        if var_idx >= data.independent_data.len() {
-                            return true;
+    // Step 1: Apply selection filter if applicable
+    if
+        let (Some(selection_data), Some(selection_var), Some(set_value)) = (
+            &data.selection_data,
+            &config.main.selection_variable,
+            &config.set_value.value,
+        )
+    {
+        for (group_idx, sel_group) in selection_data.iter().enumerate() {
+            if group_idx < valid_indices.len() {
+                // Filter valid indices based on selection criteria
+                valid_indices[group_idx] = valid_indices[group_idx]
+                    .iter()
+                    .filter(|&&idx| {
+                        if idx < sel_group.len() {
+                            match sel_group[idx].values.get(selection_var) {
+                                Some(DataValue::Number(val)) => (val - set_value).abs() < 1e-10,
+                                Some(DataValue::Text(s)) => s == &set_value.to_string(),
+                                _ => false,
+                            }
+                        } else {
+                            false
                         }
-
-                        let var_data = &data.independent_data[var_idx];
-                        if idx >= var_data.len() {
-                            return true;
-                        }
-
-                        // Check if this variable has a valid value
-                        match var_data[idx].values.get(var_name) {
-                            Some(DataValue::Number(val)) if !val.is_nan() => false,
-                            Some(DataValue::Text(s)) if !s.trim().is_empty() => false,
-                            Some(other_value) if !matches!(other_value, DataValue::Null) => false,
-                            _ => true,
-                        }
-                    } else {
-                        true
-                    }
-                });
-
-                if !has_all_independent_vars {
-                    valid_group_indices.push(idx);
-                    filtered_group.push(record.clone());
-                }
+                    })
+                    .copied()
+                    .collect();
             }
         }
+    }
 
-        valid_indices.push(valid_group_indices);
-        filtered_group_data.push(filtered_group);
+    // Step 2: Apply group range filter
+    for (group_idx, group) in data.group_data.iter().enumerate() {
+        if group_idx < valid_indices.len() {
+            // Filter valid indices based on group range
+            valid_indices[group_idx] = valid_indices[group_idx]
+                .iter()
+                .filter(|&&idx| {
+                    if idx < group.len() {
+                        match group[idx].values.get(group_var) {
+                            Some(DataValue::Number(val)) => {
+                                let min_valid = min_range.map_or(true, |min| val >= &min);
+                                let max_valid = max_range.map_or(true, |max| val <= &max);
+                                min_valid && max_valid
+                            }
+                            Some(DataValue::Text(_)) => true, // Text values valid for groups
+                            _ => false,
+                        }
+                    } else {
+                        false
+                    }
+                })
+                .copied()
+                .collect();
+        }
+    }
+
+    // Step 3: Apply independent variables filter (check for missing values)
+    for (group_idx, _) in data.group_data.iter().enumerate() {
+        if group_idx < valid_indices.len() {
+            // Filter valid indices based on missing independent vars
+            valid_indices[group_idx] = valid_indices[group_idx]
+                .iter()
+                .filter(|&&idx| {
+                    // Check if all independent variables have valid values
+                    !independent_vars.iter().any(|var_name| {
+                        let var_idx = independent_vars.iter().position(|v| v == var_name);
+
+                        match var_idx {
+                            Some(var_idx) if var_idx < data.independent_data.len() => {
+                                let var_data = &data.independent_data[var_idx];
+                                if idx >= var_data.len() {
+                                    return true;
+                                }
+
+                                match var_data[idx].values.get(var_name) {
+                                    Some(DataValue::Number(val)) if val.is_nan() => true,
+                                    Some(DataValue::Text(s)) if s.trim().is_empty() => true,
+                                    Some(DataValue::Null) => true,
+                                    None => true,
+                                    _ => false,
+                                }
+                            }
+                            _ => true,
+                        }
+                    })
+                })
+                .copied()
+                .collect();
+        }
+    }
+
+    // Now use the filtered valid_indices to construct the final datasets
+    let mut filtered_group_data = Vec::new();
+
+    // Filter group_data
+    for (group_idx, group) in data.group_data.iter().enumerate() {
+        if group_idx < valid_indices.len() {
+            let filtered_group = valid_indices[group_idx]
+                .iter()
+                .filter_map(|&idx| {
+                    if idx < group.len() { Some(group[idx].clone()) } else { None }
+                })
+                .collect();
+
+            filtered_group_data.push(filtered_group);
+        } else {
+            filtered_group_data.push(Vec::new());
+        }
     }
 
     // Filter independent_data
     let mut filtered_independent_data = Vec::new();
 
-    for var_data in &data.independent_data {
+    for var_idx in 0..data.independent_data.len() {
         let mut filtered_var_data = Vec::new();
 
         for (group_idx, group_valid_indices) in valid_indices.iter().enumerate() {
-            for &case_idx in group_valid_indices {
-                if case_idx < var_data.len() {
-                    filtered_var_data.push(var_data[case_idx].clone());
+            for &idx in group_valid_indices {
+                if idx < data.independent_data[var_idx].len() {
+                    filtered_var_data.push(data.independent_data[var_idx][idx].clone());
                 }
             }
         }
@@ -465,57 +528,28 @@ pub fn filter_valid_cases(
     }
 
     // Filter selection_data if applicable
-    let filtered_selection_data = match
-        (&data.selection_data, &config.main.selection_variable, &config.set_value.value)
-    {
-        (Some(selection_data), Some(selection_var), Some(set_value)) => {
-            let mut filtered_sel_data = Vec::new();
+    let filtered_selection_data = match &data.selection_data {
+        Some(selection_data) => {
+            let mut filtered = Vec::new();
 
             for (group_idx, sel_group) in selection_data.iter().enumerate() {
-                let mut filtered_sel_group = Vec::new();
-
                 if group_idx < valid_indices.len() {
-                    for &case_idx in &valid_indices[group_idx] {
-                        if case_idx < sel_group.len() {
-                            match sel_group[case_idx].values.get(selection_var) {
-                                Some(DataValue::Number(val)) if (val - set_value).abs() < 1e-10 => {
-                                    filtered_sel_group.push(sel_group[case_idx].clone());
-                                }
-                                Some(DataValue::Text(s)) if s == &set_value.to_string() => {
-                                    filtered_sel_group.push(sel_group[case_idx].clone());
-                                }
-                                _ => {}
-                            }
-                        }
-                    }
-                }
+                    let filtered_sel_group = valid_indices[group_idx]
+                        .iter()
+                        .filter_map(|&idx| {
+                            if idx < sel_group.len() { Some(sel_group[idx].clone()) } else { None }
+                        })
+                        .collect();
 
-                filtered_sel_data.push(filtered_sel_group);
+                    filtered.push(filtered_sel_group);
+                } else {
+                    filtered.push(Vec::new());
+                }
             }
 
-            Some(filtered_sel_data)
+            Some(filtered)
         }
-        (Some(selection_data), None, _) | (Some(selection_data), _, None) => {
-            // If no selection criteria, just filter based on valid indices
-            let mut filtered_sel_data = Vec::new();
-
-            for (group_idx, sel_group) in selection_data.iter().enumerate() {
-                let mut filtered_sel_group = Vec::new();
-
-                if group_idx < valid_indices.len() {
-                    for &case_idx in &valid_indices[group_idx] {
-                        if case_idx < sel_group.len() {
-                            filtered_sel_group.push(sel_group[case_idx].clone());
-                        }
-                    }
-                }
-
-                filtered_sel_data.push(filtered_sel_group);
-            }
-
-            Some(filtered_sel_data)
-        }
-        _ => None,
+        None => None,
     };
 
     Ok(AnalysisData {

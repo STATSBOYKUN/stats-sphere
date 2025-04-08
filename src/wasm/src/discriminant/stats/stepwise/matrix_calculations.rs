@@ -115,20 +115,22 @@ pub fn calculate_total_unexplained_variation(
         return 1.0; // Maximum unexplained variation
     }
 
-    // Calculate for each pair of groups in parallel
-    let unexplained_values: Vec<f64> = dataset.group_labels
-        .par_iter()
-        .enumerate()
-        .flat_map(|(i, group_i)| {
-            dataset.group_labels[i + 1..].iter().map(move |group_j| {
+    // Use simpler approach for parallel computation
+    let mut unexplained_values = Vec::new();
+
+    for (i, group_i) in dataset.group_labels.iter().enumerate() {
+        let values: Vec<f64> = dataset.group_labels[i + 1..]
+            .par_iter()
+            .map(|group_j| {
                 // Calculate Mahalanobis distance between these groups
                 let d2 = calculate_group_mahalanobis_distance(dataset, group_i, group_j, variables);
 
                 // Dixon's formula for unexplained variation
                 4.0 / (4.0 + d2)
             })
-        })
-        .collect();
+            .collect();
+        unexplained_values.extend(values);
+    }
 
     // Sum the pairwise values
     unexplained_values.iter().sum()
@@ -140,21 +142,25 @@ pub fn calculate_min_mahalanobis_distance(dataset: &AnalyzedDataset, variables: 
         return 0.0;
     }
 
-    // Calculate pairwise distances in parallel
-    let distances: Vec<f64> = dataset.group_labels
-        .par_iter()
-        .enumerate()
-        .flat_map(|(i, group_i)| {
-            dataset.group_labels[i + 1..]
-                .iter()
-                .map(move |group_j| {
-                    calculate_group_mahalanobis_distance(dataset, group_i, group_j, variables)
-                })
-        })
-        .collect();
+    // Use simpler approach for parallel computation
+    let mut distances = Vec::new();
+
+    for (i, group_i) in dataset.group_labels.iter().enumerate() {
+        let group_distances: Vec<f64> = dataset.group_labels[i + 1..]
+            .par_iter()
+            .map(|group_j| {
+                calculate_group_mahalanobis_distance(dataset, group_i, group_j, variables)
+            })
+            .collect();
+        distances.extend(group_distances);
+    }
 
     // Find minimum distance
-    distances.into_iter().fold(f64::MAX, |min_val, val| min_val.min(val))
+    if distances.is_empty() {
+        0.0
+    } else {
+        distances.into_iter().fold(f64::MAX, |min_val, val| min_val.min(val))
+    }
 }
 
 // Calculate minimum F ratio between any two groups
@@ -163,12 +169,13 @@ pub fn calculate_min_f_ratio(dataset: &AnalyzedDataset, variables: &[String]) ->
         return 0.0;
     }
 
-    // Calculate pairwise F ratios in parallel
-    let f_ratios: Vec<f64> = dataset.group_labels
-        .par_iter()
-        .enumerate()
-        .flat_map(|(i, group_i)| {
-            dataset.group_labels[i + 1..].iter().map(move |group_j| {
+    // Use simpler approach for parallel computation
+    let mut f_ratios = Vec::new();
+
+    for (i, group_i) in dataset.group_labels.iter().enumerate() {
+        let group_f_ratios: Vec<f64> = dataset.group_labels[i + 1..]
+            .par_iter()
+            .map(|group_j| {
                 // Calculate Mahalanobis distance
                 let d2 = calculate_group_mahalanobis_distance(dataset, group_i, group_j, variables);
 
@@ -195,8 +202,9 @@ pub fn calculate_min_f_ratio(dataset: &AnalyzedDataset, variables: &[String]) ->
                     0.0
                 }
             })
-        })
-        .collect();
+            .collect();
+        f_ratios.extend(group_f_ratios);
+    }
 
     // Find minimum F ratio
     if f_ratios.is_empty() {
@@ -234,7 +242,7 @@ fn calculate_group_mahalanobis_distance(
     let mut pooled_cov = DMatrix::zeros(variables.len(), variables.len());
     let mut total_df = 0;
 
-    for group_label in &[group_i, group_j] {
+    for group_label in [group_i, group_j] {
         let n_g = dataset.group_data
             .get(&variables[0])
             .and_then(|g| g.get(group_label))
