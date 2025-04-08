@@ -494,8 +494,8 @@ export function transformDiscriminantResult(data: any): ResultJson {
             const rowData: any = {
                 rowHeader: ["Original"],
                 "Case Number": formatDisplayNumber(cs.case_number[i]),
-                "Actual Group": formatDisplayNumber(cs.actual_group[i]),
-                "Predicted Group": formatDisplayNumber(cs.predicted_group[i]),
+                "Actual Group": cs.actual_group[i],
+                "Predicted Group": cs.predicted_group[i],
                 "P(D>d | G=g)": formatDisplayNumber(
                     cs.highest_group.p_value[i]
                 ),
@@ -506,7 +506,6 @@ export function transformDiscriminantResult(data: any): ResultJson {
                 "Squared Mahalanobis Distance": formatDisplayNumber(
                     cs.highest_group.squared_mahalanobis_distance[i]
                 ),
-                Group: formatDisplayNumber(cs.highest_group.group[i]),
                 "Second Highest P(G=g | D=d)": formatDisplayNumber(
                     cs.second_highest_group.p_g_equals_d[i]
                 ),
@@ -514,9 +513,7 @@ export function transformDiscriminantResult(data: any): ResultJson {
                     formatDisplayNumber(
                         cs.second_highest_group.squared_mahalanobis_distance[i]
                     ),
-                "Second Highest Group": formatDisplayNumber(
-                    cs.second_highest_group.group[i]
-                ),
+                "Second Highest Group": cs.second_highest_group.group[i],
             };
 
             // Add discriminant scores

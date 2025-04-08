@@ -123,26 +123,27 @@ pub fn extract_record_groups(
     data: &AnalysisData,
     grouping_variable: &str
 ) -> HashMap<usize, String> {
-    let mut record_groups = HashMap::new();
+    let mut case_groups = HashMap::new();
+    let mut case_idx = 0;
 
-    // Map group indices to group names
-    for (group_idx, group_data) in data.group_data.iter().enumerate() {
-        if group_data.is_empty() {
-            continue;
-        }
-
+    for group_data in &data.group_data {
         for record in group_data {
-            if let Some(DataValue::Number(value)) = record.values.get(grouping_variable) {
-                record_groups.insert(group_idx, value.to_string());
-                break;
-            } else if let Some(DataValue::Text(value)) = record.values.get(grouping_variable) {
-                record_groups.insert(group_idx, value.clone());
-                break;
+            if let Some(value) = record.values.get(grouping_variable) {
+                let group_label = match value {
+                    DataValue::Number(num) => num.to_string(),
+                    DataValue::Text(text) => text.clone(),
+                    _ => {
+                        continue;
+                    }
+                };
+
+                case_groups.insert(case_idx, group_label);
             }
+            case_idx += 1;
         }
     }
 
-    record_groups
+    case_groups
 }
 
 fn calculate_cross_validation(

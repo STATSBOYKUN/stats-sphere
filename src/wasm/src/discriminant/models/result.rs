@@ -248,9 +248,9 @@ pub struct CasewiseStatistics {
     #[serde(rename = "case_number")]
     pub case_number: Vec<usize>,
     #[serde(rename = "actual_group")]
-    pub actual_group: Vec<usize>,
+    pub actual_group: Vec<String>,
     #[serde(rename = "predicted_group")]
-    pub predicted_group: Vec<usize>,
+    pub predicted_group: Vec<String>,
     #[serde(rename = "highest_group")]
     pub highest_group: HighestGroupStatistics,
     #[serde(rename = "second_highest_group")]
@@ -268,7 +268,7 @@ pub struct HighestGroupStatistics {
     pub p_g_equals_d: Vec<f64>,
     #[serde(rename = "squared_mahalanobis_distance")]
     pub squared_mahalanobis_distance: Vec<f64>,
-    pub group: Vec<usize>,
+    pub group: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
