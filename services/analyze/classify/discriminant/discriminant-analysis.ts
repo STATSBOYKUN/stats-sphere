@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { DiscriminantAnalysisType } from "@/models/classify/discriminant/discriminant-worker";
-import init, { DiscriminantAnalysis } from "@/src/wasm/pkg/wasm";
+import init from "@/src/wasm/pkg/wasm";
 import { resultDiscriminant } from "@/services/analyze/classify/discriminant/discriminant-analysis-output";
 import { transformDiscriminantResult } from "./discriminant-analysis-formatter";
 
@@ -52,34 +52,34 @@ export async function analyzeDiscriminant({
         varDefsForSelection
     );
 
-    const da = new DiscriminantAnalysis(
-        slicedDataForGrouping,
-        slicedDataForIndependent,
-        slicedDataForSelection,
-        varDefsForGrouping,
-        varDefsForIndependent,
-        varDefsForSelection,
-        configData
-    );
+    // const da = new DiscriminantAnalysis(
+    //     slicedDataForGrouping,
+    //     slicedDataForIndependent,
+    //     slicedDataForSelection,
+    //     varDefsForGrouping,
+    //     varDefsForIndependent,
+    //     varDefsForSelection,
+    //     configData
+    // );
 
-    const results = da.get_results();
-    const executed = da.get_executed_functions();
-    const errors = da.get_all_errors();
+    // const results = da.get_results();
+    // const executed = da.get_executed_functions();
+    // const errors = da.get_all_errors();
 
-    console.log("executed", executed);
-    console.log("errors", errors);
-    console.log("results", results);
+    // console.log("executed", executed);
+    // console.log("errors", errors);
+    // console.log("results", results);
 
-    const formattedResults = transformDiscriminantResult(results);
-    console.log("formattedResults", formattedResults);
+    // const formattedResults = transformDiscriminantResult(results);
+    // console.log("formattedResults", formattedResults);
 
-    /*
-     * 🎉 Final Result Process 🎯
-     * */
-    await resultDiscriminant({
-        addLog,
-        addAnalytic,
-        addStatistic,
-        formattedResult: formattedResults ?? [],
-    });
+    // /*
+    //  * 🎉 Final Result Process 🎯
+    //  * */
+    // await resultDiscriminant({
+    //     addLog,
+    //     addAnalytic,
+    //     addStatistic,
+    //     formattedResult: formattedResults ?? [],
+    // });
 }

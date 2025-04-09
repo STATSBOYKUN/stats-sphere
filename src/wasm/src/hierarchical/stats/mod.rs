@@ -1,11 +1,11 @@
 pub mod core;
+pub mod common;
 pub mod agglomeration;
 pub mod calculate_distance;
 pub mod cluster_membership;
 pub mod cluster_method;
 pub mod dendrogram;
+pub mod icicle_plot;
 pub mod process_case;
 pub mod proximity_matrix;
 pub mod transformation;
-
-pub use core::*;

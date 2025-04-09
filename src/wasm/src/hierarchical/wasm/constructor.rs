@@ -22,9 +22,9 @@ impl HierarchicalCluster {
     pub fn new(
         cluster_data: JsValue,
         label_data: JsValue,
-        config_data: JsValue,
         cluster_data_defs: JsValue,
-        label_data_defs: JsValue
+        label_data_defs: JsValue,
+        config_data: JsValue
     ) -> Result<HierarchicalCluster, JsValue> {
         // Initialize error collector
         let mut error_collector = ErrorCollector::default();
@@ -44,15 +44,6 @@ impl HierarchicalCluster {
             Err(e) => {
                 let msg = format!("Failed to parse label data: {}", e);
                 error_collector.add_error("constructor.label_data", &msg);
-                return Err(string_to_js_error(msg));
-            }
-        };
-
-        let config: ClusterConfig = match serde_wasm_bindgen::from_value(config_data) {
-            Ok(data) => data,
-            Err(e) => {
-                let msg = format!("Failed to parse configuration: {}", e);
-                error_collector.add_error("constructor.config", &msg);
                 return Err(string_to_js_error(msg));
             }
         };
@@ -92,6 +83,15 @@ impl HierarchicalCluster {
             label_data,
             cluster_data_defs,
             label_data_defs,
+        };
+
+        let config: ClusterConfig = match serde_wasm_bindgen::from_value(config_data) {
+            Ok(data) => data,
+            Err(e) => {
+                let msg = format!("Failed to parse configuration: {}", e);
+                error_collector.add_error("constructor.config", &msg);
+                return Err(string_to_js_error(msg));
+            }
         };
 
         // Create instance

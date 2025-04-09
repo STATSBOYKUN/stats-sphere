@@ -10,7 +10,9 @@ pub struct ClusteringResult {
     pub proximity_matrix: Option<ProximityMatrix>,
     pub agglomeration_schedule: Option<AgglomerationSchedule>,
     pub dendrogram: Option<Dendrogram>,
+    pub icicle_plot: Option<IciclePlot>,
     pub executed_functions: Vec<String>,
+    pub cluster_memberships: Vec<ClusterMembership>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -67,4 +69,30 @@ pub struct ClusterState {
     pub case_labels: Vec<String>, // Labels for each case
     pub variables: Vec<String>, // Variables used for clustering
     pub method: ClusMethod, // Clustering method
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct IciclePlot {
+    pub orientation: String,
+    pub clusters: Vec<String>,
+    pub num_clusters: Vec<usize>,
+    pub start_cluster: i32,
+    pub stop_cluster: i32,
+    pub step_by: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ClusterMembership {
+    pub num_clusters: usize,
+    pub case_assignments: Vec<usize>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DendrogramTreeNode {
+    pub id: usize, // Node ID
+    pub left: Option<Box<DendrogramTreeNode>>, // Left child
+    pub right: Option<Box<DendrogramTreeNode>>, // Right child
+    pub cases: Vec<usize>, // Case indices in this node
+    pub height: f64, // Merge height/distance
+    pub label: Option<String>, // Label (only for leaf nodes)
 }

@@ -1,31 +1,36 @@
+// proximity_matrix.rs
 use std::collections::HashMap;
 use crate::hierarchical::models::{
     config::ClusterConfig,
     data::{ AnalysisData, DataValue },
     result::ProximityMatrix,
 };
-use super::{ calculate_distance, calculate_variable_distance };
+
+use super::core::{
+    calculate_distance,
+    calculate_statistics,
+    calculate_variable_distance,
+    extract_case_label,
+};
+
 pub fn generate_proximity_matrix(
     data: &AnalysisData,
     config: &ClusterConfig
 ) -> Result<ProximityMatrix, String> {
-    let mut distances = HashMap::new();
-    // Get variables to use for calculating distances
-    let variables = match &config.main.variables {
-        Some(vars) => vars.clone(),
-        None => {
-            return Err("No variables specified for clustering".to_string());
-        }
-    };
+    let variables = config.main.variables
+        .as_ref()
+        .ok_or_else(|| "No variables specified for clustering".to_string())?;
 
-    if config.main.cluster_cases {
-        // CASE CLUSTERING
-        generate_case_proximity_matrix(data, config, &variables, &mut distances)?;
+    let mut distances = if config.main.cluster_cases {
+        generate_case_proximity_matrix(data, config, variables)?
     } else if config.main.cluster_var {
-        // VARIABLE CLUSTERING
-        generate_variable_proximity_matrix(data, config, &variables, &mut distances)?;
+        generate_variable_proximity_matrix(data, config, variables)?
     } else {
         return Err("Neither case nor variable clustering specified".to_string());
+    };
+
+    if config.method.abs_value || config.method.change_sign || config.method.rescale_range {
+        transform_proximity_values(&mut distances, config)?;
     }
 
     Ok(ProximityMatrix { distances })
@@ -34,70 +39,39 @@ pub fn generate_proximity_matrix(
 fn generate_case_proximity_matrix(
     data: &AnalysisData,
     config: &ClusterConfig,
-    variables: &[String],
-    distances: &mut HashMap<(String, String), f64>
-) -> Result<(), String> {
-    // Case clustering - calculate distances between all cases
+    variables: &[String]
+) -> Result<HashMap<(String, String), f64>, String> {
     if data.cluster_data.is_empty() {
         return Err("No data available for clustering".to_string());
     }
+
     let case_count = data.cluster_data[0].len();
+    let mut distances = HashMap::new();
 
-    // Extract values for each case and variable
-    let mut case_values = Vec::with_capacity(case_count);
-    let mut case_labels = Vec::with_capacity(case_count);
-
-    for case_idx in 0..case_count {
-        let mut values = HashMap::new();
-
-        // Get values for all specified variables
-        for var in variables {
-            for dataset_idx in 0..data.cluster_data.len() {
-                let dataset = &data.cluster_data[dataset_idx];
-
-                if case_idx < dataset.len() {
-                    if let Some(value) = dataset[case_idx].values.get(var) {
-                        values.insert(var.clone(), value.clone());
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Create case label using gender or other specified label
-        let label = if let Some(label_var) = &config.main.label_cases {
-            let mut label_value = String::new();
-
-            // First try to find the label in label data
-            for dataset in &data.label_data {
-                if case_idx < dataset.len() {
-                    if let Some(value) = dataset[case_idx].values.get(label_var) {
-                        match value {
-                            DataValue::Text(text) => {
-                                label_value = text.clone();
-                                break;
-                            }
-                            DataValue::Number(num) => {
-                                label_value = num.to_string();
-                                break;
-                            }
-                            _ => {}
+    // Extract case data
+    let case_values: Vec<HashMap<String, DataValue>> = (0..case_count)
+        .map(|case_idx| {
+            let mut values = HashMap::new();
+            for var in variables {
+                for dataset in &data.cluster_data {
+                    if case_idx < dataset.len() {
+                        if let Some(value) = dataset[case_idx].values.get(var) {
+                            values.insert(var.clone(), value.clone());
+                            break;
                         }
                     }
                 }
             }
+            values
+        })
+        .collect();
 
-            // Format as shown in the reference image: "1.m", "2.f", etc.
-            format!("{}.{}", case_idx + 1, label_value)
-        } else {
-            format!("Case {}", case_idx + 1)
-        };
+    // Create case labels using the updated extract_case_label function
+    let case_labels: Vec<String> = (0..case_count)
+        .map(|case_idx| extract_case_label(data, config, case_idx))
+        .collect();
 
-        case_values.push(values);
-        case_labels.push(label);
-    }
-
-    // Calculate all pairwise distances including self (which is 0)
+    // Calculate distances - could be parallelized for better performance
     for i in 0..case_count {
         for j in 0..case_count {
             let distance = if i == j {
@@ -109,36 +83,43 @@ fn generate_case_proximity_matrix(
             distances.insert((case_labels[i].clone(), case_labels[j].clone()), distance);
         }
     }
-    Ok(())
+
+    Ok(distances)
 }
 
 fn generate_variable_proximity_matrix(
     data: &AnalysisData,
     config: &ClusterConfig,
-    variables: &[String],
-    distances: &mut HashMap<(String, String), f64>
-) -> Result<(), String> {
+    variables: &[String]
+) -> Result<HashMap<(String, String), f64>, String> {
     if data.cluster_data.is_empty() {
         return Err("No data available for clustering".to_string());
     }
+
+    let mut distances = HashMap::new();
     let case_count = data.cluster_data[0].len();
 
     // For each variable, collect its values across all cases
     let mut variable_values: HashMap<String, Vec<f64>> = HashMap::new();
 
     for var in variables {
-        let mut values = Vec::with_capacity(case_count);
-
-        for i in 0..case_count {
-            for dataset in &data.cluster_data {
-                if i < dataset.len() {
-                    if let Some(DataValue::Number(value)) = dataset[i].values.get(var) {
-                        values.push(*value);
-                        break;
-                    }
-                }
-            }
-        }
+        let values: Vec<f64> = (0..case_count)
+            .filter_map(|i| {
+                data.cluster_data
+                    .iter()
+                    .filter_map(|dataset| {
+                        if i < dataset.len() {
+                            match dataset[i].values.get(var) {
+                                Some(DataValue::Number(value)) => Some(*value),
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .next()
+            })
+            .collect();
 
         variable_values.insert(var.clone(), values);
     }
@@ -152,11 +133,43 @@ fn generate_variable_proximity_matrix(
             let distance = if i == j {
                 0.0 // Distance to self is always 0
             } else {
-                // For variable clustering, we compare the vectors of values
                 calculate_variable_distance(&variable_values, var_i, var_j, config)
             };
 
             distances.insert((var_i.clone(), var_j.clone()), distance);
+        }
+    }
+
+    Ok(distances)
+}
+
+// Functions to transform proximity matrix values
+pub fn transform_proximity_values(
+    distances: &mut HashMap<(String, String), f64>,
+    config: &ClusterConfig
+) -> Result<(), String> {
+    // Apply transformations in order: abs value, sign change, rescale
+    if config.method.abs_value {
+        for value in distances.values_mut() {
+            *value = value.abs();
+        }
+    }
+
+    if config.method.change_sign {
+        for value in distances.values_mut() {
+            *value = -*value;
+        }
+    }
+
+    if config.method.rescale_range {
+        let values: Vec<f64> = distances.values().cloned().collect();
+        let stats = calculate_statistics(&values);
+
+        // Rescale all values to [0,1]
+        if stats.range > 0.0 {
+            for value in distances.values_mut() {
+                *value = (*value - stats.min) / stats.range;
+            }
         }
     }
 

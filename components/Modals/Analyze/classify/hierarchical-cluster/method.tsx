@@ -561,10 +561,6 @@ export const HierClusMethod = ({
                                                         </SelectTrigger>
                                                         <SelectContent>
                                                             <SelectGroup>
-                                                                <SelectLabel>
-                                                                    Standardization
-                                                                    Methods
-                                                                </SelectLabel>
                                                                 {STANDARDIZEMETHODS.map(
                                                                     (
                                                                         method,

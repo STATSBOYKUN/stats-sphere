@@ -1,7 +1,19 @@
+// calculate_distance.rs
 use std::collections::HashMap;
 use crate::hierarchical::models::{
     config::{ ClusterConfig, IntervalMethod, CountsMethod, BinaryMethod },
     data::DataValue,
+};
+use super::core::{
+    chebyshev_distance,
+    compute_contingency_table,
+    correlation_distance,
+    cosine_similarity,
+    euclidean_distance,
+    manhattan_distance,
+    minkowski_distance,
+    power_distance,
+    squared_euclidean_distance,
 };
 
 pub fn calculate_distance(
@@ -28,6 +40,15 @@ pub fn calculate_distance(
     }
 }
 
+fn extract_numeric_values(case: &HashMap<String, DataValue>, variables: &[String]) -> Vec<f64> {
+    variables
+        .iter()
+        .filter_map(|var| {
+            if let Some(DataValue::Number(val)) = case.get(var) { Some(*val) } else { None }
+        })
+        .collect()
+}
+
 fn calculate_interval_distance(
     case1: &HashMap<String, DataValue>,
     case2: &HashMap<String, DataValue>,
@@ -35,20 +56,8 @@ fn calculate_interval_distance(
     measure: &IntervalMethod,
     config: &ClusterConfig
 ) -> f64 {
-    // Extract the values as vectors
-    let mut values1 = Vec::new();
-    let mut values2 = Vec::new();
-    for var in variables {
-        if
-            let (Some(DataValue::Number(val1)), Some(DataValue::Number(val2))) = (
-                case1.get(var),
-                case2.get(var),
-            )
-        {
-            values1.push(*val1);
-            values2.push(*val2);
-        }
-    }
+    let values1 = extract_numeric_values(case1, variables);
+    let values2 = extract_numeric_values(case2, variables);
 
     compute_interval_distance(&values1, &values2, measure, config)
 }
@@ -60,20 +69,8 @@ fn calculate_counts_distance(
     method: &CountsMethod,
     _config: &ClusterConfig
 ) -> f64 {
-    // Extract the values as vectors
-    let mut values1 = Vec::new();
-    let mut values2 = Vec::new();
-    for var in variables {
-        if
-            let (Some(DataValue::Number(val1)), Some(DataValue::Number(val2))) = (
-                case1.get(var),
-                case2.get(var),
-            )
-        {
-            values1.push(*val1);
-            values2.push(*val2);
-        }
-    }
+    let values1 = extract_numeric_values(case1, variables);
+    let values2 = extract_numeric_values(case2, variables);
 
     compute_counts_distance(&values1, &values2, method)
 }
@@ -85,20 +82,8 @@ fn calculate_binary_distance(
     method: &BinaryMethod,
     config: &ClusterConfig
 ) -> f64 {
-    // Extract the values as vectors
-    let mut values1 = Vec::new();
-    let mut values2 = Vec::new();
-    for var in variables {
-        if
-            let (Some(DataValue::Number(val1)), Some(DataValue::Number(val2))) = (
-                case1.get(var),
-                case2.get(var),
-            )
-        {
-            values1.push(*val1);
-            values2.push(*val2);
-        }
-    }
+    let values1 = extract_numeric_values(case1, variables);
+    let values2 = extract_numeric_values(case2, variables);
 
     compute_binary_distance(&values1, &values2, method, config)
 }
@@ -125,117 +110,30 @@ pub fn calculate_variable_distance(
     }
 }
 
-// Generic functions to compute distances given value vectors
-fn compute_interval_distance(
+// Simplified distance calculation functions
+pub fn compute_interval_distance(
     values1: &[f64],
     values2: &[f64],
     measure: &IntervalMethod,
     config: &ClusterConfig
 ) -> f64 {
-    let mut distance = 0.0;
     match measure {
-        IntervalMethod::SquaredEuclidean => {
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                distance += (val1 - val2).powi(2);
-            }
-        }
-        IntervalMethod::Euclidean => {
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                distance += (val1 - val2).powi(2);
-            }
-            distance = distance.sqrt();
-        }
-        IntervalMethod::Manhattan => {
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                distance += (val1 - val2).abs();
-            }
-        }
-        IntervalMethod::Chebychev => {
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                let diff = (val1 - val2).abs();
-                distance = distance.max(diff);
-            }
-        }
-        IntervalMethod::Correlation => {
-            // Correlation as a distance measure
-            let n = values1.len() as f64;
-
-            let sum_x: f64 = values1.iter().sum();
-            let sum_y: f64 = values2.iter().sum();
-
-            let sum_xy: f64 = values1
-                .iter()
-                .zip(values2.iter())
-                .map(|(x, y)| x * y)
-                .sum();
-
-            let sum_x2: f64 = values1
-                .iter()
-                .map(|x| x.powi(2))
-                .sum();
-            let sum_y2: f64 = values2
-                .iter()
-                .map(|y| y.powi(2))
-                .sum();
-
-            let numerator = sum_xy - (sum_x * sum_y) / n;
-            let denominator = ((sum_x2 - sum_x.powi(2) / n) * (sum_y2 - sum_y.powi(2) / n)).sqrt();
-
-            if denominator != 0.0 {
-                distance = 1.0 - numerator / denominator;
-            } else {
-                distance = 1.0; // Maximum distance when correlation is undefined
-            }
-        }
-        IntervalMethod::Cosine => {
-            let mut dot_product = 0.0;
-            let mut mag1 = 0.0;
-            let mut mag2 = 0.0;
-
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                dot_product += val1 * val2;
-                mag1 += val1.powi(2);
-                mag2 += val2.powi(2);
-            }
-
-            if mag1 > 0.0 && mag2 > 0.0 {
-                distance = 1.0 - dot_product / (mag1.sqrt() * mag2.sqrt());
-            } else {
-                distance = 1.0; // Maximum distance when vectors are zero
-            }
-        }
+        IntervalMethod::SquaredEuclidean => squared_euclidean_distance(values1, values2),
+        IntervalMethod::Euclidean => euclidean_distance(values1, values2),
+        IntervalMethod::Manhattan => manhattan_distance(values1, values2),
+        IntervalMethod::Chebychev => chebyshev_distance(values1, values2),
+        IntervalMethod::Correlation => correlation_distance(values1, values2),
+        IntervalMethod::Cosine => 1.0 - cosine_similarity(values1, values2),
         IntervalMethod::Minkowski => {
-            let p = match config.method.power.parse::<f64>() {
-                Ok(val) => val,
-                Err(_) => 2.0, // Default to Euclidean
-            };
-
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                distance += (val1 - val2).abs().powf(p);
-            }
-
-            distance = distance.powf(1.0 / p);
+            let p = config.method.power.parse::<f64>().unwrap_or(2.0);
+            minkowski_distance(values1, values2, p)
         }
         IntervalMethod::Customized => {
-            let p = match config.method.power.parse::<f64>() {
-                Ok(val) => val,
-                Err(_) => 2.0,
-            };
-
-            let r = match config.method.root.parse::<f64>() {
-                Ok(val) => val,
-                Err(_) => 2.0,
-            };
-
-            for (val1, val2) in values1.iter().zip(values2.iter()) {
-                distance += (val1 - val2).abs().powf(p);
-            }
-
-            distance = distance.powf(1.0 / r);
+            let p = config.method.power.parse::<f64>().unwrap_or(2.0);
+            let r = config.method.root.parse::<f64>().unwrap_or(2.0);
+            power_distance(values1, values2, p, r)
         }
     }
-
-    distance
 }
 
 fn compute_counts_distance(values1: &[f64], values2: &[f64], method: &CountsMethod) -> f64 {
@@ -243,25 +141,20 @@ fn compute_counts_distance(values1: &[f64], values2: &[f64], method: &CountsMeth
         CountsMethod::CHISQ => {
             let mut chisq_sum = 0.0;
             for (val1, val2) in values1.iter().zip(values2.iter()) {
-                // Expected values under independence model
                 let e_x = (val1 + val2) / 2.0;
-
                 if e_x != 0.0 {
                     chisq_sum += (val1 - e_x).powi(2) / e_x;
                     chisq_sum += (val2 - e_x).powi(2) / e_x;
                 }
             }
-
             chisq_sum.sqrt()
         }
         CountsMethod::PH2 => {
-            let mut chisq_sum = 0.0;
             let n = values1.len() as f64;
+            let mut chisq_sum = 0.0;
 
             for (val1, val2) in values1.iter().zip(values2.iter()) {
-                // Expected values under independence model
                 let e_x = (val1 + val2) / 2.0;
-
                 if e_x != 0.0 {
                     chisq_sum += (val1 - e_x).powi(2) / e_x;
                     chisq_sum += (val2 - e_x).powi(2) / e_x;
@@ -284,7 +177,8 @@ fn compute_binary_distance(
     config: &ClusterConfig
 ) -> f64 {
     // Build the 2x2 contingency table (a, b, c, d)
-    let (a, b, c, d) = compute_contingency_table(values1, values2, config);
+    let (a, b, c, d) = compute_contingency_table(values1, values2, config.method.present as f64);
+
     // Apply the appropriate formula based on the method
     match method {
         BinaryMethod::BSEUCLID => b + c,
@@ -330,34 +224,4 @@ fn compute_binary_distance(
         BinaryMethod::Y => ((a * d).sqrt() - (b * c).sqrt()) / ((a * d).sqrt() + (b * c).sqrt()),
         BinaryMethod::Q => if a * d + b * c > 0.0 { (a * d - b * c) / (a * d + b * c) } else { 0.0 }
     }
-}
-
-// Helper function to compute the contingency table for binary data
-fn compute_contingency_table(
-    values1: &[f64],
-    values2: &[f64],
-    config: &ClusterConfig
-) -> (f64, f64, f64, f64) {
-    let present_val = config.method.present as f64;
-    let mut a = 0.0; // Both present
-    let mut b = 0.0; // Present in values1, absent in values2
-    let mut c = 0.0; // Absent in values1, present in values2
-    let mut d = 0.0; // Both absent
-
-    for (val1, val2) in values1.iter().zip(values2.iter()) {
-        let is_present1 = *val1 == present_val;
-        let is_present2 = *val2 == present_val;
-
-        if is_present1 && is_present2 {
-            a += 1.0;
-        } else if is_present1 && !is_present2 {
-            b += 1.0;
-        } else if !is_present1 && is_present2 {
-            c += 1.0;
-        } else {
-            d += 1.0;
-        }
-    }
-
-    (a, b, c, d)
 }

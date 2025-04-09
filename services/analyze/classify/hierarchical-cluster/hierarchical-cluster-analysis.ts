@@ -1,6 +1,6 @@
 import { getSlicedData, getVarDefs } from "@/hooks/useVariable";
 import { HierClusAnalysisType } from "@/models/classify/hierarchical-cluster/hierarchical-cluster-worker";
-import init from "@/src/wasm/pkg/wasm";
+import init, { HierarchicalCluster } from "@/src/wasm/pkg/wasm";
 import { convertClusteringData } from "./hierarchical-cluster-analysis-formatter";
 import { resultHierClus } from "./hierarchical-cluster-analysis-output";
 
@@ -37,20 +37,19 @@ export async function analyzeHierClus({
 
     console.log(configData);
 
-    // const hc = new HierarchicalCluster(
-    //     slicedDataForCluster,
-    //     slicedDataForLabelCases,
-    //     configData,
-    //     varDefsForCluster,
-    //     varDefsForLabelCases
-    // );
+    const hc = new HierarchicalCluster(
+        slicedDataForCluster,
+        slicedDataForLabelCases,
+        varDefsForCluster,
+        varDefsForLabelCases,
+        configData
+    );
 
-    // console.log(hc.get_results);
-    // console.log(hc.get_all_errors);
+    const results = hc.get_results();
+    const error = hc.get_all_errors();
 
-    // // get results
-    // const results = hc.get_results();
-    // const formattedResults = convertClusteringData(results);
+    console.log("Results:", results);
+    console.log("Errors:", error);
 
     // /*
     //  * 🎉 Final Result Process 🎯
